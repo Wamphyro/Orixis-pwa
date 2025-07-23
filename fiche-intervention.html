@@ -701,7 +701,6 @@
             <h1>🔧 Fiche d'Intervention SAV Audio</h1>
             <p>Contrôle / Nettoyage / Maintenance Niveau 1</p>
         </div>
-
         <form id="interventionForm">
             <!-- Info magasin pour impression -->
             <div class="print-header" style="display: none;">
@@ -730,7 +729,6 @@
                     <input type="tel" id="telephone" name="telephone" required>
                 </div>
             </div>
-
             <!-- Type d'appareil -->
             <div class="section">
                 <h2 class="section-title">🎧 Type d'Appareil</h2>
@@ -764,7 +762,6 @@
                     </select>
                 </div>
             </div>
-
             <!-- Problème décrit -->
             <div class="section">
                 <h2 class="section-title">❓ Problème Décrit</h2>
@@ -803,7 +800,6 @@
                     </div>
                 </div>
             </div>
-
             <!-- Actions réalisées -->
             <div class="section">
                 <h2 class="section-title">✅ Actions Réalisées</h2>
@@ -834,7 +830,6 @@
                     </div>
                 </div>
             </div>
-
             <!-- Résultat -->
             <div class="section">
                 <h2 class="section-title">📊 Résultat de l'Intervention</h2>
@@ -848,7 +843,6 @@
                     </select>
                 </div>
             </div>
-
             <!-- Observations -->
             <div class="section">
                 <h2 class="section-title">💬 Observations</h2>
@@ -856,7 +850,6 @@
                     <textarea id="observations" name="observations" rows="3" placeholder="Commentaires additionnels..."></textarea>
                 </div>
             </div>
-
             <!-- Zone de signature pour impression -->
             <div class="signature-area">
                 <h2 class="section-title">✍️ Signatures</h2>
@@ -872,7 +865,6 @@
             <div class="print-footer" style="display: none;">
                 Document généré le <span id="print-timestamp"></span> - SAV Audio © 2025
             </div>
-
             <!-- Boutons d'action -->
             <div class="action-buttons no-print">
                 <button type="button" class="btn btn-secondary" onclick="resetForm()">
@@ -882,13 +874,12 @@
                     🖨️ Imprimer la fiche
                 </button>
                 <!-- Bouton SAV caché par défaut -->
-                <button type="button" class="btn btn-warning" id="btnSAV" style="display: none;" onclick="envoyerSAV()">
+                <button type="button" class="btn btn-warning" id="btnSAV" style="display: none; background-color: #f39c12 !important;" onclick="envoyerSAV()">
                     📧 Envoyer au SAV
                 </button>
             </div>
         </form>
     </div>
-
     <!-- Message de succès -->
     <div class="overlay" id="overlay"></div>
     <div class="success-message" id="successMessage">
@@ -896,31 +887,8 @@
         <h2>Fiche prête à imprimer !</h2>
         <p>L'impression va se lancer automatiquement...</p>
     </div>
-
     <script>
-        // Initialisation
-        document.addEventListener('DOMContentLoaded', function() {
-            // Date et heure actuelles
-            const now = new Date();
-            document.getElementById('date').value = now.toISOString().split('T')[0];
-            document.getElementById('heure').value = now.toTimeString().slice(0, 5);
-            
-            // Récupérer le magasin connecté
-            const auth = localStorage.getItem('sav_auth');
-            if (auth) {
-                const authData = JSON.parse(auth);
-                // On pourrait ajouter le magasin automatiquement dans le formulaire
-            }
-            
-            // Gestion de la sélection des appareils
-            const deviceCards = document.querySelectorAll('.device-card');
-            deviceCards.forEach(card => {
-                card.addEventListener('click', function() {
-                    deviceCards.forEach(c => c.classList.remove('selected'));
-                    if (this.querySelector('input').checked) {
-                        this.classList.add('selected');
-                    }
-                // Fonction d'envoi au SAV via EmailJS
+        // Fonction d'envoi au SAV via EmailJS - DOIT ÊTRE GLOBALE
         function envoyerSAV() {
             if (!confirm('Confirmer l\'envoi de l\'escalade SAV aux assistantes ?')) {
                 return;
@@ -991,6 +959,50 @@
                     btnSAV.disabled = false;
                 });
         }
+        
+        // Fonction de réinitialisation - DOIT ÊTRE GLOBALE
+        function resetForm() {
+            if (confirm('Êtes-vous sûr de vouloir effacer tous les champs ?')) {
+                document.getElementById('interventionForm').reset();
+                
+                // Réinitialiser date et heure
+                const now = new Date();
+                document.getElementById('date').value = now.toISOString().split('T')[0];
+                document.getElementById('heure').value = now.toTimeString().slice(0, 5);
+                
+                // Réinitialiser la sélection des appareils
+                document.querySelectorAll('.device-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                
+                // Masquer le bouton SAV
+                document.getElementById('btnSAV').style.display = 'none';
+            }
+        }
+        
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Date et heure actuelles
+            const now = new Date();
+            document.getElementById('date').value = now.toISOString().split('T')[0];
+            document.getElementById('heure').value = now.toTimeString().slice(0, 5);
+            
+            // Récupérer le magasin connecté
+            const auth = localStorage.getItem('sav_auth');
+            if (auth) {
+                const authData = JSON.parse(auth);
+                // On pourrait ajouter le magasin automatiquement dans le formulaire
+            }
+            
+            // Gestion de la sélection des appareils
+            const deviceCards = document.querySelectorAll('.device-card');
+            deviceCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    deviceCards.forEach(c => c.classList.remove('selected'));
+                    if (this.querySelector('input').checked) {
+                        this.classList.add('selected');
+                    }
+                });
                 
                 // Pour les changements via keyboard
                 const input = card.querySelector('input');
@@ -1001,8 +1013,18 @@
                     }
                 });
             });
+            
+            // AJOUT : Écouteur sur le select résultat pour afficher/masquer le bouton SAV
+            document.getElementById('resultat').addEventListener('change', function() {
+                const btnSAV = document.getElementById('btnSAV');
+                if (this.value === 'SAV') {
+                    btnSAV.style.display = 'inline-block';
+                } else {
+                    btnSAV.style.display = 'none';
+                }
+            });
         });
-
+        
         // Soumission du formulaire
         document.getElementById('interventionForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -1053,23 +1075,6 @@
                 }, 1000);
             }, 1500);
         });
-
-        // Fonction de réinitialisation
-        function resetForm() {
-            if (confirm('Êtes-vous sûr de vouloir effacer tous les champs ?')) {
-                document.getElementById('interventionForm').reset();
-                
-                // Réinitialiser date et heure
-                const now = new Date();
-                document.getElementById('date').value = now.toISOString().split('T')[0];
-                document.getElementById('heure').value = now.toTimeString().slice(0, 5);
-                
-                // Réinitialiser la sélection des appareils
-                document.querySelectorAll('.device-card').forEach(card => {
-                    card.classList.remove('selected');
-                });
-            }
-        }
         
         // Empêcher la fermeture accidentelle avec données
         window.addEventListener('beforeunload', function(e) {
