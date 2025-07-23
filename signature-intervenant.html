@@ -33,6 +33,27 @@
             padding: 20px;
             text-align: center;
             background: rgba(0,0,0,0.2);
+            position: relative;
+        }
+        
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .back-button:hover {
+            background: rgba(255,255,255,0.3);
         }
         
         .header h1 {
@@ -95,41 +116,46 @@
             background: white;
         }
         
-        /* Mode paysage */
-        @media (orientation: landscape) {
-            .signature-container {
-                padding: 10px;
+            /* Mode paysage */
+            @media (orientation: landscape) {
+                .header {
+                    padding: 10px 20px;
+                }
+                
+                .back-button {
+                    position: static;
+                    margin-bottom: 10px;
+                }
+                
+                .signature-container {
+                    padding: 10px;
+                }
+                
+                .canvas-wrapper {
+                    width: 70%;
+                    max-width: none;
+                    height: 50vh;
+                }
+                
+                .controls {
+                    padding: 20px 20px;
+                }
+                
+                .header h1 {
+                    font-size: 24px;
+                }
+                
+                .instruction {
+                    margin-bottom: 10px;
+                    font-size: 16px;
+                }
+                
+                .certification {
+                    margin-bottom: 10px;
+                    padding: 15px;
+                    font-size: 14px;
+                }
             }
-            
-            .canvas-wrapper {
-                width: 70%;
-                max-width: none;
-                height: 45vh;
-            }
-            
-            .controls {
-                padding: 20px 20px;
-            }
-            
-            .header {
-                padding: 15px;
-            }
-            
-            .header h1 {
-                font-size: 24px;
-            }
-            
-            .instruction {
-                margin-bottom: 10px;
-                font-size: 16px;
-            }
-            
-            .certification {
-                margin-bottom: 10px;
-                padding: 15px;
-                font-size: 14px;
-            }
-        }
         
         .placeholder-text {
             position: absolute;
@@ -259,13 +285,17 @@
     </style>
 </head>
 <body>
-    <div class="progress">
-        <div class="progress-dot"></div>
-        <div class="progress-dot active"></div>
-        <div class="progress-dot"></div>
-    </div>
-    
     <div class="header">
+        <a href="signature-client.html" class="back-button">
+            ← Retour
+        </a>
+        
+        <div class="progress">
+            <div class="progress-dot"></div>
+            <div class="progress-dot active"></div>
+            <div class="progress-dot"></div>
+        </div>
+        
         <h1>Signature de l'Intervenant</h1>
         <div class="intervenant-info" id="intervenantName">Intervenant SAV</div>
     </div>
@@ -287,11 +317,14 @@
     </div>
     
     <div class="controls">
-        <button type="button" class="btn btn-back" onclick="goBack()">
-            ← Retour
-        </button>
+        // Retour
+        function goBack() {
+            if (confirm('Voulez-vous revenir à la signature client ?')) {
+                window.location.href = 'signature-client.html';
+            }
+        }
         <button type="button" class="btn btn-clear" onclick="clearSignature()">
-            🗑️ Effacer
+            Effacer la signature
         </button>
         <button type="button" class="btn btn-finish" id="btnFinish" onclick="finish()" disabled>
             ✅ Terminer
@@ -328,8 +361,8 @@
             // Adapter la hauteur selon l'orientation
             let canvasHeight = 300;
             if (window.innerWidth > window.innerHeight) {
-                // Mode paysage
-                canvasHeight = Math.min(rect.height - 20, window.innerHeight * 0.35);
+                // Mode paysage - même hauteur que la page client
+                canvasHeight = Math.min(rect.height - 20, window.innerHeight * 0.4);
             }
             
             canvas.width = rect.width * 2;
