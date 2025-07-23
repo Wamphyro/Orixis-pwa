@@ -353,35 +353,75 @@
             }
         }
         
-        /* Styles pour impression */
+        /* Styles pour impression optimisés iPhone/iPad */
         @media print {
             @page {
                 size: A4;
-                margin: 10mm;
+                margin: 0;
+            }
+            
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
             
             body {
-                background: white;
+                margin: 0;
                 padding: 0;
-                font-size: 11pt;
+                background: white !important;
+                font-size: 12pt !important;
+                font-family: Arial, sans-serif !important;
+                color: black !important;
             }
             
             .container {
-                max-width: 100%;
-                padding: 0;
-                box-shadow: none;
-                border-radius: 0;
+                width: 100% !important;
+                max-width: none !important;
+                margin: 0 !important;
+                padding: 10mm !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                background: white !important;
             }
             
-            .no-print {
+            /* Masquer éléments non nécessaires */
+            .no-print,
+            .back-button,
+            .action-buttons,
+            .overlay,
+            .success-message {
                 display: none !important;
             }
             
-            .section {
-                page-break-inside: avoid;
-                background: white !important;
-                border: 1px solid #333 !important;
+            /* En-tête */
+            .header {
+                background: none !important;
+                border: 2px solid #000 !important;
+                color: #000 !important;
                 padding: 10px !important;
+                margin-bottom: 15px !important;
+                page-break-inside: avoid !important;
+                text-align: center !important;
+            }
+            
+            .header h1 {
+                font-size: 18pt !important;
+                color: #000 !important;
+                margin: 0 0 5px 0 !important;
+            }
+            
+            .header p {
+                font-size: 12pt !important;
+                color: #000 !important;
+                margin: 0 !important;
+            }
+            
+            /* Sections */
+            .section {
+                page-break-inside: avoid !important;
+                background: white !important;
+                border: 1px solid #000 !important;
+                padding: 8px !important;
                 margin-bottom: 10px !important;
                 border-radius: 0 !important;
             }
@@ -389,94 +429,181 @@
             .section-title {
                 font-size: 14pt !important;
                 color: #000 !important;
-                margin-bottom: 10px !important;
+                margin: 0 0 8px 0 !important;
+                padding-bottom: 5px !important;
+                border-bottom: 2px solid #000 !important;
+                font-weight: bold !important;
             }
             
-            .header {
-                background: none !important;
-                color: #333 !important;
-                border: 2px solid #333 !important;
-                padding: 15px !important;
-                margin-bottom: 15px !important;
-            }
-            
-            .header h1 {
-                font-size: 18pt !important;
-                color: #000 !important;
-            }
-            
-            .header p {
-                color: #333 !important;
-                font-size: 12pt !important;
-            }
-            
-            .back-button {
-                display: none !important;
+            /* Formulaire */
+            .form-group {
+                margin-bottom: 8px !important;
+                page-break-inside: avoid !important;
             }
             
             .form-group label {
                 font-size: 10pt !important;
-                color: #000 !important;
                 font-weight: bold !important;
-                margin-bottom: 3px !important;
+                color: #000 !important;
+                margin-bottom: 2px !important;
+                display: block !important;
             }
             
+            /* Inputs */
             input[type="text"],
             input[type="tel"],
             input[type="date"],
             input[type="time"],
-            input[type="number"],
             select,
             textarea {
                 border: none !important;
-                border-bottom: 1px solid #333 !important;
-                padding: 2px 5px !important;
+                border-bottom: 1px solid #000 !important;
+                padding: 2px !important;
+                margin: 0 !important;
                 border-radius: 0 !important;
-                background: none !important;
+                background: transparent !important;
                 font-size: 11pt !important;
                 color: #000 !important;
+                width: 100% !important;
+                height: auto !important;
+                min-height: auto !important;
+                -webkit-appearance: none !important;
             }
             
+            /* Date et heure côte à côte */
+            .date-time-row {
+                display: flex !important;
+                gap: 20px !important;
+            }
+            
+            .date-time-row .form-group {
+                flex: 1 !important;
+            }
+            
+            /* Cases à cocher */
             .checkbox-group {
+                display: grid !important;
                 grid-template-columns: repeat(2, 1fr) !important;
                 gap: 5px !important;
+                margin: 5px 0 !important;
             }
             
             .checkbox-item {
-                border: 1px solid #333 !important;
-                padding: 3px 5px !important;
+                display: flex !important;
+                align-items: center !important;
+                padding: 3px !important;
+                margin: 0 !important;
                 background: white !important;
+                border: 1px solid #000 !important;
+                border-radius: 0 !important;
+                page-break-inside: avoid !important;
             }
             
+            .checkbox-item input[type="checkbox"] {
+                width: 15px !important;
+                height: 15px !important;
+                margin: 0 5px 0 0 !important;
+                border: 1px solid #000 !important;
+            }
+            
+            .checkbox-item label {
+                font-size: 9pt !important;
+                color: #000 !important;
+                margin: 0 !important;
+                cursor: default !important;
+            }
+            
+            /* Sélection appareil */
             .device-selection {
+                display: flex !important;
                 gap: 10px !important;
+                margin: 10px 0 !important;
             }
             
             .device-card {
-                border: 2px solid #333 !important;
-                padding: 10px !important;
+                flex: 1 !important;
+                border: 2px solid #000 !important;
+                padding: 8px !important;
+                text-align: center !important;
                 background: white !important;
+                border-radius: 0 !important;
             }
             
             .device-card.selected {
                 background: #ddd !important;
             }
             
+            .device-card .icon {
+                display: none !important;
+            }
+            
+            .device-card div {
+                font-size: 10pt !important;
+                color: #000 !important;
+            }
+            
+            /* Zone résultat */
+            select#resultat {
+                font-size: 11pt !important;
+            }
+            
+            /* Zone observations */
+            textarea {
+                min-height: 40px !important;
+                resize: none !important;
+            }
+            
+            /* Zone signature */
             .signature-area {
                 display: block !important;
-                margin-top: 15px;
-                page-break-inside: avoid;
-                border: 1px solid #333 !important;
-                padding: 15px !important;
+                page-break-inside: avoid !important;
+                border: 1px solid #000 !important;
+                padding: 10px !important;
+                margin-top: 15px !important;
+                background: white !important;
+            }
+            
+            .signature-area .section-title {
+                font-size: 12pt !important;
+                margin-bottom: 10px !important;
             }
             
             .signature-box {
-                height: 60px !important;
-                border: 1px solid #333 !important;
+                border: 1px solid #000 !important;
+                height: 50px !important;
+                margin: 10px 0 !important;
+                position: relative !important;
+                background: white !important;
             }
             
-            .action-buttons {
-                display: none !important;
+            .signature-label {
+                position: absolute !important;
+                top: -8px !important;
+                left: 10px !important;
+                background: white !important;
+                padding: 0 5px !important;
+                font-size: 9pt !important;
+                font-weight: normal !important;
+            }
+            
+            /* Informations magasin */
+            .print-header {
+                display: block !important;
+                text-align: right !important;
+                margin-bottom: 10px !important;
+                font-size: 10pt !important;
+                color: #000 !important;
+            }
+            
+            /* Footer */
+            .print-footer {
+                display: block !important;
+                text-align: center !important;
+                margin-top: 20px !important;
+                padding-top: 10px !important;
+                border-top: 1px solid #000 !important;
+                font-size: 9pt !important;
+                color: #666 !important;
             }
         }
         
@@ -562,6 +689,11 @@
         </div>
 
         <form id="interventionForm">
+            <!-- Info magasin pour impression -->
+            <div class="print-header" style="display: none;">
+                <strong>Magasin: <span id="print-magasin"></span></strong><br>
+                <span id="print-date"></span>
+            </div>
             <!-- Informations Client -->
             <div class="section">
                 <h2 class="section-title">📋 Informations Client</h2>
@@ -721,6 +853,11 @@
                     <span class="signature-label">Nom et Signature Intervenant</span>
                 </div>
             </div>
+            
+            <!-- Footer pour impression -->
+            <div class="print-footer" style="display: none;">
+                Document généré le <span id="print-timestamp"></span> - SAV Audio © 2025
+            </div>
 
             <!-- Boutons d'action -->
             <div class="action-buttons no-print">
@@ -798,8 +935,27 @@
                 document.getElementById('overlay').classList.remove('show');
                 document.getElementById('successMessage').classList.remove('show');
                 
-                // Afficher la zone de signature
+                // Préparer les infos d'impression
+                const auth = localStorage.getItem('sav_auth');
+                if (auth) {
+                    const authData = JSON.parse(auth);
+                    document.getElementById('print-magasin').textContent = authData.magasin;
+                }
+                
+                const now = new Date();
+                document.getElementById('print-date').textContent = now.toLocaleDateString('fr-FR', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                
+                document.getElementById('print-timestamp').textContent = now.toLocaleString('fr-FR');
+                
+                // Afficher les zones d'impression
                 document.querySelector('.signature-area').style.display = 'block';
+                document.querySelector('.print-header').style.display = 'block';
+                document.querySelector('.print-footer').style.display = 'block';
                 
                 // Forcer le rendu avant impression
                 window.setTimeout(() => {
@@ -809,6 +965,8 @@
                     // Après l'impression, réafficher le message et réinitialiser
                     setTimeout(() => {
                         document.querySelector('.signature-area').style.display = 'none';
+                        document.querySelector('.print-header').style.display = 'none';
+                        document.querySelector('.print-footer').style.display = 'none';
                         
                         // Demander si on veut réinitialiser
                         if (confirm('Impression terminée. Voulez-vous créer une nouvelle fiche ?')) {
