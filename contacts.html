@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacts SAV Audio</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SAV Audio">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- Script d'authentification -->
+    <script src="auth-check.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f5f6fa;
+            color: #2c3e50;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+        
+        .back-button {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+        
+        .back-button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-50%) translateX(-2px);
+        }
+        
+        .container {
+            flex: 1;
+            max-width: 1000px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        .intro-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        
+        .intro-section h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+        
+        .intro-section p {
+            color: #7f8c8d;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .contacts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .contact-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .contact-card:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .contact-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+        
+        .contact-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .contact-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: white;
+            margin-right: 20px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .contact-info h3 {
+            font-size: 22px;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .contact-role {
+            color: #7f8c8d;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .contact-details {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: #2c3e50;
+        }
+        
+        .contact-item:hover {
+            background: #e3f2fd;
+            transform: translateX(5px);
+        }
+        
+        .contact-icon {
+            width: 40px;
+            height: 40px;
+            background: #667eea;
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 20px;
+        }
+        
+        .contact-text {
+            flex: 1;
+        }
+        
+        .contact-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .contact-value {
+            font-size: 16px;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+        
+        .emergency-section {
+            background: #fee;
+            border: 2px solid #e74c3c;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 40px;
+            text-align: center;
+        }
+        
+        .emergency-section h3 {
+            color: #e74c3c;
+            margin-bottom: 15px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .emergency-section p {
+            color: #c0392b;
+            font-weight: 500;
+            line-height: 1.6;
+        }
+        
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            .contacts-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .contact-card {
+                padding: 20px;
+            }
+            
+            .contact-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .contact-avatar {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+            
+            .back-button {
+                position: static;
+                margin-bottom: 20px;
+                display: inline-flex;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+        
+        /* Animation d'apparition */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .contact-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        .contact-card:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        /* Effet de copie */
+        .copied {
+            position: relative;
+        }
+        
+        .copied::after {
+            content: "Copié !";
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #27ae60;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            opacity: 0;
+            animation: showCopied 2s ease-out;
+        }
+        
+        @keyframes showCopied {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(10px);
+            }
+            20% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+            80% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-10px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="home.html" class="back-button">
+            ← Retour à l'accueil
+        </a>
+        <h1>📞 Contacts SAV Audio</h1>
+        <p>Assistance technique et support</p>
+    </div>
+
+    <div class="container">
+        <div class="intro-section">
+            <h2>🤝 Votre équipe SAV dédiée</h2>
+            <p>Pour toute question technique ou escalade de problème, notre équipe d'assistantes SAV est à votre disposition.</p>
+        </div>
+
+        <div class="contacts-grid">
+            <!-- Contact 1: Estelle Boulay -->
+            <div class="contact-card">
+                <div class="contact-header">
+                    <div class="contact-avatar">
+                        👩
+                    </div>
+                    <div class="contact-info">
+                        <h3>Estelle Boulay</h3>
+                        <p class="contact-role">Assistante SAV Audio</p>
+                    </div>
+                </div>
+                
+                <div class="contact-details">
+                    <a href="mailto:estelle.boulay@sav-audio.fr" class="contact-item" onclick="copyToClipboard('estelle.boulay@sav-audio.fr', event)">
+                        <div class="contact-icon">
+                            📧
+                        </div>
+                        <div class="contact-text">
+                            <div class="contact-label">Email</div>
+                            <div class="contact-value">estelle.boulay@sav-audio.fr</div>
+                        </div>
+                    </a>
+                    
+                    <a href="tel:+33123456789" class="contact-item" onclick="copyToClipboard('+33123456789', event)">
+                        <div class="contact-icon">
+                            📱
+                        </div>
+                        <div class="contact-text">
+                            <div class="contact-label">Téléphone</div>
+                            <div class="contact-value">01 23 45 67 89</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Contact 2: Marie Christine Douare -->
+            <div class="contact-card">
+                <div class="contact-header">
+                    <div class="contact-avatar">
+                        👩
+                    </div>
+                    <div class="contact-info">
+                        <h3>Marie Christine Douare</h3>
+                        <p class="contact-role">Assistante SAV Audio</p>
+                    </div>
+                </div>
+                
+                <div class="contact-details">
+                    <a href="mailto:mc.douare@sav-audio.fr" class="contact-item" onclick="copyToClipboard('mc.douare@sav-audio.fr', event)">
+                        <div class="contact-icon">
+                            📧
+                        </div>
+                        <div class="contact-text">
+                            <div class="contact-label">Email</div>
+                            <div class="contact-value">mc.douare@sav-audio.fr</div>
+                        </div>
+                    </a>
+                    
+                    <a href="tel:+33123456790" class="contact-item" onclick="copyToClipboard('+33123456790', event)">
+                        <div class="contact-icon">
+                            📱
+                        </div>
+                        <div class="contact-text">
+                            <div class="contact-label">Téléphone</div>
+                            <div class="contact-value">01 23 45 67 90</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="emergency-section">
+            <h3>
+                <span>⚠️</span>
+                <span>Procédure d'urgence</span>
+            </h3>
+            <p>
+                En cas d'urgence technique nécessitant une intervention immédiate :<br>
+                <strong>1.</strong> Tentez toutes les procédures niveau 1<br>
+                <strong>2.</strong> Documentez le problème avec photos si possible<br>
+                <strong>3.</strong> Contactez l'équipe SAV par téléphone en priorité<br>
+                <strong>4.</strong> Envoyez un email de suivi avec la fiche d'intervention
+            </p>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>SAV Audio v2.0 - © 2025</p>
+    </div>
+
+    <script>
+        // Fonction pour copier dans le presse-papier
+        function copyToClipboard(text, event) {
+            event.preventDefault();
+            
+            // Créer un élément temporaire
+            const tempInput = document.createElement('input');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            
+            try {
+                document.execCommand('copy');
+                // Ajouter l'animation de confirmation
+                event.currentTarget.classList.add('copied');
+                setTimeout(() => {
+                    event.currentTarget.classList.remove('copied');
+                }, 2000);
+            } catch (err) {
+                console.error('Erreur lors de la copie:', err);
+            }
+            
+            document.body.removeChild(tempInput);
+            
+            // Pour mobile, ouvrir quand même l'action par défaut après copie
+            setTimeout(() => {
+                if (text.includes('@')) {
+                    window.location.href = `mailto:${text}`;
+                } else if (text.includes('+')) {
+                    window.location.href = `tel:${text}`;
+                }
+            }, 500);
+        }
+        
+        // Animation d'apparition au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.contact-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease-out';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+        });
+    </script>
+</body>
+</html>
