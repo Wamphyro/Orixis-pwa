@@ -81,6 +81,7 @@
             position: relative;
             width: 90%;
             max-width: 800px;
+            max-height: 70vh;
         }
         
         #signatureCanvas {
@@ -90,7 +91,44 @@
             touch-action: none;
             display: block;
             width: 100%;
+            height: 100%;
             background: white;
+        }
+        
+        /* Mode paysage */
+        @media (orientation: landscape) {
+            .signature-container {
+                padding: 10px;
+            }
+            
+            .canvas-wrapper {
+                width: 70%;
+                max-width: none;
+                height: 45vh;
+            }
+            
+            .controls {
+                padding: 20px 20px;
+            }
+            
+            .header {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .instruction {
+                margin-bottom: 10px;
+                font-size: 16px;
+            }
+            
+            .certification {
+                margin-bottom: 10px;
+                padding: 15px;
+                font-size: 14px;
+            }
         }
         
         .placeholder-text {
@@ -284,11 +322,22 @@
         
         // Ajuster la taille du canvas
         function resizeCanvas() {
-            const rect = canvas.getBoundingClientRect();
+            const wrapper = document.querySelector('.canvas-wrapper');
+            const rect = wrapper.getBoundingClientRect();
+            
+            // Adapter la hauteur selon l'orientation
+            let canvasHeight = 300;
+            if (window.innerWidth > window.innerHeight) {
+                // Mode paysage
+                canvasHeight = Math.min(rect.height - 20, window.innerHeight * 0.35);
+            }
+            
             canvas.width = rect.width * 2;
-            canvas.height = 300 * 2;
-            canvas.style.width = rect.width + 'px';
-            canvas.style.height = '300px';
+            canvas.height = canvasHeight * 2;
+            canvas.style.width = '100%';
+            canvas.style.height = canvasHeight + 'px';
+            
+            // Réinitialiser le contexte
             ctx.scale(2, 2);
             ctx.strokeStyle = '#000';
             ctx.lineWidth = 3;
@@ -298,6 +347,7 @@
         
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('orientationchange', resizeCanvas);
         
         // Coordonnées pour le dessin
         let lastX = 0;
@@ -376,6 +426,11 @@
         function finish() {
             if (!hasDrawn) {
                 alert('Veuillez signer pour continuer');
+                return;
+            }
+            
+            // Confirmation avant de terminer
+            if (!confirm('Confirmer que toutes les signatures sont complètes ?')) {
                 return;
             }
             
