@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAV Audio - Connexion</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SAV Audio">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="theme-color" content="#667eea">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        
+        .logo {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #495057;
+            font-weight: 600;
+        }
+        
+        input[type="password"],
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: white;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        
+        select {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23667eea' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 20px;
+            padding-right: 45px;
+        }
+        
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            transform: scale(1.02);
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            margin-top: 15px;
+            padding: 10px;
+            background: #fee;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .success-message {
+            color: #27ae60;
+            margin-top: 15px;
+            padding: 10px;
+            background: #d4edda;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .remember-device {
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        
+        .remember-device input {
+            width: auto;
+            margin-right: 8px;
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            border: 1px solid #64b5f6;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #1976d2;
+        }
+        
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 20px;
+            }
+        }
+        
+        /* Animation */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid white;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">🔧</div>
+        <h1>SAV Audio</h1>
+        <p class="subtitle">Connexion sécurisée</p>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="magasin">Sélectionnez votre magasin</label>
+                <select id="magasin" required>
+                    <option value="">-- Choisir un magasin --</option>
+                    <!-- Les options seront générées dynamiquement -->
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Mot de passe</label>
+                <input type="password" id="password" placeholder="Entrez votre mot de passe" required>
+            </div>
+            
+            <div class="remember-device">
+                <input type="checkbox" id="remember">
+                <label for="remember">Mémoriser cet appareil pendant 30 jours</label>
+            </div>
+            
+            <button type="submit" class="btn-login" id="loginBtn">
+                Se connecter
+            </button>
+            
+            <div class="error-message" id="errorMsg">
+                Mot de passe incorrect. Veuillez réessayer.
+            </div>
+            
+            <div class="success-message" id="successMsg">
+                Connexion réussie ! Redirection...
+            </div>
+        </form>
+        
+        <div class="info-box">
+            ℹ️ Contactez votre responsable si vous avez oublié votre mot de passe
+        </div>
+    </div>
+
+    <script src="auth-config.js"></script>
+    <script>
+        let attempts = 0;
+        const MAX_ATTEMPTS = 3;
+        
+        // Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js');
+        }
+        
+        // Vérifier si déjà connecté
+        window.addEventListener('load', () => {
+            if (checkAuth()) {
+                window.location.href = 'index.html';
+            }
+            
+            // Remplir la liste des magasins
+            populateMagasins();
+        });
+        
+        // Remplir le select avec les magasins
+        function populateMagasins() {
+            const select = document.getElementById('magasin');
+            
+            // Trier les magasins par nom
+            const magasinsSorted = Object.entries(MAGASINS)
+                .sort((a, b) => a[1].nom.localeCompare(b[1].nom));
+            
+            magasinsSorted.forEach(([code, info]) => {
+                const option = document.createElement('option');
+                option.value = code;
+                option.textContent = `${info.nom} (${code})`;
+                select.appendChild(option);
+            });
+        }
+        
+        // Fonction de hash pour sécuriser les mots de passe
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hash = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(hash))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+        }
+        
+        // Soumission du formulaire
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const loginBtn = document.getElementById('loginBtn');
+            const errorMsg = document.getElementById('errorMsg');
+            const successMsg = document.getElementById('successMsg');
+            
+            // Reset messages
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+            
+            // Récupérer les valeurs
+            const magasinCode = document.getElementById('magasin').value;
+            const password = document.getElementById('password').value;
+            
+            if (!magasinCode || !password) {
+                errorMsg.textContent = 'Veuillez remplir tous les champs.';
+                errorMsg.style.display = 'block';
+                return;
+            }
+            
+            // Désactiver le bouton
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<span class="loading"></span>';
+            
+            // Simuler un délai (sécurité)
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Vérifier les credentials
+            const magasin = MAGASINS[magasinCode];
+            const passwordHash = await hashPassword(password);
+            
+            if (magasin && magasin.passwordHash === passwordHash) {
+                // Connexion réussie
+                successMsg.style.display = 'block';
+                
+                // Sauvegarder l'authentification
+                const remember = document.getElementById('remember').checked;
+                const expiry = remember ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
+                
+                localStorage.setItem('sav_auth', JSON.stringify({
+                    authenticated: true,
+                    magasin: magasinCode,
+                    magasinNom: magasin.nom,
+                    timestamp: Date.now(),
+                    expiry: expiry
+                }));
+                
+                // Redirection
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+                
+            } else {
+                // Échec
+                attempts++;
+                errorMsg.style.display = 'block';
+                document.querySelector('.login-container').classList.add('shake');
+                
+                if (attempts >= MAX_ATTEMPTS) {
+                    errorMsg.textContent = `Trop de tentatives. Veuillez attendre ${MAX_ATTEMPTS} minutes.`;
+                    loginBtn.disabled = true;
+                    setTimeout(() => {
+                        attempts = 0;
+                        loginBtn.disabled = false;
+                        loginBtn.textContent = 'Se connecter';
+                    }, MAX_ATTEMPTS * 60 * 1000);
+                } else {
+                    errorMsg.textContent = `Mot de passe incorrect. ${MAX_ATTEMPTS - attempts} tentatives restantes.`;
+                }
+                
+                document.getElementById('password').value = '';
+                document.getElementById('password').focus();
+                
+                setTimeout(() => {
+                    document.querySelector('.login-container').classList.remove('shake');
+                }, 500);
+            }
+            
+            if (attempts < MAX_ATTEMPTS) {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Se connecter';
+            }
+        });
+        
+        // Fonction de vérification d'authentification
+        function checkAuth() {
+            const auth = localStorage.getItem('sav_auth');
+            if (!auth) return false;
+            
+            const authData = JSON.parse(auth);
+            const now = Date.now();
+            
+            if (now - authData.timestamp > authData.expiry) {
+                localStorage.removeItem('sav_auth');
+                return false;
+            }
+            
+            return authData.authenticated;
+        }
+    </script>
+</body>
+</html>
