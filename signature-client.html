@@ -30,20 +30,18 @@
         }
         
         .header {
-            padding: 15px;
+            padding: 20px;
             text-align: center;
             background: rgba(0,0,0,0.2);
-            position: relative;
-            flex-shrink: 0;
         }
         
         .header h1 {
-            font-size: 24px;
-            margin-bottom: 8px;
+            font-size: 28px;
+            margin-bottom: 10px;
         }
         
         .client-info {
-            font-size: 18px;
+            font-size: 20px;
             opacity: 0.9;
         }
         
@@ -53,17 +51,15 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 15px;
+            padding: 20px;
             position: relative;
-            min-height: 0;
         }
         
         .instruction {
-            font-size: 16px;
-            margin-bottom: 15px;
+            font-size: 18px;
+            margin-bottom: 20px;
             text-align: center;
             opacity: 0.9;
-            flex-shrink: 0;
         }
         
         .canvas-wrapper {
@@ -72,10 +68,9 @@
             padding: 10px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
             position: relative;
-            width: 100%;
+            width: 90%;
             max-width: 800px;
-            height: 250px;
-            flex-shrink: 0;
+            max-height: 70vh;
         }
         
         #signatureCanvas {
@@ -91,12 +86,6 @@
         
         /* Mode paysage */
         @media (orientation: landscape) {
-            body {
-                overflow: hidden;
-                position: fixed;
-                height: 100%;
-            }
-            
             .signature-container {
                 padding: 10px;
             }
@@ -130,7 +119,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             color: #ccc;
-            font-size: 20px;
+            font-size: 24px;
             pointer-events: none;
             font-style: italic;
         }
@@ -141,27 +130,31 @@
         
         .controls {
             display: flex;
-            gap: 15px;
+            gap: 20px;
             justify-content: center;
-            padding: 20px 15px 30px;
+            padding: 20px;
             flex-wrap: wrap;
-            flex-shrink: 0;
+            background: rgba(0,0,0,0.2);
+            position: sticky;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
         }
         
         .btn {
-            padding: 12px 25px;
+            padding: 15px 40px;
             border: none;
             border-radius: 50px;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            white-space: nowrap;
         }
         
         .btn-clear {
@@ -193,15 +186,15 @@
         
         .progress {
             position: absolute;
-            top: 15px;
-            right: 15px;
+            top: 20px;
+            right: 20px;
             display: flex;
-            gap: 8px;
+            gap: 10px;
         }
         
         .progress-dot {
-            width: 10px;
-            height: 10px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
             background: rgba(255,255,255,0.3);
             transition: all 0.3s;
@@ -214,11 +207,11 @@
         
         .back-button {
             position: absolute;
-            top: 15px;
-            left: 15px;
+            top: 20px;
+            left: 20px;
             background: rgba(255,255,255,0.2);
             color: white;
-            padding: 8px 16px;
+            padding: 10px 20px;
             border-radius: 25px;
             text-decoration: none;
             display: flex;
@@ -226,62 +219,55 @@
             gap: 5px;
             transition: all 0.3s;
             border: 1px solid rgba(255,255,255,0.3);
-            font-size: 14px;
         }
         
         .back-button:hover {
             background: rgba(255,255,255,0.3);
         }
         
-        @media (max-width: 768px) and (max-height: 700px) {
-            .header {
+        @media (max-width: 768px) {
+            body {
+                min-height: 100vh;
+                height: auto;
+            }
+            
+            .signature-container {
+                min-height: 400px;
                 padding: 10px;
             }
             
             .header h1 {
-                font-size: 20px;
-                margin-bottom: 5px;
+                font-size: 24px;
             }
             
             .client-info {
-                font-size: 16px;
+                font-size: 18px;
             }
             
             .instruction {
-                font-size: 14px;
-                margin-bottom: 10px;
+                font-size: 16px;
+                margin-bottom: 15px;
             }
             
             .canvas-wrapper {
-                height: 200px;
-                padding: 8px;
+                width: 95%;
+                height: 250px;
+            }
+            
+            #signatureCanvas {
+                height: 230px !important;
+            }
+            
+            .btn {
+                padding: 12px 30px;
+                font-size: 16px;
             }
             
             .controls {
-                padding: 15px 10px 20px;
-                gap: 10px;
-            }
-            
-            .btn {
-                padding: 10px 20px;
-                font-size: 14px;
-            }
-            
-            .placeholder-text {
-                font-size: 18px;
-            }
-        }
-        
-        /* Très petits écrans */
-        @media (max-width: 380px) {
-            .btn {
-                padding: 10px 18px;
-                font-size: 14px;
-                gap: 5px;
-            }
-            
-            .canvas-wrapper {
-                height: 180px;
+                position: fixed;
+                bottom: 0;
+                padding: 15px;
+                background: rgba(0,0,0,0.3);
             }
         }
     </style>
@@ -315,7 +301,7 @@
     
     <div class="controls">
         <button type="button" class="btn btn-clear" onclick="clearSignature()">
-            🗑️ Effacer
+            Effacer la signature
         </button>
         <button type="button" class="btn btn-next" id="btnNext" onclick="nextStep()" disabled>
             Suivant →
@@ -342,7 +328,11 @@
             const rect = wrapper.getBoundingClientRect();
             
             // Adapter la hauteur selon l'orientation
-            let canvasHeight = rect.height - 20;
+            let canvasHeight = 300;
+            if (window.innerWidth > window.innerHeight) {
+                // Mode paysage
+                canvasHeight = Math.min(rect.height - 20, window.innerHeight * 0.4);
+            }
             
             canvas.width = rect.width * 2;
             canvas.height = canvasHeight * 2;
@@ -355,14 +345,13 @@
             ctx.lineWidth = 3;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
+            
+            // Redessiner si nécessaire (optionnel, peut causer la perte de la signature)
         }
         
-        // Attendre que le DOM soit chargé
-        setTimeout(resizeCanvas, 100);
+        resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
-        window.addEventListener('orientationchange', () => {
-            setTimeout(resizeCanvas, 100);
-        });
+        window.addEventListener('orientationchange', resizeCanvas);
         
         // Coordonnées pour le dessin
         let lastX = 0;
