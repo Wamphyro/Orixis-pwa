@@ -18,7 +18,7 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -33,7 +33,6 @@
             padding: 20px;
             text-align: center;
             background: rgba(0,0,0,0.2);
-            position: relative;
         }
         
         .header h1 {
@@ -41,7 +40,7 @@
             margin-bottom: 10px;
         }
         
-        .intervenant-info {
+        .client-info {
             font-size: 20px;
             opacity: 0.9;
         }
@@ -61,17 +60,6 @@
             margin-bottom: 20px;
             text-align: center;
             opacity: 0.9;
-        }
-        
-        .certification {
-            background: rgba(255,255,255,0.1);
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            max-width: 600px;
-            text-align: center;
-            font-size: 16px;
-            line-height: 1.6;
         }
         
         .canvas-wrapper {
@@ -94,6 +82,35 @@
             width: 100%;
             height: 100%;
             background: white;
+        }
+        
+        /* Mode paysage */
+        @media (orientation: landscape) {
+            .signature-container {
+                padding: 10px;
+            }
+            
+            .canvas-wrapper {
+                width: 70%;
+                max-width: none;
+                height: 50vh;
+            }
+            
+            .controls {
+                padding: 20px 20px;
+            }
+            
+            .header {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .instruction {
+                margin-bottom: 10px;
+            }
         }
         
         .placeholder-text {
@@ -151,18 +168,17 @@
             transform: translateY(-2px);
         }
         
-        .btn-finish {
-            background: #27ae60;
-            color: white;
+        .btn-next {
+            background: white;
+            color: #667eea;
         }
         
-        .btn-finish:hover {
-            background: #229954;
+        .btn-next:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0,0,0,0.3);
         }
         
-        .btn-finish:disabled {
+        .btn-next:disabled {
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
@@ -209,47 +225,6 @@
             background: rgba(255,255,255,0.3);
         }
         
-        /* Mode paysage */
-        @media (orientation: landscape) {
-            .header {
-                padding: 10px 20px;
-            }
-            
-            .back-button {
-                position: static;
-                margin-bottom: 10px;
-            }
-            
-            .signature-container {
-                padding: 10px;
-            }
-            
-            .canvas-wrapper {
-                width: 70%;
-                max-width: none;
-                height: 50vh;
-            }
-            
-            .controls {
-                padding: 20px 20px;
-            }
-            
-            .header h1 {
-                font-size: 24px;
-            }
-            
-            .instruction {
-                margin-bottom: 10px;
-                font-size: 16px;
-            }
-            
-            .certification {
-                margin-bottom: 10px;
-                padding: 15px;
-                font-size: 14px;
-            }
-        }
-        
         @media (max-width: 768px) {
             body {
                 min-height: 100vh;
@@ -257,7 +232,7 @@
             }
             
             .signature-container {
-                min-height: 350px;
+                min-height: 400px;
                 padding: 10px;
             }
             
@@ -265,17 +240,12 @@
                 font-size: 24px;
             }
             
-            .intervenant-info {
+            .client-info {
                 font-size: 18px;
             }
             
             .instruction {
                 font-size: 16px;
-            }
-            
-            .certification {
-                font-size: 14px;
-                padding: 15px;
                 margin-bottom: 15px;
             }
             
@@ -315,18 +285,13 @@
     
     <div class="header">
         <h1>Signature de l'Intervenant</h1>
-        <div class="intervenant-info" id="intervenantName">Intervenant SAV</div>
+        <div class="client-info" id="clientName">Intervenant</div>
     </div>
     
     <div class="signature-container">
         <p class="instruction">
             Veuillez signer pour certifier l'intervention
         </p>
-        
-        <div class="certification">
-            Je certifie avoir effectué les contrôles et interventions mentionnés 
-            dans cette fiche conformément aux procédures SAV Audio.
-        </div>
         
         <div class="canvas-wrapper">
             <canvas id="signatureCanvas" width="800" height="300"></canvas>
@@ -338,8 +303,8 @@
         <button type="button" class="btn btn-clear" onclick="clearSignature()">
             Effacer la signature
         </button>
-        <button type="button" class="btn btn-finish" id="btnFinish" onclick="finish()" disabled>
-            ✅ Terminer
+        <button type="button" class="btn btn-next" id="btnNext" onclick="nextStep()" disabled>
+            Valider et terminer
         </button>
     </div>
     
@@ -349,20 +314,14 @@
         const canvas = document.getElementById('signatureCanvas');
         const ctx = canvas.getContext('2d');
         const placeholder = document.getElementById('placeholder');
-        const btnFinish = document.getElementById('btnFinish');
+        const btnNext = document.getElementById('btnNext');
         
-        // Charger les données
+        // Charger les données de l'intervention
         const interventionData = JSON.parse(localStorage.getItem('sav_intervention_data') || '{}');
         const authData = JSON.parse(localStorage.getItem('sav_auth') || '{}');
         
         if (authData.magasin) {
-            document.getElementById('intervenantName').textContent = `Intervenant - ${authData.magasin}`;
-        }
-        
-        // Vérifier que la signature client existe
-        if (!interventionData.signatureClient) {
-            alert('Erreur : signature client manquante');
-            window.location.href = 'signature-client.html';
+            document.getElementById('clientName').textContent = `Intervenant - ${authData.magasin}`;
         }
         
         // Ajuster la taille du canvas
@@ -373,7 +332,7 @@
             // Adapter la hauteur selon l'orientation
             let canvasHeight = 300;
             if (window.innerWidth > window.innerHeight) {
-                // Mode paysage - même hauteur que la page client
+                // Mode paysage
                 canvasHeight = Math.min(rect.height - 20, window.innerHeight * 0.4);
             }
             
@@ -388,6 +347,8 @@
             ctx.lineWidth = 3;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
+            
+            // Redessiner si nécessaire (optionnel, peut causer la perte de la signature)
         }
         
         resizeCanvas();
@@ -417,7 +378,7 @@
             if (!hasDrawn) {
                 hasDrawn = true;
                 placeholder.classList.add('hidden');
-                btnFinish.disabled = false;
+                btnNext.disabled = false;
             }
         }
         
@@ -457,22 +418,22 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             hasDrawn = false;
             placeholder.classList.remove('hidden');
-            btnFinish.disabled = true;
+            btnNext.disabled = true;
         }
         
-        // Terminer et aller à l'impression
-        function finish() {
+        // Passer à l'étape suivante
+        function nextStep() {
             if (!hasDrawn) {
                 alert('Veuillez signer pour continuer');
                 return;
             }
             
-            // Confirmation avant de terminer
+            // Confirmation avant de continuer
             if (!confirm('Confirmer que toutes les signatures sont complètes ?')) {
                 return;
             }
             
-            // Sauvegarder la signature de l'intervenant
+            // Sauvegarder la signature
             const signatureData = canvas.toDataURL();
             interventionData.signatureIntervenant = signatureData;
             localStorage.setItem('sav_intervention_data', JSON.stringify(interventionData));
