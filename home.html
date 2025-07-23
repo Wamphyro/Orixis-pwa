@@ -92,7 +92,7 @@
             max-width: 800px;
             width: 100%;
             margin: 0 auto;
-            padding: 30px 20px;
+            padding: 50px 20px;
         }
         
         .menu-grid {
@@ -264,31 +264,8 @@
     </div>
 
     <div class="container">
-        <!-- Statistiques du jour -->
-        <div class="stats-section">
-            <h2>📊 Aujourd'hui - <span id="date-jour"></span></h2>
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-number" id="interventions-jour">0</div>
-                    <div class="stat-label">Interventions</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number" id="clients-jour">0</div>
-                    <div class="stat-label">Clients</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number" id="resolu-jour">0</div>
-                    <div class="stat-label">Résolus</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number" id="sav-jour">0</div>
-                    <div class="stat-label">Escalade SAV</div>
-                </div>
-            </div>
-        </div>
-
         <!-- Menu principal -->
-        <h2 style="margin-bottom: 20px;">🚀 Actions rapides</h2>
+        <h2 style="margin-bottom: 30px; text-align: center; font-size: 28px;">🚀 Actions rapides</h2>
         <div class="menu-grid">
             <a href="fiche-intervention.html" class="menu-card">
                 <span class="icon">📝</span>
@@ -328,13 +305,6 @@
         </div>
     </div>
 
-    <!-- Boutons flottants -->
-    <div class="quick-actions">
-        <a href="fiche-intervention.html" class="fab primary" title="Nouvelle intervention">
-            ➕
-        </a>
-    </div>
-
     <div class="footer">
         <p>SAV Audio v2.0 - © 2025</p>
     </div>
@@ -365,29 +335,7 @@
             // Afficher la date du jour
             const today = new Date();
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            document.getElementById('date-jour').textContent = today.toLocaleDateString('fr-FR', options);
-            
-            // Animation des compteurs
-            function animateCounter(id, target) {
-                let current = 0;
-                const increment = target / 30;
-                const timer = setInterval(() => {
-                    current += increment;
-                    if (current >= target) {
-                        current = target;
-                        clearInterval(timer);
-                    }
-                    document.getElementById(id).textContent = Math.floor(current);
-                }, 30);
-            }
-            
-            // Stats simulées (à remplacer par localStorage ou API)
-            setTimeout(() => {
-                animateCounter('interventions-jour', 12);
-                animateCounter('clients-jour', 10);
-                animateCounter('resolu-jour', 8);
-                animateCounter('sav-jour', 2);
-            }, 500);
+            // Vous pouvez utiliser cette date ailleurs si besoin
         });
     </script>
 </body>
