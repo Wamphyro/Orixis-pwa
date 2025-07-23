@@ -6,6 +6,7 @@
     <title>Fiche Intervention SAV Audio</title>
     
     <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="SAV Audio">
@@ -962,8 +963,20 @@
                     }
                 })
                 .catch(function(error) {
-                    alert('❌ Erreur lors de l\'envoi : ' + (error.text || error));
-                    console.error('Erreur EmailJS:', error);
+                    console.error('Erreur EmailJS complète:', error);
+                    let errorMessage = '❌ Erreur lors de l\'envoi : ';
+                    
+                    if (error.text) {
+                        errorMessage += error.text;
+                    } else if (error.message) {
+                        errorMessage += error.message;
+                    } else if (error.status === 400) {
+                        errorMessage += 'Paramètres invalides. Vérifiez votre template EmailJS.';
+                    } else {
+                        errorMessage += 'Erreur inconnue';
+                    }
+                    
+                    alert(errorMessage);
                 })
                 .finally(function() {
                     // Restaurer le bouton
