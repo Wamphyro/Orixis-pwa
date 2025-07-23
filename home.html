@@ -13,6 +13,9 @@
     <link rel="apple-touch-icon" href="icon-192.png">
     <meta name="theme-color" content="#667eea">
     
+    <!-- Script d'authentification -->
+    <script src="auth-check.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -35,6 +38,7 @@
             padding: 30px 20px;
             text-align: center;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: relative;
         }
         
         .header h1 {
@@ -45,6 +49,42 @@
         .header p {
             font-size: 18px;
             opacity: 0.9;
+        }
+        
+        .user-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-info span {
+            font-weight: bold;
+        }
+        
+        .btn-logout {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-logout:hover {
+            background: #c0392b;
+            transform: scale(1.05);
         }
         
         .container {
@@ -175,6 +215,18 @@
             font-size: 14px;
         }
         
+        @media (max-width: 768px) {
+            .user-info {
+                position: static;
+                margin-top: 20px;
+                justify-content: center;
+            }
+            
+            .header {
+                padding-bottom: 20px;
+            }
+        }
+        
         @media (max-width: 600px) {
             .header h1 {
                 font-size: 24px;
@@ -191,6 +243,11 @@
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
+            
+            .user-info {
+                flex-direction: column;
+                gap: 10px;
+            }
         }
     </style>
 </head>
@@ -198,12 +255,18 @@
     <div class="header">
         <h1>🔧 SAV Audio</h1>
         <p>Système de Gestion des Interventions</p>
+        <div class="user-info">
+            <span id="magasin-info">Magasin: </span>
+            <button class="btn-logout" onclick="logout()">
+                🚪 Déconnexion
+            </button>
+        </div>
     </div>
 
     <div class="container">
         <!-- Statistiques du jour -->
         <div class="stats-section">
-            <h2>📊 Aujourd'hui</h2>
+            <h2>📊 Aujourd'hui - <span id="date-jour"></span></h2>
             <div class="stats-grid">
                 <div class="stat-item">
                     <div class="stat-number" id="interventions-jour">0</div>
@@ -282,8 +345,28 @@
             navigator.serviceWorker.register('/sw.js');
         }
         
-        // Simuler des stats (à remplacer par vraies données)
+        // Fonction de déconnexion
+        function logout() {
+            if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+                localStorage.removeItem('sav_auth');
+                window.location.href = 'index.html';
+            }
+        }
+        
+        // Afficher les infos du magasin connecté
         document.addEventListener('DOMContentLoaded', function() {
+            // Récupérer les infos d'authentification
+            const auth = localStorage.getItem('sav_auth');
+            if (auth) {
+                const authData = JSON.parse(auth);
+                document.getElementById('magasin-info').textContent = `Magasin: ${authData.magasin}`;
+            }
+            
+            // Afficher la date du jour
+            const today = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('date-jour').textContent = today.toLocaleDateString('fr-FR', options);
+            
             // Animation des compteurs
             function animateCounter(id, target) {
                 let current = 0;
