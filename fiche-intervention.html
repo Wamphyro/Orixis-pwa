@@ -133,21 +133,18 @@
             text-align: center;
             color: #3498db;
             font-weight: 500;
+            position: relative;
         }
         
-        /* Pour iOS Safari */
+        /* Pour iOS Safari - Zone de clic limitée au bouton calendrier */
         input[type="date"]::-webkit-calendar-picker-indicator,
         input[type="time"]::-webkit-calendar-picker-indicator {
-            display: block;
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
             cursor: pointer;
+            padding: 10px;
         }
         
         select {
