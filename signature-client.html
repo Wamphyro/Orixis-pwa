@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -71,6 +70,7 @@
             position: relative;
             width: 90%;
             max-width: 800px;
+            max-height: 70vh;
         }
         
         #signatureCanvas {
@@ -80,7 +80,37 @@
             touch-action: none;
             display: block;
             width: 100%;
+            height: 100%;
             background: white;
+        }
+        
+        /* Mode paysage */
+        @media (orientation: landscape) {
+            .signature-container {
+                padding: 10px;
+            }
+            
+            .canvas-wrapper {
+                width: 70%;
+                max-width: none;
+                height: 50vh;
+            }
+            
+            .controls {
+                padding: 20px 20px;
+            }
+            
+            .header {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .instruction {
+                margin-bottom: 10px;
+            }
         }
         
         .placeholder-text {
@@ -265,20 +295,34 @@
         
         // Ajuster la taille du canvas
         function resizeCanvas() {
-            const rect = canvas.getBoundingClientRect();
+            const wrapper = document.querySelector('.canvas-wrapper');
+            const rect = wrapper.getBoundingClientRect();
+            
+            // Adapter la hauteur selon l'orientation
+            let canvasHeight = 300;
+            if (window.innerWidth > window.innerHeight) {
+                // Mode paysage
+                canvasHeight = Math.min(rect.height - 20, window.innerHeight * 0.4);
+            }
+            
             canvas.width = rect.width * 2;
-            canvas.height = 300 * 2;
-            canvas.style.width = rect.width + 'px';
-            canvas.style.height = '300px';
+            canvas.height = canvasHeight * 2;
+            canvas.style.width = '100%';
+            canvas.style.height = canvasHeight + 'px';
+            
+            // Réinitialiser le contexte
             ctx.scale(2, 2);
             ctx.strokeStyle = '#000';
             ctx.lineWidth = 3;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
+            
+            // Redessiner si nécessaire (optionnel, peut causer la perte de la signature)
         }
         
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('orientationchange', resizeCanvas);
         
         // Coordonnées pour le dessin
         let lastX = 0;
@@ -350,6 +394,11 @@
         function nextStep() {
             if (!hasDrawn) {
                 alert('Veuillez faire signer le client');
+                return;
+            }
+            
+            // Confirmation avant de continuer
+            if (!confirm('La signature est-elle complète et valide ?')) {
                 return;
             }
             
