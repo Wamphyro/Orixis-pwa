@@ -19,8 +19,15 @@
     <!-- EmailJS -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script>
-        // Initialiser EmailJS - REMPLACEZ PAR VOTRE CLÉ !
-        emailjs.init("wJtv5MrJPzvMuGSyL");
+        // Initialiser EmailJS avec votre clé publique
+        (function() {
+            try {
+                emailjs.init("wJtv5MrJPzvMuGSyL");
+                console.log("EmailJS initialisé avec succès");
+            } catch(error) {
+                console.error("Erreur initialisation EmailJS:", error);
+            }
+        })();
     </script>
     
     <style>
@@ -936,9 +943,14 @@
             btnSAV.innerHTML = '⏳ Envoi en cours...';
             btnSAV.disabled = true;
             
+            // Debug: afficher les paramètres
+            console.log("Envoi email avec:", {
+                service: 'service_6juwjvq',
+                template: 'template_51rhrbr',
+                params: templateParams
+            });
+            
             // Envoyer l'email via EmailJS
-            // REMPLACEZ 'service_6juwjvq' PAR VOTRE SERVICE ID
-            // REMPLACEZ 'VOTRE_TEMPLATE_ID' PAR VOTRE TEMPLATE ID
             emailjs.send('service_6juwjvq', 'template_51rhrbr', templateParams)
                 .then(function(response) {
                     alert('✅ Escalade SAV envoyée avec succès aux assistantes !');
