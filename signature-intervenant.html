@@ -24,7 +24,522 @@
             flex-direction: column;
             color: white;
             overflow: hidden;
-            position: fixed;
+            position: fixed;<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Signature Intervenant - SAV Audio</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#667eea">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: white;
+            overflow-x: hidden;
+            overflow-y: auto;
+            position: relative;
+            width: 100%;
+        }
+        
+        .header {
+            padding: 20px;
+            text-align: center;
+            background: rgba(0,0,0,0.2);
+            position: relative;
+        }
+        
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .back-button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .intervenant-info {
+            font-size: 20px;
+            opacity: 0.9;
+        }
+        
+        .signature-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .instruction {
+            font-size: 18px;
+            margin-bottom: 20px;
+            text-align: center;
+            opacity: 0.9;
+        }
+        
+        .certification {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            max-width: 600px;
+            text-align: center;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .canvas-wrapper {
+            background: white;
+            border-radius: 15px;
+            padding: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            position: relative;
+            width: 90%;
+            max-width: 800px;
+            max-height: 70vh;
+        }
+        
+        #signatureCanvas {
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            cursor: crosshair;
+            touch-action: none;
+            display: block;
+            width: 100%;
+            height: 100%;
+            background: white;
+        }
+        
+            /* Mode paysage */
+            @media (orientation: landscape) {
+                .header {
+                    padding: 10px 20px;
+                }
+                
+                .back-button {
+                    position: static;
+                    margin-bottom: 10px;
+                }
+                
+                .signature-container {
+                    padding: 10px;
+                }
+                
+                .canvas-wrapper {
+                    width: 70%;
+                    max-width: none;
+                    height: 50vh;
+                }
+                
+                .controls {
+                    padding: 20px 20px;
+                }
+                
+                .header h1 {
+                    font-size: 24px;
+                }
+                
+                .instruction {
+                    margin-bottom: 10px;
+                    font-size: 16px;
+                }
+                
+                .certification {
+                    margin-bottom: 10px;
+                    padding: 15px;
+                    font-size: 14px;
+                }
+            }
+        
+        .placeholder-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ccc;
+            font-size: 24px;
+            pointer-events: none;
+            font-style: italic;
+        }
+        
+        .placeholder-text.hidden {
+            display: none;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            padding: 20px;
+            flex-wrap: wrap;
+            background: rgba(0,0,0,0.2);
+            position: sticky;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+        
+        .btn {
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-clear {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+        }
+        
+        .btn-clear:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        
+        .btn-back {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+        }
+        
+        .btn-back:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        
+        .btn-finish {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-finish:hover {
+            background: #229954;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .btn-finish:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .progress {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .progress-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transition: all 0.3s;
+        }
+        
+        .progress-dot.active {
+            background: white;
+            transform: scale(1.2);
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                min-height: 100vh;
+                height: auto;
+            }
+            
+            .signature-container {
+                min-height: 350px;
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .intervenant-info {
+                font-size: 18px;
+            }
+            
+            .instruction {
+                font-size: 16px;
+            }
+            
+            .certification {
+                font-size: 14px;
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+            
+            .canvas-wrapper {
+                width: 95%;
+                height: 250px;
+            }
+            
+            #signatureCanvas {
+                height: 230px !important;
+            }
+            
+            .btn {
+                padding: 12px 30px;
+                font-size: 16px;
+            }
+            
+            .controls {
+                position: fixed;
+                bottom: 0;
+                padding: 15px;
+                background: rgba(0,0,0,0.3);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="signature-client.html" class="back-button">
+            ← Retour
+        </a>
+        
+        <div class="progress">
+            <div class="progress-dot"></div>
+            <div class="progress-dot active"></div>
+            <div class="progress-dot"></div>
+        </div>
+        
+        <h1>Signature de l'Intervenant</h1>
+        <div class="intervenant-info" id="intervenantName">Intervenant SAV</div>
+    </div>
+    
+    <div class="signature-container">
+        <p class="instruction">
+            Veuillez signer pour certifier l'intervention
+        </p>
+        
+        <div class="certification">
+            Je certifie avoir effectué les contrôles et interventions mentionnés 
+            dans cette fiche conformément aux procédures SAV Audio.
+        </div>
+        
+        <div class="canvas-wrapper">
+            <canvas id="signatureCanvas" width="800" height="300"></canvas>
+            <div class="placeholder-text" id="placeholder">Signez ici</div>
+        </div>
+    </div>
+    
+    <div class="controls">
+        // Retour
+        function goBack() {
+            if (confirm('Voulez-vous revenir à la signature client ?')) {
+                window.location.href = 'signature-client.html';
+            }
+        }
+        <button type="button" class="btn btn-clear" onclick="clearSignature()">
+            Effacer la signature
+        </button>
+        <button type="button" class="btn btn-finish" id="btnFinish" onclick="finish()" disabled>
+            ✅ Terminer
+        </button>
+    </div>
+    
+    <script>
+        let isDrawing = false;
+        let hasDrawn = false;
+        const canvas = document.getElementById('signatureCanvas');
+        const ctx = canvas.getContext('2d');
+        const placeholder = document.getElementById('placeholder');
+        const btnFinish = document.getElementById('btnFinish');
+        
+        // Charger les données
+        const interventionData = JSON.parse(localStorage.getItem('sav_intervention_data') || '{}');
+        const authData = JSON.parse(localStorage.getItem('sav_auth') || '{}');
+        
+        if (authData.magasin) {
+            document.getElementById('intervenantName').textContent = `Intervenant - ${authData.magasin}`;
+        }
+        
+        // Vérifier que la signature client existe
+        if (!interventionData.signatureClient) {
+            alert('Erreur : signature client manquante');
+            window.location.href = 'signature-client.html';
+        }
+        
+        // Ajuster la taille du canvas
+        function resizeCanvas() {
+            const wrapper = document.querySelector('.canvas-wrapper');
+            const rect = wrapper.getBoundingClientRect();
+            
+            // Adapter la hauteur selon l'orientation
+            let canvasHeight = 300;
+            if (window.innerWidth > window.innerHeight) {
+                // Mode paysage - même hauteur que la page client
+                canvasHeight = Math.min(rect.height - 20, window.innerHeight * 0.4);
+            }
+            
+            canvas.width = rect.width * 2;
+            canvas.height = canvasHeight * 2;
+            canvas.style.width = '100%';
+            canvas.style.height = canvasHeight + 'px';
+            
+            // Réinitialiser le contexte
+            ctx.scale(2, 2);
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+        }
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('orientationchange', resizeCanvas);
+        
+        // Coordonnées pour le dessin
+        let lastX = 0;
+        let lastY = 0;
+        
+        function getCoordinates(e) {
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches ? e.touches[0] : e;
+            return {
+                x: (touch.clientX - rect.left) * (canvas.width / rect.width / 2),
+                y: (touch.clientY - rect.top) * (canvas.height / rect.height / 2)
+            };
+        }
+        
+        function startDrawing(e) {
+            e.preventDefault();
+            isDrawing = true;
+            const coords = getCoordinates(e);
+            lastX = coords.x;
+            lastY = coords.y;
+            
+            if (!hasDrawn) {
+                hasDrawn = true;
+                placeholder.classList.add('hidden');
+                btnFinish.disabled = false;
+            }
+        }
+        
+        function draw(e) {
+            if (!isDrawing) return;
+            e.preventDefault();
+            
+            const coords = getCoordinates(e);
+            
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(coords.x, coords.y);
+            ctx.stroke();
+            
+            lastX = coords.x;
+            lastY = coords.y;
+        }
+        
+        function stopDrawing(e) {
+            e.preventDefault();
+            isDrawing = false;
+        }
+        
+        // Événements tactiles
+        canvas.addEventListener('touchstart', startDrawing, {passive: false});
+        canvas.addEventListener('touchmove', draw, {passive: false});
+        canvas.addEventListener('touchend', stopDrawing, {passive: false});
+        
+        // Événements souris
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+        
+        // Effacer la signature
+        function clearSignature() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            hasDrawn = false;
+            placeholder.classList.remove('hidden');
+            btnFinish.disabled = true;
+        }
+        
+        // Retour
+        function goBack() {
+            if (confirm('Voulez-vous revenir à la signature client ?')) {
+                window.location.href = 'signature-client.html';
+            }
+        }
+        
+        // Terminer et aller à l'impression
+        function finish() {
+            if (!hasDrawn) {
+                alert('Veuillez signer pour continuer');
+                return;
+            }
+            
+            // Confirmation avant de terminer
+            if (!confirm('Confirmer que toutes les signatures sont complètes ?')) {
+                return;
+            }
+            
+            // Sauvegarder la signature de l'intervenant
+            const signatureData = canvas.toDataURL();
+            interventionData.signatureIntervenant = signatureData;
+            localStorage.setItem('sav_intervention_data', JSON.stringify(interventionData));
+            
+            // Rediriger vers la page d'impression
+            window.location.href = 'fiche-impression.html';
+        }
+        
+        // Empêcher le scroll sur iOS
+        document.addEventListener('touchmove', function(e) {
+            if (e.target === canvas) {
+                e.preventDefault();
+            }
+        }, {passive: false});
+    </script>
+</body>
+</html>
             width: 100%;
             height: 100%;
         }
