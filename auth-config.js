@@ -3,7 +3,7 @@
 
 const MAGASINS = {
     "9AVA": {
-        code: "1234"
+        code: "0234"
     },
     "9BEA": {
         code: "5678"
