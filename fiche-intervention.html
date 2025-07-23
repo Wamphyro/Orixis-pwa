@@ -9,12 +9,12 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="SAV Audio">
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon-192.png">
+    <!-- <link rel="manifest" href="manifest.json"> -->
+    <!-- <link rel="apple-touch-icon" href="icon-192.png"> -->
     <meta name="theme-color" content="#667eea">
     
-    <!-- Script d'authentification -->
-    <script src="auth-check.js"></script>
+    <!-- Script d'authentification (commenté temporairement) -->
+    <!-- <script src="auth-check.js"></script> -->
     
     <!-- EmailJS -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
@@ -920,17 +920,7 @@
                     if (this.querySelector('input').checked) {
                         this.classList.add('selected');
                     }
-                // Surveiller le changement de résultat pour afficher/masquer le bouton SAV
-        document.getElementById('resultat').addEventListener('change', function() {
-            const btnSAV = document.getElementById('btnSAV');
-            if (this.value === 'SAV') {
-                btnSAV.style.display = 'inline-block';
-            } else {
-                btnSAV.style.display = 'none';
-            }
-        });
-
-        // Fonction d'envoi au SAV via EmailJS
+                // Fonction d'envoi au SAV via EmailJS
         function envoyerSAV() {
             if (!confirm('Confirmer l\'envoi de l\'escalade SAV aux assistantes ?')) {
                 return;
