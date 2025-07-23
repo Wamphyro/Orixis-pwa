@@ -10,17 +10,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="SAV Audio">
-    <!-- <link rel="manifest" href="manifest.json"> -->
-    <!-- <link rel="apple-touch-icon" href="icon-192.png"> -->
     <meta name="theme-color" content="#667eea">
-    
-    <!-- Script d'authentification (commenté temporairement) -->
-    <!-- <script src="auth-check.js"></script> -->
     
     <!-- EmailJS -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script>
-        // Initialiser EmailJS avec votre clé publique
         (function() {
             try {
                 emailjs.init("wJtv5MrJPzvMuGSyL");
@@ -140,7 +134,6 @@
             appearance: none;
         }
         
-        /* Fix spécifique pour les inputs date et time sur iOS */
         input[type="date"],
         input[type="time"] {
             display: block;
@@ -151,7 +144,6 @@
             position: relative;
         }
         
-        /* Pour iOS Safari - Zone de clic limitée au bouton calendrier */
         input[type="date"]::-webkit-calendar-picker-indicator,
         input[type="time"]::-webkit-calendar-picker-indicator {
             position: absolute;
@@ -248,6 +240,54 @@
             margin-bottom: 10px;
         }
         
+        /* Styles pour les signatures */
+        .signature-container {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .signature-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .signature-canvas {
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            background: white;
+            cursor: crosshair;
+            touch-action: none;
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .signature-controls {
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn-clear {
+            padding: 8px 20px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .btn-clear:hover {
+            background: #c0392b;
+        }
+        
         .action-buttons {
             display: flex;
             gap: 15px;
@@ -328,7 +368,6 @@
                 font-size: 18px;
             }
             
-            /* Grille pour date et heure sur mobile */
             .date-time-row {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
@@ -372,260 +411,6 @@
                 width: 100%;
                 padding: 15px 20px;
                 font-size: 16px;
-            }
-        }
-        
-        /* Styles pour impression optimisés iPhone/iPad */
-        @media print {
-            @page {
-                size: A4;
-                margin: 0;
-            }
-            
-            * {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-            
-            body {
-                margin: 0;
-                padding: 0;
-                background: white !important;
-                font-size: 12pt !important;
-                font-family: Arial, sans-serif !important;
-                color: black !important;
-            }
-            
-            .container {
-                width: 100% !important;
-                max-width: none !important;
-                margin: 0 !important;
-                padding: 10mm !important;
-                box-shadow: none !important;
-                border-radius: 0 !important;
-                background: white !important;
-            }
-            
-            /* Masquer éléments non nécessaires */
-            .no-print,
-            .back-button,
-            .action-buttons,
-            .overlay,
-            .success-message {
-                display: none !important;
-            }
-            
-            /* En-tête */
-            .header {
-                background: none !important;
-                border: 2px solid #000 !important;
-                color: #000 !important;
-                padding: 10px !important;
-                margin-bottom: 15px !important;
-                page-break-inside: avoid !important;
-                text-align: center !important;
-            }
-            
-            .header h1 {
-                font-size: 18pt !important;
-                color: #000 !important;
-                margin: 0 0 5px 0 !important;
-            }
-            
-            .header p {
-                font-size: 12pt !important;
-                color: #000 !important;
-                margin: 0 !important;
-            }
-            
-            /* Sections */
-            .section {
-                page-break-inside: avoid !important;
-                background: white !important;
-                border: 1px solid #000 !important;
-                padding: 8px !important;
-                margin-bottom: 10px !important;
-                border-radius: 0 !important;
-            }
-            
-            .section-title {
-                font-size: 14pt !important;
-                color: #000 !important;
-                margin: 0 0 8px 0 !important;
-                padding-bottom: 5px !important;
-                border-bottom: 2px solid #000 !important;
-                font-weight: bold !important;
-            }
-            
-            /* Formulaire */
-            .form-group {
-                margin-bottom: 8px !important;
-                page-break-inside: avoid !important;
-            }
-            
-            .form-group label {
-                font-size: 10pt !important;
-                font-weight: bold !important;
-                color: #000 !important;
-                margin-bottom: 2px !important;
-                display: block !important;
-            }
-            
-            /* Inputs */
-            input[type="text"],
-            input[type="tel"],
-            input[type="date"],
-            input[type="time"],
-            select,
-            textarea {
-                border: none !important;
-                border-bottom: 1px solid #000 !important;
-                padding: 2px !important;
-                margin: 0 !important;
-                border-radius: 0 !important;
-                background: transparent !important;
-                font-size: 11pt !important;
-                color: #000 !important;
-                width: 100% !important;
-                height: auto !important;
-                min-height: auto !important;
-                -webkit-appearance: none !important;
-            }
-            
-            /* Date et heure côte à côte */
-            .date-time-row {
-                display: flex !important;
-                gap: 20px !important;
-            }
-            
-            .date-time-row .form-group {
-                flex: 1 !important;
-            }
-            
-            /* Cases à cocher */
-            .checkbox-group {
-                display: grid !important;
-                grid-template-columns: repeat(2, 1fr) !important;
-                gap: 5px !important;
-                margin: 5px 0 !important;
-            }
-            
-            .checkbox-item {
-                display: flex !important;
-                align-items: center !important;
-                padding: 3px !important;
-                margin: 0 !important;
-                background: white !important;
-                border: 1px solid #000 !important;
-                border-radius: 0 !important;
-                page-break-inside: avoid !important;
-            }
-            
-            .checkbox-item input[type="checkbox"] {
-                width: 15px !important;
-                height: 15px !important;
-                margin: 0 5px 0 0 !important;
-                border: 1px solid #000 !important;
-            }
-            
-            .checkbox-item label {
-                font-size: 9pt !important;
-                color: #000 !important;
-                margin: 0 !important;
-                cursor: default !important;
-            }
-            
-            /* Sélection appareil */
-            .device-selection {
-                display: flex !important;
-                gap: 10px !important;
-                margin: 10px 0 !important;
-            }
-            
-            .device-card {
-                flex: 1 !important;
-                border: 2px solid #000 !important;
-                padding: 8px !important;
-                text-align: center !important;
-                background: white !important;
-                border-radius: 0 !important;
-            }
-            
-            .device-card.selected {
-                background: #ddd !important;
-            }
-            
-            .device-card .icon {
-                display: none !important;
-            }
-            
-            .device-card div {
-                font-size: 10pt !important;
-                color: #000 !important;
-            }
-            
-            /* Zone résultat */
-            select#resultat {
-                font-size: 11pt !important;
-            }
-            
-            /* Zone observations */
-            textarea {
-                min-height: 40px !important;
-                resize: none !important;
-            }
-            
-            /* Zone signature */
-            .signature-area {
-                display: block !important;
-                page-break-inside: avoid !important;
-                border: 1px solid #000 !important;
-                padding: 10px !important;
-                margin-top: 15px !important;
-                background: white !important;
-            }
-            
-            .signature-area .section-title {
-                font-size: 12pt !important;
-                margin-bottom: 10px !important;
-            }
-            
-            .signature-box {
-                border: 1px solid #000 !important;
-                height: 50px !important;
-                margin: 10px 0 !important;
-                position: relative !important;
-                background: white !important;
-            }
-            
-            .signature-label {
-                position: absolute !important;
-                top: -8px !important;
-                left: 10px !important;
-                background: white !important;
-                padding: 0 5px !important;
-                font-size: 9pt !important;
-                font-weight: normal !important;
-            }
-            
-            /* Informations magasin */
-            .print-header {
-                display: block !important;
-                text-align: right !important;
-                margin-bottom: 10px !important;
-                font-size: 10pt !important;
-                color: #000 !important;
-            }
-            
-            /* Footer */
-            .print-footer {
-                display: block !important;
-                text-align: center !important;
-                margin-top: 20px !important;
-                padding-top: 10px !important;
-                border-top: 1px solid #000 !important;
-                font-size: 9pt !important;
-                color: #666 !important;
             }
         }
         
@@ -675,29 +460,6 @@
         .overlay.show {
             display: block;
         }
-        
-        .signature-area {
-            display: none;
-            border: 2px solid #333;
-            padding: 20px;
-            margin: 20px 0;
-        }
-        
-        .signature-box {
-            border: 1px solid #333;
-            height: 80px;
-            margin: 10px 0;
-            position: relative;
-        }
-        
-        .signature-label {
-            position: absolute;
-            top: -10px;
-            left: 20px;
-            background: white;
-            padding: 0 10px;
-            font-weight: bold;
-        }
     </style>
 </head>
 <body>
@@ -710,11 +472,6 @@
             <p>Contrôle / Nettoyage / Maintenance Niveau 1</p>
         </div>
         <form id="interventionForm">
-            <!-- Info magasin pour impression -->
-            <div class="print-header" style="display: none;">
-                <strong>Magasin: <span id="print-magasin"></span></strong><br>
-                <span id="print-date"></span>
-            </div>
             <!-- Informations Client -->
             <div class="section">
                 <h2 class="section-title">📋 Informations Client</h2>
@@ -737,6 +494,7 @@
                     <input type="tel" id="telephone" name="telephone" required>
                 </div>
             </div>
+            
             <!-- Type d'appareil -->
             <div class="section">
                 <h2 class="section-title">🎧 Type d'Appareil</h2>
@@ -770,6 +528,7 @@
                     </select>
                 </div>
             </div>
+            
             <!-- Problème décrit -->
             <div class="section">
                 <h2 class="section-title">❓ Problème Décrit</h2>
@@ -808,6 +567,7 @@
                     </div>
                 </div>
             </div>
+            
             <!-- Actions réalisées -->
             <div class="section">
                 <h2 class="section-title">✅ Actions Réalisées</h2>
@@ -838,6 +598,7 @@
                     </div>
                 </div>
             </div>
+            
             <!-- Résultat -->
             <div class="section">
                 <h2 class="section-title">📊 Résultat de l'Intervention</h2>
@@ -851,6 +612,7 @@
                     </select>
                 </div>
             </div>
+            
             <!-- Observations -->
             <div class="section">
                 <h2 class="section-title">💬 Observations</h2>
@@ -858,106 +620,194 @@
                     <textarea id="observations" name="observations" rows="3" placeholder="Commentaires additionnels..."></textarea>
                 </div>
             </div>
-            <!-- Zone de signature pour impression -->
-            <div class="signature-area">
+            
+            <!-- Signatures -->
+            <div class="section">
                 <h2 class="section-title">✍️ Signatures</h2>
-                <div class="signature-box">
-                    <span class="signature-label">Signature Client</span>
+                
+                <!-- Signature Client -->
+                <div class="signature-container">
+                    <label class="signature-label">Signature du Client</label>
+                    <canvas id="signatureClient" class="signature-canvas" width="300" height="150"></canvas>
+                    <div class="signature-controls">
+                        <button type="button" class="btn-clear" onclick="clearSignature('signatureClient')">
+                            🗑️ Effacer
+                        </button>
+                    </div>
                 </div>
-                <div class="signature-box" style="margin-top: 30px;">
-                    <span class="signature-label">Nom et Signature Intervenant</span>
+                
+                <!-- Signature Intervenant -->
+                <div class="signature-container">
+                    <label class="signature-label">Signature de l'Intervenant</label>
+                    <canvas id="signatureIntervenant" class="signature-canvas" width="300" height="150"></canvas>
+                    <div class="signature-controls">
+                        <button type="button" class="btn-clear" onclick="clearSignature('signatureIntervenant')">
+                            🗑️ Effacer
+                        </button>
+                    </div>
                 </div>
             </div>
             
-            <!-- Footer pour impression -->
-            <div class="print-footer" style="display: none;">
-                Document généré le <span id="print-timestamp"></span> - SAV Audio © 2025
-            </div>
             <!-- Boutons d'action -->
             <div class="action-buttons no-print">
                 <button type="button" class="btn btn-secondary" onclick="resetForm()">
                     Effacer
                 </button>
                 <button type="submit" class="btn btn-primary">
-                    🖨️ Imprimer la fiche
+                    👁️ Voir l'aperçu
                 </button>
                 <!-- Bouton SAV caché par défaut -->
-                <button type="button" class="btn btn-warning" id="btnSAV" style="display: none; background-color: #f39c12 !important;" onclick="envoyerSAV()">
+                <button type="button" class="btn btn-warning" id="btnSAV" style="display: none;" onclick="envoyerSAV()">
                     📧 Envoyer au SAV
                 </button>
             </div>
         </form>
     </div>
+    
     <!-- Message de succès -->
     <div class="overlay" id="overlay"></div>
     <div class="success-message" id="successMessage">
         <div class="success-icon">✅</div>
-        <h2>Fiche prête à imprimer !</h2>
-        <p>L'impression va se lancer automatiquement...</p>
+        <h2>Fiche prête !</h2>
+        <p>Ouverture de l'aperçu...</p>
     </div>
+    
     <script>
-        // Fonction d'envoi au SAV via EmailJS - DOIT ÊTRE GLOBALE
+        // Variables pour les signatures
+        let isDrawing = false;
+        let signaturePads = {};
+        
+        // Initialisation des canvas de signature
+        function initSignaturePads() {
+            ['signatureClient', 'signatureIntervenant'].forEach(canvasId => {
+                const canvas = document.getElementById(canvasId);
+                const ctx = canvas.getContext('2d');
+                
+                // Ajuster la taille du canvas pour la résolution
+                const rect = canvas.getBoundingClientRect();
+                canvas.width = rect.width * 2;
+                canvas.height = rect.height * 2;
+                canvas.style.width = rect.width + 'px';
+                canvas.style.height = rect.height + 'px';
+                ctx.scale(2, 2);
+                
+                // Style du trait
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                
+                signaturePads[canvasId] = {
+                    canvas: canvas,
+                    ctx: ctx,
+                    lastX: 0,
+                    lastY: 0
+                };
+                
+                // Événements pour dessiner
+                canvas.addEventListener('touchstart', handleStart, {passive: false});
+                canvas.addEventListener('touchmove', handleMove, {passive: false});
+                canvas.addEventListener('touchend', handleEnd, {passive: false});
+                canvas.addEventListener('mousedown', handleStart);
+                canvas.addEventListener('mousemove', handleMove);
+                canvas.addEventListener('mouseup', handleEnd);
+                canvas.addEventListener('mouseout', handleEnd);
+            });
+        }
+        
+        function handleStart(e) {
+            e.preventDefault();
+            const canvasId = e.target.id;
+            const pad = signaturePads[canvasId];
+            const rect = pad.canvas.getBoundingClientRect();
+            
+            isDrawing = true;
+            const touch = e.touches ? e.touches[0] : e;
+            pad.lastX = (touch.clientX - rect.left) * (pad.canvas.width / rect.width / 2);
+            pad.lastY = (touch.clientY - rect.top) * (pad.canvas.height / rect.height / 2);
+        }
+        
+        function handleMove(e) {
+            if (!isDrawing) return;
+            e.preventDefault();
+            
+            const canvasId = e.target.id;
+            const pad = signaturePads[canvasId];
+            const rect = pad.canvas.getBoundingClientRect();
+            const touch = e.touches ? e.touches[0] : e;
+            
+            const currentX = (touch.clientX - rect.left) * (pad.canvas.width / rect.width / 2);
+            const currentY = (touch.clientY - rect.top) * (pad.canvas.height / rect.height / 2);
+            
+            pad.ctx.beginPath();
+            pad.ctx.moveTo(pad.lastX, pad.lastY);
+            pad.ctx.lineTo(currentX, currentY);
+            pad.ctx.stroke();
+            
+            pad.lastX = currentX;
+            pad.lastY = currentY;
+        }
+        
+        function handleEnd(e) {
+            e.preventDefault();
+            isDrawing = false;
+        }
+        
+        function clearSignature(canvasId) {
+            const pad = signaturePads[canvasId];
+            pad.ctx.clearRect(0, 0, pad.canvas.width, pad.canvas.height);
+        }
+        
+        function isSignatureEmpty(canvasId) {
+            const pad = signaturePads[canvasId];
+            const imageData = pad.ctx.getImageData(0, 0, pad.canvas.width, pad.canvas.height);
+            const data = imageData.data;
+            
+            for (let i = 0; i < data.length; i += 4) {
+                if (data[i + 3] > 0) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        
+        // Fonction d'envoi au SAV
         function envoyerSAV() {
             if (!confirm('Confirmer l\'envoi de l\'escalade SAV aux assistantes ?')) {
                 return;
             }
             
-            // Récupérer toutes les données
             const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
             const date = new Date();
             
-            // Préparer les paramètres pour l'email
             const templateParams = {
-                // Infos magasin
                 magasin: auth.magasin || 'Non spécifié',
                 date: date.toLocaleDateString('fr-FR'),
                 heure: date.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'}),
-                
-                // Infos client
                 nom_client: document.getElementById('nom').value,
                 telephone: document.getElementById('telephone').value,
-                
-                // Infos appareil
                 type_appareil: document.querySelector('input[name="type_appareil"]:checked')?.value || 'Non spécifié',
                 marque: document.getElementById('marque').value,
-                
-                // Problèmes (récupérer les labels des cases cochées)
                 probleme: Array.from(document.querySelectorAll('input[name="probleme"]:checked'))
                     .map(cb => cb.parentElement.querySelector('label').textContent.trim())
                     .join(', ') || 'Non spécifié',
-                
-                // Actions (récupérer les labels des cases cochées)
                 actions: Array.from(document.querySelectorAll('input[name="actions"]:checked'))
                     .map(cb => cb.parentElement.querySelector('label').textContent.trim())
                     .join(', ') || 'Aucune action',
-                
-                // Résultat
                 resultat: document.getElementById('resultat').options[document.getElementById('resultat').selectedIndex].text,
-                
-                // Observations
                 observations: document.getElementById('observations').value || 'Aucune observation'
             };
             
-            // Afficher le chargement
             const btnSAV = document.getElementById('btnSAV');
             const btnText = btnSAV.innerHTML;
             btnSAV.innerHTML = '⏳ Envoi en cours...';
             btnSAV.disabled = true;
             
-            // Debug: afficher les paramètres
-            console.log("Envoi email avec:", {
-                service: 'service_6juwjvq',
-                template: 'template_51rhrbr',
-                params: templateParams
-            });
-            
-            // Envoyer l'email via EmailJS
             emailjs.send('service_6juwjvq', 'template_51rhrbr', templateParams)
                 .then(function(response) {
                     alert('✅ Escalade SAV envoyée avec succès aux assistantes !');
                     console.log('Email envoyé avec succès', response);
                     
-                    // Optionnel : proposer de réinitialiser le formulaire
                     if (confirm('Voulez-vous créer une nouvelle fiche ?')) {
                         resetForm();
                     }
@@ -979,45 +829,40 @@
                     alert(errorMessage);
                 })
                 .finally(function() {
-                    // Restaurer le bouton
                     btnSAV.innerHTML = btnText;
                     btnSAV.disabled = false;
                 });
         }
         
-        // Fonction de réinitialisation - DOIT ÊTRE GLOBALE
+        // Fonction de réinitialisation
         function resetForm() {
             if (confirm('Êtes-vous sûr de vouloir effacer tous les champs ?')) {
                 document.getElementById('interventionForm').reset();
                 
-                // Réinitialiser date et heure
                 const now = new Date();
                 document.getElementById('date').value = now.toISOString().split('T')[0];
                 document.getElementById('heure').value = now.toTimeString().slice(0, 5);
                 
-                // Réinitialiser la sélection des appareils
                 document.querySelectorAll('.device-card').forEach(card => {
                     card.classList.remove('selected');
                 });
                 
-                // Masquer le bouton SAV
+                // Effacer les signatures
+                clearSignature('signatureClient');
+                clearSignature('signatureIntervenant');
+                
                 document.getElementById('btnSAV').style.display = 'none';
             }
         }
         
         // Initialisation
         document.addEventListener('DOMContentLoaded', function() {
-            // Date et heure actuelles
             const now = new Date();
             document.getElementById('date').value = now.toISOString().split('T')[0];
             document.getElementById('heure').value = now.toTimeString().slice(0, 5);
             
-            // Récupérer le magasin connecté
-            const auth = localStorage.getItem('sav_auth');
-            if (auth) {
-                const authData = JSON.parse(auth);
-                // On pourrait ajouter le magasin automatiquement dans le formulaire
-            }
+            // Initialiser les signatures
+            initSignaturePads();
             
             // Gestion de la sélection des appareils
             const deviceCards = document.querySelectorAll('.device-card');
@@ -1029,7 +874,6 @@
                     }
                 });
                 
-                // Pour les changements via keyboard
                 const input = card.querySelector('input');
                 input.addEventListener('change', function() {
                     deviceCards.forEach(c => c.classList.remove('selected'));
@@ -1039,7 +883,7 @@
                 });
             });
             
-            // AJOUT : Écouteur sur le select résultat pour afficher/masquer le bouton SAV
+            // Afficher/masquer le bouton SAV
             document.getElementById('resultat').addEventListener('change', function() {
                 const btnSAV = document.getElementById('btnSAV');
                 if (this.value === 'SAV') {
@@ -1054,13 +898,23 @@
         document.getElementById('interventionForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            // Validation
             if (!this.checkValidity()) {
                 this.reportValidity();
                 return;
             }
             
-            // Collecter toutes les données du formulaire
+            // Vérifier les signatures
+            if (isSignatureEmpty('signatureClient')) {
+                alert('Veuillez faire signer le client');
+                return;
+            }
+            
+            if (isSignatureEmpty('signatureIntervenant')) {
+                alert('Veuillez signer en tant qu\'intervenant');
+                return;
+            }
+            
+            // Collecter les données incluant les signatures
             const formData = {
                 date: document.getElementById('date').value,
                 heure: document.getElementById('heure').value,
@@ -1071,7 +925,9 @@
                 problemes: Array.from(document.querySelectorAll('input[name="probleme"]:checked')).map(cb => cb.value),
                 actions: Array.from(document.querySelectorAll('input[name="actions"]:checked')).map(cb => cb.value),
                 resultat: document.getElementById('resultat').value,
-                observations: document.getElementById('observations').value
+                observations: document.getElementById('observations').value,
+                signatureClient: signaturePads['signatureClient'].canvas.toDataURL(),
+                signatureIntervenant: signaturePads['signatureIntervenant'].canvas.toDataURL()
             };
             
             // Sauvegarder dans localStorage
@@ -1083,22 +939,13 @@
             
             // Ouvrir la page d'impression après un court délai
             setTimeout(() => {
-                // Ouvrir dans un nouvel onglet avec auto-impression
-                window.open('fiche-impression.html?autoprint=true', '_blank');
+                // Ouvrir dans un nouvel onglet SANS auto-impression
+                window.open('fiche-impression.html', '_blank');
                 
-                // Masquer le message
+                // Masquer le message et l'overlay
                 document.getElementById('overlay').classList.remove('show');
                 document.getElementById('successMessage').classList.remove('show');
-                
-                // Demander si on veut réinitialiser
-                setTimeout(() => {
-                    if (confirm('Voulez-vous créer une nouvelle fiche ?')) {
-                        resetForm();
-                        // Effacer les données stockées
-                        localStorage.removeItem('sav_intervention_data');
-                    }
-                }, 1000);
-            }, 1500);
+            }, 1000);
         });
         
         // Empêcher la fermeture accidentelle avec données
