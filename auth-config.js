@@ -2,6 +2,9 @@
 // CODES D'ACCÈS POUR CHAQUE MAGASIN
 
 const MAGASINS = {
+    "ADMIN": {
+        code: "1988"
+    },
     "9AVA": {
         code: "0234"
     },
