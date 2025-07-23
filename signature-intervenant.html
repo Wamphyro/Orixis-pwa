@@ -169,12 +169,23 @@
         }
         
         .btn-clear {
+            background: #e74c3c;
+            color: white;
+            border: 2px solid #c0392b;
+        }
+        
+        .btn-clear:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+        
+        .btn-back {
             background: rgba(255,255,255,0.2);
             color: white;
             border: 2px solid white;
         }
         
-        .btn-clear:hover {
+        .btn-back:hover {
             background: rgba(255,255,255,0.3);
             transform: translateY(-2px);
         }
@@ -299,6 +310,9 @@
     </div>
     
     <div class="controls">
+        <button type="button" class="btn btn-back" onclick="goBack()">
+            ← Retour
+        </button>
         <button type="button" class="btn btn-clear" onclick="clearSignature()">
             🗑️ Effacer
         </button>
@@ -422,6 +436,13 @@
             hasDrawn = false;
             placeholder.classList.remove('hidden');
             btnFinish.disabled = true;
+        }
+        
+        // Retour à la page précédente
+        function goBack() {
+            if (confirm('Voulez-vous revenir à la signature client ? Les modifications non sauvegardées seront perdues.')) {
+                window.location.href = 'signature-client.html';
+            }
         }
         
         // Terminer et aller à l'impression
