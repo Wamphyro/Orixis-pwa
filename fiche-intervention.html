@@ -16,6 +16,13 @@
     <!-- Script d'authentification -->
     <script src="auth-check.js"></script>
     
+    <!-- EmailJS -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script>
+        // Initialiser EmailJS - REMPLACEZ PAR VOTRE CLÉ !
+        emailjs.init("VOTRE_PUBLIC_KEY_ICI");
+    </script>
+    
     <style>
         * {
             margin: 0;
@@ -269,8 +276,15 @@
             color: white;
         }
         
-        .btn-secondary:hover {
-            background: #5a6268;
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #e67e22;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(243, 156, 18, 0.4);
         }
         
         /* Responsive pour mobile */
@@ -865,7 +879,11 @@
                     Effacer
                 </button>
                 <button type="submit" class="btn btn-primary">
-                    Imprimer la fiche
+                    🖨️ Imprimer la fiche
+                </button>
+                <!-- Bouton SAV caché par défaut -->
+                <button type="button" class="btn btn-warning" id="btnSAV" style="display: none;" onclick="envoyerSAV()">
+                    📧 Envoyer au SAV
                 </button>
             </div>
         </form>
@@ -902,7 +920,87 @@
                     if (this.querySelector('input').checked) {
                         this.classList.add('selected');
                     }
+                // Surveiller le changement de résultat pour afficher/masquer le bouton SAV
+        document.getElementById('resultat').addEventListener('change', function() {
+            const btnSAV = document.getElementById('btnSAV');
+            if (this.value === 'SAV') {
+                btnSAV.style.display = 'inline-block';
+            } else {
+                btnSAV.style.display = 'none';
+            }
+        });
+
+        // Fonction d'envoi au SAV via EmailJS
+        function envoyerSAV() {
+            if (!confirm('Confirmer l\'envoi de l\'escalade SAV aux assistantes ?')) {
+                return;
+            }
+            
+            // Récupérer toutes les données
+            const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
+            const date = new Date();
+            
+            // Préparer les paramètres pour l'email
+            const templateParams = {
+                // Infos magasin
+                magasin: auth.magasin || 'Non spécifié',
+                date: date.toLocaleDateString('fr-FR'),
+                heure: date.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'}),
+                
+                // Infos client
+                nom_client: document.getElementById('nom').value,
+                telephone: document.getElementById('telephone').value,
+                
+                // Infos appareil
+                type_appareil: document.querySelector('input[name="type_appareil"]:checked')?.value || 'Non spécifié',
+                marque: document.getElementById('marque').value,
+                
+                // Problèmes (récupérer les labels des cases cochées)
+                probleme: Array.from(document.querySelectorAll('input[name="probleme"]:checked'))
+                    .map(cb => cb.parentElement.querySelector('label').textContent.trim())
+                    .join(', ') || 'Non spécifié',
+                
+                // Actions (récupérer les labels des cases cochées)
+                actions: Array.from(document.querySelectorAll('input[name="actions"]:checked'))
+                    .map(cb => cb.parentElement.querySelector('label').textContent.trim())
+                    .join(', ') || 'Aucune action',
+                
+                // Résultat
+                resultat: document.getElementById('resultat').options[document.getElementById('resultat').selectedIndex].text,
+                
+                // Observations
+                observations: document.getElementById('observations').value || 'Aucune observation'
+            };
+            
+            // Afficher le chargement
+            const btnSAV = document.getElementById('btnSAV');
+            const btnText = btnSAV.innerHTML;
+            btnSAV.innerHTML = '⏳ Envoi en cours...';
+            btnSAV.disabled = true;
+            
+            // Envoyer l'email via EmailJS
+            // REMPLACEZ 'service_6juwjvq' PAR VOTRE SERVICE ID
+            // REMPLACEZ 'VOTRE_TEMPLATE_ID' PAR VOTRE TEMPLATE ID
+            emailjs.send('service_6juwjvq', 'VOTRE_TEMPLATE_ID', templateParams)
+                .then(function(response) {
+                    alert('✅ Escalade SAV envoyée avec succès aux assistantes !');
+                    console.log('Email envoyé avec succès', response);
+                    
+                    // Optionnel : proposer de réinitialiser le formulaire
+                    if (confirm('Voulez-vous créer une nouvelle fiche ?')) {
+                        resetForm();
+                    }
+                })
+                .catch(function(error) {
+                    alert('❌ Erreur lors de l\'envoi : ' + (error.text || error));
+                    console.error('Erreur EmailJS:', error);
+                })
+                .finally(function() {
+                    // Restaurer le bouton
+                    btnSAV.innerHTML = btnText;
+                    btnSAV.disabled = false;
                 });
+        }
                 
                 // Pour les changements via keyboard
                 const input = card.querySelector('input');
