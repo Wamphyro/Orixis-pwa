@@ -925,56 +925,45 @@
                 return;
             }
             
+            // Collecter toutes les données du formulaire
+            const formData = {
+                date: document.getElementById('date').value,
+                heure: document.getElementById('heure').value,
+                nom: document.getElementById('nom').value,
+                telephone: document.getElementById('telephone').value,
+                type_appareil: document.querySelector('input[name="type_appareil"]:checked')?.value || '',
+                marque: document.getElementById('marque').value,
+                problemes: Array.from(document.querySelectorAll('input[name="probleme"]:checked')).map(cb => cb.value),
+                actions: Array.from(document.querySelectorAll('input[name="actions"]:checked')).map(cb => cb.value),
+                resultat: document.getElementById('resultat').value,
+                observations: document.getElementById('observations').value
+            };
+            
+            // Sauvegarder dans localStorage
+            localStorage.setItem('sav_intervention_data', JSON.stringify(formData));
+            
             // Afficher le message de succès
             document.getElementById('overlay').classList.add('show');
             document.getElementById('successMessage').classList.add('show');
             
-            // Préparer l'impression
+            // Ouvrir la page d'impression après un court délai
             setTimeout(() => {
-                // Masquer l'overlay pour l'impression
+                // Ouvrir dans un nouvel onglet avec auto-impression
+                window.open('fiche-impression.html?autoprint=true', '_blank');
+                
+                // Masquer le message
                 document.getElementById('overlay').classList.remove('show');
                 document.getElementById('successMessage').classList.remove('show');
                 
-                // Préparer les infos d'impression
-                const auth = localStorage.getItem('sav_auth');
-                if (auth) {
-                    const authData = JSON.parse(auth);
-                    document.getElementById('print-magasin').textContent = authData.magasin;
-                }
-                
-                const now = new Date();
-                document.getElementById('print-date').textContent = now.toLocaleDateString('fr-FR', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                });
-                
-                document.getElementById('print-timestamp').textContent = now.toLocaleString('fr-FR');
-                
-                // Afficher les zones d'impression
-                document.querySelector('.signature-area').style.display = 'block';
-                document.querySelector('.print-header').style.display = 'block';
-                document.querySelector('.print-footer').style.display = 'block';
-                
-                // Forcer le rendu avant impression
-                window.setTimeout(() => {
-                    // Lancer l'impression
-                    window.print();
-                    
-                    // Après l'impression, réafficher le message et réinitialiser
-                    setTimeout(() => {
-                        document.querySelector('.signature-area').style.display = 'none';
-                        document.querySelector('.print-header').style.display = 'none';
-                        document.querySelector('.print-footer').style.display = 'none';
-                        
-                        // Demander si on veut réinitialiser
-                        if (confirm('Impression terminée. Voulez-vous créer une nouvelle fiche ?')) {
-                            resetForm();
-                        }
-                    }, 100);
-                }, 100);
-            }, 1000);
+                // Demander si on veut réinitialiser
+                setTimeout(() => {
+                    if (confirm('Voulez-vous créer une nouvelle fiche ?')) {
+                        resetForm();
+                        // Effacer les données stockées
+                        localStorage.removeItem('sav_intervention_data');
+                    }
+                }, 1000);
+            }, 1500);
         });
 
         // Fonction de réinitialisation
