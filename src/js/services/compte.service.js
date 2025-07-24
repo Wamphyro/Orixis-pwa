@@ -123,7 +123,7 @@ export class CompteService {
             <div class="user-card" id="card-${user.id}">
                 <div class="card-header">
                     <div class="user-avatar">
-                        👤
+                        <i class="fas fa-user"></i>
                     </div>
                     <div class="user-main-info">
                         <h3>
@@ -164,7 +164,7 @@ export class CompteService {
                 
                 <div class="card-actions">
                     <button class="btn-action btn-pin" onclick="changePin('${user.id}')">
-                        🔐 Changer le code
+                        🔐 Changer
                     </button>
                     ${canEdit ? `
                         <button class="btn-action btn-edit" onclick="editUser('${user.id}')">
