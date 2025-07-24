@@ -173,11 +173,9 @@
         </div>
     </div>
 
-
-    
     <script type="module">
         // Import Firebase Auth Service
-        import { initFirebase, chargerMagasins, chargerUtilisateurs, verifierCodePin, verifierCodePinUtilisateur } from './src/js/services/firebase-auth.js';
+        import { initFirebase, chargerMagasins, chargerUtilisateurs, verifierCodePin, verifierCodePinUtilisateur, getUtilisateurDetails } from './src/js/services/firebase-auth.js';
         
         // Variables globales
         let pinCode = '';
@@ -185,6 +183,7 @@
         const MAX_ATTEMPTS = 3;
         let magasinsData = {};
         let useFirebase = true;
+        let collaborateursData = []; // Stocker les collaborateurs chargés
         
         // Fonctions globales pour le numpad (doivent être dans window pour onclick)
         window.addDigit = function(digit) {
@@ -280,16 +279,18 @@
             const select = document.getElementById('magasin');
             select.innerHTML = '<option value="">-- Choisir un magasin --</option>';
             
-            // Utiliser les données locales de MAGASINS
-            const magasinsSorted = Object.entries(MAGASINS)
-                .sort((a, b) => a[0].localeCompare(b[0]));
-            
-            magasinsSorted.forEach(([code, info]) => {
-                const option = document.createElement('option');
-                option.value = code;
-                option.textContent = code;
-                select.appendChild(option);
-            });
+            // Utiliser les données locales de MAGASINS (si définies)
+            if (typeof MAGASINS !== 'undefined') {
+                const magasinsSorted = Object.entries(MAGASINS)
+                    .sort((a, b) => a[0].localeCompare(b[0]));
+                
+                magasinsSorted.forEach(([code, info]) => {
+                    const option = document.createElement('option');
+                    option.value = code;
+                    option.textContent = code;
+                    select.appendChild(option);
+                });
+            }
         }
         
         // Quand un magasin est sélectionné
@@ -301,33 +302,28 @@
             // Reset collaborateur
             collaborateurSelect.innerHTML = '<option value="">-- Choisir un collaborateur --</option>';
             collaborateurSelect.disabled = true;
+            collaborateursData = []; // Reset les données
             
             if (magasinCode) {
-                let collaborateurs = [];
-                
                 if (useFirebase) {
                     // Charger depuis Firebase
                     try {
                         showLoading(true);
-                        collaborateurs = await chargerUtilisateurs(magasinCode);
+                        collaborateursData = await chargerUtilisateurs(magasinCode);
                     } catch (error) {
                         console.error('Erreur chargement collaborateurs:', error);
                     } finally {
                         showLoading(false);
                     }
-                } else {
-                    // Utiliser les données locales
-                    // Plus de données locales, Firebase only
-                    collaborateurs = [];
                 }
                 
-                if (collaborateurs.length > 0) {
+                if (collaborateursData.length > 0) {
                     // Afficher le container
                     collaborateurContainer.classList.add('visible');
                     collaborateurSelect.disabled = false;
                     
                     // Ajouter les collaborateurs
-                    collaborateurs.forEach(collab => {
+                    collaborateursData.forEach(collab => {
                         const option = document.createElement('option');
                         option.value = collab.id;
                         option.textContent = `${collab.prenom} ${collab.nom}`;
@@ -408,8 +404,10 @@
                 } catch (error) {
                     console.error('Erreur vérification magasin:', error);
                     // Fallback sur les données locales
-                    const magasin = MAGASINS[magasinCode];
-                    isValid = magasin && magasin.code === pinCode;
+                    if (typeof MAGASINS !== 'undefined') {
+                        const magasin = MAGASINS[magasinCode];
+                        isValid = magasin && magasin.code === pinCode;
+                    }
                 } finally {
                     showLoading(false);
                 }
@@ -419,18 +417,45 @@
                 // Connexion réussie
                 successMsg.style.display = 'block';
                 
-                // Récupérer les infos du collaborateur si sélectionné
+                // Récupérer les infos complètes du collaborateur
                 let collaborateurInfo = null;
                 if (collaborateurId) {
-                    const select = document.getElementById('collaborateur');
-                    const option = select.querySelector(`option[value="${collaborateurId}"]`);
-                    if (option) {
-                        const [prenom, ...nomParts] = option.textContent.split(' ');
+                    // D'abord essayer de trouver dans les données déjà chargées
+                    const collabData = collaborateursData.find(c => c.id === collaborateurId);
+                    if (collabData) {
                         collaborateurInfo = {
                             id: collaborateurId,
-                            prenom: prenom,
-                            nom: nomParts.join(' ')
+                            prenom: collabData.prenom,
+                            nom: collabData.nom,
+                            role: collabData.role || 'technicien'
                         };
+                    }
+                    
+                    // Si on utilise Firebase, récupérer les détails complets (permissions, etc.)
+                    if (useFirebase) {
+                        try {
+                            const userDetails = await getUtilisateurDetails(collaborateurId);
+                            if (userDetails) {
+                                // Sauvegarder les permissions
+                                localStorage.setItem('sav_user_permissions', JSON.stringify({
+                                    id: userDetails.id,
+                                    nom: userDetails.nom,
+                                    prenom: userDetails.prenom,
+                                    role: userDetails.role || 'technicien',
+                                    pagesInterdites: userDetails.pagesInterdites || []
+                                }));
+                                
+                                // Mettre à jour collaborateurInfo avec toutes les données
+                                collaborateurInfo = {
+                                    id: userDetails.id,
+                                    prenom: userDetails.prenom,
+                                    nom: userDetails.nom,
+                                    role: userDetails.role || 'technicien'
+                                };
+                            }
+                        } catch (error) {
+                            console.error('Erreur récupération détails utilisateur:', error);
+                        }
                     }
                 }
                 
