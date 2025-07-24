@@ -127,10 +127,10 @@ export class CompteService {
                     </div>
                     <div class="user-main-info">
                         <h3>
-                            <span class="editable" data-field="prenom">${user.prenom}</span>
-                            <span class="editable" data-field="nom">${user.nom}</span>
+                            <span class="editable" data-field="prenom" data-user="${user.id}">${user.prenom}</span>
+                            <span class="editable" data-field="nom" data-user="${user.id}">${user.nom}</span>
                         </h3>
-                        <span class="role-badge ${roleColors[user.role] || ''}" title="Niveau ${roleData.niveau || 0}">
+                        <span class="role-badge ${roleColors[user.role] || ''}" title="Niveau ${roleData.niveau || 0}" data-user="${user.id}">
                             ${roleData.label}
                         </span>
                     </div>
@@ -139,7 +139,7 @@ export class CompteService {
                 <div class="card-body">
                     <div class="info-row">
                         <span class="info-label">📍 Magasins</span>
-                        <span class="info-value">${magasins.length > 0 ? magasins.join(', ') : 'Non assigné'}</span>
+                        <span class="info-value editable-magasins" data-user="${user.id}">${magasins.length > 0 ? magasins.join(', ') : 'Non assigné'}</span>
                     </div>
                     
                     <div class="info-row">
@@ -153,6 +153,13 @@ export class CompteService {
                             <span class="info-value">${user.id}</span>
                         </div>
                     ` : ''}
+                    
+                    <!-- Sélecteur de rôle caché pour la modification -->
+                    <div class="role-selector" style="display: none;">
+                        <select class="role-select" data-user="${user.id}">
+                            ${this.generateRoleOptions(user.role)}
+                        </select>
+                    </div>
                 </div>
                 
                 <div class="card-actions">
@@ -175,5 +182,16 @@ export class CompteService {
                 </div>
             </div>
         `;
+    }
+    
+    static generateRoleOptions(currentRole) {
+        if (!this.rolesData) return '';
+        
+        const sortedRoles = Object.entries(this.rolesData)
+            .sort((a, b) => b[1].niveau - a[1].niveau);
+        
+        return sortedRoles.map(([roleId, roleData]) => 
+            `<option value="${roleId}" ${roleId === currentRole ? 'selected' : ''}>${roleData.label}</option>`
+        ).join('');
     }
 }
