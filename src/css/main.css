@@ -1,0 +1,16 @@
+/* Fichier principal qui importe tous les autres CSS */
+
+/* Base styles */
+@import 'base.css';
+
+/* Components */
+@import 'components.css';
+
+/* Layouts */
+@import 'layouts.css';
+
+/* Animations */
+@import 'animations.css';
+
+/* Responsive */
+@import 'responsive.css';
