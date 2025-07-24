@@ -6,11 +6,11 @@
     <title>SAV Audio - Accueil</title>
     
     <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="SAV Audio">
     <link rel="manifest" href="../manifest.json">
-    <link rel="apple-touch-icon" href="../assets/images/icon-192.png">
     <meta name="theme-color" content="#667eea">
     
     <!-- CSS -->
@@ -88,11 +88,6 @@
                 window.location.href = '../index.html';
             }
         });
-        
-        // Service Worker pour PWA
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('../sw.js');
-        }
         
         // Fonction de déconnexion
         function logout() {
