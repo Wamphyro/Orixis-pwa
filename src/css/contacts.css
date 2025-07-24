@@ -231,114 +231,269 @@
 }
 
 /* ========================================
-   MODAL DE CONTACT - STYLES SPÉCIFIQUES
+   MODAL DE CONTACT AMÉLIORÉ
    ======================================== */
 
-/* Override les styles globaux de .form-row pour le modal */
-.modal-body .form-row {
-    display: block; /* Annule le grid de main.css */
-    grid-template-columns: none; /* Reset */
-    gap: 0; /* Reset */
-    margin-bottom: 28px;
+/* Overlay avec effet de flou */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
 }
 
-/* Labels dans le modal */
-.modal-body .form-row label {
+.modal-overlay.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+/* Content avec design moderne et PLUS LARGE */
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 700px; /* Augmenté de 550px à 700px */
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUpFade 0.4s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header moderne */
+.modal-header {
+    padding: 30px 35px; /* Plus d'espace horizontal */
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.modal-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: shimmer 3s infinite;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: white;
+    font-size: 1.75rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    z-index: 1;
+}
+
+.modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    color: white;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 1;
+}
+
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg) scale(1.1);
+}
+
+/* Body avec meilleur espacement */
+.modal-body {
+    padding: 35px 40px; /* Plus d'espace */
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* Messages améliorés */
+.success-message,
+.error-message {
+    padding: 16px 20px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    display: none;
+    animation: slideDown 0.3s ease;
+    position: relative;
+    padding-left: 50px;
+}
+
+.success-message::before,
+.error-message::before {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+}
+
+.success-message {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.success-message::before {
+    content: '✅';
+}
+
+.error-message {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.error-message::before {
+    content: '❌';
+}
+
+.success-message.show,
+.error-message.show {
     display: block;
-    margin-bottom: 10px;
+}
+
+/* Info destinataire moderne */
+.recipient-info {
+    background: linear-gradient(135deg, #f0f4ff 0%, #e8efff 100%);
+    padding: 20px 25px;
+    border-radius: 16px;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border: 1px solid #e0e7ff;
+}
+
+.recipient-avatar {
+    font-size: 2.5rem;
+    width: 60px;
+    height: 60px;
+    background: white;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.recipient-details h3 {
+    margin: 0 0 4px 0;
+    color: #1e293b;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.recipient-details p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+/* Formulaire moderne avec LABELS AU-DESSUS */
+.form-row {
+    margin-bottom: 28px; /* Plus d'espace entre les champs */
+}
+
+.form-row label {
+    display: block;
+    margin-bottom: 10px; /* Plus d'espace entre label et input */
     color: #334155;
     font-weight: 600;
     font-size: 1rem;
     letter-spacing: 0.025em;
 }
 
-/* Inputs/Select/Textarea dans le modal */
-.modal-body .form-row select,
-.modal-body .form-row input,
-.modal-body .form-row textarea {
+.form-row select,
+.form-row input,
+.form-row textarea {
     width: 100%;
-    padding: 16px 18px;
+    padding: 16px 18px; /* Plus de padding */
     border: 2px solid #e2e8f0;
     border-radius: 12px;
     font-size: 16px;
     transition: all 0.3s ease;
     font-family: inherit;
     background: #f8fafc;
-    display: block;
-    margin: 0; /* Reset any margin */
+    display: block; /* Force le display block */
 }
 
-.modal-body .form-row select:hover,
-.modal-body .form-row input:hover,
-.modal-body .form-row textarea:hover {
+.form-row select:hover,
+.form-row input:hover,
+.form-row textarea:hover {
     border-color: #cbd5e1;
     background: white;
 }
 
-.modal-body .form-row select:focus,
-.modal-body .form-row input:focus,
-.modal-body .form-row textarea:focus {
+.form-row select:focus,
+.form-row input:focus,
+.form-row textarea:focus {
     outline: none;
     border-color: #667eea;
     background: white;
     box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
 }
 
-.modal-body .form-row textarea {
-    min-height: 140px;
+.form-row textarea {
+    min-height: 140px; /* Un peu plus haut */
     resize: vertical;
 }
 
-/* Gestion spécifique du champ "Autre" */
-.modal-body .subject-other-input {
-    display: none; /* Caché par défaut */
-    margin-bottom: 28px;
+/* Subject other input amélioré */
+.subject-other-input {
+    display: none;
+    animation: slideDown 0.3s ease;
 }
 
-.modal-body .subject-other-input.show {
-    display: block; /* Visible quand la classe show est ajoutée */
-}
-
-.modal-body .subject-other-input label {
-    display: block;
-    margin-bottom: 10px;
-    color: #334155;
-    font-weight: 600;
-    font-size: 1rem;
-    letter-spacing: 0.025em;
-}
-
-.modal-body .subject-other-input input {
-    width: 100%;
-    padding: 16px 18px;
-    border: 2px solid #e2e8f0;
-    border-radius: 12px;
-    font-size: 16px;
-    transition: all 0.3s ease;
-    font-family: inherit;
-    background: #f8fafc;
+.subject-other-input.show {
     display: block;
 }
 
-/* Sélection priorité */
-.modal-body .priority-select {
+/* Sélection priorité moderne */
+.priority-select {
     display: flex;
     gap: 15px;
     margin-top: 15px;
 }
 
-.modal-body .priority-option {
+.priority-option {
     flex: 1;
     position: relative;
     cursor: pointer;
 }
 
-.modal-body .priority-option input {
+.priority-option input {
     position: absolute;
     opacity: 0;
 }
 
-.modal-body .priority-option span {
+.priority-option span {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -352,30 +507,210 @@
     transition: all 0.3s ease;
 }
 
-.modal-body .priority-option:hover span {
+.priority-option:hover span {
     border-color: #cbd5e1;
     background: white;
     transform: translateY(-1px);
 }
 
-.modal-body .priority-option input:checked + span {
+.priority-option input:checked + span {
     border-color: #667eea;
     background: #eef2ff;
     color: #667eea;
     font-weight: 600;
 }
 
-.modal-body .priority-option.urgent input:checked + span {
+.priority-option.urgent input:checked + span {
     border-color: #ef4444;
     background: #fef2f2;
     color: #ef4444;
 }
 
-/* Responsive pour le modal */
+/* Footer moderne */
+.modal-footer {
+    padding: 25px 40px 35px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+}
+
+/* Boutons modernes */
+.btn-modal {
+    padding: 14px 32px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 130px;
+}
+
+.btn-cancel {
+    background: white;
+    color: #64748b;
+    border: 2px solid #e2e8f0;
+}
+
+.btn-cancel:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #475569;
+    transform: translateY(-1px);
+}
+
+.btn-send {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-send::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.btn-send:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.btn-send:hover::before {
+    left: 100%;
+}
+
+.btn-send:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Loading spinner amélioré */
+.loading-spinner {
+    display: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.loading-spinner.show {
+    display: inline-block;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUpFade {
+    from {
+        transform: translateY(40px) scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-10px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes shimmer {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive moderne */
+@media (max-width: 768px) {
+    .modal-content {
+        max-width: calc(100% - 40px);
+        margin: 20px;
+    }
+    
+    .modal-header {
+        padding: 24px 28px;
+    }
+    
+    .modal-body {
+        padding: 28px;
+    }
+    
+    .modal-footer {
+        padding: 20px 28px 28px;
+    }
+}
+
 @media (max-width: 600px) {
-    .modal-body .priority-select {
+    .modal-content {
+        max-width: 100%;
+        max-height: 100vh;
+        height: 100%;
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    .modal-header {
+        padding: 20px 24px;
+    }
+    
+    .modal-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .modal-body {
+        padding: 24px;
+    }
+    
+    .priority-select {
         flex-direction: column;
         gap: 12px;
+    }
+    
+    .modal-footer {
+        padding: 16px 24px 24px;
+        flex-direction: column-reverse;
+        gap: 12px;
+    }
+    
+    .btn-modal {
+        width: 100%;
+        padding: 16px;
+    }
+    
+    .btn-send {
+        order: 1;
     }
 }
 
