@@ -9,15 +9,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="SAV Audio">
-    <link rel="manifest" href="../manifest.json"> <!-- ⚠️ CHANGÉ : ../ pour remonter d'un niveau -->
-    <link rel="apple-touch-icon" href="../assets/images/icon-192.png"> <!-- ⚠️ CHANGÉ -->
+    <link rel="manifest" href="../manifest.json">
+    <link rel="apple-touch-icon" href="../assets/images/icon-192.png">
     <meta name="theme-color" content="#667eea">
     
-    <!-- Script d'authentification -->
-    <script src="../auth-check.js"></script> <!-- ⚠️ CHANGÉ : ../ pour remonter -->
-    
     <style>
-        /* Tout le CSS reste identique */
         * {
             margin: 0;
             padding: 0;
@@ -194,19 +190,19 @@
     <div class="container">
         <!-- Menu principal -->
         <div class="menu-grid">
-            <a href="fiche-intervention.html" class="menu-card"> <!-- ⚠️ PAS DE CHANGEMENT : reste relatif -->
+            <a href="intervention.html" class="menu-card">
                 <span class="icon">📝</span>
                 <h3>Nouvelle Intervention</h3>
                 <p>Créer une fiche d'intervention pour un client</p>
             </a>
             
-            <a href="guide-sav.html" class="menu-card"> <!-- ⚠️ PAS DE CHANGEMENT : reste relatif -->
+            <a href="guide.html" class="menu-card">
                 <span class="icon">📚</span>
                 <h3>Guide SAV</h3>
                 <p>Consulter les procédures et protocoles</p>
             </a>
             
-            <a href="contacts.html" class="menu-card"> <!-- ⚠️ PAS DE CHANGEMENT : reste relatif -->
+            <a href="contacts.html" class="menu-card">
                 <span class="icon">📞</span>
                 <h3>Contacts SAV</h3>
                 <p>Numéros et contacts importants</p>
@@ -219,16 +215,39 @@
     </div>
 
     <script>
+        // Fonction de vérification d'authentification
+        function checkAuth() {
+            const auth = localStorage.getItem('sav_auth');
+            if (!auth) return false;
+            
+            const authData = JSON.parse(auth);
+            const now = Date.now();
+            
+            if (now - authData.timestamp > authData.expiry) {
+                localStorage.removeItem('sav_auth');
+                return false;
+            }
+            
+            return authData.authenticated;
+        }
+        
+        // Vérifier l'authentification au chargement
+        window.addEventListener('load', () => {
+            if (!checkAuth()) {
+                window.location.href = '../index.html';
+            }
+        });
+        
         // Service Worker pour PWA
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js'); // ⚠️ CHANGÉ : chemin absolu
+            navigator.serviceWorker.register('/sw.js');
         }
         
         // Fonction de déconnexion
         function logout() {
             if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
                 localStorage.removeItem('sav_auth');
-                window.location.href = '/index.html'; // ⚠️ CHANGÉ : chemin absolu
+                window.location.href = '../index.html'; // Corrigé : retour à index
             }
         }
         
