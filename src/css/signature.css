@@ -1,0 +1,208 @@
+/* Styles spécifiques aux pages de signature */
+
+.signature-container {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    margin: 20px 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    max-width: 800px;
+    margin: 20px auto;
+}
+
+.instructions {
+    background: #e3f2fd;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.instructions h2 {
+    color: #1976d2;
+    margin-bottom: 10px;
+    font-size: 24px;
+}
+
+.instructions p {
+    color: #0d47a1;
+    font-size: 16px;
+    margin: 5px 0;
+}
+
+.signature-wrapper {
+    border: 3px dashed #667eea;
+    border-radius: 10px;
+    padding: 20px;
+    background: #f8f9fa;
+    margin-bottom: 30px;
+    position: relative;
+}
+
+#signatureCanvas {
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    background: white;
+    cursor: crosshair;
+    width: 100%;
+    height: 200px;
+    touch-action: none;
+    display: block;
+}
+
+.signature-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.btn-clear {
+    background: #e74c3c;
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-clear:hover {
+    background: #c0392b;
+    transform: translateY(-2px);
+}
+
+.btn-validate {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 40px;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-validate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+}
+
+.btn-validate:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.warning-text {
+    background: #fee;
+    border: 1px solid #e74c3c;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 20px;
+    text-align: center;
+    color: #c0392b;
+    font-weight: 500;
+}
+
+.info-summary {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.info-summary h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-size: 20px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.info-value {
+    color: #2c3e50;
+    text-align: right;
+    flex: 1;
+    margin-left: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .signature-container {
+        padding: 20px;
+    }
+    
+    .instructions h2 {
+        font-size: 20px;
+    }
+    
+    .signature-actions {
+        flex-direction: column;
+    }
+    
+    .signature-actions button {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .info-row {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .info-value {
+        text-align: left;
+        margin-left: 0;
+    }
+}
+
+/* Mode paysage pour signature */
+@media (orientation: landscape) and (max-width: 812px) {
+    #signatureCanvas {
+        height: 150px;
+    }
+    
+    .signature-container {
+        padding: 15px;
+    }
+    
+    .instructions {
+        padding: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .instructions h2 {
+        font-size: 18px;
+        margin-bottom: 5px;
+    }
+    
+    .instructions p {
+        font-size: 14px;
+        margin: 2px 0;
+    }
+}
