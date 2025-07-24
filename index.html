@@ -173,9 +173,7 @@
         </div>
     </div>
 
-    <!-- Fallback pour les anciens fichiers si Firebase échoue -->
-    <script src="magasins-temp.js"></script>
-    <script src="collaborateurs.js"></script>
+
     
     <script type="module">
         // Import Firebase Auth Service
@@ -319,7 +317,8 @@
                     }
                 } else {
                     // Utiliser les données locales
-                    collaborateurs = getCollaborateurs(magasinCode);
+                    // Plus de données locales, Firebase only
+                    collaborateurs = [];
                 }
                 
                 if (collaborateurs.length > 0) {
