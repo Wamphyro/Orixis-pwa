@@ -459,7 +459,7 @@
     gap: 8px;
 }
 
-/* Nouveaux styles de boutons */
+/* Boutons d'action - visibilité en mode édition */
 .btn-action {
     flex: 1;
     padding: 10px 16px;
@@ -473,6 +473,22 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
+    min-width: 0; /* Pour permettre le rétrécissement */
+}
+
+/* S'assurer que les boutons cachés restent dans le DOM */
+.btn-action[style*="display: none"] {
+    display: none !important;
+}
+
+/* Ajuster la grille des boutons en mode édition */
+.card-actions {
+    padding: 16px 24px;
+    background: white;
+    border-top: 1px solid #e1e4e8;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap; /* Permettre le retour à la ligne si nécessaire */
 }
 
 .btn-pin {
