@@ -254,24 +254,6 @@
             }).join('');
         }
         
-        // Charger tous les utilisateurs (admin only)
-        async function loadAllUsers() {
-            try {
-                allUsers = await chargerTousLesUtilisateurs();
-                displayUserCards(allUsers);
-            } catch (error) {
-                console.error('Erreur chargement utilisateurs:', error);
-            }
-        }
-        
-        // Afficher les cartes utilisateurs (admin)
-        function displayUserCards(users) {
-            const container = document.getElementById('userCardsContainer');
-            container.innerHTML = users.map(user => 
-                CompteService.createUserCard(user, true)
-            ).join('');
-        }
-        
         // Fonctions utilitaires
         function getInitials(prenom, nom) {
             return `${prenom.charAt(0)}${nom.charAt(0)}`.toUpperCase();
@@ -289,72 +271,7 @@
             return labels[role] || role;
         }
         
-        // Fonctions globales pour les événements
-        window.filterUsers = function() {
-            const searchTerm = document.getElementById('searchUser').value.toLowerCase();
-            const filtered = allUsers.filter(user => 
-                user.nom.toLowerCase().includes(searchTerm) ||
-                user.prenom.toLowerCase().includes(searchTerm) ||
-                user.magasins.some(m => m.toLowerCase().includes(searchTerm))
-            );
-            displayUserCards(filtered);
-        }
-        
-        window.filterByRole = function(role) {
-            // Mettre à jour les boutons actifs
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            // Filtrer
-            if (role === 'all') {
-                displayUserCards(allUsers);
-            } else {
-                const filtered = allUsers.filter(user => user.role === role);
-                displayUserCards(filtered);
-            }
-        }
-        
-        window.editUser = async function(userId) {
-            const user = allUsers.find(u => u.id === userId);
-            if (!user) return;
-            
-            // Activer le mode édition
-            const card = document.getElementById(`card-${userId}`);
-            const fields = card.querySelectorAll('.editable');
-            const editBtn = card.querySelector('.btn-edit');
-            const saveBtn = card.querySelector('.btn-save');
-            
-            if (editBtn.style.display !== 'none') {
-                // Passer en mode édition
-                fields.forEach(field => field.contentEditable = true);
-                editBtn.style.display = 'none';
-                saveBtn.style.display = 'inline-block';
-            }
-        }
-        
-        window.saveUser = async function(userId) {
-            const card = document.getElementById(`card-${userId}`);
-            const nom = card.querySelector('[data-field="nom"]').textContent;
-            const prenom = card.querySelector('[data-field="prenom"]').textContent;
-            const roleSelect = card.querySelector('[data-field="role"]');
-            const role = roleSelect.value;
-            
-            try {
-                await CompteService.updateUser(userId, { nom, prenom, role });
-                
-                // Désactiver le mode édition
-                const fields = card.querySelectorAll('.editable');
-                fields.forEach(field => field.contentEditable = false);
-                
-                card.querySelector('.btn-edit').style.display = 'inline-block';
-                card.querySelector('.btn-save').style.display = 'none';
-                
-                showSuccess('Informations mises à jour');
-            } catch (error) {
-                showError('Erreur lors de la sauvegarde');
-            }
-        }
-        
+        // Fonctions globales pour les événements du PIN uniquement
         window.changePin = function(userId) {
             document.getElementById('targetUserId').value = userId;
             
