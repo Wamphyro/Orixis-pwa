@@ -1,12 +1,12 @@
 // Configuration des collaborateurs
 const COLLABORATEURS = {
     "ADMIN": [
-        { nom: "Admin", prenom: "Super", id: "admin001" }
-    ],
-    "9AVA": [
         { nom: "Korber", prenom: "Cédric", id: "korber001" },
         { nom: "Boulay", prenom: "Estelle", id: "boulay001" },
         { nom: "Douare", prenom: "Marie-Christine", id: "douare001" }
+    ],
+    "9AVA": [
+        // Ajoutez les collaborateurs pour ce magasin
     ],
     "9BEA": [
         // Ajoutez les collaborateurs pour ce magasin
