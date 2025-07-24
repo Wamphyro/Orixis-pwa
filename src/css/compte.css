@@ -197,6 +197,12 @@
     margin-top: 60px;
 }
 
+/* Header admin avec bouton création */
+.admin-header {
+    margin-bottom: 20px;
+    text-align: right;
+}
+
 .admin-controls {
     margin-bottom: 30px;
     background: white;
@@ -272,6 +278,65 @@
 .user-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Corps de carte */
+.card-body {
+    margin-bottom: 20px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.info-value {
+    color: #2c3e50;
+}
+
+.editable {
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.3s;
+}
+
+.editable[contenteditable="true"] {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+
+.editable[contenteditable="true"]:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+}
+
+/* Select pour le rôle en mode édition */
+.role-select {
+    padding: 4px 8px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+}
+
+/* Actions de carte */
+.card-actions {
+    display: flex;
+    gap: 10px;
 }
 
 /* En-tête de carte utilisateur */
@@ -412,6 +477,11 @@
     animation: slideIn 0.3s ease;
 }
 
+/* Modal large pour création */
+.modal-large {
+    max-width: 600px;
+}
+
 .modal-header {
     padding: 20px;
     border-bottom: 1px solid #e9ecef;
@@ -449,7 +519,8 @@
     color: #495057;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
     width: 100%;
     padding: 10px;
     border: 2px solid #e9ecef;
@@ -458,10 +529,52 @@
     transition: all 0.3s;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group select:focus {
     outline: none;
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Rangée de formulaire */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+/* Checkboxes magasins */
+.magasins-checkboxes {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 8px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.checkbox-label:hover {
+    border-color: #667eea;
+    background: #f0f3ff;
+}
+
+.checkbox-label:has(input:checked) {
+    background: #f0f3ff;
+    border-color: #667eea;
+}
+
+.checkbox-label input[type="checkbox"] {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
 }
 
 .modal-actions {
@@ -588,5 +701,17 @@
     
     .profile-section h2 {
         font-size: 1.25rem;
+    }
+    
+    .admin-header {
+        text-align: center;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-content {
+        width: 95%;
     }
 }
