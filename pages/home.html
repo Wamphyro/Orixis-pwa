@@ -175,11 +175,11 @@
                 select.appendChild(option);
             });
             
-            // Si un seul magasin, masquer le sélecteur
+            // Si un seul magasin, afficher quand même le magasin actuel
             if (magasinsAutorises.length <= 1) {
-                document.querySelector('.magasin-selector').style.display = 'none';
-                document.querySelector('.header-user-info').style.display = 'block';
-                document.querySelector('.header-user-info').innerHTML = `<span>Magasin: ${auth.magasin}</span>`;
+                document.querySelector('.magasin-selector').innerHTML = `
+                    <label>Magasin: <strong>${auth.magasin}</strong></label>
+                `;
             }
         }
         
