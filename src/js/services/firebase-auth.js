@@ -1,29 +1,24 @@
 // Gestion de l'authentification Firebase pour SAV Audio
 import { firebaseConfig } from '../config/firebase-config.js';
 
-// Variables pour Firebase (seront initialisées après le chargement)
+// Variables pour Firebase
 let db;
-let auth;
 
 // Initialisation de Firebase
 async function initFirebase() {
     try {
         // Import dynamique des modules Firebase
         const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
-        const { getFirestore, collection, getDocs, query, where } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-        const { getAuth, signInAnonymously } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+        const { getFirestore } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
         
         // Initialiser Firebase
         const app = initializeApp(firebaseConfig);
         db = getFirestore(app);
-        auth = getAuth(app);
         
-        // Se connecter anonymement
-        await signInAnonymously(auth);
-        
-        return { db, collection, getDocs, query, where };
+        console.log('✅ Firebase initialisé avec succès');
+        return db;
     } catch (error) {
-        console.error('Erreur initialisation Firebase:', error);
+        console.error('❌ Erreur initialisation Firebase:', error);
         throw error;
     }
 }
@@ -45,9 +40,10 @@ async function chargerMagasins() {
             };
         });
         
+        console.log(`✅ ${Object.keys(magasins).length} magasins chargés`);
         return magasins;
     } catch (error) {
-        console.error('Erreur chargement magasins:', error);
+        console.error('❌ Erreur chargement magasins:', error);
         return null;
     }
 }
@@ -71,9 +67,10 @@ async function chargerUtilisateurs(magasinId) {
             });
         });
         
+        console.log(`✅ ${utilisateurs.length} utilisateurs chargés pour ${magasinId}`);
         return utilisateurs;
     } catch (error) {
-        console.error('Erreur chargement utilisateurs:', error);
+        console.error('❌ Erreur chargement utilisateurs:', error);
         return [];
     }
 }
@@ -87,7 +84,7 @@ async function verifierCodePin(magasinId, codePin) {
         }
         return false;
     } catch (error) {
-        console.error('Erreur vérification code PIN:', error);
+        console.error('❌ Erreur vérification code PIN:', error);
         return false;
     }
 }
