@@ -1,12 +1,16 @@
-import { chargerTousLesUtilisateurs } from '../services/firebase-auth.js';
+import { chargerTousLesUtilisateurs, chargerRoles } from '../services/firebase-auth.js';
 import { CompteService } from '../services/compte.service.js';
 
 export class GestionUtilisateursComponent {
     static allUsers = [];
     static filteredUsers = [];
     static currentFilter = 'all';
+    static rolesData = null;
     
-    static render() {
+    static async render() {
+        // Charger les rôles avant de rendre le composant
+        this.rolesData = await chargerRoles();
+        
         return `
             <!-- Bouton création en haut -->
             <div class="admin-top-actions">
@@ -25,11 +29,7 @@ export class GestionUtilisateursComponent {
                 </div>
                 <div class="filter-buttons">
                     <button class="filter-btn active" data-role="all">Tous</button>
-                    <button class="filter-btn" data-role="technicien">🔧 Techniciens</button>
-                    <button class="filter-btn" data-role="audioprothesiste">🦻 Audioprothésistes</button>
-                    <button class="filter-btn" data-role="assistant">📋 Assistants</button>
-                    <button class="filter-btn" data-role="manager">👔 Managers</button>
-                    <button class="filter-btn" data-role="admin">👑 Admins</button>
+                    ${this.generateRoleFilters()}
                 </div>
             </div>
             
@@ -65,11 +65,7 @@ export class GestionUtilisateursComponent {
                                 <label>Rôle *</label>
                                 <select id="newUserRole" required>
                                     <option value="">-- Sélectionner un rôle --</option>
-                                    <option value="technicien">🔧 Technicien</option>
-                                    <option value="audioprothesiste">🦻 Audioprothésiste</option>
-                                    <option value="assistant">📋 Assistant SAV</option>
-                                    <option value="manager">👔 Manager</option>
-                                    <option value="admin">👑 Administrateur</option>
+                                    ${this.generateRoleOptions()}
                                 </select>
                             </div>
                             
@@ -101,6 +97,11 @@ export class GestionUtilisateursComponent {
                                 </div>
                             </div>
                             
+                            <div id="rolePermissionsInfo" class="role-info" style="display: none;">
+                                <h4>Permissions du rôle sélectionné :</h4>
+                                <div id="permissionsList"></div>
+                            </div>
+                            
                             <div class="error-message" id="createUserError"></div>
                             <div class="success-message" id="createUserSuccess"></div>
                             
@@ -115,7 +116,38 @@ export class GestionUtilisateursComponent {
         `;
     }
     
+    // Générer les boutons de filtre dynamiquement
+    static generateRoleFilters() {
+        if (!this.rolesData) return '';
+        
+        // Trier les rôles par niveau décroissant
+        const sortedRoles = Object.entries(this.rolesData)
+            .sort((a, b) => b[1].niveau - a[1].niveau);
+        
+        return sortedRoles.map(([roleId, roleData]) => 
+            `<button class="filter-btn" data-role="${roleId}">${roleData.label}</button>`
+        ).join('');
+    }
+    
+    // Générer les options de rôle dynamiquement
+    static generateRoleOptions() {
+        if (!this.rolesData) return '';
+        
+        // Trier les rôles par niveau décroissant
+        const sortedRoles = Object.entries(this.rolesData)
+            .sort((a, b) => b[1].niveau - a[1].niveau);
+        
+        return sortedRoles.map(([roleId, roleData]) => 
+            `<option value="${roleId}">${roleData.label} (Niveau ${roleData.niveau})</option>`
+        ).join('');
+    }
+    
     static async init() {
+        // Charger les rôles si pas déjà fait
+        if (!this.rolesData) {
+            this.rolesData = await chargerRoles();
+        }
+        
         // Charger les utilisateurs
         await this.loadUsers();
         
@@ -135,7 +167,7 @@ export class GestionUtilisateursComponent {
         }
     }
     
-    static displayUsers() {
+    static async displayUsers() {
         const container = document.getElementById('userCardsContainer');
         
         if (this.filteredUsers.length === 0) {
@@ -143,16 +175,20 @@ export class GestionUtilisateursComponent {
             return;
         }
         
-        container.innerHTML = this.filteredUsers.map(user => 
-            CompteService.createUserCard(user, true)
-        ).join('');
+        // Attendre que CompteService charge les rôles
+        await CompteService.init();
+        
+        container.innerHTML = '';
+        for (const user of this.filteredUsers) {
+            container.innerHTML += await CompteService.createUserCard(user, true);
+        }
     }
     
     static initEventListeners() {
         // Recherche
         const searchInput = document.getElementById('searchUser');
         let searchTimeout;
-        searchInput.addEventListener('input', (e) => {
+        searchInput?.addEventListener('input', (e) => {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {
                 this.filterUsers(e.target.value);
@@ -170,24 +206,60 @@ export class GestionUtilisateursComponent {
         });
         
         // Bouton créer utilisateur
-        document.getElementById('btnCreateUser').addEventListener('click', () => {
+        document.getElementById('btnCreateUser')?.addEventListener('click', () => {
             this.openCreateModal();
         });
         
         // Modal création
-        document.getElementById('closeCreateModal').addEventListener('click', () => {
+        document.getElementById('closeCreateModal')?.addEventListener('click', () => {
             this.closeCreateModal();
         });
         
-        document.getElementById('cancelCreate').addEventListener('click', () => {
+        document.getElementById('cancelCreate')?.addEventListener('click', () => {
             this.closeCreateModal();
         });
         
         // Formulaire création
-        document.getElementById('createUserForm').addEventListener('submit', async (e) => {
+        document.getElementById('createUserForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             await this.handleCreateUser();
         });
+        
+        // Afficher les permissions quand on sélectionne un rôle
+        document.getElementById('newUserRole')?.addEventListener('change', (e) => {
+            this.displayRolePermissions(e.target.value);
+        });
+    }
+    
+    static displayRolePermissions(roleId) {
+        const infoDiv = document.getElementById('rolePermissionsInfo');
+        const permissionsDiv = document.getElementById('permissionsList');
+        
+        if (!roleId || !this.rolesData || !this.rolesData[roleId]) {
+            infoDiv.style.display = 'none';
+            return;
+        }
+        
+        const role = this.rolesData[roleId];
+        infoDiv.style.display = 'block';
+        
+        const permissionsHTML = Object.entries(role.permissions)
+            .map(([perm, value]) => {
+                const permLabels = {
+                    gererUtilisateurs: "Gérer les utilisateurs",
+                    supprimerUtilisateurs: "Supprimer des utilisateurs",
+                    creerUtilisateurs: "Créer des utilisateurs",
+                    modifierTousLesCodes: "Modifier tous les codes PIN",
+                    voirStatistiques: "Voir les statistiques",
+                    accesTousLesMagasins: "Accès à tous les magasins"
+                };
+                
+                return `<div class="permission-item">
+                    ${value ? '✅' : '❌'} ${permLabels[perm] || perm}
+                </div>`;
+            }).join('');
+        
+        permissionsDiv.innerHTML = permissionsHTML;
     }
     
     static filterUsers(searchTerm) {
@@ -222,6 +294,7 @@ export class GestionUtilisateursComponent {
         document.getElementById('createUserForm').reset();
         document.getElementById('createUserError').textContent = '';
         document.getElementById('createUserSuccess').textContent = '';
+        document.getElementById('rolePermissionsInfo').style.display = 'none';
     }
     
     static async handleCreateUser() {
@@ -250,6 +323,21 @@ export class GestionUtilisateursComponent {
         const userId = `${nom.toLowerCase()}${Date.now().toString().slice(-3)}`;
         
         try {
+            // Vérifier l'état de l'authentification
+            const { getAuth } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+            const auth = getAuth();
+            console.log('Utilisateur actuel:', auth.currentUser);
+            console.log('UID:', auth.currentUser?.uid);
+            
+            // Afficher les données pour debug
+            console.log('Tentative de création utilisateur:', {
+                id: userId,
+                prenom: prenom,
+                nom: nom,
+                role: role,
+                autorisations: autorisations
+            });
+            
             // Créer le nouveau profil
             await CompteService.createUser({
                 id: userId,
