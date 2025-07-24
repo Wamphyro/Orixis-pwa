@@ -8,110 +8,107 @@ export class GestionUtilisateursComponent {
     
     static render() {
         return `
-            <div class="gestion-utilisateurs-component">
-                <!-- Header avec bouton création -->
-                <div class="admin-header">
-                    <h2>👥 Gestion des utilisateurs</h2>
-                    <button class="btn-primary" id="btnCreateUser">
-                        ➕ Créer un nouveau profil
-                    </button>
+            <!-- Bouton création en haut -->
+            <div class="admin-top-actions">
+                <button class="btn-primary" id="btnCreateUser">
+                    ➕ Créer un nouveau profil
+                </button>
+            </div>
+            
+            <!-- Contrôles de recherche et filtres -->
+            <div class="admin-controls">
+                <div class="search-bar">
+                    <input type="text" 
+                           id="searchUser" 
+                           placeholder="🔍 Rechercher un utilisateur..." 
+                           autocomplete="off">
                 </div>
-                
-                <!-- Contrôles de recherche et filtres -->
-                <div class="admin-controls">
-                    <div class="search-bar">
-                        <input type="text" 
-                               id="searchUser" 
-                               placeholder="🔍 Rechercher un utilisateur..." 
-                               autocomplete="off">
-                    </div>
-                    <div class="filter-buttons">
-                        <button class="filter-btn active" data-role="all">Tous</button>
-                        <button class="filter-btn" data-role="technicien">🔧 Techniciens</button>
-                        <button class="filter-btn" data-role="audioprothesiste">🦻 Audioprothésistes</button>
-                        <button class="filter-btn" data-role="assistant">📋 Assistants</button>
-                        <button class="filter-btn" data-role="manager">👔 Managers</button>
-                        <button class="filter-btn" data-role="admin">👑 Admins</button>
-                    </div>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-role="all">Tous</button>
+                    <button class="filter-btn" data-role="technicien">🔧 Techniciens</button>
+                    <button class="filter-btn" data-role="audioprothesiste">🦻 Audioprothésistes</button>
+                    <button class="filter-btn" data-role="assistant">📋 Assistants</button>
+                    <button class="filter-btn" data-role="manager">👔 Managers</button>
+                    <button class="filter-btn" data-role="admin">👑 Admins</button>
                 </div>
-                
-                <!-- Conteneur des cartes utilisateur -->
-                <div id="userCardsContainer" class="user-cards-container">
-                    <div class="loading-message">
-                        <div class="spinner"></div>
-                        <p>Chargement des utilisateurs...</p>
-                    </div>
+            </div>
+            
+            <!-- Conteneur des cartes utilisateur -->
+            <div id="userCardsContainer" class="user-cards-container">
+                <div class="loading-message">
+                    <div class="spinner"></div>
+                    <p>Chargement des utilisateurs...</p>
                 </div>
-                
-                <!-- Modal création utilisateur -->
-                <div id="createUserModal" class="modal">
-                    <div class="modal-content modal-large">
-                        <div class="modal-header">
-                            <h2>➕ Créer un nouveau profil utilisateur</h2>
-                            <button class="modal-close" id="closeCreateModal">✕</button>
-                        </div>
-                        <div class="modal-body">
-                            <form id="createUserForm">
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label>Prénom *</label>
-                                        <input type="text" id="newUserPrenom" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Nom *</label>
-                                        <input type="text" id="newUserNom" required>
-                                    </div>
-                                </div>
-                                
+            </div>
+            
+            <!-- Modal création utilisateur -->
+            <div id="createUserModal" class="modal">
+                <div class="modal-content modal-large">
+                    <div class="modal-header">
+                        <h2>➕ Créer un nouveau profil utilisateur</h2>
+                        <button class="modal-close" id="closeCreateModal">✕</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="createUserForm">
+                            <div class="form-row">
                                 <div class="form-group">
-                                    <label>Rôle *</label>
-                                    <select id="newUserRole" required>
-                                        <option value="">-- Sélectionner un rôle --</option>
-                                        <option value="technicien">🔧 Technicien</option>
-                                        <option value="audioprothesiste">🦻 Audioprothésiste</option>
-                                        <option value="assistant">📋 Assistant SAV</option>
-                                        <option value="manager">👔 Manager</option>
-                                        <option value="admin">👑 Administrateur</option>
-                                    </select>
+                                    <label>Prénom *</label>
+                                    <input type="text" id="newUserPrenom" required>
                                 </div>
-                                
                                 <div class="form-group">
-                                    <label>Code PIN (4 chiffres) *</label>
-                                    <input type="password" id="newUserPin" pattern="[0-9]{4}" maxlength="4" required>
+                                    <label>Nom *</label>
+                                    <input type="text" id="newUserNom" required>
                                 </div>
-                                
-                                <div class="form-group">
-                                    <label>Magasin par défaut</label>
-                                    <select id="newUserMagasinDefaut">
-                                        <option value="">-- Sélectionner --</option>
-                                        <option value="9DIJ">9DIJ</option>
-                                        <option value="9AVA">9AVA</option>
-                                    </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Rôle *</label>
+                                <select id="newUserRole" required>
+                                    <option value="">-- Sélectionner un rôle --</option>
+                                    <option value="technicien">🔧 Technicien</option>
+                                    <option value="audioprothesiste">🦻 Audioprothésiste</option>
+                                    <option value="assistant">📋 Assistant SAV</option>
+                                    <option value="manager">👔 Manager</option>
+                                    <option value="admin">👑 Administrateur</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Code PIN (4 chiffres) *</label>
+                                <input type="password" id="newUserPin" pattern="[0-9]{4}" maxlength="4" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Magasin par défaut</label>
+                                <select id="newUserMagasinDefaut">
+                                    <option value="">-- Sélectionner --</option>
+                                    <option value="9DIJ">9DIJ</option>
+                                    <option value="9AVA">9AVA</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Autorisations magasins</label>
+                                <div class="magasins-checkboxes">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" value="9DIJ" name="magasinAuth">
+                                        <span>9DIJ</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" value="9AVA" name="magasinAuth">
+                                        <span>9AVA</span>
+                                    </label>
                                 </div>
-                                
-                                <div class="form-group">
-                                    <label>Autorisations magasins</label>
-                                    <div class="magasins-checkboxes">
-                                        <label class="checkbox-label">
-                                            <input type="checkbox" value="9DIJ" name="magasinAuth">
-                                            <span>9DIJ</span>
-                                        </label>
-                                        <label class="checkbox-label">
-                                            <input type="checkbox" value="9AVA" name="magasinAuth">
-                                            <span>9AVA</span>
-                                        </label>
-                                    </div>
-                                </div>
-                                
-                                <div class="error-message" id="createUserError"></div>
-                                <div class="success-message" id="createUserSuccess"></div>
-                                
-                                <div class="modal-actions">
-                                    <button type="button" class="btn-secondary" id="cancelCreate">Annuler</button>
-                                    <button type="submit" class="btn-primary">Créer le profil</button>
-                                </div>
-                            </form>
-                        </div>
+                            </div>
+                            
+                            <div class="error-message" id="createUserError"></div>
+                            <div class="success-message" id="createUserSuccess"></div>
+                            
+                            <div class="modal-actions">
+                                <button type="button" class="btn-secondary" id="cancelCreate">Annuler</button>
+                                <button type="submit" class="btn-primary">Créer le profil</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
