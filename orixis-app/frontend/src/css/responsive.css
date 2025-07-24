@@ -1,0 +1,334 @@
+/* src/css/responsive.css */
+/* Tablette paysage et petits écrans desktop */
+@media (max-width: 1024px) {
+    .container {
+        max-width: 100%;
+    }
+    
+    .checkbox-grid,
+    .radio-group {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Tablette portrait */
+@media (max-width: 768px) {
+    :root {
+        --spacing-base: 15px;
+    }
+    
+    body {
+        font-size: 15px;
+    }
+    
+    .header {
+        padding: var(--spacing-lg) var(--spacing-md);
+    }
+    
+    .header h1 {
+        font-size: 24px;
+    }
+    
+    .back-button {
+        position: static;
+        margin-bottom: var(--spacing-md);
+        display: inline-flex;
+    }
+    
+    .section {
+        padding: var(--spacing-md);
+        margin-bottom: var(--spacing-md);
+    }
+    
+    .form-group {
+        margin-bottom: var(--spacing-md);
+    }
+    
+    .checkbox-grid,
+    .radio-group,
+    .device-selection {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-sm);
+    }
+    
+    .date-time-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-sm);
+    }
+    
+    .user-info {
+        position: static;
+        margin-top: var(--spacing-md);
+        justify-content: center;
+    }
+    
+    .menu-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .signature-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+    :root {
+        --spacing-base: 12px;
+        --font-size-base: 14px;
+    }
+    
+    .header h1 {
+        font-size: 20px;
+    }
+    
+    .header p {
+        font-size: 14px;
+    }
+    
+    .section-title {
+        font-size: 18px;
+    }
+    
+    .btn {
+        width: 100%;
+        padding: var(--spacing-md) var(--spacing-lg);
+        font-size: 16px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+    
+    .user-info {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+    
+    input[type="text"],
+    input[type="tel"],
+    input[type="date"],
+    input[type="time"],
+    select,
+    textarea {
+        font-size: 16px; /* Évite le zoom sur iOS */
+    }
+    
+    .device-card {
+        padding: var(--spacing-md);
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+    }
+    
+    .device-card .icon {
+        font-size: 24px;
+        margin-right: var(--spacing-md);
+        margin-bottom: 0;
+    }
+    
+    .canvas-wrapper {
+        width: 100%;
+        height: 200px;
+    }
+}
+
+/* Très petits écrans */
+@media (max-width: 360px) {
+    .container {
+        padding: 0 var(--spacing-sm);
+    }
+    
+    .header {
+        padding: var(--spacing-md);
+    }
+    
+    .section {
+        padding: var(--spacing-sm);
+    }
+}
+
+/* src/css/print.css */
+@media print {
+    /* Reset des couleurs pour l'impression */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+    
+    /* Page settings */
+    @page {
+        size: A4;
+        margin: 15mm;
+    }
+    
+    /* Masquer les éléments non imprimables */
+    .no-print,
+    .back-button,
+    .print-button,
+    .btn-logout,
+    .action-buttons,
+    .nav-menu,
+    .fab,
+    .quick-actions,
+    .footer {
+        display: none !important;
+    }
+    
+    /* Body et container */
+    body {
+        background: white !important;
+        color: black !important;
+        font-size: 11pt !important;
+        line-height: 1.4 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .container {
+        max-width: 100% !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+    }
+    
+    /* Header */
+    .header {
+        background: white !important;
+        color: black !important;
+        border: 2px solid black !important;
+        padding: 10mm !important;
+        page-break-inside: avoid !important;
+        margin-bottom: 5mm !important;
+    }
+    
+    .header h1 {
+        color: black !important;
+        font-size: 18pt !important;
+    }
+    
+    /* Sections */
+    .section {
+        page-break-inside: avoid !important;
+        border: 1px solid black !important;
+        padding: 5mm !important;
+        margin-bottom: 5mm !important;
+        background: white !important;
+    }
+    
+    .section-title {
+        color: black !important;
+        font-size: 14pt !important;
+        border-bottom: 2px solid black !important;
+        padding-bottom: 2mm !important;
+        margin-bottom: 3mm !important;
+    }
+    
+    /* Formulaires */
+    .form-group label {
+        color: black !important;
+        font-weight: bold !important;
+    }
+    
+    input[type="text"],
+    input[type="tel"],
+    input[type="date"],
+    input[type="time"],
+    select,
+    textarea {
+        border: 1px solid black !important;
+        background: white !important;
+        color: black !important;
+    }
+    
+    /* Checkboxes */
+    .checkbox-item,
+    .radio-item {
+        border: 1px solid black !important;
+        background: white !important;
+    }
+    
+    .checkbox-item.checked,
+    .radio-item.checked,
+    .device-card.selected {
+        background: #ddd !important;
+    }
+    
+    /* Signatures */
+    .signature-box {
+        border: 2px solid black !important;
+        min-height: 80mm !important;
+        page-break-inside: avoid !important;
+    }
+    
+    .signature-image {
+        max-height: 60mm !important;
+    }
+    
+    /* Tableaux */
+    table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+    }
+    
+    th, td {
+        border: 1px solid black !important;
+        padding: 2mm !important;
+    }
+    
+    th {
+        background: #f0f0f0 !important;
+        font-weight: bold !important;
+    }
+    
+    /* Messages */
+    .message {
+        border: 1px solid black !important;
+        background: white !important;
+        color: black !important;
+    }
+    
+    /* Éviter les coupures */
+    h1, h2, h3, h4, h5, h6 {
+        page-break-after: avoid !important;
+    }
+    
+    img, canvas {
+        page-break-inside: avoid !important;
+        max-width: 100% !important;
+    }
+    
+    /* Footer d'impression */
+    .print-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-size: 9pt;
+        color: #666;
+        border-top: 1px solid #ccc;
+        padding-top: 5mm;
+    }
+}
+
+/* Classes utilitaires pour l'impression */
+.print-only {
+    display: none;
+}
+
+@media print {
+    .print-only {
+        display: block !important;
+    }
+}
+
+.page-break {
+    page-break-after: always;
+}
+
+.avoid-break {
+    page-break-inside: avoid;
+}
