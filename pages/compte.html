@@ -303,14 +303,85 @@
         }
         
         window.editUser = function(userId) {
-            // TODO: Implémenter la modification d'utilisateur
-            console.log('Modification utilisateur:', userId);
-            alert('Fonction de modification en cours de développement');
+            const card = document.getElementById(`card-${userId}`);
+            if (!card) return;
+            
+            // Activer l'édition des champs texte
+            card.querySelectorAll('.editable').forEach(el => {
+                el.contentEditable = true;
+                el.style.backgroundColor = '#f0f3ff';
+                el.style.padding = '4px 8px';
+                el.style.borderRadius = '4px';
+            });
+            
+            // Remplacer le badge de rôle par un sélecteur
+            const roleBadge = card.querySelector('.role-badge');
+            const roleSelector = card.querySelector('.role-selector');
+            if (roleBadge && roleSelector) {
+                roleBadge.style.display = 'none';
+                roleSelector.style.display = 'block';
+            }
+            
+            // Activer l'édition des magasins
+            const magasinsSpan = card.querySelector('.editable-magasins');
+            if (magasinsSpan) {
+                const currentMagasins = magasinsSpan.textContent;
+                const has9DIJ = currentMagasins.includes('9DIJ');
+                const has9AVA = currentMagasins.includes('9AVA');
+                
+                magasinsSpan.innerHTML = `
+                    <div class="edit-magasins">
+                        <label><input type="checkbox" value="9DIJ" ${has9DIJ ? 'checked' : ''}> 9DIJ</label>
+                        <label><input type="checkbox" value="9AVA" ${has9AVA ? 'checked' : ''}> 9AVA</label>
+                    </div>
+                `;
+            }
+            
+            // Afficher/Masquer les boutons
+            card.querySelector('.btn-edit').style.display = 'none';
+            card.querySelector('.btn-save').style.display = 'block';
         }
         
-        window.saveUser = function(userId) {
-            // TODO: Implémenter la sauvegarde
-            console.log('Sauvegarde utilisateur:', userId);
+        window.saveUser = async function(userId) {
+            const card = document.getElementById(`card-${userId}`);
+            if (!card) return;
+            
+            try {
+                // Récupérer les nouvelles valeurs
+                const newData = {
+                    prenom: card.querySelector('[data-field="prenom"]').textContent.trim(),
+                    nom: card.querySelector('[data-field="nom"]').textContent.trim(),
+                    role: card.querySelector('.role-select').value
+                };
+                
+                // Récupérer les magasins sélectionnés
+                const selectedMagasins = Array.from(card.querySelectorAll('.edit-magasins input:checked'))
+                    .map(cb => cb.value);
+                
+                if (selectedMagasins.length === 0) {
+                    alert('Sélectionnez au moins un magasin');
+                    return;
+                }
+                
+                // Créer l'objet autorisations
+                const autorisations = {};
+                selectedMagasins.forEach(mag => {
+                    autorisations[mag] = { acces: true };
+                });
+                newData.autorisations = autorisations;
+                
+                // Mettre à jour dans Firebase
+                await CompteService.updateUser(userId, newData);
+                
+                // Recharger l'affichage
+                await loadUserData();
+                
+                alert('Utilisateur mis à jour avec succès');
+                
+            } catch (error) {
+                console.error('Erreur mise à jour:', error);
+                alert('Erreur lors de la mise à jour');
+            }
         }
         
         function showError(message) {
