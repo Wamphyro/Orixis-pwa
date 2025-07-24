@@ -284,6 +284,8 @@
     cursor: pointer;
     transition: all 0.3s;
     font-size: 14px;
+    position: relative;
+    overflow: hidden;
 }
 
 .filter-btn:hover {
@@ -295,6 +297,21 @@
     background: var(--primary-color);
     color: white;
     border-color: var(--primary-color);
+}
+
+.filter-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.filter-btn:hover::before {
+    left: 100%;
 }
 
 /* ========================================
@@ -345,6 +362,8 @@
     border-radius: 20px;
     font-size: 0.85rem;
     font-weight: 600;
+    cursor: help;
+    position: relative;
 }
 
 /* Badges de rôle */
@@ -353,6 +372,22 @@
 .role-assistant { background: #f3e5f5; color: #7b1fa2; }
 .role-manager { background: #e8f5e9; color: #388e3c; }
 .role-admin { background: #fce4ec; color: #c2185b; }
+
+/* Tooltip niveau rôle */
+.role-badge:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    z-index: 10;
+}
 
 .card-body {
     margin-bottom: 20px;
@@ -383,6 +418,85 @@
 .card-actions {
     display: flex;
     gap: 10px;
+}
+
+/* ========================================
+   STYLES POUR L'ÉDITION
+   ======================================== */
+
+/* Champs éditables */
+.editable {
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.3s;
+}
+
+.editable[contenteditable="true"] {
+    background: #f0f3ff !important;
+    border: 2px solid var(--primary-color);
+    outline: none;
+    cursor: text;
+}
+
+.editable[contenteditable="true"]:focus {
+    background: white !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+/* Sélecteur de rôle */
+.role-selector {
+    margin-top: 10px;
+}
+
+.role-select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px solid var(--primary-color);
+    border-radius: 8px;
+    background: white;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.role-select:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+/* Édition des magasins */
+.edit-magasins {
+    display: flex;
+    gap: 20px;
+    padding: 8px 0;
+}
+
+.edit-magasins label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.edit-magasins label:hover {
+    border-color: var(--primary-color);
+    background: #f0f3ff;
+}
+
+.edit-magasins input[type="checkbox"] {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+}
+
+.edit-magasins label:has(input:checked) {
+    background: #f0f3ff;
+    border-color: var(--primary-color);
+    font-weight: 600;
 }
 
 /* ========================================
@@ -459,6 +573,17 @@
 .btn-save:hover {
     background: #388e3c;
     color: white;
+}
+
+/* Animation de sauvegarde */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.btn-save:active {
+    animation: pulse 0.3s ease;
 }
 
 .btn-delete {
@@ -601,6 +726,41 @@
     display: flex;
     gap: 10px;
     margin-top: 20px;
+}
+
+/* ========================================
+   INFO PERMISSIONS (MODAL CRÉATION)
+   ======================================== */
+
+.role-info {
+    background: #f0f3ff;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+    border: 2px solid #e0e6ff;
+}
+
+.role-info h4 {
+    margin: 0 0 15px 0;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+}
+
+#permissionsList {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 10px;
+}
+
+.permission-item {
+    padding: 8px 12px;
+    background: white;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #e9ecef;
 }
 
 /* ========================================
@@ -757,82 +917,15 @@
     .modal-large {
         max-width: 95%;
     }
-}
-/* ========================================
-   AJOUTS POUR LA GESTION DES RÔLES
-   À ajouter dans compte.css
-   ======================================== */
-
-/* Info permissions dans le modal */
-.role-info {
-    background: #f0f3ff;
-    padding: 20px;
-    border-radius: 10px;
-    margin-top: 20px;
-    border: 2px solid #e0e6ff;
-}
-
-.role-info h4 {
-    margin: 0 0 15px 0;
-    color: #667eea;
-    font-size: 1.1rem;
-}
-
-#permissionsList {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 10px;
-}
-
-.permission-item {
-    padding: 8px 12px;
-    background: white;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    border: 1px solid #e9ecef;
-}
-
-/* Badge de rôle avec niveau */
-.role-badge {
-    cursor: help; /* Pour montrer qu'on peut survoler pour voir le niveau */
-    position: relative;
-}
-
-.role-badge:hover::after {
-    content: attr(title);
-    position: absolute;
-    bottom: -25px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #333;
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    white-space: nowrap;
-    z-index: 10;
-}
-
-/* Amélioration visuelle des filtres */
-.filter-btn {
-    position: relative;
-    overflow: hidden;
-}
-
-.filter-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    transition: left 0.5s;
-}
-
-.filter-btn:hover::before {
-    left: 100%;
+    
+    /* Édition responsive */
+    .edit-magasins {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .edit-magasins label {
+        width: 100%;
+        justify-content: center;
+    }
 }
