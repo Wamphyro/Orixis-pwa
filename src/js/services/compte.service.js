@@ -1,11 +1,17 @@
 import { getFirestore, doc, updateDoc, getDoc, setDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { chargerRoles } from '../services/firebase-auth.js';
 
 export class CompteService {
     static db = null;
+    static rolesData = null;
     
     static async init() {
         if (!this.db) {
             this.db = getFirestore();
+        }
+        // Charger les rôles au démarrage
+        if (!this.rolesData) {
+            this.rolesData = await chargerRoles();
         }
     }
     
@@ -77,15 +83,16 @@ export class CompteService {
         }
     }
     
-    static createUserCard(user, isAdmin = false) {
-        const roleLabels = {
-            'admin': '👑 Administrateur',
-            'manager': '👔 Manager',
-            'audioprothesiste': '🦻 Audioprothésiste', 
-            'assistant': '📋 Assistant',
-            'technicien': '🔧 Technicien'
-        };
+    static async createUserCard(user, isAdmin = false) {
+        // S'assurer que les rôles sont chargés
+        await this.init();
         
+        // Utiliser les rôles de la base de données
+        const roleData = this.rolesData && this.rolesData[user.role] ? 
+            this.rolesData[user.role] : 
+            { label: user.role, nom: user.role };
+        
+        // Générer la couleur CSS basée sur le rôle
         const roleColors = {
             'admin': 'role-admin',
             'manager': 'role-manager',
@@ -98,6 +105,20 @@ export class CompteService {
         const autorisations = user.autorisations || {};
         const magasins = Object.keys(autorisations).filter(mag => autorisations[mag].acces === true);
         
+        // Vérifier les permissions de l'utilisateur actuel si admin
+        let canDelete = isAdmin;
+        let canEdit = isAdmin;
+        
+        if (isAdmin && this.rolesData) {
+            const currentUserRole = localStorage.getItem('sav_user_role');
+            const currentRoleData = this.rolesData[currentUserRole];
+            
+            if (currentRoleData && currentRoleData.permissions) {
+                canDelete = currentRoleData.permissions.supprimerUtilisateurs === true;
+                canEdit = currentRoleData.permissions.gererUtilisateurs === true;
+            }
+        }
+        
         return `
             <div class="user-card" id="card-${user.id}">
                 <div class="card-header">
@@ -109,8 +130,8 @@ export class CompteService {
                             <span class="editable" data-field="prenom">${user.prenom}</span>
                             <span class="editable" data-field="nom">${user.nom}</span>
                         </h3>
-                        <span class="role-badge ${roleColors[user.role] || ''}">
-                            ${roleLabels[user.role] || user.role}
+                        <span class="role-badge ${roleColors[user.role] || ''}" title="Niveau ${roleData.niveau || 0}">
+                            ${roleData.label}
                         </span>
                     </div>
                 </div>
@@ -138,13 +159,15 @@ export class CompteService {
                     <button class="btn-action btn-pin" onclick="changePin('${user.id}')">
                         🔐 Changer le code
                     </button>
-                    ${isAdmin ? `
+                    ${canEdit ? `
                         <button class="btn-action btn-edit" onclick="editUser('${user.id}')">
                             ✏️ Modifier
                         </button>
                         <button class="btn-action btn-save" style="display: none;" onclick="saveUser('${user.id}')">
                             💾 Sauvegarder
                         </button>
+                    ` : ''}
+                    ${canDelete ? `
                         <button class="btn-action btn-delete" onclick="deleteUser('${user.id}')">
                             🗑️ Supprimer
                         </button>
@@ -153,4 +176,3 @@ export class CompteService {
             </div>
         `;
     }
-}
