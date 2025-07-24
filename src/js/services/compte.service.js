@@ -139,6 +139,12 @@ export class CompteService {
                         🔐 Changer le code
                     </button>
                     ${isAdmin ? `
+                        <button class="btn-action btn-edit" onclick="editUser('${user.id}')">
+                            ✏️ Modifier
+                        </button>
+                        <button class="btn-action btn-save" style="display: none;" onclick="saveUser('${user.id}')">
+                            💾 Sauvegarder
+                        </button>
                         <button class="btn-action btn-delete" onclick="deleteUser('${user.id}')">
                             🗑️ Supprimer
                         </button>
