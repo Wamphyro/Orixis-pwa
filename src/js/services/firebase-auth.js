@@ -3,6 +3,7 @@ import { firebaseConfig } from '../config/firebase-config.js';
 
 // Variables pour Firebase
 let db;
+let auth;
 
 // Initialisation de Firebase
 async function initFirebase() {
@@ -15,14 +16,14 @@ async function initFirebase() {
         // Initialiser Firebase
         const app = initializeApp(firebaseConfig);
         db = getFirestore(app);
-        const auth = getAuth(app);
+        auth = getAuth(app);
         
         // Se connecter anonymement
         await signInAnonymously(auth);
         console.log('✅ Authentification anonyme réussie');
         
         console.log('✅ Firebase initialisé avec succès');
-        return db;
+        return { db, auth };
     } catch (error) {
         console.error('❌ Erreur initialisation Firebase:', error);
         throw error;
@@ -81,12 +82,19 @@ async function chargerUtilisateurs(magasinId) {
     }
 }
 
-// Vérifier le code PIN
+// Vérifier le code PIN (version sécurisée)
 async function verifierCodePin(magasinId, codePin) {
     try {
-        const magasins = await chargerMagasins();
-        if (magasins && magasins[magasinId]) {
-            return magasins[magasinId].code === codePin;
+        // Pour la production, on ne charge pas tous les magasins
+        // On vérifie directement celui demandé
+        const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const magasinRef = doc(db, 'magasins', magasinId);
+        const magasinDoc = await getDoc(magasinRef);
+        
+        if (magasinDoc.exists()) {
+            const data = magasinDoc.data();
+            // Comparaison sécurisée
+            return data.code === codePin && data.actif !== false;
         }
         return false;
     } catch (error) {
@@ -95,5 +103,45 @@ async function verifierCodePin(magasinId, codePin) {
     }
 }
 
+// Sauvegarder une intervention
+async function sauvegarderIntervention(interventionData) {
+    try {
+        const { collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        
+        // Ajouter les timestamps
+        interventionData.dateCreation = serverTimestamp();
+        interventionData.dateDerniereMaj = serverTimestamp();
+        
+        const interventionsRef = collection(db, 'interventions');
+        const docRef = await addDoc(interventionsRef, interventionData);
+        
+        console.log('✅ Intervention sauvegardée avec ID:', docRef.id);
+        return docRef.id;
+    } catch (error) {
+        console.error('❌ Erreur sauvegarde intervention:', error);
+        throw error;
+    }
+}
+
+// Déconnexion
+async function deconnexion() {
+    try {
+        if (auth) {
+            const { signOut } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+            await signOut(auth);
+            console.log('✅ Déconnexion réussie');
+        }
+    } catch (error) {
+        console.error('❌ Erreur déconnexion:', error);
+    }
+}
+
 // Export des fonctions
-export { initFirebase, chargerMagasins, chargerUtilisateurs, verifierCodePin };
+export { 
+    initFirebase, 
+    chargerMagasins, 
+    chargerUtilisateurs, 
+    verifierCodePin, 
+    sauvegarderIntervention,
+    deconnexion 
+};
