@@ -13,8 +13,7 @@
     <link rel="apple-touch-icon" href="assets/images/icon-192.png">
     <meta name="theme-color" content="#667eea">
     
-    <!-- CSS -->
-    <link rel="stylesheet" href="assets/css/main.css">
+    <!-- CSS intégré pour l'instant -->
     
     <style>
         * {
@@ -331,8 +330,190 @@
     </div>
 
     <!-- Scripts -->
-    <script src="assets/js/config/app.config.js"></script>
-    <script src="assets/js/services/auth.service.js"></script>
-    <script src="assets/js/pages/login.js"></script>
+    <script>
+        // Configuration des magasins
+        const MAGASINS = {
+            "ADMIN": { code: "1988" },
+            "9AVA": { code: "0234" },
+            "9BEA": { code: "5678" },
+            "9BOM": { code: "9012" },
+            "9CHE": { code: "3456" },
+            "9DIJ": { code: "7890" },
+            "9DIT": { code: "2345" },
+            "9DOL": { code: "6789" },
+            "9KBO": { code: "0123" },
+            "9KNE": { code: "4567" },
+            "9KOV": { code: "8901" },
+            "9MAR": { code: "1357" },
+            "9QUE": { code: "2468" }
+        };
+
+        let pinCode = '';
+        let attempts = 0;
+        const MAX_ATTEMPTS = 3;
+        
+        // Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js');
+        }
+        
+        // Vérifier si déjà connecté
+        window.addEventListener('load', () => {
+            if (checkAuth()) {
+                window.location.href = 'pages/home.html';
+            }
+            
+            // Remplir la liste des magasins
+            populateMagasins();
+        });
+        
+        // Remplir le select avec les magasins
+        function populateMagasins() {
+            const select = document.getElementById('magasin');
+            
+            // Trier les magasins par code
+            const magasinsSorted = Object.entries(MAGASINS)
+                .sort((a, b) => a[0].localeCompare(b[0]));
+            
+            magasinsSorted.forEach(([code, info]) => {
+                const option = document.createElement('option');
+                option.value = code;
+                option.textContent = code;
+                select.appendChild(option);
+            });
+        }
+        
+        // Ajouter un chiffre
+        function addDigit(digit) {
+            if (pinCode.length < 4) {
+                pinCode += digit;
+                updatePinDisplay();
+                
+                // Auto-validation à 4 chiffres
+                if (pinCode.length === 4) {
+                    setTimeout(validatePin, 200);
+                }
+            }
+        }
+        
+        // Effacer le dernier chiffre
+        function deleteDigit() {
+            if (pinCode.length > 0) {
+                pinCode = pinCode.slice(0, -1);
+                updatePinDisplay();
+            }
+        }
+        
+        // Mettre à jour l'affichage
+        function updatePinDisplay() {
+            for (let i = 1; i <= 4; i++) {
+                const dot = document.getElementById(`pin${i}`);
+                if (i <= pinCode.length) {
+                    dot.textContent = '•';
+                    dot.classList.add('filled');
+                } else {
+                    dot.textContent = '';
+                    dot.classList.remove('filled');
+                }
+            }
+        }
+        
+        // Valider le code PIN
+        async function validatePin() {
+            if (pinCode.length !== 4) {
+                showError('Veuillez entrer un code à 4 chiffres');
+                return;
+            }
+            
+            const magasinCode = document.getElementById('magasin').value;
+            if (!magasinCode) {
+                showError('Veuillez sélectionner un magasin');
+                return;
+            }
+            
+            const errorMsg = document.getElementById('errorMsg');
+            const successMsg = document.getElementById('successMsg');
+            
+            // Reset messages
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+            
+            // Vérifier les credentials
+            const magasin = MAGASINS[magasinCode];
+            
+            if (magasin && magasin.code === pinCode) {
+                // Connexion réussie
+                successMsg.style.display = 'block';
+                
+                // Sauvegarder l'authentification
+                const remember = document.getElementById('remember').checked;
+                const expiry = remember ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
+                
+                localStorage.setItem('sav_auth', JSON.stringify({
+                    authenticated: true,
+                    magasin: magasinCode,
+                    timestamp: Date.now(),
+                    expiry: expiry
+                }));
+                
+                // Redirection
+                setTimeout(() => {
+                    window.location.href = 'pages/home.html';
+                }, 1000);
+                
+            } else {
+                // Échec
+                attempts++;
+                showError(`Code incorrect. ${MAX_ATTEMPTS - attempts} tentatives restantes.`);
+                
+                if (attempts >= MAX_ATTEMPTS) {
+                    showError(`Trop de tentatives. Veuillez attendre ${MAX_ATTEMPTS} minutes.`);
+                    disableNumpad(true);
+                    setTimeout(() => {
+                        attempts = 0;
+                        disableNumpad(false);
+                    }, MAX_ATTEMPTS * 60 * 1000);
+                }
+                
+                // Reset le code
+                pinCode = '';
+                updatePinDisplay();
+                
+                document.querySelector('.login-container').classList.add('shake');
+                setTimeout(() => {
+                    document.querySelector('.login-container').classList.remove('shake');
+                }, 500);
+            }
+        }
+        
+        // Afficher une erreur
+        function showError(message) {
+            const errorMsg = document.getElementById('errorMsg');
+            errorMsg.textContent = message;
+            errorMsg.style.display = 'block';
+        }
+        
+        // Activer/désactiver le clavier
+        function disableNumpad(disabled) {
+            const buttons = document.querySelectorAll('.numpad-btn');
+            buttons.forEach(btn => btn.disabled = disabled);
+        }
+        
+        // Fonction de vérification d'authentification
+        function checkAuth() {
+            const auth = localStorage.getItem('sav_auth');
+            if (!auth) return false;
+            
+            const authData = JSON.parse(auth);
+            const now = Date.now();
+            
+            if (now - authData.timestamp > authData.expiry) {
+                localStorage.removeItem('sav_auth');
+                return false;
+            }
+            
+            return authData.authenticated;
+        }
+    </script>
 </body>
 </html>
