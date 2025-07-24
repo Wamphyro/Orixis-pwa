@@ -85,7 +85,7 @@ async function chargerUtilisateurs(magasinId) {
     try {
         const { collection, getDocs, query, where } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
         const utilisateursRef = collection(db, 'utilisateurs');
-        const q = query(utilisateursRef, where('magasinId', '==', magasinId), where('actif', '==', true));
+        const q = query(utilisateursRef, where('magasins', 'array-contains', magasinId), where('actif', '==', true));
         const snapshot = await getDocs(q);
         
         const utilisateurs = [];
