@@ -15,6 +15,56 @@
     
     <!-- CSS -->
     <link rel="stylesheet" href="src/css/main.css">
+    <style>
+        /* Styles additionnels pour le select collaborateur */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        #collaborateur {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            background: white;
+            color: #2c3e50;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        #collaborateur:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        #collaborateur:disabled {
+            background: #f8f9fa;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        
+        .collaborateur-container {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        .collaborateur-container.visible {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
 </head>
 <body class="login-page">
     <div class="login-container fade-in">
@@ -27,6 +77,14 @@
                 <label for="magasin">Sélectionnez votre magasin</label>
                 <select id="magasin" required>
                     <option value="">-- Choisir un magasin --</option>
+                    <!-- Les options seront générées dynamiquement -->
+                </select>
+            </div>
+            
+            <div class="form-group collaborateur-container" id="collaborateurContainer">
+                <label for="collaborateur">Sélectionnez votre nom</label>
+                <select id="collaborateur" required disabled>
+                    <option value="">-- Choisir un collaborateur --</option>
                     <!-- Les options seront générées dynamiquement -->
                 </select>
             </div>
@@ -76,6 +134,7 @@
     </div>
 
     <script src="magasins-temp.js"></script>
+    <script src="collaborateurs.js"></script>
     <script>
         let pinCode = '';
         let attempts = 0;
@@ -94,6 +153,9 @@
             
             // Remplir la liste des magasins
             populateMagasins();
+            
+            // Écouter les changements de magasin
+            document.getElementById('magasin').addEventListener('change', onMagasinChange);
         });
         
         // Remplir le select avec les magasins
@@ -110,6 +172,40 @@
                 option.textContent = code;
                 select.appendChild(option);
             });
+        }
+        
+        // Quand un magasin est sélectionné
+        function onMagasinChange(e) {
+            const magasinCode = e.target.value;
+            const collaborateurSelect = document.getElementById('collaborateur');
+            const collaborateurContainer = document.getElementById('collaborateurContainer');
+            
+            // Reset collaborateur
+            collaborateurSelect.innerHTML = '<option value="">-- Choisir un collaborateur --</option>';
+            collaborateurSelect.disabled = true;
+            
+            if (magasinCode) {
+                // Récupérer les collaborateurs du magasin
+                const collaborateurs = getCollaborateurs(magasinCode);
+                
+                if (collaborateurs.length > 0) {
+                    // Afficher le container
+                    collaborateurContainer.classList.add('visible');
+                    collaborateurSelect.disabled = false;
+                    
+                    // Ajouter les collaborateurs
+                    collaborateurs.forEach(collab => {
+                        const option = document.createElement('option');
+                        option.value = collab.id;
+                        option.textContent = `${collab.nom} ${collab.prenom}`;
+                        collaborateurSelect.appendChild(option);
+                    });
+                } else {
+                    collaborateurContainer.classList.remove('visible');
+                }
+            } else {
+                collaborateurContainer.classList.remove('visible');
+            }
         }
         
         // Ajouter un chiffre
@@ -160,6 +256,15 @@
                 return;
             }
             
+            const collaborateurId = document.getElementById('collaborateur').value;
+            const collaborateurContainer = document.getElementById('collaborateurContainer');
+            
+            // Si le magasin a des collaborateurs, vérifier qu'un est sélectionné
+            if (collaborateurContainer.classList.contains('visible') && !collaborateurId) {
+                showError('Veuillez sélectionner votre nom');
+                return;
+            }
+            
             const errorMsg = document.getElementById('errorMsg');
             const successMsg = document.getElementById('successMsg');
             
@@ -174,16 +279,33 @@
                 // Connexion réussie
                 successMsg.style.display = 'block';
                 
+                // Récupérer les infos du collaborateur si sélectionné
+                let collaborateurInfo = null;
+                if (collaborateurId) {
+                    collaborateurInfo = getCollaborateurById(magasinCode, collaborateurId);
+                }
+                
                 // Sauvegarder l'authentification
                 const remember = document.getElementById('remember').checked;
                 const expiry = remember ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
                 
-                localStorage.setItem('sav_auth', JSON.stringify({
+                const authData = {
                     authenticated: true,
                     magasin: magasinCode,
                     timestamp: Date.now(),
                     expiry: expiry
-                }));
+                };
+                
+                // Ajouter les infos du collaborateur si disponibles
+                if (collaborateurInfo) {
+                    authData.collaborateur = {
+                        id: collaborateurInfo.id,
+                        nom: collaborateurInfo.nom,
+                        prenom: collaborateurInfo.prenom
+                    };
+                }
+                
+                localStorage.setItem('sav_auth', JSON.stringify(authData));
                 
                 // Redirection
                 setTimeout(() => {
