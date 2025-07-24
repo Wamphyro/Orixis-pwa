@@ -315,90 +315,114 @@
 }
 
 /* ========================================
-   CARTES UTILISATEURS
+   CARTES UTILISATEURS - DESIGN MODERNE
    ======================================== */
 .user-cards-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 24px;
 }
 
 .user-card {
     background: white;
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
-    padding: 25px;
-    transition: all 0.3s;
-    border: 2px solid var(--border-color);
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    overflow: hidden;
 }
 
 .user-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-    border-color: var(--primary-color);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
 }
 
 .card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 24px;
     display: flex;
     align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--border-color);
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.user-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 600;
+    flex-shrink: 0;
 }
 
 .user-main-info {
-    margin-left: 15px;
+    flex: 1;
+    color: white;
 }
 
 .user-main-info h3 {
-    margin: 0 0 5px 0;
-    color: var(--text-dark);
-    font-size: 1.2rem;
+    margin: 0 0 8px 0;
+    color: white;
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.025em;
 }
 
 .role-badge {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: help;
-    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-/* Badges de rôle */
-.role-technicien { background: #e3f2fd; color: #1976d2; }
-.role-audioprothesiste { background: #fff3e0; color: #f57c00; }
-.role-assistant { background: #f3e5f5; color: #7b1fa2; }
-.role-manager { background: #e8f5e9; color: #388e3c; }
-.role-admin { background: #fce4ec; color: #c2185b; }
-
-/* Tooltip niveau rôle */
-.role-badge:hover::after {
-    content: attr(title);
-    position: absolute;
-    bottom: -25px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #333;
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    white-space: nowrap;
-    z-index: 10;
+/* Override des couleurs de rôle pour le nouveau design */
+.card-header .role-badge {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
 }
 
 .card-body {
-    margin-bottom: 20px;
+    padding: 24px;
+    background: #fafbfc;
 }
 
 .info-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid #f5f5f5;
+    padding: 12px 0;
+    border-bottom: 1px solid #e1e4e8;
 }
 
 .info-row:last-child {
@@ -406,18 +430,176 @@
 }
 
 .info-label {
-    font-weight: 600;
-    color: var(--text-gray);
-    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    color: #586069;
+    font-size: 0.875rem;
 }
 
 .info-value {
-    color: var(--text-dark);
+    color: #24292e;
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.info-value.editable-magasins {
+    padding: 4px 12px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #e1e4e8;
 }
 
 .card-actions {
+    padding: 16px 24px;
+    background: white;
+    border-top: 1px solid #e1e4e8;
     display: flex;
-    gap: 10px;
+    gap: 8px;
+}
+
+/* Nouveaux styles de boutons */
+.btn-action {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.btn-pin {
+    background: #f0f3ff;
+    color: #667eea;
+    border: 1px solid transparent;
+}
+
+.btn-pin:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-edit {
+    background: #fff4f0;
+    color: #f97316;
+    border: 1px solid transparent;
+}
+
+.btn-edit:hover {
+    background: #f97316;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+}
+
+.btn-save {
+    background: #f0fdf4;
+    color: #22c55e;
+    border: 1px solid transparent;
+}
+
+.btn-save:hover {
+    background: #22c55e;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.btn-delete {
+    background: #fef2f2;
+    color: #ef4444;
+    border: 1px solid transparent;
+}
+
+.btn-delete:hover {
+    background: #ef4444;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* Sélecteur de rôle moderne */
+.role-selector {
+    margin-top: 8px;
+}
+
+.role-select {
+    width: auto;
+    padding: 6px 14px;
+    border: 2px solid #e1e4e8;
+    border-radius: 100px;
+    background: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.role-select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Édition des magasins moderne */
+.edit-magasins {
+    display: flex;
+    gap: 12px;
+    padding: 4px 0;
+}
+
+.edit-magasins label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 6px 14px;
+    background: white;
+    border: 2px solid #e1e4e8;
+    border-radius: 100px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.edit-magasins label:hover {
+    border-color: #667eea;
+    background: #f0f3ff;
+}
+
+.edit-magasins input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.edit-magasins label:has(input:checked) {
+    background: #667eea;
+    border-color: #667eea;
+    color: white;
+}
+
+/* Champs éditables modernes */
+.editable[contenteditable="true"] {
+    background: white !important;
+    border: 2px solid #667eea;
+    border-radius: 6px;
+    padding: 4px 8px;
+    outline: none;
+}
+
+/* Animations fluides */
+.user-card * {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ========================================
