@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orixis - Application SAV</title>
+    
+    <!-- PWA -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/src/css/variables.css">
+    <link rel="stylesheet" href="/src/css/styles.css">
+    <link rel="stylesheet" href="/src/css/components.css">
+    <link rel="stylesheet" href="/src/css/responsive.css">
+</head>
+<body>
+    <!-- Container principal de l'application -->
+    <div id="app">
+        <!-- Le contenu sera injecté ici par JavaScript -->
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>Chargement de Orixis...</p>
+        </div>
+    </div>
+
+    <!-- Router et App -->
+    <script type="module" src="/src/js/app.js"></script>
+</body>
+</html>
