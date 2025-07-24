@@ -10,10 +10,16 @@ async function initFirebase() {
         // Import dynamique des modules Firebase
         const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
         const { getFirestore } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const { getAuth, signInAnonymously } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
         
         // Initialiser Firebase
         const app = initializeApp(firebaseConfig);
         db = getFirestore(app);
+        const auth = getAuth(app);
+        
+        // Se connecter anonymement
+        await signInAnonymously(auth);
+        console.log('✅ Authentification anonyme réussie');
         
         console.log('✅ Firebase initialisé avec succès');
         return db;
