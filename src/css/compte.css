@@ -461,6 +461,16 @@
     color: white;
 }
 
+.btn-delete {
+    background: #ffebee;
+    color: #d32f2f;
+}
+
+.btn-delete:hover {
+    background: #d32f2f;
+    color: white;
+}
+
 /* ========================================
    MODAL
    ======================================== */
