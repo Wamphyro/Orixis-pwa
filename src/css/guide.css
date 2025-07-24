@@ -1,0 +1,161 @@
+/* Styles spécifiques au guide SAV */
+
+.nav-menu {
+    background: white;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-menu ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.nav-menu a {
+    text-decoration: none;
+    color: #3498db;
+    font-weight: 500;
+    padding: 8px 20px;
+    border-radius: 25px;
+    transition: all 0.3s;
+    display: inline-block;
+    background: #f8f9fa;
+}
+
+.nav-menu a:hover {
+    background: #3498db;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+}
+
+.warning-banner {
+    background: #e74c3c;
+    color: white;
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: 600;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+.guide-section {
+    background: white;
+    padding: 40px;
+    margin: 30px 0;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    border: 1px solid #e9ecef;
+}
+
+.guide-section h2 {
+    color: #2c3e50;
+    font-size: 2em;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 3px solid #3498db;
+    display: flex;
+    align-items: center;
+}
+
+.device-types {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    margin: 30px 0;
+}
+
+.device-card {
+    border: 2px solid #e0e0e0;
+    border-radius: 15px;
+    padding: 25px;
+    transition: all 0.3s;
+    background: #fafafa;
+}
+
+.device-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.device-card.bte {
+    border-color: #3498db;
+    background: linear-gradient(135deg, #ebf5fb 0%, #d6eaf8 100%);
+}
+
+.device-card.ric {
+    border-color: #e74c3c;
+    background: linear-gradient(135deg, #fdedec 0%, #fadbd8 100%);
+}
+
+.device-card.ite {
+    border-color: #27ae60;
+    background: linear-gradient(135deg, #e8f8f5 0%, #d5f4e6 100%);
+}
+
+.procedure-box {
+    background: #ecf0f1;
+    padding: 25px;
+    border-radius: 10px;
+    margin: 20px 0;
+}
+
+.step {
+    background: white;
+    padding: 20px;
+    margin: 15px 0;
+    border-radius: 10px;
+    border-left: 5px solid #3498db;
+    position: relative;
+    transition: all 0.3s;
+}
+
+.step:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.warning-box {
+    background: #fee;
+    border: 2px solid #e74c3c;
+    border-radius: 10px;
+    padding: 25px;
+    margin: 20px 0;
+}
+
+.success-box {
+    background: #d4edda;
+    border: 2px solid #27ae60;
+    border-radius: 10px;
+    padding: 25px;
+    margin: 20px 0;
+}
+
+@media (max-width: 768px) {
+    .nav-menu ul {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .device-types {
+        grid-template-columns: 1fr;
+    }
+    
+    .guide-section {
+        padding: 20px;
+    }
+}
