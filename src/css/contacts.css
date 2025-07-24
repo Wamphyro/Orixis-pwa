@@ -468,23 +468,11 @@
 /* Subject other input amélioré */
 .subject-other-input {
     display: none;
-    margin-top: 15px;
     animation: slideDown 0.3s ease;
 }
 
 .subject-other-input.show {
     display: block;
-}
-
-.subject-other-input input {
-    width: 100%;
-    padding: 16px 18px;
-    border: 2px solid #e2e8f0;
-    border-radius: 12px;
-    font-size: 16px;
-    transition: all 0.3s ease;
-    font-family: inherit;
-    background: #f8fafc;
 }
 
 /* Sélection priorité moderne */
