@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio - Connexion</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SAV Audio">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="assets/images/icon-192.png">
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="assets/css/main.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        
+        .logo {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #495057;
+            font-weight: 600;
+        }
+        
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: white;
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23667eea' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 20px;
+            padding-right: 45px;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            transform: scale(1.02);
+        }
+        
+        .pin-display {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .pin-dot {
+            width: 50px;
+            height: 60px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            background: #f8f9fa;
+            transition: all 0.3s;
+        }
+        
+        .pin-dot.filled {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .numpad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+        
+        .numpad-btn {
+            padding: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #2c3e50;
+        }
+        
+        .numpad-btn:hover {
+            background: #f8f9fa;
+            transform: scale(1.05);
+        }
+        
+        .numpad-btn:active {
+            transform: scale(0.95);
+            background: #e9ecef;
+        }
+        
+        .numpad-btn.zero {
+            grid-column: 2;
+        }
+        
+        .numpad-btn.delete {
+            background: #fee;
+            color: #e74c3c;
+            border-color: #e74c3c;
+        }
+        
+        .numpad-btn.validate {
+            background: #d4edda;
+            color: #27ae60;
+            border-color: #27ae60;
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            margin-top: 15px;
+            padding: 10px;
+            background: #fee;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .success-message {
+            color: #27ae60;
+            margin-top: 15px;
+            padding: 10px;
+            background: #d4edda;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .remember-device {
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+            font-size: 14px;
+            justify-content: center;
+        }
+        
+        .remember-device input {
+            width: auto;
+            margin-right: 8px;
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            border: 1px solid #64b5f6;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #1976d2;
+        }
+        
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 20px;
+            }
+            
+            .numpad-btn {
+                padding: 15px;
+                font-size: 20px;
+            }
+        }
+        
+        /* Animation */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid white;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">🔧</div>
+        <h1>SAV Audio</h1>
+        <p class="subtitle">Connexion sécurisée</p>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="magasin">Sélectionnez votre magasin</label>
+                <select id="magasin" required>
+                    <option value="">-- Choisir un magasin --</option>
+                    <!-- Les options seront générées dynamiquement -->
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Code d'accès à 4 chiffres</label>
+                <div class="pin-display">
+                    <div class="pin-dot" id="pin1"></div>
+                    <div class="pin-dot" id="pin2"></div>
+                    <div class="pin-dot" id="pin3"></div>
+                    <div class="pin-dot" id="pin4"></div>
+                </div>
+            </div>
+            
+            <div class="numpad">
+                <button type="button" class="numpad-btn" onclick="addDigit(1)">1</button>
+                <button type="button" class="numpad-btn" onclick="addDigit(2)">2</button>
+                <button type="button" class="numpad-btn" onclick="addDigit(3)">3</button>
+                <button type="button" class="numpad-btn" onclick="addDigit(4)">4</button>
+                <button type="button" class="numpad-btn" onclick="addDigit(5)">5</button>
+                <button type="button" class="numpad-btn" onclick="addDigit(6)">6</button>
+                <button type="button" class="numpad-btn" onclick="addDigit(7)">7</button>
+                <button type="button" class="numpad-btn" onclick="addDigit(8)">8</button>
+                <button type="button" class="numpad-btn" onclick="addDigit(9)">9</button>
+                <button type="button" class="numpad-btn delete" onclick="deleteDigit()">←</button>
+                <button type="button" class="numpad-btn zero" onclick="addDigit(0)">0</button>
+                <button type="button" class="numpad-btn validate" onclick="validatePin()">✓</button>
+            </div>
+            
+            <div class="remember-device">
+                <input type="checkbox" id="remember">
+                <label for="remember">Mémoriser cet appareil pendant 30 jours</label>
+            </div>
+            
+            <div class="error-message" id="errorMsg">
+                Code incorrect. Veuillez réessayer.
+            </div>
+            
+            <div class="success-message" id="successMsg">
+                Connexion réussie ! Redirection...
+            </div>
+        </form>
+        
+        <div class="info-box">
+            ℹ️ Contactez votre responsable si vous avez oublié votre code
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="assets/js/config/app.config.js"></script>
+    <script src="assets/js/services/auth.service.js"></script>
+    <script src="assets/js/pages/login.js"></script>
+</body>
+</html>
