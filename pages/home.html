@@ -58,6 +58,12 @@
                 <h3>Contacts SAV</h3>
                 <p>Numéros et contacts importants</p>
             </a>
+            
+            <a href="profile.html" class="menu-card fade-in">
+                <span class="icon">🔧</span>
+                <h3>Mon Compte</h3>
+                <p>Gérer mes informations personnelles</p>
+            </a>
         </div>
     </div>
 
@@ -93,6 +99,7 @@
         function logout() {
             if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
                 localStorage.removeItem('sav_auth');
+                localStorage.removeItem('sav_user_permissions');
                 window.location.href = '../index.html';
             }
         }
