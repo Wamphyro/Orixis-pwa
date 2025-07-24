@@ -6,11 +6,11 @@
     <title>Audio - Connexion</title>
     
     <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="SAV Audio">
     <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="assets/images/icon-192.png">
     <meta name="theme-color" content="#667eea">
     
     <!-- CSS -->
@@ -188,10 +188,10 @@
         let magasinsData = {};
         let useFirebase = true;
         
-        // Service Worker
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js');
-        }
+        // Service Worker - désactivé temporairement pour GitHub Pages
+        // if ('serviceWorker' in navigator) {
+        //     navigator.serviceWorker.register('/sw.js');
+        // }
         
         // Fonctions globales pour le numpad (doivent être dans window pour onclick)
         window.addDigit = function(digit) {
