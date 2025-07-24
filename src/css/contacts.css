@@ -194,47 +194,10 @@
 }
 
 /* ========================================
-   ANIMATION COPIE
-   ======================================== */
-.copied::after {
-    content: "Copié !";
-    position: absolute;
-    top: -30px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #27ae60;
-    color: white;
-    padding: 5px 15px;
-    border-radius: 20px;
-    font-size: 12px;
-    opacity: 0;
-    animation: showCopied 2s ease-out;
-}
-
-@keyframes showCopied {
-    0% {
-        opacity: 0;
-        transform: translateX(-50%) translateY(10px);
-    }
-    20% {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-    }
-    80% {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-    }
-    100% {
-        opacity: 0;
-        transform: translateX(-50%) translateY(-10px);
-    }
-}
-
-/* ========================================
-   MODAL DE CONTACT AMÉLIORÉ
+   MODAL DE CONTACT
    ======================================== */
 
-/* Overlay avec effet de flou */
+/* Overlay */
 .modal-overlay {
     display: none;
     position: fixed;
@@ -256,12 +219,12 @@
     padding: 20px;
 }
 
-/* Content avec design moderne et PLUS LARGE */
+/* Content */
 .modal-content {
     background: white;
     border-radius: 20px;
     width: 100%;
-    max-width: 700px; /* Augmenté de 550px à 700px */
+    max-width: 700px;
     max-height: 90vh;
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -270,9 +233,9 @@
     flex-direction: column;
 }
 
-/* Header moderne */
+/* Header */
 .modal-header {
-    padding: 30px 35px; /* Plus d'espace horizontal */
+    padding: 30px 35px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     position: relative;
@@ -326,14 +289,14 @@
     transform: rotate(90deg) scale(1.1);
 }
 
-/* Body avec meilleur espacement */
+/* Body */
 .modal-body {
-    padding: 35px 40px; /* Plus d'espace */
+    padding: 35px 40px;
     flex: 1;
     overflow-y: auto;
 }
 
-/* Messages améliorés */
+/* Messages */
 .success-message,
 .error-message {
     padding: 16px 20px;
@@ -379,7 +342,7 @@
     display: block;
 }
 
-/* Info destinataire moderne */
+/* Info destinataire */
 .recipient-info {
     background: linear-gradient(135deg, #f0f4ff 0%, #e8efff 100%);
     padding: 20px 25px;
@@ -416,84 +379,109 @@
     font-size: 0.95rem;
 }
 
-/* Formulaire moderne avec LABELS AU-DESSUS */
-.form-row {
-    margin-bottom: 28px; /* Plus d'espace entre les champs */
+/* Formulaire - Override du main.css */
+.modal-body .form-row {
+    display: block; /* Annule le grid de main.css */
+    grid-template-columns: none;
+    gap: 0;
+    margin-bottom: 28px;
 }
 
-.form-row label {
+.modal-body .form-row label {
     display: block;
-    margin-bottom: 10px; /* Plus d'espace entre label et input */
+    margin-bottom: 10px;
     color: #334155;
     font-weight: 600;
     font-size: 1rem;
     letter-spacing: 0.025em;
 }
 
-.form-row select,
-.form-row input,
-.form-row textarea {
+.modal-body .form-row select,
+.modal-body .form-row input,
+.modal-body .form-row textarea {
     width: 100%;
-    padding: 16px 18px; /* Plus de padding */
+    padding: 16px 18px;
     border: 2px solid #e2e8f0;
     border-radius: 12px;
     font-size: 16px;
     transition: all 0.3s ease;
     font-family: inherit;
     background: #f8fafc;
-    display: block; /* Force le display block */
+    display: block;
+    margin: 0;
 }
 
-.form-row select:hover,
-.form-row input:hover,
-.form-row textarea:hover {
+.modal-body .form-row select:hover,
+.modal-body .form-row input:hover,
+.modal-body .form-row textarea:hover {
     border-color: #cbd5e1;
     background: white;
 }
 
-.form-row select:focus,
-.form-row input:focus,
-.form-row textarea:focus {
+.modal-body .form-row select:focus,
+.modal-body .form-row input:focus,
+.modal-body .form-row textarea:focus {
     outline: none;
     border-color: #667eea;
     background: white;
     box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
 }
 
-.form-row textarea {
-    min-height: 140px; /* Un peu plus haut */
+.modal-body .form-row textarea {
+    min-height: 140px;
     resize: vertical;
 }
 
-/* Subject other input amélioré */
-.subject-other-input {
+/* Champ "Autre" */
+.modal-body .subject-other-input {
     display: none;
-    animation: slideDown 0.3s ease;
+    margin-bottom: 28px;
 }
 
-.subject-other-input.show {
+.modal-body .subject-other-input.show {
     display: block;
 }
 
-/* Sélection priorité moderne */
-.priority-select {
+.modal-body .subject-other-input label {
+    display: block;
+    margin-bottom: 10px;
+    color: #334155;
+    font-weight: 600;
+    font-size: 1rem;
+    letter-spacing: 0.025em;
+}
+
+.modal-body .subject-other-input input {
+    width: 100%;
+    padding: 16px 18px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    background: #f8fafc;
+    display: block;
+}
+
+/* Priorité */
+.modal-body .priority-select {
     display: flex;
     gap: 15px;
     margin-top: 15px;
 }
 
-.priority-option {
+.modal-body .priority-option {
     flex: 1;
     position: relative;
     cursor: pointer;
 }
 
-.priority-option input {
+.modal-body .priority-option input {
     position: absolute;
     opacity: 0;
 }
 
-.priority-option span {
+.modal-body .priority-option span {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -507,26 +495,26 @@
     transition: all 0.3s ease;
 }
 
-.priority-option:hover span {
+.modal-body .priority-option:hover span {
     border-color: #cbd5e1;
     background: white;
     transform: translateY(-1px);
 }
 
-.priority-option input:checked + span {
+.modal-body .priority-option input:checked + span {
     border-color: #667eea;
     background: #eef2ff;
     color: #667eea;
     font-weight: 600;
 }
 
-.priority-option.urgent input:checked + span {
+.modal-body .priority-option.urgent input:checked + span {
     border-color: #ef4444;
     background: #fef2f2;
     color: #ef4444;
 }
 
-/* Footer moderne */
+/* Footer */
 .modal-footer {
     padding: 25px 40px 35px;
     background: #f8fafc;
@@ -536,7 +524,7 @@
     justify-content: flex-end;
 }
 
-/* Boutons modernes */
+/* Boutons */
 .btn-modal {
     padding: 14px 32px;
     border: none;
@@ -599,7 +587,7 @@
     box-shadow: none;
 }
 
-/* Loading spinner amélioré */
+/* Loading spinner */
 .loading-spinner {
     display: none;
     width: 18px;
@@ -652,8 +640,85 @@
     100% { transform: rotate(360deg); }
 }
 
-/* Responsive moderne */
+@keyframes showCopied {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(10px);
+    }
+    20% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+    80% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px);
+    }
+}
+
+/* ========================================
+   TOOLTIP DE COPIE
+   ======================================== */
+.copy-tooltip {
+    position: fixed;
+    background: #27ae60;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+    z-index: 10000;
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+.copy-tooltip.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-5px);
+}
+
+.copy-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #27ae60;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
 @media (max-width: 768px) {
+    .contacts-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .contact-card {
+        padding: 20px;
+    }
+    
+    .contact-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .contact-avatar {
+        margin-right: 0;
+        margin-bottom: 15px;
+    }
+    
+    .contact-value {
+        font-size: 14px;
+    }
+    
     .modal-content {
         max-width: calc(100% - 40px);
         margin: 20px;
@@ -693,7 +758,7 @@
         padding: 24px;
     }
     
-    .priority-select {
+    .modal-body .priority-select {
         flex-direction: column;
         gap: 12px;
     }
@@ -712,91 +777,4 @@
     .btn-send {
         order: 1;
     }
-}
-
-/* ========================================
-   RESPONSIVE CONTACTS
-   ======================================== */
-@media (max-width: 768px) {
-    .contacts-grid {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-    
-    .contact-card {
-        padding: 20px;
-    }
-    
-    .contact-header {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .contact-avatar {
-        margin-right: 0;
-        margin-bottom: 15px;
-    }
-    
-    .contact-value {
-        font-size: 14px;
-    }
-    
-    .modal-content {
-        max-height: 100vh;
-        height: 100%;
-        border-radius: 0;
-    }
-    
-    .modal-header {
-        padding: 20px;
-    }
-    
-    .modal-body {
-        padding: 20px;
-    }
-    
-    .priority-select {
-        flex-direction: column;
-    }
-    
-    .modal-footer {
-        flex-direction: column;
-    }
-    
-    .btn-modal {
-        width: 100%;
-    }
-}
-
-/* ========================================
-   TOOLTIP DE COPIE
-   ======================================== */
-.copy-tooltip {
-    position: fixed;
-    background: #27ae60;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 600;
-    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
-    z-index: 10000;
-    opacity: 0;
-    transition: all 0.3s ease;
-    pointer-events: none;
-}
-
-.copy-tooltip.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(-5px);
-}
-
-.copy-tooltip::after {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 6px solid transparent;
-    border-top-color: #27ae60;
 }
