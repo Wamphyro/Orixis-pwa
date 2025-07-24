@@ -310,17 +310,6 @@
                 return;
             }
             
-            // Vérifier la présence des boutons
-            const btnEdit = card.querySelector('.btn-edit');
-            const btnCancel = card.querySelector('.btn-cancel');
-            const btnSave = card.querySelector('.btn-save');
-            
-            console.log('Boutons trouvés:', {
-                edit: !!btnEdit,
-                cancel: !!btnCancel,
-                save: !!btnSave
-            });
-            
             // Sauvegarder les valeurs originales pour pouvoir annuler
             const originalData = {
                 prenom: card.querySelector('[data-field="prenom"]').textContent.trim(),
@@ -331,9 +320,20 @@
             card.dataset.originalData = JSON.stringify(originalData);
             
             // Activer l'édition des champs texte
-            card.querySelectorAll('.editable').forEach(el => {
-                el.contentEditable = true;
+            const editableFields = card.querySelectorAll('.editable');
+            console.log('Champs éditables trouvés:', editableFields.length);
+            
+            editableFields.forEach(el => {
+                console.log('Activation édition pour:', el.dataset.field);
+                el.contentEditable = 'true';
                 el.classList.add('editing');
+                // Forcer le style pour être sûr
+                el.style.backgroundColor = '#f0f3ff';
+                el.style.border = '2px solid #667eea';
+                el.style.borderRadius = '6px';
+                el.style.padding = '4px 8px';
+                el.style.outline = 'none';
+                el.style.cursor = 'text';
             });
             
             // Remplacer le badge de rôle par un sélecteur
@@ -360,12 +360,15 @@
             }
             
             // Afficher/Masquer les boutons
+            const btnEdit = card.querySelector('.btn-edit');
+            const btnCancel = card.querySelector('.btn-cancel');
+            const btnSave = card.querySelector('.btn-save');
+            const btnDelete = card.querySelector('.btn-delete');
+            
             if (btnEdit) btnEdit.style.display = 'none';
             if (btnCancel) btnCancel.style.display = 'block';
             if (btnSave) btnSave.style.display = 'block';
-            if (card.querySelector('.btn-delete')) {
-                card.querySelector('.btn-delete').style.display = 'none';
-            }
+            if (btnDelete) btnDelete.style.display = 'none';
         }
         
         window.cancelEdit = async function(userId) {
