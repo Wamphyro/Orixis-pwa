@@ -15,16 +15,25 @@
     
     <!-- CSS -->
     <link rel="stylesheet" href="../src/css/main.css">
+    <link rel="stylesheet" href="../src/css/header-layout.css">
 </head>
 <body>
-    <div class="header">
-        <h1>📊 Dashboard</h1>
-        <p>Système de Gestion des Interventions</p>
-        <div class="user-info">
-            <span id="magasin-info">Magasin: </span>
-            <button class="btn-logout" onclick="logout()">
-                🚪 Déconnexion
-            </button>
+    <!-- Header uniforme -->
+    <div class="app-header">
+        <div class="app-header-content">
+            <div class="app-header-left"></div>
+            <div class="app-header-center">
+                <h1>📊 Dashboard</h1>
+                <p>Système de Gestion des Interventions</p>
+            </div>
+            <div class="app-header-right">
+                <div class="header-user-info">
+                    <span id="magasin-info">Magasin: </span>
+                </div>
+                <button class="header-logout-button" onclick="logout()">
+                    🚪 Déconnexion
+                </button>
+            </div>
         </div>
     </div>
 
