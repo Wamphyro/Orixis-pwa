@@ -36,25 +36,46 @@
     </div>
 
     <div class="container">
-        <!-- Barre de recherche pour admin uniquement -->
-        <div id="adminControls" class="admin-controls" style="display: none;">
-            <div class="search-bar">
-                <input type="text" id="searchUser" placeholder="🔍 Rechercher un utilisateur..." onkeyup="filterUsers()">
+        <!-- Section informations personnelles -->
+        <section class="profile-section">
+            <h2>👤 Mes informations personnelles</h2>
+            <div class="user-info-card" id="userInfoCard">
+                <!-- Sera rempli dynamiquement -->
             </div>
-            <div class="filter-buttons">
-                <button class="filter-btn active" onclick="filterByRole('all')">Tous</button>
-                <button class="filter-btn" onclick="filterByRole('technicien')">🔧 Techniciens</button>
-                <button class="filter-btn" onclick="filterByRole('audioprothesiste')">🦻 Audioprothésistes</button>
-                <button class="filter-btn" onclick="filterByRole('assistant')">📋 Assistants</button>
-                <button class="filter-btn" onclick="filterByRole('manager')">👔 Managers</button>
-                <button class="filter-btn" onclick="filterByRole('admin')">👑 Admins</button>
-            </div>
-        </div>
+        </section>
 
-        <!-- Conteneur des cartes utilisateur -->
-        <div id="userCardsContainer" class="user-cards-container">
-            <!-- Les cartes seront générées dynamiquement -->
-        </div>
+        <!-- Section magasins -->
+        <section class="profile-section">
+            <h2>🏪 Mes magasins autorisés</h2>
+            <div class="magasins-grid" id="magasinsGrid">
+                <!-- Les vignettes seront générées dynamiquement -->
+            </div>
+        </section>
+
+        <!-- Section admin uniquement -->
+        <section id="adminSection" class="profile-section admin-section" style="display: none;">
+            <h2>👥 Gestion des utilisateurs</h2>
+            
+            <!-- Barre de recherche -->
+            <div class="admin-controls">
+                <div class="search-bar">
+                    <input type="text" id="searchUser" placeholder="🔍 Rechercher un utilisateur..." onkeyup="filterUsers()">
+                </div>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" onclick="filterByRole('all')">Tous</button>
+                    <button class="filter-btn" onclick="filterByRole('technicien')">🔧 Techniciens</button>
+                    <button class="filter-btn" onclick="filterByRole('audioprothesiste')">🦻 Audioprothésistes</button>
+                    <button class="filter-btn" onclick="filterByRole('assistant')">📋 Assistants</button>
+                    <button class="filter-btn" onclick="filterByRole('manager')">👔 Managers</button>
+                    <button class="filter-btn" onclick="filterByRole('admin')">👑 Admins</button>
+                </div>
+            </div>
+
+            <!-- Liste des utilisateurs -->
+            <div id="userCardsContainer" class="user-cards-container">
+                <!-- Les cartes seront générées dynamiquement -->
+            </div>
+        </section>
 
         <!-- Message de chargement -->
         <div id="loadingMessage" class="loading-message">
@@ -108,6 +129,7 @@
         let currentUser = null;
         let allUsers = [];
         let isAdmin = false;
+        let currentAuth = null;
         
         // Vérification auth
         function checkAuth() {
@@ -122,6 +144,7 @@
                 return false;
             }
             
+            currentAuth = authData;
             return authData.authenticated;
         }
         
@@ -143,31 +166,105 @@
         
         // Charger les données utilisateur
         async function loadUserData() {
-            const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
             const permissions = JSON.parse(localStorage.getItem('sav_user_permissions') || '{}');
             
             // Déterminer l'utilisateur actuel
-            if (auth.collaborateur && auth.collaborateur.id) {
-                currentUser = await getUtilisateurDetails(auth.collaborateur.id);
+            if (currentAuth.collaborateur && currentAuth.collaborateur.id) {
+                currentUser = await getUtilisateurDetails(currentAuth.collaborateur.id);
+            }
+            
+            // Si pas de currentUser, utiliser les données de l'auth
+            if (!currentUser && currentAuth.collaborateur) {
+                currentUser = {
+                    id: currentAuth.collaborateur.id,
+                    nom: currentAuth.collaborateur.nom,
+                    prenom: currentAuth.collaborateur.prenom,
+                    role: currentAuth.collaborateur.role || 'technicien',
+                    magasins: currentAuth.magasins || [currentAuth.magasin],
+                    autorisations: permissions.autorisations || {}
+                };
             }
             
             // Vérifier si admin
             isAdmin = currentUser?.role === 'admin' || permissions.role === 'admin';
             
-            // Afficher les contrôles admin si nécessaire
+            // Afficher les informations personnelles
+            displayUserInfo();
+            
+            // Afficher les magasins
+            displayMagasins();
+            
+            // Afficher la section admin si nécessaire
             if (isAdmin) {
-                document.getElementById('adminControls').style.display = 'block';
+                document.getElementById('adminSection').style.display = 'block';
                 await loadAllUsers();
-            } else {
-                displaySingleUserCard(currentUser || {
-                    nom: auth.collaborateur?.nom || permissions.nom || 'Utilisateur',
-                    prenom: auth.collaborateur?.prenom || permissions.prenom || '',
-                    role: permissions.role || 'technicien',
-                    magasins: [auth.magasin]
-                });
             }
             
             document.getElementById('loadingMessage').style.display = 'none';
+        }
+        
+        // Afficher les informations personnelles
+        function displayUserInfo() {
+            const container = document.getElementById('userInfoCard');
+            const magasinActuel = currentAuth.magasin;
+            
+            container.innerHTML = `
+                <div class="user-info-content">
+                    <div class="user-avatar">
+                        ${getInitials(currentUser.prenom, currentUser.nom)}
+                    </div>
+                    <div class="user-details">
+                        <h3>${currentUser.prenom} ${currentUser.nom}</h3>
+                        <p class="user-role">${getRoleLabel(currentUser.role)}</p>
+                        <p class="user-id">ID: ${currentUser.id}</p>
+                        <p class="current-magasin">
+                            <strong>Magasin actuel:</strong> 
+                            <span class="magasin-badge">${magasinActuel}</span>
+                        </p>
+                    </div>
+                    <div class="user-actions">
+                        <button class="btn-primary" onclick="changePin('${currentUser.id}')">
+                            🔐 Changer mon code PIN
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Afficher les magasins autorisés
+        function displayMagasins() {
+            const container = document.getElementById('magasinsGrid');
+            const magasins = currentUser.magasins || [];
+            const autorisations = currentUser.autorisations || {};
+            
+            if (magasins.length === 0) {
+                container.innerHTML = '<p class="no-data">Aucun magasin autorisé</p>';
+                return;
+            }
+            
+            container.innerHTML = magasins.map(magasin => {
+                const isActive = magasin === currentAuth.magasin;
+                const permissions = autorisations[magasin];
+                
+                return `
+                    <div class="magasin-card ${isActive ? 'active' : ''}">
+                        <div class="magasin-header">
+                            <h4>${magasin}</h4>
+                            ${isActive ? '<span class="badge-active">Actif</span>' : ''}
+                        </div>
+                        <div class="magasin-info">
+                            <p><strong>Accès:</strong> ${permissions?.acces ? '✅ Autorisé' : '❌ Refusé'}</p>
+                            ${permissions?.permissions ? 
+                                `<p><strong>Permissions:</strong></p>
+                                 <ul class="permissions-list">
+                                    ${permissions.permissions.map(p => `<li>• ${p}</li>`).join('')}
+                                 </ul>` 
+                                : ''
+                            }
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
         
         // Charger tous les utilisateurs (admin only)
@@ -180,18 +277,28 @@
             }
         }
         
-        // Afficher une seule carte (utilisateur normal)
-        function displaySingleUserCard(user) {
-            const container = document.getElementById('userCardsContainer');
-            container.innerHTML = ProfileService.createUserCard(user, false);
-        }
-        
-        // Afficher toutes les cartes (admin)
+        // Afficher les cartes utilisateurs (admin)
         function displayUserCards(users) {
             const container = document.getElementById('userCardsContainer');
             container.innerHTML = users.map(user => 
                 ProfileService.createUserCard(user, true)
             ).join('');
+        }
+        
+        // Fonctions utilitaires
+        function getInitials(prenom, nom) {
+            return `${prenom.charAt(0)}${nom.charAt(0)}`.toUpperCase();
+        }
+        
+        function getRoleLabel(role) {
+            const labels = {
+                'admin': '👑 Administrateur',
+                'manager': '👔 Manager',
+                'audioprothesiste': '🦻 Audioprothésiste',
+                'assistant': '📋 Assistant SAV',
+                'technicien': '🔧 Technicien'
+            };
+            return labels[role] || role;
         }
         
         // Fonctions globales pour les événements
@@ -266,6 +373,7 @@
             // Si c'est l'utilisateur lui-même ou pas admin, demander l'ancien code
             if (!isAdmin || userId === currentUser?.id) {
                 document.getElementById('oldPinGroup').style.display = 'block';
+                document.getElementById('oldPin').setAttribute('required', '');
             } else {
                 document.getElementById('oldPinGroup').style.display = 'none';
                 document.getElementById('oldPin').removeAttribute('required');
