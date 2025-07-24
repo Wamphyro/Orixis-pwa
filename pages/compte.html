@@ -303,8 +303,23 @@
         }
         
         window.editUser = function(userId) {
+            console.log('Édition utilisateur:', userId);
             const card = document.getElementById(`card-${userId}`);
-            if (!card) return;
+            if (!card) {
+                console.error('Carte non trouvée');
+                return;
+            }
+            
+            // Vérifier la présence des boutons
+            const btnEdit = card.querySelector('.btn-edit');
+            const btnCancel = card.querySelector('.btn-cancel');
+            const btnSave = card.querySelector('.btn-save');
+            
+            console.log('Boutons trouvés:', {
+                edit: !!btnEdit,
+                cancel: !!btnCancel,
+                save: !!btnSave
+            });
             
             // Sauvegarder les valeurs originales pour pouvoir annuler
             const originalData = {
@@ -345,9 +360,9 @@
             }
             
             // Afficher/Masquer les boutons
-            card.querySelector('.btn-edit').style.display = 'none';
-            card.querySelector('.btn-cancel').style.display = 'block';
-            card.querySelector('.btn-save').style.display = 'block';
+            if (btnEdit) btnEdit.style.display = 'none';
+            if (btnCancel) btnCancel.style.display = 'block';
+            if (btnSave) btnSave.style.display = 'block';
             if (card.querySelector('.btn-delete')) {
                 card.querySelector('.btn-delete').style.display = 'none';
             }
