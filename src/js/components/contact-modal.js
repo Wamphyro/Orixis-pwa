@@ -113,11 +113,11 @@ class ContactModal {
                             <div class="form-row">
                                 <label>Priorité</label>
                                 <div class="priority-select">
-                                    <label class="priority-option">
+                                    <label class="priority-option selected">
                                         <input type="radio" name="priority" value="normal" checked>
                                         <span>🔵 Normal</span>
                                     </label>
-                                    <label class="priority-option urgent">
+                                    <label class="priority-option">
                                         <input type="radio" name="priority" value="urgent">
                                         <span>🔴 Urgent</span>
                                     </label>
@@ -153,11 +153,25 @@ class ContactModal {
         // Gérer les options de priorité
         document.querySelectorAll('.priority-option').forEach(option => {
             option.addEventListener('click', function() {
+                // Retirer toutes les sélections
                 document.querySelectorAll('.priority-option').forEach(opt => {
                     opt.classList.remove('selected');
+                    if (opt.classList.contains('urgent')) {
+                        opt.classList.remove('urgent');
+                    }
                 });
+                
+                // Ajouter la sélection sur l'option cliquée
                 this.classList.add('selected');
-                this.querySelector('input').checked = true;
+                
+                // Si c'est urgent, ajouter aussi la classe urgent
+                const radioInput = this.querySelector('input[type="radio"]');
+                if (radioInput && radioInput.value === 'urgent') {
+                    this.classList.add('urgent');
+                }
+                
+                // Cocher le radio
+                radioInput.checked = true;
             });
         });
 
@@ -181,6 +195,12 @@ class ContactModal {
         document.getElementById('contactForm').reset();
         document.getElementById('subjectOtherDiv').classList.remove('show');
         this.hideMessages();
+        
+        // Réinitialiser la priorité
+        document.querySelectorAll('.priority-option').forEach(opt => {
+            opt.classList.remove('selected', 'urgent');
+        });
+        document.querySelector('.priority-option:first-child').classList.add('selected');
         
         // Afficher le modal
         this.modal.classList.add('active');
