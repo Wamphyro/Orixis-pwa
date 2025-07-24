@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAV Audio - Accueil</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SAV Audio">
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="../src/css/main.css">
+    <link rel="stylesheet" href="../src/css/header-layout.css">
+    <link rel="stylesheet" href="../src/css/home.css">
+</head>
+<body>
+    <!-- Header uniforme -->
+    <div class="app-header">
+        <div class="app-header-content">
+            <div class="app-header-left"></div>
+            <div class="app-header-center">
+                <h1>📊 Dashboard</h1>
+                <p>Système de Gestion des Interventions</p>
+            </div>
+            <div class="app-header-right">
+                <div class="magasin-selector">
+                    <label for="magasinSelect">Magasin:</label>
+                    <select id="magasinSelect" onchange="changeMagasin(this.value)">
+                        <!-- Options générées dynamiquement -->
+                    </select>
+                </div>
+                <button class="header-logout-button" onclick="logout()">
+                    🚪 Déconnexion
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Menu principal -->
+        <div class="menu-grid">
+            <a href="intervention.html" class="menu-card fade-in">
+                <span class="icon">📝</span>
+                <h3>Nouvelle Intervention</h3>
+                <p>Créer une fiche d'intervention pour un client</p>
+            </a>
+            
+            <a href="guide.html" class="menu-card fade-in">
+                <span class="icon">📚</span>
+                <h3>Guide SAV</h3>
+                <p>Consulter les procédures et protocoles</p>
+            </a>
+            
+            <a href="contacts.html" class="menu-card fade-in">
+                <span class="icon">📞</span>
+                <h3>Contacts SAV</h3>
+                <p>Numéros et contacts importants</p>
+            </a>
+            
+            <a href="profile.html" class="menu-card fade-in">
+                <span class="icon">🔧</span>
+                <h3>Mon Compte</h3>
+                <p>Gérer mes informations personnelles</p>
+            </a>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Orixis - © 2025</p>
+    </div>
+
+    <script>
+        // Fonction de vérification d'authentification
+        function checkAuth() {
+            const auth = localStorage.getItem('sav_auth');
+            if (!auth) return false;
+            
+            const authData = JSON.parse(auth);
+            const now = Date.now();
+            
+            if (now - authData.timestamp > authData.expiry) {
+                localStorage.removeItem('sav_auth');
+                return false;
+            }
+            
+            return authData.authenticated;
+        }
+        
+        // Vérifier l'authentification au chargement
+        window.addEventListener('load', () => {
+            if (!checkAuth()) {
+                window.location.href = '../index.html';
+            } else {
+                setupMagasinSelector();
+            }
+        });
+        
+        // Configurer le sélecteur de magasin
+        function setupMagasinSelector() {
+            const auth = JSON.parse(localStorage.getItem('sav_auth'));
+            const permissions = JSON.parse(localStorage.getItem('sav_user_permissions') || '{}');
+            
+            const select = document.getElementById('magasinSelect');
+            const selectorDiv = document.querySelector('.magasin-selector');
+            
+            // Récupérer les magasins autorisés
+            let magasinsAutorises = auth.magasins || [];
+            
+            // Si on a des autorisations spécifiques, les utiliser
+            if (permissions.autorisations) {
+                magasinsAutorises = Object.keys(permissions.autorisations)
+                    .filter(mag => permissions.autorisations[mag].acces === true);
+            }
+            
+            // S'assurer qu'on a au moins le magasin actuel
+            if (magasinsAutorises.length === 0 && auth.magasin) {
+                magasinsAutorises = [auth.magasin];
+            }
+            
+            // Si un seul magasin ou moins, afficher juste le texte
+            if (magasinsAutorises.length <= 1) {
+                const magasinActuel = auth.magasin || magasinsAutorises[0] || 'Non défini';
+                selectorDiv.innerHTML = `
+                    <label style="color: white; font-weight: 600;">
+                        Magasin: <strong style="font-size: 16px;">${magasinActuel}</strong>
+                    </label>
+                `;
+            } else {
+                // Plusieurs magasins, afficher le select
+                magasinsAutorises.forEach(magasin => {
+                    const option = document.createElement('option');
+                    option.value = magasin;
+                    option.textContent = magasin;
+                    if (magasin === auth.magasin) {
+                        option.selected = true;
+                    }
+                    select.appendChild(option);
+                });
+            }
+        }
+        
+        // Changer de magasin
+        function changeMagasin(nouveauMagasin) {
+            const auth = JSON.parse(localStorage.getItem('sav_auth'));
+            const permissions = JSON.parse(localStorage.getItem('sav_user_permissions') || '{}');
+            
+            // Vérifier l'autorisation
+            if (permissions.autorisations && 
+                permissions.autorisations[nouveauMagasin] && 
+                permissions.autorisations[nouveauMagasin].acces) {
+                
+                // Mettre à jour le magasin actif
+                auth.magasin = nouveauMagasin;
+                localStorage.setItem('sav_auth', JSON.stringify(auth));
+                
+                // Recharger la page pour appliquer les changements
+                location.reload();
+            } else {
+                alert('Vous n\'avez pas accès à ce magasin');
+                // Remettre la sélection précédente
+                document.getElementById('magasinSelect').value = auth.magasin;
+            }
+        }
+        
+        // Fonction de déconnexion
+        function logout() {
+            if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+                localStorage.removeItem('sav_auth');
+                localStorage.removeItem('sav_user_permissions');
+                window.location.href = '../index.html';
+            }
+        }
+        
+        // Afficher les infos au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animation des cards
+            const cards = document.querySelectorAll('.menu-card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+    </script>
+</body>
+</html>
