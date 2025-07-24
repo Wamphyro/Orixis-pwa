@@ -80,7 +80,7 @@ async function chargerTousLesUtilisateurs() {
     }
 }
 
-// Charger les utilisateurs d'un magasin (compatibilité)
+// Charger les utilisateurs d'un magasin
 async function chargerUtilisateurs(magasinId) {
     try {
         const { collection, getDocs, query, where } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
