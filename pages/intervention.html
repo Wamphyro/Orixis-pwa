@@ -51,15 +51,112 @@
             gap: 20px;
         }
         
-        .form-row {
-            display: flex;
+        /* Device selector styles */
+        .device-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
-            flex-wrap: wrap;
+            margin: 20px 0;
         }
         
-        .form-row > * {
-            flex: 1;
-            min-width: 200px;
+        .device-option {
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .device-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+        
+        .device-card {
+            background: white;
+            border: 3px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        
+        .device-option input[type="radio"]:checked + .device-card {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        
+        .device-option input[type="radio"]:checked + .device-card.bte {
+            border-color: #3498db;
+            background: linear-gradient(135deg, #ebf5fb 0%, #d6eaf8 100%);
+        }
+        
+        .device-option input[type="radio"]:checked + .device-card.ric {
+            border-color: #e74c3c;
+            background: linear-gradient(135deg, #fdedec 0%, #fadbd8 100%);
+        }
+        
+        .device-option input[type="radio"]:checked + .device-card.ite {
+            border-color: #27ae60;
+            background: linear-gradient(135deg, #e8f8f5 0%, #d5f4e6 100%);
+        }
+        
+        .device-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        
+        .device-card h4 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .device-card p {
+            color: #7f8c8d;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .device-features {
+            text-align: left;
+            margin-top: auto;
+        }
+        
+        .feature {
+            display: block;
+            font-size: 13px;
+            color: #666;
+            margin: 5px 0;
+        }
+        
+        /* Checkbox group styles */
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .checkbox-item {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .checkbox-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .checkbox-item.checked {
+            background: linear-gradient(135deg, #ebf5fb 0%, #d6eaf8 100%);
+            border-color: #3498db;
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            margin-right: 10px;
         }
         
         .result-section {
@@ -125,6 +222,27 @@
             color: #c0392b;
         }
         
+        .back-button {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+        
+        .back-button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-50%) translateX(-2px);
+        }
+        
         @media (max-width: 768px) {
             .intervention-form {
                 padding: 20px;
@@ -140,6 +258,19 @@
             
             .action-buttons button {
                 width: 100%;
+            }
+            
+            .device-selector {
+                grid-template-columns: 1fr;
+            }
+            
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .back-button {
+                position: static;
+                margin-bottom: 20px;
             }
         }
     </style>
@@ -192,12 +323,60 @@
                     <span>Type d'Appareil</span>
                 </h2>
                 
-                <div id="device-selector-container"></div>
+                <div class="device-selector">
+                    <label class="device-option">
+                        <input type="radio" name="type_appareil" value="BTE" required>
+                        <div class="device-card bte">
+                            <div class="device-icon">🎧</div>
+                            <h4>BTE</h4>
+                            <p>Contour d'oreille classique</p>
+                            <div class="device-features">
+                                <span class="feature">• Pile 13 ou 675</span>
+                                <span class="feature">• Tube + embout</span>
+                                <span class="feature">• Plus puissant</span>
+                            </div>
+                        </div>
+                    </label>
+                    
+                    <label class="device-option">
+                        <input type="radio" name="type_appareil" value="RIC" required>
+                        <div class="device-card ric">
+                            <div class="device-icon">🔊</div>
+                            <h4>RIC/RIE</h4>
+                            <p>Écouteur dans l'oreille</p>
+                            <div class="device-features">
+                                <span class="feature">• Pile 10, 312 ou 13</span>
+                                <span class="feature">• Écouteur + dôme</span>
+                                <span class="feature">• Plus discret</span>
+                            </div>
+                        </div>
+                    </label>
+                    
+                    <label class="device-option">
+                        <input type="radio" name="type_appareil" value="ITE" required>
+                        <div class="device-card ite">
+                            <div class="device-icon">🦻</div>
+                            <h4>ITE/ITC/CIC</h4>
+                            <p>Intra-auriculaire</p>
+                            <div class="device-features">
+                                <span class="feature">• Pile 10 ou 312</span>
+                                <span class="feature">• Sur-mesure</span>
+                                <span class="feature">• Dans l'oreille</span>
+                            </div>
+                        </div>
+                    </label>
+                </div>
                 
                 <div class="form-group" style="margin-top: 20px;">
                     <label for="marque">Marque de l'appareil*</label>
                     <select id="marque" name="marque" required>
                         <option value="">-- Sélectionnez une marque --</option>
+                        <option value="Phonak">Phonak</option>
+                        <option value="Oticon">Oticon</option>
+                        <option value="Signia">Signia/Siemens</option>
+                        <option value="Widex">Widex</option>
+                        <option value="Starkey">Starkey</option>
+                        <option value="Autre">Autre</option>
                     </select>
                 </div>
             </div>
@@ -209,7 +388,56 @@
                     <span>Problème(s) Rencontré(s)</span>
                 </h2>
                 
-                <div id="problems-container"></div>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <label>
+                            <input type="checkbox" name="problemes" value="Pas de son">
+                            🔇 Pas de son / Muet
+                        </label>
+                    </div>
+                    <div class="checkbox-item">
+                        <label>
+                            <input type="checkbox" name="problemes" value="Son faible">
+                            🔉 Son faible
+                        </label>
+                    </div>
+                    <div class="checkbox-item">
+                        <label>
+                            <input type="checkbox" name="problemes" value="Sifflement">
+                            📢 Sifflement (Larsen)
+                        </label>
+                    </div>
+                    <div class="checkbox-item">
+                        <label>
+                            <input type="checkbox" name="problemes" value="Son intermittent">
+                            〰️ Son intermittent
+                        </label>
+                    </div>
+                    <div class="checkbox-item">
+                        <label>
+                            <input type="checkbox" name="problemes" value="Grésille">
+                            📡 Grésille / Parasite
+                        </label>
+                    </div>
+                    <div class="checkbox-item">
+                        <label>
+                            <input type="checkbox" name="problemes" value="Humidité">
+                            💧 Humidité / Condensation
+                        </label>
+                    </div>
+                    <div class="checkbox-item">
+                        <label>
+                            <input type="checkbox" name="problemes" value="Inconfort">
+                            😣 Inconfort / Douleur
+                        </label>
+                    </div>
+                    <div class="checkbox-item">
+                        <label>
+                            <input type="checkbox" name="problemes" value="Contrôle routine">
+                            🔧 Contrôle routine
+                        </label>
+                    </div>
+                </div>
             </div>
             
             <!-- Section Actions -->
@@ -219,7 +447,44 @@
                     <span>Action(s) Effectuée(s)</span>
                 </h2>
                 
-                <div id="actions-container"></div>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <label>
+                            <input type="checkbox" name="actions" value="Pile changée">
+                            🔋 Pile testée / changée
+                        </label>
+                    </div>
+                    <div class="checkbox-item">
+                        <label>
+                            <input type="checkbox" name="actions" value="Nettoyage complet">
+                            🧹 Nettoyage complet
+                        </label>
+                    </div>
+                    <div class="checkbox-item">
+                        <label>
+                            <input type="checkbox" name="actions" value="Filtre changé">
+                            🔄 Filtre pare-cérumen changé
+                        </label>
+                    </div>
+                    <div class="checkbox-item">
+                        <label>
+                            <input type="checkbox" name="actions" value="Dôme remplacé">
+                            🔵 Dôme remplacé
+                        </label>
+                    </div>
+                    <div class="checkbox-item">
+                        <label>
+                            <input type="checkbox" name="actions" value="Tube changé">
+                            📏 Tube changé
+                        </label>
+                    </div>
+                    <div class="checkbox-item">
+                        <label>
+                            <input type="checkbox" name="actions" value="Séchage">
+                            ☀️ Séchage effectué
+                        </label>
+                    </div>
+                </div>
             </div>
             
             <!-- Section Résultat -->
@@ -231,7 +496,32 @@
                 
                 <div class="result-section">
                     <label>Résultat*</label>
-                    <div id="result-container"></div>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <label>
+                                <input type="radio" name="resultat" value="Résolu" required>
+                                ✅ Problème résolu
+                            </label>
+                        </div>
+                        <div class="checkbox-item">
+                            <label>
+                                <input type="radio" name="resultat" value="Partiel" required>
+                                ⚠️ Amélioration partielle
+                            </label>
+                        </div>
+                        <div class="checkbox-item">
+                            <label>
+                                <input type="radio" name="resultat" value="SAV" required>
+                                ❌ Sans effet - Escalade SAV
+                            </label>
+                        </div>
+                        <div class="checkbox-item">
+                            <label>
+                                <input type="radio" name="resultat" value="OK" required>
+                                🔧 Contrôle OK
+                            </label>
+                        </div>
+                    </div>
                     
                     <div id="sav-warning" class="warning-box" style="display: none;">
                         ⚠️ Une escalade SAV sera nécessaire. Un email sera envoyé automatiquement à l'équipe technique.
@@ -260,21 +550,7 @@
         <p>Orixis - © 2025</p>
     </div>
 
-    <script type="module">
-        import { DeviceSelector } from '../src/js/components/device-selector.js';
-        import { CheckboxGroup } from '../src/js/components/checkbox-group.js';
-        import { InterventionService } from '../src/js/services/intervention.service.js';
-        import { BRANDS } from '../src/js/data/brands.data.js';
-        import { PROBLEMS } from '../src/js/data/problems.data.js';
-        import { ACTIONS } from '../src/js/data/actions.data.js';
-        import { INTERVENTION_RESULTS } from '../src/js/data/actions.data.js';
-        
-        // Variables globales
-        let deviceSelector;
-        let problemsGroup;
-        let actionsGroup;
-        let resultsGroup;
-        
+    <script>
         // Vérification d'authentification
         function checkAuth() {
             const auth = localStorage.getItem('sav_auth');
@@ -309,138 +585,171 @@
             document.getElementById('date').value = now.toISOString().split('T')[0];
             document.getElementById('heure').value = now.toTimeString().slice(0, 5);
             
-            // Remplir les marques
-            const marqueSelect = document.getElementById('marque');
-            BRANDS.forEach(brand => {
-                const option = document.createElement('option');
-                option.value = brand.value;
-                option.textContent = brand.label;
-                marqueSelect.appendChild(option);
-            });
-            
-            // Initialiser les composants
-            deviceSelector = new DeviceSelector('device-selector-container', {
-                onChange: (value) => console.log('Device sélectionné:', value)
-            });
-            
-            problemsGroup = new CheckboxGroup('problems-container', PROBLEMS, {
-                columns: 2
-            });
-            
-            actionsGroup = new CheckboxGroup('actions-container', ACTIONS, {
-                columns: 2
-            });
-            
-            resultsGroup = new CheckboxGroup('result-container', INTERVENTION_RESULTS, {
-                multiple: false,
-                columns: 2,
-                onChange: (values) => {
-                    const savWarning = document.getElementById('sav-warning');
-                    savWarning.style.display = values.includes('SAV') ? 'block' : 'none';
-                }
+            // Gérer les checkboxes
+            document.querySelectorAll('.checkbox-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    if (e.target.type !== 'checkbox' && e.target.type !== 'radio') {
+                        const input = this.querySelector('input');
+                        if (input.type === 'checkbox') {
+                            input.checked = !input.checked;
+                        } else if (input.type === 'radio') {
+                            input.checked = true;
+                        }
+                        input.dispatchEvent(new Event('change'));
+                    }
+                });
+                
+                const input = item.querySelector('input');
+                input.addEventListener('change', function() {
+                    if (this.checked) {
+                        item.classList.add('checked');
+                    } else {
+                        item.classList.remove('checked');
+                    }
+                    
+                    // Gérer l'affichage du warning SAV
+                    if (this.name === 'resultat' && this.value === 'SAV' && this.checked) {
+                        document.getElementById('sav-warning').style.display = 'block';
+                    } else if (this.name === 'resultat' && this.value !== 'SAV' && this.checked) {
+                        document.getElementById('sav-warning').style.display = 'none';
+                    }
+                });
             });
         }
         
         // Charger les données existantes
         function loadExistingData() {
-            const intervention = InterventionService.getCurrent();
-            if (intervention) {
-                // Remplir les champs
-                document.getElementById('nom').value = intervention.nom || '';
-                document.getElementById('telephone').value = intervention.telephone || '';
-                document.getElementById('date').value = intervention.date || '';
-                document.getElementById('heure').value = intervention.heure || '';
-                document.getElementById('marque').value = intervention.marque || '';
-                document.getElementById('observations').value = intervention.observations || '';
+            const savedData = localStorage.getItem('sav_intervention_data');
+            if (savedData) {
+                const intervention = JSON.parse(savedData);
                 
-                // Restaurer les sélections
+                // Remplir les champs
+                if (intervention.nom) document.getElementById('nom').value = intervention.nom;
+                if (intervention.telephone) document.getElementById('telephone').value = intervention.telephone;
+                if (intervention.date) document.getElementById('date').value = intervention.date;
+                if (intervention.heure) document.getElementById('heure').value = intervention.heure;
+                if (intervention.marque) document.getElementById('marque').value = intervention.marque;
+                if (intervention.observations) document.getElementById('observations').value = intervention.observations;
+                
+                // Restaurer les sélections radio
                 if (intervention.type_appareil) {
-                    deviceSelector.setValue(intervention.type_appareil);
+                    const radio = document.querySelector(`input[name="type_appareil"][value="${intervention.type_appareil}"]`);
+                    if (radio) {
+                        radio.checked = true;
+                        radio.dispatchEvent(new Event('change'));
+                    }
                 }
-                if (intervention.problemes) {
-                    problemsGroup.setValues(intervention.problemes);
-                }
-                if (intervention.actions) {
-                    actionsGroup.setValues(intervention.actions);
-                }
+                
                 if (intervention.resultat) {
-                    resultsGroup.setValues([intervention.resultat]);
+                    const radio = document.querySelector(`input[name="resultat"][value="${intervention.resultat}"]`);
+                    if (radio) {
+                        radio.checked = true;
+                        radio.dispatchEvent(new Event('change'));
+                    }
+                }
+                
+                // Restaurer les checkboxes
+                if (intervention.problemes) {
+                    intervention.problemes.forEach(probleme => {
+                        const checkbox = document.querySelector(`input[name="problemes"][value="${probleme}"]`);
+                        if (checkbox) {
+                            checkbox.checked = true;
+                            checkbox.dispatchEvent(new Event('change'));
+                        }
+                    });
+                }
+                
+                if (intervention.actions) {
+                    intervention.actions.forEach(action => {
+                        const checkbox = document.querySelector(`input[name="actions"][value="${action}"]`);
+                        if (checkbox) {
+                            checkbox.checked = true;
+                            checkbox.dispatchEvent(new Event('change'));
+                        }
+                    });
                 }
             }
         }
         
         // Sauvegarder l'intervention
-        window.saveIntervention = function() {
+        function saveIntervention() {
             const formData = collectFormData();
             
-            try {
-                if (InterventionService.getCurrent()) {
-                    InterventionService.update(formData);
-                } else {
-                    InterventionService.create(formData);
-                }
-                
-                // Feedback visuel
-                const btn = document.querySelector('.btn-save');
-                const originalText = btn.innerHTML;
-                btn.innerHTML = '✅ Sauvegardé !';
-                btn.style.background = '#27ae60';
-                
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                    btn.style.background = '';
-                }, 2000);
-                
-            } catch (error) {
-                console.error('Erreur lors de la sauvegarde:', error);
-                alert('Erreur lors de la sauvegarde');
-            }
-        };
+            // Sauvegarder dans localStorage
+            localStorage.setItem('sav_intervention_data', JSON.stringify(formData));
+            
+            // Feedback visuel
+            const btn = document.querySelector('.btn-save');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '✅ Sauvegardé !';
+            btn.style.background = '#27ae60';
+            
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.style.background = '';
+            }, 2000);
+        }
         
         // Collecter les données du formulaire
         function collectFormData() {
+            const problemes = [];
+            document.querySelectorAll('input[name="problemes"]:checked').forEach(cb => {
+                problemes.push(cb.value);
+            });
+            
+            const actions = [];
+            document.querySelectorAll('input[name="actions"]:checked').forEach(cb => {
+                actions.push(cb.value);
+            });
+            
             return {
                 nom: document.getElementById('nom').value,
                 telephone: document.getElementById('telephone').value,
                 date: document.getElementById('date').value,
                 heure: document.getElementById('heure').value,
-                type_appareil: deviceSelector.getValue(),
+                type_appareil: document.querySelector('input[name="type_appareil"]:checked')?.value || '',
                 marque: document.getElementById('marque').value,
-                problemes: problemsGroup.getValues(),
-                actions: actionsGroup.getValues(),
-                resultat: resultsGroup.getValues()[0],
-                observations: document.getElementById('observations').value
+                problemes: problemes,
+                actions: actions,
+                resultat: document.querySelector('input[name="resultat"]:checked')?.value || '',
+                observations: document.getElementById('observations').value,
+                magasin: JSON.parse(localStorage.getItem('sav_auth'))?.magasin || '',
+                createdAt: new Date().toISOString()
             };
+        }
+        
+        // Validation du formulaire
+        function validateForm() {
+            const formData = collectFormData();
+            const errors = [];
+            
+            if (!formData.nom) errors.push('Le nom du client est obligatoire');
+            if (!formData.telephone) errors.push('Le téléphone est obligatoire');
+            if (!formData.type_appareil) errors.push('Le type d\'appareil est obligatoire');
+            if (!formData.marque) errors.push('La marque est obligatoire');
+            if (formData.problemes.length === 0) errors.push('Au moins un problème doit être sélectionné');
+            if (formData.actions.length === 0) errors.push('Au moins une action doit être sélectionnée');
+            if (!formData.resultat) errors.push('Le résultat est obligatoire');
+            
+            return errors;
         }
         
         // Gestion de la soumission
         document.getElementById('interventionForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const formData = collectFormData();
-            
             // Validation
-            const validation = InterventionService.validate(formData);
-            if (!validation.isValid) {
-                alert('Veuillez corriger les erreurs:\n' + validation.errors.join('\n'));
+            const errors = validateForm();
+            if (errors.length > 0) {
+                alert('Veuillez corriger les erreurs suivantes :\n\n' + errors.join('\n'));
                 return;
             }
             
-            // Sauvegarder ou mettre à jour
-            try {
-                if (InterventionService.getCurrent()) {
-                    InterventionService.update(formData);
-                } else {
-                    InterventionService.create(formData);
-                }
-                
-                // Rediriger vers la signature client
-                window.location.href = 'signature-client.html';
-                
-            } catch (error) {
-                console.error('Erreur:', error);
-                alert('Une erreur est survenue lors de la sauvegarde');
-            }
+            // Sauvegarder les données
+            saveIntervention();
+            
+            // Rediriger vers la signature client
+            window.location.href = 'signature-client.html';
         });
     </script>
 </body>
