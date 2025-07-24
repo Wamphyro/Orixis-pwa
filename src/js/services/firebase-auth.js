@@ -1,5 +1,5 @@
 // Gestion de l'authentification Firebase pour SAV Audio
-import { firebaseConfig } from './firebase-config.js';
+import { firebaseConfig } from '../config/firebase-config.js';
 
 // Variables pour Firebase (seront initialisées après le chargement)
 let db;
