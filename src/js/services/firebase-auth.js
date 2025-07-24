@@ -55,7 +55,32 @@ async function chargerMagasins() {
     }
 }
 
-// Charger les utilisateurs d'un magasin
+// Charger TOUS les utilisateurs actifs
+async function chargerTousLesUtilisateurs() {
+    try {
+        const { collection, getDocs, query, where } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const utilisateursRef = collection(db, 'utilisateurs');
+        const q = query(utilisateursRef, where('actif', '==', true));
+        const snapshot = await getDocs(q);
+        
+        const utilisateurs = [];
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            utilisateurs.push({
+                id: doc.id,
+                ...data
+            });
+        });
+        
+        console.log(`✅ ${utilisateurs.length} utilisateurs actifs chargés`);
+        return utilisateurs;
+    } catch (error) {
+        console.error('❌ Erreur chargement utilisateurs:', error);
+        return [];
+    }
+}
+
+// Charger les utilisateurs d'un magasin (compatibilité)
 async function chargerUtilisateurs(magasinId) {
     try {
         const { collection, getDocs, query, where } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
@@ -82,18 +107,34 @@ async function chargerUtilisateurs(magasinId) {
     }
 }
 
-// Vérifier le code PIN (version sécurisée)
+// Vérifier le code PIN d'un utilisateur
+async function verifierCodePinUtilisateur(utilisateurId, codePin) {
+    try {
+        const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const utilisateurRef = doc(db, 'utilisateurs', utilisateurId);
+        const utilisateurDoc = await getDoc(utilisateurRef);
+        
+        if (utilisateurDoc.exists()) {
+            const data = utilisateurDoc.data();
+            // Vérifier le code et que l'utilisateur est actif
+            return data.code === codePin && data.actif === true;
+        }
+        return false;
+    } catch (error) {
+        console.error('❌ Erreur vérification code PIN utilisateur:', error);
+        return false;
+    }
+}
+
+// Vérifier le code PIN d'un magasin (ancien système)
 async function verifierCodePin(magasinId, codePin) {
     try {
-        // Pour la production, on ne charge pas tous les magasins
-        // On vérifie directement celui demandé
         const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
         const magasinRef = doc(db, 'magasins', magasinId);
         const magasinDoc = await getDoc(magasinRef);
         
         if (magasinDoc.exists()) {
             const data = magasinDoc.data();
-            // Comparaison sécurisée
             return data.code === codePin && data.actif !== false;
         }
         return false;
@@ -103,45 +144,12 @@ async function verifierCodePin(magasinId, codePin) {
     }
 }
 
-// Sauvegarder une intervention
-async function sauvegarderIntervention(interventionData) {
-    try {
-        const { collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-        
-        // Ajouter les timestamps
-        interventionData.dateCreation = serverTimestamp();
-        interventionData.dateDerniereMaj = serverTimestamp();
-        
-        const interventionsRef = collection(db, 'interventions');
-        const docRef = await addDoc(interventionsRef, interventionData);
-        
-        console.log('✅ Intervention sauvegardée avec ID:', docRef.id);
-        return docRef.id;
-    } catch (error) {
-        console.error('❌ Erreur sauvegarde intervention:', error);
-        throw error;
-    }
-}
-
-// Déconnexion
-async function deconnexion() {
-    try {
-        if (auth) {
-            const { signOut } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
-            await signOut(auth);
-            console.log('✅ Déconnexion réussie');
-        }
-    } catch (error) {
-        console.error('❌ Erreur déconnexion:', error);
-    }
-}
-
 // Export des fonctions
 export { 
     initFirebase, 
     chargerMagasins, 
-    chargerUtilisateurs, 
-    verifierCodePin, 
-    sauvegarderIntervention,
-    deconnexion 
+    chargerUtilisateurs,
+    chargerTousLesUtilisateurs,
+    verifierCodePin,
+    verifierCodePinUtilisateur
 };
