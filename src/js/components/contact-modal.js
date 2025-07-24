@@ -97,10 +97,12 @@ class ContactModal {
                                     
                                     <option value="other">➕ Autre (préciser)</option>
                                 </select>
-                                
-                                <div class="subject-other-input" id="subjectOtherDiv">
-                                    <input type="text" id="subjectOther" placeholder="Précisez l'objet de votre demande...">
-                                </div>
+                            </div>
+                            
+                            <!-- Champ autre (caché par défaut) -->
+                            <div class="form-row subject-other-input" id="subjectOtherDiv">
+                                <label for="subjectOther">Précisez l'objet</label>
+                                <input type="text" id="subjectOther" placeholder="Décrivez brièvement votre sujet...">
                             </div>
 
                             <!-- Message -->
