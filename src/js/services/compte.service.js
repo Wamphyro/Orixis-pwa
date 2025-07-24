@@ -105,25 +105,15 @@ export class CompteService {
         const autorisations = user.autorisations || {};
         const magasins = Object.keys(autorisations).filter(mag => autorisations[mag].acces === true);
         
-        // Vérifier les permissions de l'utilisateur actuel si admin
-        let canDelete = isAdmin;
+        // Pour l'instant, tous les admins peuvent éditer et supprimer
         let canEdit = isAdmin;
-        
-        if (isAdmin && this.rolesData) {
-            const currentUserRole = localStorage.getItem('sav_user_role');
-            const currentRoleData = this.rolesData[currentUserRole];
-            
-            if (currentRoleData && currentRoleData.permissions) {
-                canDelete = currentRoleData.permissions.supprimerUtilisateurs === true;
-                canEdit = currentRoleData.permissions.gererUtilisateurs === true;
-            }
-        }
+        let canDelete = isAdmin;
         
         return `
             <div class="user-card" id="card-${user.id}">
                 <div class="card-header">
                     <div class="user-avatar">
-                        <i class="fas fa-user"></i>
+                        👤
                     </div>
                     <div class="user-main-info">
                         <h3>
@@ -169,6 +159,9 @@ export class CompteService {
                     ${canEdit ? `
                         <button class="btn-action btn-edit" onclick="editUser('${user.id}')">
                             ✏️ Modifier
+                        </button>
+                        <button class="btn-action btn-cancel" style="display: none;" onclick="cancelEdit('${user.id}')">
+                            ❌ Annuler
                         </button>
                         <button class="btn-action btn-save" style="display: none;" onclick="saveUser('${user.id}')">
                             💾 Sauvegarder
