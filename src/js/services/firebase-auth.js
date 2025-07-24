@@ -95,7 +95,8 @@ async function chargerUtilisateurs(magasinId) {
                 id: doc.id,
                 nom: data.nom,
                 prenom: data.prenom,
-                role: data.role || 'technicien'
+                role: data.role || 'technicien',
+                pagesAutorisees: data.pagesAutorisees || null
             });
         });
         
@@ -104,6 +105,26 @@ async function chargerUtilisateurs(magasinId) {
     } catch (error) {
         console.error('❌ Erreur chargement utilisateurs:', error);
         return [];
+    }
+}
+
+// Obtenir les détails complets d'un utilisateur
+async function getUtilisateurDetails(utilisateurId) {
+    try {
+        const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const utilisateurRef = doc(db, 'utilisateurs', utilisateurId);
+        const utilisateurDoc = await getDoc(utilisateurRef);
+        
+        if (utilisateurDoc.exists()) {
+            return {
+                id: utilisateurDoc.id,
+                ...utilisateurDoc.data()
+            };
+        }
+        return null;
+    } catch (error) {
+        console.error('❌ Erreur récupération détails utilisateur:', error);
+        return null;
     }
 }
 
@@ -151,5 +172,6 @@ export {
     chargerUtilisateurs,
     chargerTousLesUtilisateurs,
     verifierCodePin,
-    verifierCodePinUtilisateur
+    verifierCodePinUtilisateur,
+    getUtilisateurDetails
 };
