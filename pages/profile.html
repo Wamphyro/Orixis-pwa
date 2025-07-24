@@ -180,7 +180,6 @@
                     nom: currentAuth.collaborateur.nom,
                     prenom: currentAuth.collaborateur.prenom,
                     role: currentAuth.collaborateur.role || 'technicien',
-                    magasins: currentAuth.magasins || [currentAuth.magasin],
                     autorisations: permissions.autorisations || {}
                 };
             }
@@ -234,8 +233,10 @@
         // Afficher les magasins autorisés
         function displayMagasins() {
             const container = document.getElementById('magasinsGrid');
-            const magasins = currentUser.magasins || [];
             const autorisations = currentUser.autorisations || {};
+            
+            // Récupérer les magasins depuis les autorisations
+            const magasins = Object.keys(autorisations).filter(mag => autorisations[mag].acces === true);
             
             if (magasins.length === 0) {
                 container.innerHTML = '<p class="no-data">Aucun magasin autorisé</p>';
