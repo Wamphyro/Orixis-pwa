@@ -106,6 +106,7 @@
             const permissions = JSON.parse(localStorage.getItem('sav_user_permissions') || '{}');
             
             const select = document.getElementById('magasinSelect');
+            const selectorDiv = document.querySelector('.magasin-selector');
             
             // Récupérer les magasins autorisés
             let magasinsAutorises = auth.magasins || [];
@@ -121,22 +122,25 @@
                 magasinsAutorises = [auth.magasin];
             }
             
-            // Remplir le select
-            magasinsAutorises.forEach(magasin => {
-                const option = document.createElement('option');
-                option.value = magasin;
-                option.textContent = magasin;
-                if (magasin === auth.magasin) {
-                    option.selected = true;
-                }
-                select.appendChild(option);
-            });
-            
-            // Si un seul magasin, afficher quand même le magasin actuel
+            // Si un seul magasin ou moins, afficher juste le texte
             if (magasinsAutorises.length <= 1) {
-                document.querySelector('.magasin-selector').innerHTML = `
-                    <label>Magasin: <strong>${auth.magasin}</strong></label>
+                const magasinActuel = auth.magasin || magasinsAutorises[0] || 'Non défini';
+                selectorDiv.innerHTML = `
+                    <label style="color: white; font-weight: 600;">
+                        Magasin: <strong style="font-size: 16px;">${magasinActuel}</strong>
+                    </label>
                 `;
+            } else {
+                // Plusieurs magasins, afficher le select
+                magasinsAutorises.forEach(magasin => {
+                    const option = document.createElement('option');
+                    option.value = magasin;
+                    option.textContent = magasin;
+                    if (magasin === auth.magasin) {
+                        option.selected = true;
+                    }
+                    select.appendChild(option);
+                });
             }
         }
         
