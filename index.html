@@ -361,124 +361,139 @@
             }
         }
         
-        // Valider le code PIN
-        async function validatePin() {
-            if (pinCode.length !== 4) {
-                showError('Veuillez entrer un code à 4 chiffres');
-                return;
-            }
-            
-            const magasinCode = document.getElementById('magasin').value;
-            if (!magasinCode) {
-                showError('Veuillez sélectionner un magasin');
-                return;
-            }
-            
-            const collaborateurId = document.getElementById('collaborateur').value;
-            const collaborateurContainer = document.getElementById('collaborateurContainer');
-            
-            // Si le magasin a des collaborateurs, vérifier qu'un est sélectionné
-            if (collaborateurContainer.classList.contains('visible') && !collaborateurId) {
-                showError('Veuillez sélectionner votre nom');
-                return;
-            }
-            
-            const errorMsg = document.getElementById('errorMsg');
-            const successMsg = document.getElementById('successMsg');
-            
-            // Reset messages
-            errorMsg.style.display = 'none';
-            successMsg.style.display = 'none';
-            
-            // Vérifier les credentials
-            let isValid = false;
-            
-            if (useFirebase) {
-                // Vérification via Firebase
-                try {
-                    showLoading(true);
-                    isValid = await verifierCodePin(magasinCode, pinCode);
-                } catch (error) {
-                    console.error('Erreur vérification Firebase:', error);
-                    // Fallback sur les données locales
-                    const magasin = MAGASINS[magasinCode];
-                    isValid = magasin && magasin.code === pinCode;
-                } finally {
-                    showLoading(false);
-                }
-            } else {
-                // Vérification locale
-                const magasin = MAGASINS[magasinCode];
-                isValid = magasin && magasin.code === pinCode;
-            }
-            
-            if (isValid) {
-                // Connexion réussie
-                successMsg.style.display = 'block';
-                
-                // Récupérer les infos du collaborateur si sélectionné
-                let collaborateurInfo = null;
-                if (collaborateurId) {
-                    const select = document.getElementById('collaborateur');
-                    const option = select.querySelector(`option[value="${collaborateurId}"]`);
-                    if (option) {
-                        const [prenom, ...nomParts] = option.textContent.split(' ');
-                        collaborateurInfo = {
-                            id: collaborateurId,
-                            prenom: prenom,
-                            nom: nomParts.join(' ')
-                        };
-                    }
-                }
-                
-                // Sauvegarder l'authentification
-                const remember = document.getElementById('remember').checked;
-                const expiry = remember ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
-                
-                const authData = {
-                    authenticated: true,
-                    magasin: magasinCode,
-                    timestamp: Date.now(),
-                    expiry: expiry,
-                    useFirebase: useFirebase
+// Remplacez UNIQUEMENT la fonction validatePin dans index.html par celle-ci :
+
+async function validatePin() {
+    if (pinCode.length !== 4) {
+        showError('Veuillez entrer un code à 4 chiffres');
+        return;
+    }
+    
+    const magasinCode = document.getElementById('magasin').value;
+    const collaborateurId = document.getElementById('collaborateur').value;
+    const collaborateurContainer = document.getElementById('collaborateurContainer');
+    
+    if (!magasinCode) {
+        showError('Veuillez sélectionner un magasin');
+        return;
+    }
+    
+    // Si le magasin a des collaborateurs, vérifier qu'un est sélectionné
+    if (collaborateurContainer.classList.contains('visible') && !collaborateurId) {
+        showError('Veuillez sélectionner votre nom');
+        return;
+    }
+    
+    const errorMsg = document.getElementById('errorMsg');
+    const successMsg = document.getElementById('successMsg');
+    
+    // Reset messages
+    errorMsg.style.display = 'none';
+    successMsg.style.display = 'none';
+    
+    let isValid = false;
+    
+    // Si un collaborateur est sélectionné, vérifier SON code personnel
+    if (collaborateurId) {
+        try {
+            showLoading(true);
+            // Vérifier le code personnel de l'utilisateur (pas celui du magasin)
+            isValid = await verifierCodePinUtilisateur(collaborateurId, pinCode);
+        } catch (error) {
+            console.error('Erreur vérification utilisateur:', error);
+            showError('Erreur de vérification');
+            showLoading(false);
+            return;
+        } finally {
+            showLoading(false);
+        }
+    } else {
+        // Pas de collaborateur = utiliser le code du magasin (ancien système)
+        try {
+            showLoading(true);
+            isValid = await verifierCodePin(magasinCode, pinCode);
+        } catch (error) {
+            console.error('Erreur vérification magasin:', error);
+            // Fallback sur les données locales
+            const magasin = MAGASINS[magasinCode];
+            isValid = magasin && magasin.code === pinCode;
+        } finally {
+            showLoading(false);
+        }
+    }
+    
+    if (isValid) {
+        // Connexion réussie
+        successMsg.style.display = 'block';
+        
+        // Récupérer les infos du collaborateur si sélectionné
+        let collaborateurInfo = null;
+        if (collaborateurId) {
+            const select = document.getElementById('collaborateur');
+            const option = select.querySelector(`option[value="${collaborateurId}"]`);
+            if (option) {
+                const [prenom, ...nomParts] = option.textContent.split(' ');
+                collaborateurInfo = {
+                    id: collaborateurId,
+                    prenom: prenom,
+                    nom: nomParts.join(' ')
                 };
-                
-                // Ajouter les infos du collaborateur si disponibles
-                if (collaborateurInfo) {
-                    authData.collaborateur = collaborateurInfo;
-                }
-                
-                localStorage.setItem('sav_auth', JSON.stringify(authData));
-                
-                // Redirection
-                setTimeout(() => {
-                    window.location.href = 'pages/home.html';
-                }, 1000);
-                
-            } else {
-                // Échec
-                attempts++;
-                showError(`Code incorrect. ${MAX_ATTEMPTS - attempts} tentatives restantes.`);
-                
-                if (attempts >= MAX_ATTEMPTS) {
-                    showError(`Trop de tentatives. Veuillez attendre ${MAX_ATTEMPTS} minutes.`);
-                    disableNumpad(true);
-                    setTimeout(() => {
-                        attempts = 0;
-                        disableNumpad(false);
-                    }, MAX_ATTEMPTS * 60 * 1000);
-                }
-                
-                // Reset le code
-                pinCode = '';
-                updatePinDisplay();
-                
-                document.querySelector('.login-container').classList.add('shake');
-                setTimeout(() => {
-                    document.querySelector('.login-container').classList.remove('shake');
-                }, 500);
             }
         }
+        
+        // Sauvegarder l'authentification
+        const remember = document.getElementById('remember').checked;
+        const expiry = remember ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
+        
+        const authData = {
+            authenticated: true,
+            magasin: magasinCode,
+            timestamp: Date.now(),
+            expiry: expiry,
+            useFirebase: useFirebase
+        };
+        
+        // Ajouter les infos du collaborateur si disponibles
+        if (collaborateurInfo) {
+            authData.collaborateur = collaborateurInfo;
+        }
+        
+        localStorage.setItem('sav_auth', JSON.stringify(authData));
+        
+        // Redirection
+        setTimeout(() => {
+            window.location.href = 'pages/home.html';
+        }, 1000);
+        
+    } else {
+        // Échec
+        attempts++;
+        
+        if (collaborateurId) {
+            showError(`Code personnel incorrect. ${MAX_ATTEMPTS - attempts} tentatives restantes.`);
+        } else {
+            showError(`Code magasin incorrect. ${MAX_ATTEMPTS - attempts} tentatives restantes.`);
+        }
+        
+        if (attempts >= MAX_ATTEMPTS) {
+            showError(`Trop de tentatives. Veuillez attendre ${MAX_ATTEMPTS} minutes.`);
+            disableNumpad(true);
+            setTimeout(() => {
+                attempts = 0;
+                disableNumpad(false);
+            }, MAX_ATTEMPTS * 60 * 1000);
+        }
+        
+        // Reset le code
+        pinCode = '';
+        updatePinDisplay();
+        
+        document.querySelector('.login-container').classList.add('shake');
+        setTimeout(() => {
+            document.querySelector('.login-container').classList.remove('shake');
+        }, 500);
+    }
+}
         
         // Afficher une erreur
         function showError(message) {
