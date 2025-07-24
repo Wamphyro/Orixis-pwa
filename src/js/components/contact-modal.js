@@ -245,7 +245,7 @@ class ContactModal {
 
         try {
             // Envoyer l'email
-            await emailjs.send('service_6juwjvq', 'template_contact', templateParams);
+            await emailjs.send('service_6juwjvq', 'template_wbpw2q6', templateParams);
             
             // Succès
             this.showSuccess();
