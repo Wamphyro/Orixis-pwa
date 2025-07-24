@@ -147,18 +147,12 @@ export class ProfileService {
     // Vérifier un code PIN
     static async verifyPin(userId, pin) {
         try {
-            const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-            const { db } = await import('./firebase-auth.js');
+            // Importer directement depuis firebase-auth.js qui a déjà la connexion
+            const { verifierCodePinUtilisateur } = await import('./firebase-auth.js');
             
-            const userRef = doc(db, 'utilisateurs', userId);
-            const userDoc = await getDoc(userRef);
+            // Utiliser la fonction existante qui fonctionne
+            return await verifierCodePinUtilisateur(userId, pin);
             
-            if (userDoc.exists()) {
-                const userData = userDoc.data();
-                return userData.code === pin;
-            }
-            
-            return false;
         } catch (error) {
             console.error('Erreur vérification PIN:', error);
             return false;
