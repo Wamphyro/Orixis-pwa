@@ -849,3 +849,18 @@
     width: 100% !important;
     display: block !important;
 }
+
+/* ========================================
+   FIX FINAL POUR LE CHAMP AUTRE
+   ======================================== */
+
+/* Cache le champ "Précisez l'objet" par défaut */
+#subjectOtherDiv {
+    display: none !important;
+}
+
+/* L'affiche uniquement quand la classe "show" est présente */
+#subjectOtherDiv.show {
+    display: flex !important;
+    flex-direction: column !important;
+}
