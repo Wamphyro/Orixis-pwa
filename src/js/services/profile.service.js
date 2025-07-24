@@ -1,195 +1,112 @@
-// Service de gestion des profils
-// À placer dans src/js/services/profile.service.js
+// Ajouter cette fonction mise à jour dans ProfileService
 
-export class ProfileService {
-    // Avatars par rôle
-    static roleAvatars = {
-        technicien: '🔧',
-        audioprothesiste: '🦻',
-        assistant: '📋',
-        manager: '👔',
-        admin: '👑'
+static createUserCard(user, isAdmin = false, showMagasins = false) {
+    const roleLabels = {
+        'admin': '👑 Administrateur',
+        'manager': '👔 Manager', 
+        'audioprothesiste': '🦻 Audioprothésiste',
+        'assistant': '📋 Assistant',
+        'technicien': '🔧 Technicien'
     };
     
-    // Obtenir l'avatar pour un rôle
-    static getAvatar(role) {
-        return this.roleAvatars[role] || '👤';
-    }
+    const roleColors = {
+        'admin': 'role-admin',
+        'manager': 'role-manager',
+        'audioprothesiste': 'role-audioprothesiste',
+        'assistant': 'role-assistant',
+        'technicien': 'role-technicien'
+    };
     
-    // Créer une carte utilisateur
-    static createUserCard(user, isAdminView = false) {
-        const avatar = this.getAvatar(user.role);
-        const roleClass = `role-${user.role}`;
-        const magasinsText = user.magasins ? user.magasins.join(', ') : 'Non assigné';
-        
-        // Générer le select des rôles si admin
-        const roleSelect = isAdminView ? `
-            <select class="role-select" data-field="role" style="display: none;">
-                <option value="technicien" ${user.role === 'technicien' ? 'selected' : ''}>Technicien</option>
-                <option value="audioprothesiste" ${user.role === 'audioprothesiste' ? 'selected' : ''}>Audioprothésiste</option>
-                <option value="assistant" ${user.role === 'assistant' ? 'selected' : ''}>Assistant</option>
-                <option value="manager" ${user.role === 'manager' ? 'selected' : ''}>Manager</option>
-                <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
-            </select>
-        ` : '';
-        
-        const editableClass = isAdminView ? 'editable' : '';
-        
-        return `
-            <div class="user-card" id="card-${user.id}">
-                <div class="card-header">
-                    <div class="user-avatar">${avatar}</div>
-                    <div class="user-main-info">
-                        <h3>
-                            <span class="${editableClass}" data-field="prenom">${user.prenom}</span>
-                            <span class="${editableClass}" data-field="nom">${user.nom}</span>
-                        </h3>
-                        <span class="role-badge ${roleClass}" data-field="role-display">
-                            ${this.getRoleLabel(user.role)}
-                        </span>
-                        ${roleSelect}
-                    </div>
+    // Récupérer les magasins depuis les autorisations
+    const autorisations = user.autorisations || {};
+    const magasins = Object.keys(autorisations).filter(mag => autorisations[mag].acces === true);
+    const magasinActuel = user.magasinActuel || user.magasinParDefaut || magasins[0] || 'Non assigné';
+    
+    return `
+        <div class="user-card" id="card-${user.id}">
+            <div class="card-header">
+                <div class="user-avatar">
+                    ${user.prenom.charAt(0)}${user.nom.charAt(0)}
                 </div>
-                
-                <div class="card-body">
-                    <div class="info-row">
-                        <span class="info-label">📍 Magasins</span>
-                        <span class="info-value">${magasinsText}</span>
-                    </div>
-                    
-                    <div class="info-row">
-                        <span class="info-label">🔐 Code utilisateur</span>
-                        <span class="info-value">••••</span>
-                    </div>
-                    
-                    ${user.lastLogin ? `
-                    <div class="info-row">
-                        <span class="info-label">🕐 Dernière connexion</span>
-                        <span class="info-value">${this.formatDate(user.lastLogin)}</span>
-                    </div>
-                    ` : ''}
-                </div>
-                
-                <div class="card-actions">
-                    <button class="btn-action btn-pin" onclick="changePin('${user.id}')">
-                        🔐 Changer le code
-                    </button>
-                    
-                    ${isAdminView ? `
-                        <button class="btn-action btn-edit" onclick="editUser('${user.id}')">
-                            ✏️ Modifier
-                        </button>
-                        <button class="btn-action btn-save" onclick="saveUser('${user.id}')" style="display: none;">
-                            💾 Enregistrer
-                        </button>
-                    ` : ''}
+                <div class="user-main-info">
+                    <h3>
+                        <span class="editable" data-field="prenom">${user.prenom}</span>
+                        <span class="editable" data-field="nom">${user.nom}</span>
+                    </h3>
+                    <span class="role-badge ${roleColors[user.role]}">
+                        ${isAdmin ? 
+                            `<select class="role-select" data-field="role" style="display: none;">
+                                <option value="technicien" ${user.role === 'technicien' ? 'selected' : ''}>🔧 Technicien</option>
+                                <option value="audioprothesiste" ${user.role === 'audioprothesiste' ? 'selected' : ''}>🦻 Audioprothésiste</option>
+                                <option value="assistant" ${user.role === 'assistant' ? 'selected' : ''}>📋 Assistant</option>
+                                <option value="manager" ${user.role === 'manager' ? 'selected' : ''}>👔 Manager</option>
+                                <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>👑 Administrateur</option>
+                            </select>
+                            <span class="role-text">${roleLabels[user.role]}</span>`
+                            : roleLabels[user.role]
+                        }
+                    </span>
                 </div>
             </div>
-        `;
-    }
-    
-    // Obtenir le label du rôle
-    static getRoleLabel(role) {
-        const labels = {
-            technicien: 'Technicien',
-            audioprothesiste: 'Audioprothésiste',
-            assistant: 'Assistant',
-            manager: 'Manager',
-            admin: 'Administrateur'
-        };
-        return labels[role] || role;
-    }
-    
-    // Formater une date
-    static formatDate(timestamp) {
-        if (!timestamp) return 'Jamais';
-        
-        const date = new Date(timestamp);
-        const now = new Date();
-        const diff = now - date;
-        
-        // Si c'est aujourd'hui
-        if (diff < 24 * 60 * 60 * 1000 && date.getDate() === now.getDate()) {
-            return `Aujourd'hui à ${date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
-        }
-        
-        // Si c'est hier
-        if (diff < 48 * 60 * 60 * 1000) {
-            return `Hier à ${date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
-        }
-        
-        // Sinon, date complète
-        return date.toLocaleDateString('fr-FR', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    }
-    
-    // Mettre à jour un utilisateur (pour admin)
-    static async updateUser(userId, updates) {
-        try {
-            const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-            const { db } = await import('./firebase-auth.js');
             
-            const userRef = doc(db, 'utilisateurs', userId);
-            await updateDoc(userRef, updates);
+            <div class="card-body">
+                ${showMagasins && magasins.length > 0 ? `
+                    <div class="info-row">
+                        <span class="info-label">📍 Magasin actuel</span>
+                        <span class="info-value">
+                            <strong class="magasin-badge">${magasinActuel}</strong>
+                        </span>
+                    </div>
+                ` : ''}
+                
+                <div class="info-row">
+                    <span class="info-label">📍 Magasins</span>
+                    <span class="info-value">${magasins.length > 0 ? magasins.join(', ') : 'Non assigné'}</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">🔐 Code utilisateur</span>
+                    <span class="info-value">••••</span>
+                </div>
+                
+                ${user.id ? `
+                    <div class="info-row">
+                        <span class="info-label">🆔 ID</span>
+                        <span class="info-value">${user.id}</span>
+                    </div>
+                ` : ''}
+            </div>
             
-            return { success: true };
-        } catch (error) {
-            console.error('Erreur mise à jour utilisateur:', error);
-            throw error;
-        }
-    }
-    
-    // Vérifier un code PIN
-    static async verifyPin(userId, pin) {
-        try {
-            // Importer directement depuis firebase-auth.js qui a déjà la connexion
-            const { verifierCodePinUtilisateur } = await import('./firebase-auth.js');
+            <div class="card-actions">
+                <button class="btn-action btn-pin" onclick="changePin('${user.id}')">
+                    🔐 Changer le code
+                </button>
+                ${isAdmin ? `
+                    <button class="btn-action btn-edit" onclick="editUser('${user.id}')">
+                        ✏️ Modifier
+                    </button>
+                    <button class="btn-action btn-save" style="display: none;" onclick="saveUser('${user.id}')">
+                        💾 Sauvegarder
+                    </button>
+                ` : ''}
+            </div>
             
-            // Utiliser la fonction existante qui fonctionne
-            return await verifierCodePinUtilisateur(userId, pin);
-            
-        } catch (error) {
-            console.error('Erreur vérification PIN:', error);
-            return false;
-        }
-    }
-    
-    // Mettre à jour le code PIN
-    static async updatePin(userId, newPin) {
-        try {
-            const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-            const { db } = await import('./firebase-auth.js');
-            
-            const userRef = doc(db, 'utilisateurs', userId);
-            await updateDoc(userRef, {
-                code: newPin,
-                lastPasswordChange: Date.now()
-            });
-            
-            return { success: true };
-        } catch (error) {
-            console.error('Erreur mise à jour PIN:', error);
-            throw error;
-        }
-    }
-    
-    // Enregistrer la dernière connexion
-    static async recordLogin(userId) {
-        try {
-            const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-            const { db } = await import('./firebase-auth.js');
-            
-            const userRef = doc(db, 'utilisateurs', userId);
-            await updateDoc(userRef, {
-                lastLogin: Date.now()
-            });
-        } catch (error) {
-            console.error('Erreur enregistrement connexion:', error);
-        }
-    }
+            ${showMagasins && magasins.length > 0 ? `
+                <div class="magasins-section">
+                    <h4>🏪 Magasins autorisés</h4>
+                    <div class="magasins-list">
+                        ${magasins.map(mag => `
+                            <div class="magasin-item ${mag === magasinActuel ? 'active' : ''}">
+                                <span class="magasin-name">${mag}</span>
+                                ${autorisations[mag].permissions ? 
+                                    `<span class="permissions-count">${autorisations[mag].permissions.length} permissions</span>` 
+                                    : '<span class="permissions-count">Accès complet</span>'
+                                }
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : ''}
+        </div>
+    `;
 }
