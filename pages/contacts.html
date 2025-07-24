@@ -13,11 +13,9 @@
     <link rel="manifest" href="../manifest.json">
     <meta name="theme-color" content="#667eea">
     
-    <!-- CSS -->
+    <!-- CSS CORRIGÉ -->
     <link rel="stylesheet" href="../src/css/main.css">
-    <link rel="stylesheet" href="../src/css/header-layout.css">
     <link rel="stylesheet" href="../src/css/contacts.css">
-    <link rel="stylesheet" href="../src/css/contact-modal.css">
     
     <!-- EmailJS -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
@@ -149,6 +147,69 @@
                 <strong>3.</strong> Contactez l'équipe SAV par téléphone en priorité<br>
                 <strong>4.</strong> Envoyez un email de suivi avec la fiche d'intervention
             </p>
+        </div>
+    </div>
+
+    <!-- Modal de contact -->
+    <div class="modal-overlay" id="contactModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📧 Nouveau message</h2>
+                <button class="modal-close" onclick="contactModal.close()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="recipient-info" id="recipientInfo">
+                    <!-- Sera rempli dynamiquement -->
+                </div>
+                
+                <form id="contactForm">
+                    <div class="form-row">
+                        <label for="subject">Sujet</label>
+                        <select id="subject" name="subject" required>
+                            <option value="">Sélectionner un sujet</option>
+                            <option value="Escalade technique">Escalade technique</option>
+                            <option value="Question procédure">Question procédure</option>
+                            <option value="Demande formation">Demande formation</option>
+                            <option value="Problème urgent">Problème urgent</option>
+                            <option value="Autre">Autre</option>
+                        </select>
+                    </div>
+                    
+                    <div class="subject-other-input" id="subjectOtherInput">
+                        <label for="subjectOther">Précisez le sujet</label>
+                        <input type="text" id="subjectOther" name="subjectOther" placeholder="Décrivez brièvement votre sujet">
+                    </div>
+                    
+                    <div class="form-row">
+                        <label for="message">Message</label>
+                        <textarea id="message" name="message" required placeholder="Décrivez votre demande en détail..."></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <label>Priorité</label>
+                        <div class="priority-select">
+                            <label class="priority-option">
+                                <input type="radio" name="priority" value="normale" checked>
+                                Normale
+                            </label>
+                            <label class="priority-option urgent">
+                                <input type="radio" name="priority" value="urgente">
+                                Urgente
+                            </label>
+                        </div>
+                    </div>
+                </form>
+                
+                <div class="success-message" id="successMessage"></div>
+                <div class="error-message" id="errorMessage"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="contactModal.close()">Annuler</button>
+                <button type="button" class="btn-send" onclick="contactModal.send()">
+                    <span class="loading-spinner" id="loadingSpinner"></span>
+                    Envoyer
+                </button>
+            </div>
         </div>
     </div>
 

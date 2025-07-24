@@ -1,5 +1,10 @@
-/* Styles spécifiques aux pages de signature */
+/* ========================================
+   SIGNATURE.CSS - Pages signatures uniquement
+   ======================================== */
 
+/* ========================================
+   CONTAINER SIGNATURE
+   ======================================== */
 .signature-container {
     background: white;
     border-radius: 15px;
@@ -10,6 +15,9 @@
     margin: 20px auto;
 }
 
+/* ========================================
+   INSTRUCTIONS
+   ======================================== */
 .instructions {
     background: #e3f2fd;
     border-radius: 10px;
@@ -30,6 +38,9 @@
     margin: 5px 0;
 }
 
+/* ========================================
+   ZONE DE SIGNATURE
+   ======================================== */
 .signature-wrapper {
     border: 3px dashed #667eea;
     border-radius: 10px;
@@ -50,6 +61,9 @@
     display: block;
 }
 
+/* ========================================
+   ACTIONS SIGNATURE
+   ======================================== */
 .signature-actions {
     display: flex;
     gap: 15px;
@@ -67,7 +81,7 @@
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -79,7 +93,7 @@
 }
 
 .btn-validate {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--primary-gradient);
     color: white;
     padding: 15px 40px;
     border: none;
@@ -87,7 +101,7 @@
     font-size: 18px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -104,6 +118,9 @@
     transform: none;
 }
 
+/* ========================================
+   TEXTE D'AVERTISSEMENT
+   ======================================== */
 .warning-text {
     background: #fee;
     border: 1px solid #e74c3c;
@@ -115,6 +132,9 @@
     font-weight: 500;
 }
 
+/* ========================================
+   RÉSUMÉ INFORMATIONS
+   ======================================== */
 .info-summary {
     background: #f8f9fa;
     border-radius: 10px;
@@ -151,7 +171,45 @@
     margin-left: 20px;
 }
 
-/* Responsive */
+/* ========================================
+   STYLES IMPRESSION SIGNATURE
+   ======================================== */
+.signature-print-section {
+    margin-top: 30px;
+    page-break-inside: avoid;
+}
+
+.signature-print-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-top: 10px;
+}
+
+.signature-print-box {
+    border: 1px solid #000;
+    padding: 15px;
+    min-height: 120px;
+    text-align: center;
+}
+
+.signature-print-label {
+    font-size: 11pt;
+    font-weight: bold;
+    margin-bottom: 10px;
+    display: block;
+    color: #000;
+}
+
+.signature-print-image {
+    max-width: 100%;
+    height: auto;
+    max-height: 80px;
+}
+
+/* ========================================
+   RESPONSIVE SIGNATURE
+   ======================================== */
 @media (max-width: 768px) {
     .signature-container {
         padding: 20px;
@@ -179,6 +237,10 @@
         text-align: left;
         margin-left: 0;
     }
+    
+    .signature-print-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Mode paysage pour signature */
@@ -204,5 +266,30 @@
     .instructions p {
         font-size: 14px;
         margin: 2px 0;
+    }
+}
+
+/* ========================================
+   PRINT SPÉCIFIQUE SIGNATURES
+   ======================================== */
+@media print {
+    .signature-actions,
+    .btn-clear,
+    .btn-validate {
+        display: none !important;
+    }
+    
+    .signature-container {
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+    
+    .signature-wrapper {
+        border: 1px solid #000;
+        background: white;
+    }
+    
+    .signature-print-section {
+        page-break-inside: avoid;
     }
 }

@@ -1,6 +1,10 @@
-/* Styles spécifiques à la page d'impression */
+/* ========================================
+   PRINT.CSS - Styles impression uniquement
+   ======================================== */
 
-/* Configuration de la page d'impression */
+/* ========================================
+   CONFIGURATION PAGE
+   ======================================== */
 @page {
     size: A4;
     margin: 10mm;
@@ -14,7 +18,9 @@
     box-shadow: 0 0 20px rgba(0,0,0,0.1);
 }
 
-/* En-tête de la fiche */
+/* ========================================
+   EN-TÊTE FICHE
+   ======================================== */
 .fiche-header {
     border: 2px solid #000;
     padding: 15px;
@@ -41,7 +47,9 @@
     color: #333;
 }
 
-/* Sections */
+/* ========================================
+   SECTIONS IMPRESSION
+   ======================================== */
 .print-section {
     border: 1px solid #000;
     padding: 15px;
@@ -58,7 +66,9 @@
     color: #000;
 }
 
-/* Lignes d'info */
+/* ========================================
+   LIGNES D'INFORMATION
+   ======================================== */
 .print-info-row {
     display: flex;
     margin-bottom: 10px;
@@ -80,7 +90,6 @@
     color: #000;
 }
 
-/* Grille date/heure */
 .date-time-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -88,7 +97,9 @@
     margin-bottom: 10px;
 }
 
-/* Cases à cocher */
+/* ========================================
+   CASES À COCHER IMPRESSION
+   ======================================== */
 .print-checkbox-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -121,7 +132,9 @@
     color: #000;
 }
 
-/* Sélection appareil */
+/* ========================================
+   SÉLECTION APPAREIL IMPRESSION
+   ======================================== */
 .device-print-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -141,7 +154,9 @@
     font-weight: bold;
 }
 
-/* Zone texte */
+/* ========================================
+   ZONE TEXTE IMPRESSION
+   ======================================== */
 .print-text-area {
     border: 1px solid #333;
     padding: 10px;
@@ -151,7 +166,9 @@
     background: #f9f9f9;
 }
 
-/* Signatures */
+/* ========================================
+   SIGNATURES IMPRESSION
+   ======================================== */
 .signature-print-section {
     margin-top: 30px;
     page-break-inside: avoid;
@@ -185,7 +202,9 @@
     max-height: 80px;
 }
 
-/* Footer */
+/* ========================================
+   FOOTER IMPRESSION
+   ======================================== */
 .print-footer {
     margin-top: 40px;
     padding-top: 20px;
@@ -195,7 +214,9 @@
     color: #666;
 }
 
-/* Boutons d'action */
+/* ========================================
+   BOUTONS IMPRESSION (NON IMPRIMABLES)
+   ======================================== */
 .action-buttons-print {
     display: flex;
     gap: 20px;
@@ -204,7 +225,7 @@
 }
 
 .btn-print {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--primary-gradient);
     color: white;
     padding: 15px 40px;
     border: none;
@@ -214,7 +235,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
 }
 
 .btn-print:hover {
@@ -234,15 +255,18 @@
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
 }
 
 .btn-home:hover {
     background: #5a6268;
     transform: translateY(-2px);
+    text-decoration: none;
 }
 
-/* Message pas de données */
+/* ========================================
+   MESSAGE PAS DE DONNÉES
+   ======================================== */
 .no-data {
     text-align: center;
     padding: 50px;
@@ -264,7 +288,9 @@
     text-decoration: underline;
 }
 
-/* Responsive */
+/* ========================================
+   RESPONSIVE IMPRESSION
+   ======================================== */
 @media (max-width: 768px) {
     .print-checkbox-grid,
     .device-print-grid {
@@ -294,9 +320,10 @@
     }
 }
 
-/* Media print - Masquer les éléments non imprimables */
+/* ========================================
+   MEDIA PRINT - MASQUER ÉLÉMENTS NON IMPRIMABLES
+   ======================================== */
 @media print {
-    /* Tentative de suppression des en-têtes/pieds de page du navigateur */
     @page {
         size: A4;
         margin: 10mm;
@@ -327,7 +354,6 @@
         margin: 0;
     }
     
-    /* Ajustements pour l'impression */
     .print-section {
         page-break-inside: avoid;
     }
