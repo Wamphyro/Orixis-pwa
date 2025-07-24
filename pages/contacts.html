@@ -6,17 +6,31 @@
     <title>Contacts SAV Audio</title>
     
     <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="SAV Audio">
     <link rel="manifest" href="../manifest.json">
-    <link rel="apple-touch-icon" href="../assets/images/icon-192.png">
     <meta name="theme-color" content="#667eea">
     
     <!-- CSS -->
     <link rel="stylesheet" href="../src/css/main.css">
     <link rel="stylesheet" href="../src/css/header-layout.css">
     <link rel="stylesheet" href="../src/css/contacts.css">
+    <link rel="stylesheet" href="../src/css/contact-modal.css">
+    
+    <!-- EmailJS -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script>
+        (function() {
+            try {
+                emailjs.init("wJtv5MrJPzvMuGSyL");
+                console.log("EmailJS initialisé avec succès");
+            } catch(error) {
+                console.error("Erreur initialisation EmailJS:", error);
+            }
+        })();
+    </script>
 </head>
 <body>
     <!-- Header uniforme -->
@@ -55,7 +69,7 @@
                 </div>
                 
                 <div class="contact-details">
-                    <a href="mailto:boulay@BROKERAUDIOLOGIE88.onmicrosoft.com" class="contact-item" onclick="copyToClipboard('boulay@BROKERAUDIOLOGIE88.onmicrosoft.com', event)">
+                    <a href="#" class="contact-item" onclick="openEmailForm('Estelle Boulay', 'boulay@BROKERAUDIOLOGIE88.onmicrosoft.com', '👩‍🦰', event)">
                         <div class="contact-icon">
                             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -95,7 +109,7 @@
                 </div>
                 
                 <div class="contact-details">
-                    <a href="mailto:douare@BROKERAUDIOLOGIE88.onmicrosoft.com" class="contact-item" onclick="copyToClipboard('douare@BROKERAUDIOLOGIE88.onmicrosoft.com', event)">
+                    <a href="#" class="contact-item" onclick="openEmailForm('Marie Christine Douare', 'douare@BROKERAUDIOLOGIE88.onmicrosoft.com', '👩🏻‍🦱', event)">
                         <div class="contact-icon">
                             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -142,6 +156,8 @@
         <p>Orixis - © 2025</p>
     </div>
 
+    <!-- Scripts -->
+    <script src="../src/js/components/contact-modal.js"></script>
     <script>
         // Fonction de vérification d'authentification
         function checkAuth() {
@@ -166,11 +182,16 @@
             }
         });
         
+        // Ouvrir le formulaire email
+        function openEmailForm(name, email, avatar, event) {
+            event.preventDefault();
+            contactModal.open(name, email, avatar);
+        }
+        
         // Fonction pour copier dans le presse-papier
         function copyToClipboard(text, event) {
             event.preventDefault();
             
-            // Créer un élément temporaire
             const tempInput = document.createElement('input');
             tempInput.value = text;
             document.body.appendChild(tempInput);
@@ -178,7 +199,6 @@
             
             try {
                 document.execCommand('copy');
-                // Ajouter l'animation de confirmation
                 event.currentTarget.classList.add('copied');
                 setTimeout(() => {
                     event.currentTarget.classList.remove('copied');
@@ -189,11 +209,9 @@
             
             document.body.removeChild(tempInput);
             
-            // Pour mobile, ouvrir quand même l'action par défaut après copie
+            // Pour mobile, ouvrir l'action par défaut
             setTimeout(() => {
-                if (text.includes('@')) {
-                    window.location.href = `mailto:${text}`;
-                } else if (text.includes('+')) {
+                if (text.includes('+')) {
                     window.location.href = `tel:${text}`;
                 }
             }, 500);
