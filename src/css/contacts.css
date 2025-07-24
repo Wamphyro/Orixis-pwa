@@ -256,12 +256,12 @@
     padding: 20px;
 }
 
-/* Content avec design moderne */
+/* Content avec design moderne et PLUS LARGE */
 .modal-content {
     background: white;
     border-radius: 20px;
     width: 100%;
-    max-width: 550px;
+    max-width: 700px; /* Augmenté de 550px à 700px */
     max-height: 90vh;
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -272,7 +272,7 @@
 
 /* Header moderne */
 .modal-header {
-    padding: 30px;
+    padding: 30px 35px; /* Plus d'espace horizontal */
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     position: relative;
@@ -328,7 +328,7 @@
 
 /* Body avec meilleur espacement */
 .modal-body {
-    padding: 30px;
+    padding: 35px 40px; /* Plus d'espace */
     flex: 1;
     overflow-y: auto;
 }
@@ -382,19 +382,19 @@
 /* Info destinataire moderne */
 .recipient-info {
     background: linear-gradient(135deg, #f0f4ff 0%, #e8efff 100%);
-    padding: 20px;
+    padding: 20px 25px;
     border-radius: 16px;
-    margin-bottom: 25px;
+    margin-bottom: 30px;
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 20px;
     border: 1px solid #e0e7ff;
 }
 
 .recipient-avatar {
     font-size: 2.5rem;
-    width: 56px;
-    height: 56px;
+    width: 60px;
+    height: 60px;
     background: white;
     border-radius: 16px;
     display: flex;
@@ -406,40 +406,42 @@
 .recipient-details h3 {
     margin: 0 0 4px 0;
     color: #1e293b;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     font-weight: 600;
 }
 
 .recipient-details p {
     margin: 0;
     color: #64748b;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
 }
 
-/* Formulaire moderne */
+/* Formulaire moderne avec LABELS AU-DESSUS */
 .form-row {
-    margin-bottom: 24px;
+    margin-bottom: 28px; /* Plus d'espace entre les champs */
 }
 
 .form-row label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 10px; /* Plus d'espace entre label et input */
     color: #334155;
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 1rem;
+    letter-spacing: 0.025em;
 }
 
 .form-row select,
 .form-row input,
 .form-row textarea {
     width: 100%;
-    padding: 14px 16px;
+    padding: 16px 18px; /* Plus de padding */
     border: 2px solid #e2e8f0;
     border-radius: 12px;
     font-size: 16px;
     transition: all 0.3s ease;
     font-family: inherit;
     background: #f8fafc;
+    display: block; /* Force le display block */
 }
 
 .form-row select:hover,
@@ -459,15 +461,37 @@
 }
 
 .form-row textarea {
-    min-height: 120px;
+    min-height: 140px; /* Un peu plus haut */
     resize: vertical;
+}
+
+/* Subject other input amélioré */
+.subject-other-input {
+    display: none;
+    margin-top: 15px;
+    animation: slideDown 0.3s ease;
+}
+
+.subject-other-input.show {
+    display: block;
+}
+
+.subject-other-input input {
+    width: 100%;
+    padding: 16px 18px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    background: #f8fafc;
 }
 
 /* Sélection priorité moderne */
 .priority-select {
     display: flex;
-    gap: 12px;
-    margin-top: 12px;
+    gap: 15px;
+    margin-top: 15px;
 }
 
 .priority-option {
@@ -485,12 +509,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 14px 20px;
+    gap: 10px;
+    padding: 16px 24px;
     border: 2px solid #e2e8f0;
     border-radius: 12px;
     background: #f8fafc;
     font-weight: 500;
+    font-size: 16px;
     transition: all 0.3s ease;
 }
 
@@ -513,30 +538,19 @@
     color: #ef4444;
 }
 
-/* Subject other input amélioré */
-.subject-other-input {
-    display: none;
-    margin-top: 12px;
-    animation: slideDown 0.3s ease;
-}
-
-.subject-other-input.show {
-    display: block;
-}
-
 /* Footer moderne */
 .modal-footer {
-    padding: 20px 30px 30px;
+    padding: 25px 40px 35px;
     background: #f8fafc;
     border-top: 1px solid #e2e8f0;
     display: flex;
-    gap: 12px;
+    gap: 15px;
     justify-content: flex-end;
 }
 
 /* Boutons modernes */
 .btn-modal {
-    padding: 12px 28px;
+    padding: 14px 32px;
     border: none;
     border-radius: 12px;
     font-size: 16px;
@@ -547,7 +561,7 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    min-width: 120px;
+    min-width: 130px;
 }
 
 .btn-cancel {
@@ -651,14 +665,36 @@
 }
 
 /* Responsive moderne */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
     .modal-content {
+        max-width: calc(100% - 40px);
         margin: 20px;
-        max-height: calc(100vh - 40px);
     }
     
     .modal-header {
-        padding: 24px;
+        padding: 24px 28px;
+    }
+    
+    .modal-body {
+        padding: 28px;
+    }
+    
+    .modal-footer {
+        padding: 20px 28px 28px;
+    }
+}
+
+@media (max-width: 600px) {
+    .modal-content {
+        max-width: 100%;
+        max-height: 100vh;
+        height: 100%;
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    .modal-header {
+        padding: 20px 24px;
     }
     
     .modal-header h2 {
@@ -666,20 +702,23 @@
     }
     
     .modal-body {
-        padding: 20px;
+        padding: 24px;
     }
     
     .priority-select {
         flex-direction: column;
+        gap: 12px;
     }
     
     .modal-footer {
-        padding: 16px 20px 20px;
+        padding: 16px 24px 24px;
         flex-direction: column-reverse;
+        gap: 12px;
     }
     
     .btn-modal {
         width: 100%;
+        padding: 16px;
     }
     
     .btn-send {
