@@ -306,12 +306,19 @@
             const card = document.getElementById(`card-${userId}`);
             if (!card) return;
             
+            // Sauvegarder les valeurs originales pour pouvoir annuler
+            const originalData = {
+                prenom: card.querySelector('[data-field="prenom"]').textContent.trim(),
+                nom: card.querySelector('[data-field="nom"]').textContent.trim(),
+                role: card.querySelector('.role-select').value,
+                magasins: card.querySelector('.editable-magasins').textContent.trim()
+            };
+            card.dataset.originalData = JSON.stringify(originalData);
+            
             // Activer l'édition des champs texte
             card.querySelectorAll('.editable').forEach(el => {
                 el.contentEditable = true;
-                el.style.backgroundColor = '#f0f3ff';
-                el.style.padding = '4px 8px';
-                el.style.borderRadius = '4px';
+                el.classList.add('editing');
             });
             
             // Remplacer le badge de rôle par un sélecteur
@@ -339,7 +346,55 @@
             
             // Afficher/Masquer les boutons
             card.querySelector('.btn-edit').style.display = 'none';
+            card.querySelector('.btn-cancel').style.display = 'block';
             card.querySelector('.btn-save').style.display = 'block';
+            if (card.querySelector('.btn-delete')) {
+                card.querySelector('.btn-delete').style.display = 'none';
+            }
+        }
+        
+        window.cancelEdit = async function(userId) {
+            const card = document.getElementById(`card-${userId}`);
+            if (!card) return;
+            
+            // Restaurer les valeurs originales
+            const originalData = JSON.parse(card.dataset.originalData || '{}');
+            
+            // Restaurer les champs texte
+            card.querySelector('[data-field="prenom"]').textContent = originalData.prenom;
+            card.querySelector('[data-field="nom"]').textContent = originalData.nom;
+            
+            // Désactiver l'édition
+            card.querySelectorAll('.editable').forEach(el => {
+                el.contentEditable = false;
+                el.classList.remove('editing');
+            });
+            
+            // Restaurer le badge de rôle
+            const roleBadge = card.querySelector('.role-badge');
+            const roleSelector = card.querySelector('.role-selector');
+            if (roleBadge && roleSelector) {
+                roleSelector.querySelector('.role-select').value = originalData.role;
+                roleBadge.style.display = 'inline-flex';
+                roleSelector.style.display = 'none';
+            }
+            
+            // Restaurer l'affichage des magasins
+            const magasinsSpan = card.querySelector('.editable-magasins');
+            if (magasinsSpan) {
+                magasinsSpan.innerHTML = originalData.magasins;
+            }
+            
+            // Restaurer les boutons
+            card.querySelector('.btn-edit').style.display = 'block';
+            card.querySelector('.btn-cancel').style.display = 'none';
+            card.querySelector('.btn-save').style.display = 'none';
+            if (card.querySelector('.btn-delete')) {
+                card.querySelector('.btn-delete').style.display = 'block';
+            }
+            
+            // Nettoyer les données temporaires
+            delete card.dataset.originalData;
         }
         
         window.saveUser = async function(userId) {
