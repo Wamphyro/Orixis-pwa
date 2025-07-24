@@ -173,5 +173,6 @@ export {
     chargerTousLesUtilisateurs,
     verifierCodePin,
     verifierCodePinUtilisateur,
-    getUtilisateurDetails
+    getUtilisateurDetails,
+    db // Exporter aussi la base de données
 };
