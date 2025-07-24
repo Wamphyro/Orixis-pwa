@@ -1,6 +1,202 @@
-/* Styles pour la page Mon Compte */
+/* ========================================
+   STYLES POUR LA PAGE MON COMPTE
+   ======================================== */
 
-/* Contrôles admin */
+/* Container principal */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+/* ========================================
+   SECTIONS
+   ======================================== */
+
+.profile-section {
+    margin-bottom: 40px;
+}
+
+.profile-section h2 {
+    font-size: 1.5rem;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* ========================================
+   CARTE INFORMATIONS PERSONNELLES
+   ======================================== */
+
+.user-info-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    padding: 30px;
+    transition: all 0.3s ease;
+}
+
+.user-info-content {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.user-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.user-details {
+    flex: 1;
+}
+
+.user-details h3 {
+    font-size: 1.5rem;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.user-role {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.user-id,
+.current-magasin {
+    color: #6c757d;
+    margin: 5px 0;
+}
+
+.magasin-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    background: #f0f3ff;
+    color: #667eea;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.user-actions {
+    margin-left: auto;
+}
+
+/* ========================================
+   GRILLE DES MAGASINS
+   ======================================== */
+
+.magasins-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.magasin-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+    padding: 25px;
+    border: 2px solid #f0f0f0;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.magasin-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: #e0e0e0;
+    transition: all 0.3s ease;
+}
+
+.magasin-card.active::before {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.magasin-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.12);
+    border-color: #667eea;
+}
+
+.magasin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.magasin-header h4 {
+    font-size: 1.2rem;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.badge-active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.magasin-info p {
+    margin: 8px 0;
+    color: #495057;
+}
+
+.permissions-list {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0 0 0;
+}
+
+.permissions-list li {
+    padding: 4px 0;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.no-data {
+    text-align: center;
+    color: #6c757d;
+    padding: 40px;
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+/* ========================================
+   SECTION ADMIN
+   ======================================== */
+
+.admin-section {
+    background: #f8f9fa;
+    padding: 30px;
+    border-radius: 20px;
+    margin-top: 60px;
+}
+
 .admin-controls {
     margin-bottom: 30px;
     background: white;
@@ -55,21 +251,22 @@
     border-color: #667eea;
 }
 
-/* Conteneur des cartes */
+/* ========================================
+   CARTES UTILISATEURS (ADMIN)
+   ======================================== */
+
 .user-cards-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 20px;
 }
 
-/* Carte utilisateur */
 .user-card {
     background: white;
     border-radius: 15px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     padding: 25px;
     transition: all 0.3s;
-    animation: fadeInUp 0.3s ease;
 }
 
 .user-card:hover {
@@ -77,25 +274,13 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
-/* En-tête de carte */
+/* En-tête de carte utilisateur */
 .card-header {
     display: flex;
     align-items: center;
     margin-bottom: 20px;
     padding-bottom: 20px;
     border-bottom: 1px solid #e9ecef;
-}
-
-.user-avatar {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: #f0f3ff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    margin-right: 15px;
 }
 
 .user-main-info h3 {
@@ -119,63 +304,40 @@
 .role-manager { background: #e8f5e9; color: #388e3c; }
 .role-admin { background: #fce4ec; color: #c2185b; }
 
-/* Corps de carte */
-.card-body {
-    margin-bottom: 20px;
-}
+/* ========================================
+   BOUTONS
+   ======================================== */
 
-.info-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid #f5f5f5;
-}
-
-.info-row:last-child {
-    border-bottom: none;
-}
-
-.info-label {
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
     font-weight: 600;
-    color: #6c757d;
-    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 
-.info-value {
-    color: #2c3e50;
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
-.editable {
-    padding: 4px 8px;
-    border-radius: 4px;
+.btn-secondary {
+    background: #e9ecef;
+    color: #495057;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
     transition: all 0.3s;
 }
 
-.editable[contenteditable="true"] {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-}
-
-.editable[contenteditable="true"]:focus {
-    outline: none;
-    border-color: #667eea;
-    background: white;
-}
-
-/* Select pour le rôle en mode édition */
-.role-select {
-    padding: 4px 8px;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    background: white;
-    cursor: pointer;
-}
-
-/* Actions de carte */
-.card-actions {
-    display: flex;
-    gap: 10px;
+.btn-secondary:hover {
+    background: #dee2e6;
 }
 
 .btn-action {
@@ -220,7 +382,10 @@
     color: white;
 }
 
-/* Modal */
+/* ========================================
+   MODAL
+   ======================================== */
+
 .modal {
     display: none;
     position: fixed;
@@ -305,36 +470,10 @@
     margin-top: 20px;
 }
 
-.btn-secondary,
-.btn-primary {
-    flex: 1;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-}
+/* ========================================
+   MESSAGES
+   ======================================== */
 
-.btn-secondary {
-    background: #e9ecef;
-    color: #495057;
-}
-
-.btn-secondary:hover {
-    background: #dee2e6;
-}
-
-.btn-primary {
-    background: #667eea;
-    color: white;
-}
-
-.btn-primary:hover {
-    background: #5b63d3;
-}
-
-/* Messages */
 .error-message,
 .success-message {
     padding: 10px;
@@ -358,7 +497,10 @@
     border: 1px solid #c3e6cb;
 }
 
-/* Loading */
+/* ========================================
+   LOADING
+   ======================================== */
+
 .loading-message {
     text-align: center;
     padding: 50px;
@@ -374,7 +516,10 @@
     margin: 0 auto 20px;
 }
 
-/* Animations */
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -402,8 +547,32 @@
     100% { transform: rotate(360deg); }
 }
 
-/* Responsive */
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
 @media (max-width: 768px) {
+    .container {
+        padding: 20px 15px;
+    }
+    
+    .user-info-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .user-avatar {
+        margin: 0 auto;
+    }
+    
+    .user-actions {
+        margin: 20px auto 0;
+    }
+    
+    .magasins-grid {
+        grid-template-columns: 1fr;
+    }
+    
     .user-cards-container {
         grid-template-columns: 1fr;
     }
@@ -417,7 +586,7 @@
         text-align: center;
     }
     
-    .user-avatar {
-        margin: 0 0 10px 0;
+    .profile-section h2 {
+        font-size: 1.25rem;
     }
 }
