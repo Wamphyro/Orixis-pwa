@@ -831,6 +831,13 @@
 /* Fix spécifique pour le champ "Autre" */
 .subject-other-input {
     width: 100% !important;
+    display: none; /* Caché par défaut */
+}
+
+/* Quand il est visible */
+.subject-other-input.show {
+    display: flex !important;
+    flex-direction: column !important;
 }
 
 .subject-other-input label {
