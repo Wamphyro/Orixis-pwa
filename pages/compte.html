@@ -187,7 +187,7 @@
         // Afficher une seule carte (utilisateur normal)
         function displaySingleUserCard(user) {
             const container = document.getElementById('userCardsContainer');
-            container.innerHTML = CompteService.createUserCard(user, false, true);
+            container.innerHTML = CompteService.createUserCard(user, false);
         }
         
         // Afficher toutes les cartes (admin)
