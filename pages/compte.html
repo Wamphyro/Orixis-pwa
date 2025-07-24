@@ -56,6 +56,13 @@
         <section id="adminSection" class="profile-section admin-section" style="display: none;">
             <h2>👥 Gestion des utilisateurs</h2>
             
+            <!-- Bouton créer nouveau profil -->
+            <div class="admin-header">
+                <button class="btn-primary" onclick="openCreateUserModal()">
+                    ➕ Créer un nouveau profil
+                </button>
+            </div>
+            
             <!-- Barre de recherche -->
             <div class="admin-controls">
                 <div class="search-bar">
@@ -116,6 +123,78 @@
                     <div class="modal-actions">
                         <button type="button" class="btn-secondary" onclick="closePinModal()">Annuler</button>
                         <button type="submit" class="btn-primary">Valider</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal création utilisateur (admin) -->
+    <div id="createUserModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>➕ Créer un nouveau profil utilisateur</h2>
+                <button class="modal-close" onclick="closeCreateUserModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <form id="createUserForm" onsubmit="handleCreateUser(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Prénom *</label>
+                            <input type="text" id="newUserPrenom" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Nom *</label>
+                            <input type="text" id="newUserNom" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Rôle *</label>
+                        <select id="newUserRole" required>
+                            <option value="">-- Sélectionner un rôle --</option>
+                            <option value="technicien">🔧 Technicien</option>
+                            <option value="audioprothesiste">🦻 Audioprothésiste</option>
+                            <option value="assistant">📋 Assistant SAV</option>
+                            <option value="manager">👔 Manager</option>
+                            <option value="admin">👑 Administrateur</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Code PIN (4 chiffres) *</label>
+                        <input type="password" id="newUserPin" pattern="[0-9]{4}" maxlength="4" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Magasin par défaut</label>
+                        <select id="newUserMagasinDefaut">
+                            <option value="">-- Sélectionner --</option>
+                            <option value="9DIJ">9DIJ</option>
+                            <option value="9AVA">9AVA</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Autorisations magasins</label>
+                        <div class="magasins-checkboxes">
+                            <label class="checkbox-label">
+                                <input type="checkbox" value="9DIJ" name="magasinAuth">
+                                <span>9DIJ</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" value="9AVA" name="magasinAuth">
+                                <span>9AVA</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="error-message" id="createUserError"></div>
+                    <div class="success-message" id="createUserSuccess"></div>
+                    
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary" onclick="closeCreateUserModal()">Annuler</button>
+                        <button type="submit" class="btn-primary">Créer le profil</button>
                     </div>
                 </form>
             </div>
