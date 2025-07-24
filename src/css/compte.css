@@ -1,8 +1,30 @@
 /* ========================================
    STYLES POUR LA PAGE MON COMPTE
+   Structure modulaire et cohérente
    ======================================== */
 
-/* Container principal */
+/* ========================================
+   VARIABLES CSS
+   ======================================== */
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --primary-color: #667eea;
+    --secondary-color: #764ba2;
+    --text-dark: #2c3e50;
+    --text-gray: #6c757d;
+    --bg-light: #f8f9fa;
+    --border-color: #e9ecef;
+    --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 5px 20px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.1);
+    --radius-sm: 8px;
+    --radius-md: 15px;
+    --radius-lg: 20px;
+}
+
+/* ========================================
+   CONTAINER PRINCIPAL
+   ======================================== */
 .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -10,32 +32,50 @@
 }
 
 /* ========================================
-   SECTIONS
+   STRUCTURE COMMUNE DES SECTIONS
    ======================================== */
-
-.profile-section {
+.compte-section {
     margin-bottom: 40px;
+    animation: fadeInUp 0.5s ease;
 }
 
-.profile-section h2 {
+.compte-section-container {
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.compte-section-container:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.compte-section-header {
+    padding: 25px 30px;
+    background: var(--bg-light);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.compte-section-header h2 {
+    margin: 0;
     font-size: 1.5rem;
-    color: #2c3e50;
-    margin-bottom: 20px;
+    color: var(--text-dark);
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
+.compte-section-content {
+    padding: 30px;
+}
+
 /* ========================================
    CARTE INFORMATIONS PERSONNELLES
    ======================================== */
-
 .user-info-card {
-    background: white;
-    border-radius: 20px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-    padding: 30px;
-    transition: all 0.3s ease;
+    width: 100%;
 }
 
 .user-info-content {
@@ -49,7 +89,7 @@
     width: 100px;
     height: 100px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--primary-gradient);
     color: white;
     display: flex;
     align-items: center;
@@ -65,7 +105,7 @@
 
 .user-details h3 {
     font-size: 1.5rem;
-    color: #2c3e50;
+    color: var(--text-dark);
     margin-bottom: 10px;
 }
 
@@ -76,11 +116,13 @@
     font-size: 0.9rem;
     font-weight: 600;
     margin-bottom: 10px;
+    background: var(--bg-light);
+    color: var(--text-dark);
 }
 
 .user-id,
 .current-magasin {
-    color: #6c757d;
+    color: var(--text-gray);
     margin: 5px 0;
 }
 
@@ -88,8 +130,8 @@
     display: inline-block;
     padding: 4px 12px;
     background: #f0f3ff;
-    color: #667eea;
-    border-radius: 8px;
+    color: var(--primary-color);
+    border-radius: var(--radius-sm);
     font-weight: 600;
 }
 
@@ -100,7 +142,6 @@
 /* ========================================
    GRILLE DES MAGASINS
    ======================================== */
-
 .magasins-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -108,11 +149,10 @@
 }
 
 .magasin-card {
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+    background: var(--bg-light);
+    border-radius: var(--radius-md);
     padding: 25px;
-    border: 2px solid #f0f0f0;
+    border: 2px solid var(--border-color);
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
@@ -130,13 +170,13 @@
 }
 
 .magasin-card.active::before {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--primary-gradient);
 }
 
 .magasin-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.12);
-    border-color: #667eea;
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-color);
 }
 
 .magasin-header {
@@ -148,12 +188,12 @@
 
 .magasin-header h4 {
     font-size: 1.2rem;
-    color: #2c3e50;
+    color: var(--text-dark);
     margin: 0;
 }
 
 .badge-active {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--primary-gradient);
     color: white;
     padding: 4px 12px;
     border-radius: 20px;
@@ -174,56 +214,43 @@
 
 .permissions-list li {
     padding: 4px 0;
-    color: #6c757d;
+    color: var(--text-gray);
     font-size: 0.9rem;
 }
 
-.no-data {
-    text-align: center;
-    color: #6c757d;
-    padding: 40px;
-    background: #f8f9fa;
-    border-radius: 10px;
+.btn-switch-magasin {
+    width: 100%;
+    margin-top: 15px;
+    padding: 10px;
+    background: white;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-switch-magasin:hover {
+    background: var(--primary-color);
+    color: white;
 }
 
 /* ========================================
-   SECTION ADMIN
+   GESTION UTILISATEURS (ADMIN)
    ======================================== */
-
-.admin-section {
-    background: #f8f9fa;
-    padding: 30px;
-    border-radius: 20px;
-    margin-top: 60px;
-}
-
-/* Header admin avec bouton création */
 .admin-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-}
-
-.admin-header h2 {
-    margin: 0;
-    color: #2c3e50;
-    font-size: 1.5rem;
-}
-
-/* Section admin */
-.admin-section {
-    margin-top: 40px;
-    padding-top: 40px;
-    border-top: 2px solid #e9ecef;
+    margin-bottom: 30px;
 }
 
 .admin-controls {
     margin-bottom: 30px;
-    background: white;
+    background: var(--bg-light);
     padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    border-radius: var(--radius-md);
 }
 
 .search-bar {
@@ -234,14 +261,14 @@
     width: 100%;
     padding: 12px 20px;
     font-size: 16px;
-    border: 2px solid #e9ecef;
-    border-radius: 10px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-sm);
     transition: all 0.3s;
 }
 
 .search-bar input:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -253,29 +280,28 @@
 
 .filter-btn {
     padding: 8px 16px;
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--border-color);
     background: white;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     transition: all 0.3s;
     font-size: 14px;
 }
 
 .filter-btn:hover {
-    border-color: #667eea;
+    border-color: var(--primary-color);
     background: #f0f3ff;
 }
 
 .filter-btn.active {
-    background: #667eea;
+    background: var(--primary-color);
     color: white;
-    border-color: #667eea;
+    border-color: var(--primary-color);
 }
 
 /* ========================================
-   CARTES UTILISATEURS (ADMIN)
+   CARTES UTILISATEURS
    ======================================== */
-
 .user-cards-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -284,18 +310,52 @@
 
 .user-card {
     background: white;
-    border-radius: 15px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
     padding: 25px;
     transition: all 0.3s;
+    border: 2px solid var(--border-color);
 }
 
 .user-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-color);
 }
 
-/* Corps de carte */
+.card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.user-main-info {
+    margin-left: 15px;
+}
+
+.user-main-info h3 {
+    margin: 0 0 5px 0;
+    color: var(--text-dark);
+    font-size: 1.2rem;
+}
+
+.role-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* Badges de rôle */
+.role-technicien { background: #e3f2fd; color: #1976d2; }
+.role-audioprothesiste { background: #fff3e0; color: #f57c00; }
+.role-assistant { background: #f3e5f5; color: #7b1fa2; }
+.role-manager { background: #e8f5e9; color: #388e3c; }
+.role-admin { background: #fce4ec; color: #c2185b; }
+
 .card-body {
     margin-bottom: 20px;
 }
@@ -314,86 +374,28 @@
 
 .info-label {
     font-weight: 600;
-    color: #6c757d;
+    color: var(--text-gray);
     font-size: 0.9rem;
 }
 
 .info-value {
-    color: #2c3e50;
+    color: var(--text-dark);
 }
 
-.editable {
-    padding: 4px 8px;
-    border-radius: 4px;
-    transition: all 0.3s;
-}
-
-.editable[contenteditable="true"] {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-}
-
-.editable[contenteditable="true"]:focus {
-    outline: none;
-    border-color: #667eea;
-    background: white;
-}
-
-/* Select pour le rôle en mode édition */
-.role-select {
-    padding: 4px 8px;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    background: white;
-    cursor: pointer;
-}
-
-/* Actions de carte */
 .card-actions {
     display: flex;
     gap: 10px;
 }
 
-/* En-tête de carte utilisateur */
-.card-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #e9ecef;
-}
-
-.user-main-info h3 {
-    margin: 0 0 5px 0;
-    color: #2c3e50;
-    font-size: 1.2rem;
-}
-
-.user-main-info .role-badge {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-}
-
-/* Badges de rôle */
-.role-technicien { background: #e3f2fd; color: #1976d2; }
-.role-audioprothesiste { background: #fff3e0; color: #f57c00; }
-.role-assistant { background: #f3e5f5; color: #7b1fa2; }
-.role-manager { background: #e8f5e9; color: #388e3c; }
-.role-admin { background: #fce4ec; color: #c2185b; }
-
 /* ========================================
    BOUTONS
    ======================================== */
-
 .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--primary-gradient);
     color: white;
     border: none;
     padding: 12px 24px;
-    border-radius: 10px;
+    border-radius: var(--radius-sm);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
@@ -406,11 +408,11 @@
 }
 
 .btn-secondary {
-    background: #e9ecef;
+    background: var(--border-color);
     color: #495057;
     border: none;
     padding: 12px 24px;
-    border-radius: 10px;
+    border-radius: var(--radius-sm);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
@@ -424,7 +426,7 @@
     flex: 1;
     padding: 10px;
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     font-weight: 600;
     transition: all 0.3s;
@@ -454,7 +456,6 @@
 .btn-save {
     background: #e8f5e9;
     color: #388e3c;
-    display: none;
 }
 
 .btn-save:hover {
@@ -465,7 +466,6 @@
 /* ========================================
    MODAL
    ======================================== */
-
 .modal {
     display: none;
     position: fixed;
@@ -485,21 +485,20 @@
 
 .modal-content {
     background: white;
-    border-radius: 15px;
+    border-radius: var(--radius-md);
     width: 90%;
     max-width: 400px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
     animation: slideIn 0.3s ease;
 }
 
-/* Modal large pour création */
 .modal-large {
     max-width: 600px;
 }
 
 .modal-header {
     padding: 20px;
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -507,7 +506,7 @@
 
 .modal-header h2 {
     margin: 0;
-    color: #2c3e50;
+    color: var(--text-dark);
 }
 
 .modal-close {
@@ -515,7 +514,7 @@
     border: none;
     font-size: 1.5rem;
     cursor: pointer;
-    color: #6c757d;
+    color: var(--text-gray);
     padding: 5px;
 }
 
@@ -538,8 +537,8 @@
 .form-group select {
     width: 100%;
     padding: 10px;
-    border: 2px solid #e9ecef;
-    border-radius: 8px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-sm);
     font-size: 16px;
     transition: all 0.3s;
 }
@@ -547,18 +546,16 @@
 .form-group input:focus,
 .form-group select:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-/* Rangée de formulaire */
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
 }
 
-/* Checkboxes magasins */
 .magasins-checkboxes {
     display: flex;
     gap: 20px;
@@ -571,19 +568,19 @@
     gap: 8px;
     cursor: pointer;
     padding: 8px 16px;
-    border: 2px solid #e9ecef;
-    border-radius: 8px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-sm);
     transition: all 0.3s;
 }
 
 .checkbox-label:hover {
-    border-color: #667eea;
+    border-color: var(--primary-color);
     background: #f0f3ff;
 }
 
 .checkbox-label:has(input:checked) {
     background: #f0f3ff;
-    border-color: #667eea;
+    border-color: var(--primary-color);
 }
 
 .checkbox-label input[type="checkbox"] {
@@ -601,11 +598,18 @@
 /* ========================================
    MESSAGES
    ======================================== */
+.no-data {
+    text-align: center;
+    color: var(--text-gray);
+    padding: 40px;
+    background: var(--bg-light);
+    border-radius: var(--radius-sm);
+}
 
 .error-message,
 .success-message {
     padding: 10px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     margin-top: 10px;
     text-align: center;
     display: none;
@@ -628,7 +632,6 @@
 /* ========================================
    LOADING
    ======================================== */
-
 .loading-message {
     text-align: center;
     padding: 50px;
@@ -638,7 +641,7 @@
     width: 40px;
     height: 40px;
     border: 4px solid #f3f3f3;
-    border-top: 4px solid #667eea;
+    border-top: 4px solid var(--primary-color);
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin: 0 auto 20px;
@@ -647,7 +650,6 @@
 /* ========================================
    ANIMATIONS
    ======================================== */
-
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -678,10 +680,17 @@
 /* ========================================
    RESPONSIVE
    ======================================== */
-
 @media (max-width: 768px) {
     .container {
         padding: 20px 15px;
+    }
+    
+    .compte-section-header {
+        padding: 20px;
+    }
+    
+    .compte-section-content {
+        padding: 20px;
     }
     
     .user-info-content {
@@ -695,12 +704,14 @@
     
     .user-actions {
         margin: 20px auto 0;
+        width: 100%;
     }
     
-    .magasins-grid {
-        grid-template-columns: 1fr;
+    .user-actions .btn-primary {
+        width: 100%;
     }
     
+    .magasins-grid,
     .user-cards-container {
         grid-template-columns: 1fr;
     }
@@ -714,11 +725,14 @@
         text-align: center;
     }
     
-    .profile-section h2 {
-        font-size: 1.25rem;
+    .user-main-info {
+        margin-left: 0;
+        margin-top: 10px;
     }
     
     .admin-header {
+        flex-direction: column;
+        gap: 15px;
         text-align: center;
     }
     
@@ -728,5 +742,9 @@
     
     .modal-content {
         width: 95%;
+    }
+    
+    .modal-large {
+        max-width: 95%;
     }
 }
