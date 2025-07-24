@@ -15,8 +15,14 @@
     
     <!-- CSS -->
     <link rel="stylesheet" href="../src/css/main.css">
+    <link rel="stylesheet" href="../src/css/header-layout.css">
     <style>
         /* Styles spécifiques à la page contacts */
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        
         .intro-section {
             background: white;
             border-radius: 15px;
@@ -189,27 +195,6 @@
             line-height: 1.6;
         }
         
-        .back-button {
-            position: absolute;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255,255,255,0.2);
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 25px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.3s;
-        }
-        
-        .back-button:hover {
-            background: rgba(255,255,255,0.3);
-            transform: translateY(-50%) translateX(-2px);
-        }
-        
         @media (max-width: 768px) {
             .contacts-grid {
                 grid-template-columns: 1fr;
@@ -228,12 +213,6 @@
             .contact-avatar {
                 margin-right: 0;
                 margin-bottom: 15px;
-            }
-            
-            .back-button {
-                position: static;
-                margin-bottom: 20px;
-                display: inline-flex;
             }
             
             .contact-value {
@@ -277,12 +256,20 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <a href="home.html" class="back-button">
-            ← Retour à l'accueil
-        </a>
-        <h1>📞 Contacts SAV Audio</h1>
-        <p>Assistance technique et support</p>
+    <!-- Header uniforme -->
+    <div class="app-header">
+        <div class="app-header-content">
+            <div class="app-header-left">
+                <a href="home.html" class="header-back-button">
+                    ← Retour
+                </a>
+            </div>
+            <div class="app-header-center">
+                <h1>📞 Contacts SAV Audio</h1>
+                <p>Assistance technique et support</p>
+            </div>
+            <div class="app-header-right"></div>
+        </div>
     </div>
 
     <div class="container">
