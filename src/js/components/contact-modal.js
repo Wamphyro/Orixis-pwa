@@ -235,6 +235,15 @@ class ContactModal {
         const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
         const userInfo = JSON.parse(localStorage.getItem('sav_user_permissions') || '{}');
         
+        // Construire le nom complet de l'utilisateur
+        let userName = 'Utilisateur SAV';
+        if (userInfo.prenom && userInfo.nom) {
+            userName = `${userInfo.prenom} ${userInfo.nom}`;
+        } else if (auth.collaborateur) {
+            // Fallback sur les données auth si pas dans user_permissions
+            userName = `${auth.collaborateur.prenom || ''} ${auth.collaborateur.nom || ''}`.trim() || 'Utilisateur SAV';
+        }
+        
         let subject = document.getElementById('subject').value;
         if (subject === 'other') {
             subject = '[Autre] ' + document.getElementById('subjectOther').value;
@@ -247,8 +256,7 @@ class ContactModal {
         const templateParams = {
             to_email: this.currentRecipient.email,
             to_name: this.currentRecipient.name,
-            from_name: userInfo.prenom && userInfo.nom ? 
-                `${userInfo.prenom} ${userInfo.nom}` : 'Utilisateur SAV',
+            from_name: userName,
             from_magasin: auth.magasin || 'Non spécifié',
             subject: subject,
             message: message,
