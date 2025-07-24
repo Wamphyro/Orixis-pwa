@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="../src/css/main.css">
     <link rel="stylesheet" href="../src/css/header-layout.css">
     <link rel="stylesheet" href="../src/css/compte.css">
+    <link rel="stylesheet" href="../src/css/components/gestion-utilisateurs.component.css">
 </head>
 <body>
     <!-- Header uniforme -->
@@ -54,27 +55,7 @@
 
         <!-- Section admin uniquement -->
         <section id="adminSection" class="profile-section admin-section" style="display: none;">
-            <h2>👥 Gestion des utilisateurs</h2>
-            
-            <!-- Barre de recherche -->
-            <div class="admin-controls">
-                <div class="search-bar">
-                    <input type="text" id="searchUser" placeholder="🔍 Rechercher un utilisateur..." onkeyup="filterUsers()">
-                </div>
-                <div class="filter-buttons">
-                    <button class="filter-btn active" onclick="filterByRole('all')">Tous</button>
-                    <button class="filter-btn" onclick="filterByRole('technicien')">🔧 Techniciens</button>
-                    <button class="filter-btn" onclick="filterByRole('audioprothesiste')">🦻 Audioprothésistes</button>
-                    <button class="filter-btn" onclick="filterByRole('assistant')">📋 Assistants</button>
-                    <button class="filter-btn" onclick="filterByRole('manager')">👔 Managers</button>
-                    <button class="filter-btn" onclick="filterByRole('admin')">👑 Admins</button>
-                </div>
-            </div>
-
-            <!-- Liste des utilisateurs -->
-            <div id="userCardsContainer" class="user-cards-container">
-                <!-- Les cartes seront générées dynamiquement -->
-            </div>
+            <!-- Le composant sera inséré ici -->
         </section>
 
         <!-- Message de chargement -->
@@ -125,6 +106,7 @@
     <script type="module">
         import { initFirebase, chargerTousLesUtilisateurs, getUtilisateurDetails } from '../src/js/services/firebase-auth.js';
         import { CompteService } from '../src/js/services/compte.service.js';
+        import { GestionUtilisateursComponent } from '../src/js/components/gestion-utilisateurs.component.js';
         
         let currentUser = null;
         let allUsers = [];
@@ -199,7 +181,8 @@
             // Afficher la section admin si nécessaire
             if (isAdmin) {
                 document.getElementById('adminSection').style.display = 'block';
-                await loadAllUsers();
+                document.getElementById('adminSection').innerHTML = GestionUtilisateursComponent.render();
+                await GestionUtilisateursComponent.init();
             }
             
             document.getElementById('loadingMessage').style.display = 'none';
