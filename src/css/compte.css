@@ -239,11 +239,9 @@
 /* ========================================
    GESTION UTILISATEURS (ADMIN)
    ======================================== */
-.admin-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
+.admin-top-actions {
+    text-align: right;
+    margin-bottom: 20px;
 }
 
 .admin-controls {
@@ -730,10 +728,12 @@
         margin-top: 10px;
     }
     
-    .admin-header {
-        flex-direction: column;
-        gap: 15px;
+    .admin-top-actions {
         text-align: center;
+    }
+    
+    .admin-top-actions .btn-primary {
+        width: 100%;
     }
     
     .form-row {
