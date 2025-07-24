@@ -5,6 +5,9 @@ import { firebaseConfig } from '../config/firebase-config.js';
 let db;
 let auth;
 
+// Cache pour les rôles
+let rolesCache = null;
+
 // Initialisation de Firebase
 async function initFirebase() {
     try {
@@ -27,6 +30,67 @@ async function initFirebase() {
     } catch (error) {
         console.error('❌ Erreur initialisation Firebase:', error);
         throw error;
+    }
+}
+
+// NOUVELLE FONCTION : Charger les rôles depuis Firestore
+async function chargerRoles() {
+    try {
+        // Si les rôles sont déjà en cache, les retourner
+        if (rolesCache) {
+            return rolesCache;
+        }
+        
+        const { collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const rolesRef = collection(db, 'roles');
+        const snapshot = await getDocs(rolesRef);
+        
+        const roles = {};
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            roles[doc.id] = {
+                nom: data.nom,
+                label: data.label,
+                niveau: data.niveau,
+                permissions: data.permissions
+            };
+        });
+        
+        // Mettre en cache pour éviter de recharger
+        rolesCache = roles;
+        
+        console.log(`✅ ${Object.keys(roles).length} rôles chargés`);
+        return roles;
+    } catch (error) {
+        console.error('❌ Erreur chargement rôles:', error);
+        return null;
+    }
+}
+
+// NOUVELLE FONCTION : Obtenir un rôle spécifique
+async function getRoleDetails(roleId) {
+    try {
+        const roles = await chargerRoles();
+        return roles ? roles[roleId] : null;
+    } catch (error) {
+        console.error('❌ Erreur récupération détails rôle:', error);
+        return null;
+    }
+}
+
+// NOUVELLE FONCTION : Vérifier si un utilisateur a une permission
+async function userHasPermission(userId, permissionName) {
+    try {
+        const user = await getUtilisateurDetails(userId);
+        if (!user || !user.role) return false;
+        
+        const role = await getRoleDetails(user.role);
+        if (!role || !role.permissions) return false;
+        
+        return role.permissions[permissionName] === true;
+    } catch (error) {
+        console.error('❌ Erreur vérification permission:', error);
+        return false;
     }
 }
 
@@ -174,5 +238,8 @@ export {
     verifierCodePin,
     verifierCodePinUtilisateur,
     getUtilisateurDetails,
+    chargerRoles,           // NOUVEAU
+    getRoleDetails,         // NOUVEAU
+    userHasPermission,      // NOUVEAU
     db // Exporter aussi la base de données
 };
