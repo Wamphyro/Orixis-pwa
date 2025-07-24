@@ -276,7 +276,7 @@
                 magasinActuel: auth.magasin
             };
             
-            container.innerHTML = ProfileService.createUserCard(userData, false, true);
+            container.innerHTML = CompteService.createUserCard(userData, false, true);
         }
         
         // Charger tous les utilisateurs (admin only)
@@ -293,7 +293,7 @@
         function displayUserCards(users) {
             const container = document.getElementById('userCardsContainer');
             container.innerHTML = users.map(user => 
-                ProfileService.createUserCard(user, true)
+                CompteService.createUserCard(user, true)
             ).join('');
         }
         
@@ -366,7 +366,7 @@
             try {
                 // Vérifier l'ancien code si nécessaire
                 if (document.getElementById('oldPinGroup').style.display !== 'none') {
-                    const validOld = await ProfileService.verifyPin(userId, oldPin);
+                    const validOld = await CompteService.verifyPin(userId, oldPin);
                     if (!validOld) {
                         showPinError('Code actuel incorrect');
                         return;
@@ -374,7 +374,7 @@
                 }
                 
                 // Mettre à jour le code
-                await ProfileService.updatePin(userId, newPin);
+                await CompteService.updatePin(userId, newPin);
                 
                 showPinSuccess('Code PIN modifié avec succès');
                 setTimeout(() => closePinModal(), 2000);
@@ -425,7 +425,7 @@
             
             try {
                 // Créer le nouveau profil
-                await ProfileService.createUser({
+                await CompteService.createUser({
                     id: userId,
                     prenom: prenom,
                     nom: nom,
@@ -476,7 +476,7 @@
             const role = roleSelect.value;
             
             try {
-                await ProfileService.updateUser(userId, { nom, prenom, role });
+                await CompteService.updateUser(userId, { nom, prenom, role });
                 
                 // Désactiver le mode édition
                 const fields = card.querySelectorAll('.editable');
