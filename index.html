@@ -327,7 +327,8 @@
         </div>
     </div>
 
-    <script src="auth-config.js"></script>
+    <!-- ⚠️ CHANGÉ : Utilise le fichier temporaire -->
+    <script src="magasins-temp.js"></script>
     <script>
         let pinCode = '';
         let attempts = 0;
@@ -341,7 +342,7 @@
         // Vérifier si déjà connecté
         window.addEventListener('load', () => {
             if (checkAuth()) {
-                window.location.href = 'pages/home.html'; // ⚠️ CHANGÉ : ajout de pages/
+                window.location.href = 'pages/home.html';
             }
             
             // Remplir la liste des magasins
@@ -439,7 +440,7 @@
                 
                 // Redirection
                 setTimeout(() => {
-                    window.location.href = 'pages/home.html'; // ⚠️ CHANGÉ : ajout de pages/
+                    window.location.href = 'pages/home.html';
                 }, 1000);
                 
             } else {
