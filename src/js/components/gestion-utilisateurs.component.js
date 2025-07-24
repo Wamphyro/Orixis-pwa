@@ -1,4 +1,4 @@
-import { chargerTousLesUtilisateurs, chargerRoles } from '../services/firebase-auth.js';
+import { chargerTousLesUtilisateurs, chargerRoles } from '../services/firebase.service.js';
 import { CompteService } from '../services/compte.service.js';
 
 export class GestionUtilisateursComponent {

@@ -1,5 +1,5 @@
 import { getFirestore, doc, updateDoc, getDoc, setDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-import { chargerRoles } from '../services/firebase-auth.js';
+import { chargerRoles } from '../services/firebase.service.js';
 
 export class CompteService {
     static db = null;
