@@ -16,16 +16,7 @@
     <!-- CSS -->
     <link rel="stylesheet" href="../src/css/main.css">
     <link rel="stylesheet" href="../src/css/header-layout.css">
-    <link rel="stylesheet" href="../src/css/profile.css">
-    <style>
-        /* Fix temporaire pour masquer les modals au chargement */
-        .modal {
-            display: none !important;
-        }
-        .modal.active {
-            display: flex !important;
-        }
-    </style>
+    <link rel="stylesheet" href="../src/css/compte.css">
 </head>
 <body>
     <!-- Header uniforme -->
@@ -45,34 +36,22 @@
     </div>
 
     <div class="container">
-        <!-- Section informations personnelles -->
-        <section class="profile-section">
-            <h2>👤 Mes informations personnelles</h2>
-            <div class="user-info-card" id="userInfoCard">
-                <!-- Sera rempli dynamiquement -->
-            </div>
-        </section>
+        <!-- Section Mon Profil (visible pour tous) -->
+        <div id="myProfileSection" class="user-cards-container">
+            <!-- La carte du profil actuel sera générée ici -->
+        </div>
 
-        <!-- Section magasins -->
-        <section class="profile-section">
-            <h2>🏪 Mes magasins autorisés</h2>
-            <div class="magasins-grid" id="magasinsGrid">
-                <!-- Les vignettes seront générées dynamiquement -->
-            </div>
-        </section>
-
-        <!-- Section admin uniquement -->
-        <section id="adminSection" class="profile-section admin-section" style="display: none;">
-            <h2>👥 Gestion des utilisateurs</h2>
-            
-            <!-- Bouton créer nouveau profil -->
+        <!-- Section Admin (visible seulement pour les admins) -->
+        <div id="adminSection" class="admin-section" style="display: none;">
+            <!-- Header avec bouton création -->
             <div class="admin-header">
+                <h2>👥 Gestion des utilisateurs</h2>
                 <button class="btn-primary" onclick="openCreateUserModal()">
                     ➕ Créer un nouveau profil
                 </button>
             </div>
             
-            <!-- Barre de recherche -->
+            <!-- Contrôles admin -->
             <div class="admin-controls">
                 <div class="search-bar">
                     <input type="text" id="searchUser" placeholder="🔍 Rechercher un utilisateur..." onkeyup="filterUsers()">
@@ -91,7 +70,7 @@
             <div id="userCardsContainer" class="user-cards-container">
                 <!-- Les cartes seront générées dynamiquement -->
             </div>
-        </section>
+        </div>
 
         <!-- Message de chargement -->
         <div id="loadingMessage" class="loading-message">
@@ -217,7 +196,6 @@
         let currentUser = null;
         let allUsers = [];
         let isAdmin = false;
-        let currentAuth = null;
         
         // Vérification auth
         function checkAuth() {
@@ -232,7 +210,6 @@
                 return false;
             }
             
-            currentAuth = authData;
             return authData.authenticated;
         }
         
@@ -254,20 +231,21 @@
         
         // Charger les données utilisateur
         async function loadUserData() {
+            const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
             const permissions = JSON.parse(localStorage.getItem('sav_user_permissions') || '{}');
             
             // Déterminer l'utilisateur actuel
-            if (currentAuth.collaborateur && currentAuth.collaborateur.id) {
-                currentUser = await getUtilisateurDetails(currentAuth.collaborateur.id);
+            if (auth.collaborateur && auth.collaborateur.id) {
+                currentUser = await getUtilisateurDetails(auth.collaborateur.id);
             }
             
             // Si pas de currentUser, utiliser les données de l'auth
-            if (!currentUser && currentAuth.collaborateur) {
+            if (!currentUser && auth.collaborateur) {
                 currentUser = {
-                    id: currentAuth.collaborateur.id,
-                    nom: currentAuth.collaborateur.nom,
-                    prenom: currentAuth.collaborateur.prenom,
-                    role: currentAuth.collaborateur.role || 'technicien',
+                    id: auth.collaborateur.id,
+                    nom: auth.collaborateur.nom,
+                    prenom: auth.collaborateur.prenom,
+                    role: auth.collaborateur.role || 'technicien',
                     autorisations: permissions.autorisations || {}
                 };
             }
@@ -275,13 +253,10 @@
             // Vérifier si admin
             isAdmin = currentUser?.role === 'admin' || permissions.role === 'admin';
             
-            // Afficher les informations personnelles
-            displayUserInfo();
+            // Afficher la carte du profil actuel avec magasins
+            displayCurrentUserCard();
             
-            // Afficher les magasins
-            displayMagasins();
-            
-            // Afficher la section admin si nécessaire
+            // Afficher les contrôles admin si nécessaire
             if (isAdmin) {
                 document.getElementById('adminSection').style.display = 'block';
                 await loadAllUsers();
@@ -290,70 +265,18 @@
             document.getElementById('loadingMessage').style.display = 'none';
         }
         
-        // Afficher les informations personnelles
-        function displayUserInfo() {
-            const container = document.getElementById('userInfoCard');
-            const magasinActuel = currentAuth.magasin;
+        // Afficher la carte du profil actuel avec les magasins
+        function displayCurrentUserCard() {
+            const container = document.getElementById('myProfileSection');
+            const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
             
-            container.innerHTML = `
-                <div class="user-info-content">
-                    <div class="user-avatar">
-                        ${getInitials(currentUser.prenom, currentUser.nom)}
-                    </div>
-                    <div class="user-details">
-                        <h3>${currentUser.prenom} ${currentUser.nom}</h3>
-                        <p class="user-role">${getRoleLabel(currentUser.role)}</p>
-                        <p class="user-id">ID: ${currentUser.id}</p>
-                        <p class="current-magasin">
-                            <strong>Magasin actuel:</strong> 
-                            <span class="magasin-badge">${magasinActuel}</span>
-                        </p>
-                    </div>
-                    <div class="user-actions">
-                        <button class="btn-primary" onclick="changePin('${currentUser.id}')">
-                            🔐 Changer mon code PIN
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-        
-        // Afficher les magasins autorisés
-        function displayMagasins() {
-            const container = document.getElementById('magasinsGrid');
-            const autorisations = currentUser.autorisations || {};
+            // Créer une carte enrichie pour l'utilisateur actuel
+            const userData = {
+                ...currentUser,
+                magasinActuel: auth.magasin
+            };
             
-            // Récupérer les magasins depuis les autorisations
-            const magasins = Object.keys(autorisations).filter(mag => autorisations[mag].acces === true);
-            
-            if (magasins.length === 0) {
-                container.innerHTML = '<p class="no-data">Aucun magasin autorisé</p>';
-                return;
-            }
-            
-            container.innerHTML = magasins.map(magasin => {
-                const isActive = magasin === currentAuth.magasin;
-                const permissions = autorisations[magasin];
-                
-                return `
-                    <div class="magasin-card ${isActive ? 'active' : ''}">
-                        <div class="magasin-header">
-                            <h4>${magasin}</h4>
-                            ${isActive ? '<span class="badge-active">Actif</span>' : ''}
-                        </div>
-                        <div class="magasin-info">
-                            <p><strong>Accès:</strong> ${permissions?.acces ? '✅ Autorisé' : '❌ Refusé'}</p>
-                            ${permissions?.permissions ? 
-                                `<p><strong>Permissions:</strong></p>
-                                 <ul class="permissions-list">
-                                    ${permissions.permissions.map(p => `<li>• ${p}</li>`).join('')}
-                                 </ul>` 
-                                : ''
-                            }
-                        </div>
-                    </div>
-                `;
-            }).join('');
+            container.innerHTML = ProfileService.createUserCard(userData, false, true);
         }
         
         // Charger tous les utilisateurs (admin only)
@@ -366,28 +289,12 @@
             }
         }
         
-        // Afficher les cartes utilisateurs (admin)
+        // Afficher les cartes utilisateurs
         function displayUserCards(users) {
             const container = document.getElementById('userCardsContainer');
             container.innerHTML = users.map(user => 
                 ProfileService.createUserCard(user, true)
             ).join('');
-        }
-        
-        // Fonctions utilitaires
-        function getInitials(prenom, nom) {
-            return `${prenom.charAt(0)}${nom.charAt(0)}`.toUpperCase();
-        }
-        
-        function getRoleLabel(role) {
-            const labels = {
-                'admin': '👑 Administrateur',
-                'manager': '👔 Manager',
-                'audioprothesiste': '🦻 Audioprothésiste',
-                'assistant': '📋 Assistant SAV',
-                'technicien': '🔧 Technicien'
-            };
-            return labels[role] || role;
         }
         
         // Fonctions globales pour les événements
@@ -396,7 +303,7 @@
             const filtered = allUsers.filter(user => 
                 user.nom.toLowerCase().includes(searchTerm) ||
                 user.prenom.toLowerCase().includes(searchTerm) ||
-                user.magasins.some(m => m.toLowerCase().includes(searchTerm))
+                Object.keys(user.autorisations || {}).some(m => m.toLowerCase().includes(searchTerm))
             );
             displayUserCards(filtered);
         }
@@ -412,47 +319,6 @@
             } else {
                 const filtered = allUsers.filter(user => user.role === role);
                 displayUserCards(filtered);
-            }
-        }
-        
-        window.editUser = async function(userId) {
-            const user = allUsers.find(u => u.id === userId);
-            if (!user) return;
-            
-            // Activer le mode édition
-            const card = document.getElementById(`card-${userId}`);
-            const fields = card.querySelectorAll('.editable');
-            const editBtn = card.querySelector('.btn-edit');
-            const saveBtn = card.querySelector('.btn-save');
-            
-            if (editBtn.style.display !== 'none') {
-                // Passer en mode édition
-                fields.forEach(field => field.contentEditable = true);
-                editBtn.style.display = 'none';
-                saveBtn.style.display = 'inline-block';
-            }
-        }
-        
-        window.saveUser = async function(userId) {
-            const card = document.getElementById(`card-${userId}`);
-            const nom = card.querySelector('[data-field="nom"]').textContent;
-            const prenom = card.querySelector('[data-field="prenom"]').textContent;
-            const roleSelect = card.querySelector('[data-field="role"]');
-            const role = roleSelect.value;
-            
-            try {
-                await ProfileService.updateUser(userId, { nom, prenom, role });
-                
-                // Désactiver le mode édition
-                const fields = card.querySelectorAll('.editable');
-                fields.forEach(field => field.contentEditable = false);
-                
-                card.querySelector('.btn-edit').style.display = 'inline-block';
-                card.querySelector('.btn-save').style.display = 'none';
-                
-                showSuccess('Informations mises à jour');
-            } catch (error) {
-                showError('Erreur lors de la sauvegarde');
             }
         }
         
@@ -584,23 +450,52 @@
             }
         }
         
-        function showCreateUserError(message) {
-            document.getElementById('createUserError').textContent = message;
-            document.getElementById('createUserSuccess').textContent = '';
+        window.editUser = async function(userId) {
+            const user = allUsers.find(u => u.id === userId);
+            if (!user) return;
+            
+            // Activer le mode édition
+            const card = document.getElementById(`card-${userId}`);
+            const fields = card.querySelectorAll('.editable');
+            const editBtn = card.querySelector('.btn-edit');
+            const saveBtn = card.querySelector('.btn-save');
+            
+            if (editBtn.style.display !== 'none') {
+                // Passer en mode édition
+                fields.forEach(field => field.contentEditable = true);
+                editBtn.style.display = 'none';
+                saveBtn.style.display = 'inline-block';
+            }
         }
         
-        function showCreateUserSuccess(message) {
-            document.getElementById('createUserSuccess').textContent = message;
-            document.getElementById('createUserError').textContent = '';
+        window.saveUser = async function(userId) {
+            const card = document.getElementById(`card-${userId}`);
+            const nom = card.querySelector('[data-field="nom"]').textContent;
+            const prenom = card.querySelector('[data-field="prenom"]').textContent;
+            const roleSelect = card.querySelector('[data-field="role"]');
+            const role = roleSelect.value;
+            
+            try {
+                await ProfileService.updateUser(userId, { nom, prenom, role });
+                
+                // Désactiver le mode édition
+                const fields = card.querySelectorAll('.editable');
+                fields.forEach(field => field.contentEditable = false);
+                
+                card.querySelector('.btn-edit').style.display = 'inline-block';
+                card.querySelector('.btn-save').style.display = 'none';
+                
+                showSuccess('Informations mises à jour');
+            } catch (error) {
+                showError('Erreur lors de la sauvegarde');
+            }
         }
         
         function showError(message) {
-            // Implémenter notification d'erreur
             alert(message);
         }
         
         function showSuccess(message) {
-            // Implémenter notification de succès
             alert(message);
         }
         
@@ -612,6 +507,16 @@
         function showPinSuccess(message) {
             document.getElementById('pinSuccess').textContent = message;
             document.getElementById('pinError').textContent = '';
+        }
+        
+        function showCreateUserError(message) {
+            document.getElementById('createUserError').textContent = message;
+            document.getElementById('createUserSuccess').textContent = '';
+        }
+        
+        function showCreateUserSuccess(message) {
+            document.getElementById('createUserSuccess').textContent = message;
+            document.getElementById('createUserError').textContent = '';
         }
     </script>
 </body>
