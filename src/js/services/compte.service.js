@@ -1,4 +1,4 @@
-import { getFirestore, doc, updateDoc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirestore, doc, updateDoc, getDoc, setDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 export class CompteService {
     static db = null;
@@ -65,6 +65,18 @@ export class CompteService {
         }
     }
     
+    static async deleteUser(userId) {
+        await this.init();
+        try {
+            const userRef = doc(this.db, 'utilisateurs', userId);
+            await deleteDoc(userRef);
+            return true;
+        } catch (error) {
+            console.error('Erreur suppression utilisateur:', error);
+            throw error;
+        }
+    }
+    
     static createUserCard(user, isAdmin = false) {
         const roleLabels = {
             'admin': '👑 Administrateur',
@@ -127,11 +139,8 @@ export class CompteService {
                         🔐 Changer le code
                     </button>
                     ${isAdmin ? `
-                        <button class="btn-action btn-edit" onclick="editUser('${user.id}')">
-                            ✏️ Modifier
-                        </button>
-                        <button class="btn-action btn-save" style="display: none;" onclick="saveUser('${user.id}')">
-                            💾 Sauvegarder
+                        <button class="btn-action btn-delete" onclick="deleteUser('${user.id}')">
+                            🗑️ Supprimer
                         </button>
                     ` : ''}
                 </div>
