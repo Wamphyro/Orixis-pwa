@@ -509,6 +509,82 @@
             }
         }
         
+        // Fonctions pour créer un utilisateur (admin)
+        window.openCreateUserModal = function() {
+            document.getElementById('createUserModal').classList.add('active');
+        }
+        
+        window.closeCreateUserModal = function() {
+            document.getElementById('createUserModal').classList.remove('active');
+            document.getElementById('createUserForm').reset();
+            document.getElementById('createUserError').textContent = '';
+            document.getElementById('createUserSuccess').textContent = '';
+        }
+        
+        window.handleCreateUser = async function(event) {
+            event.preventDefault();
+            
+            const prenom = document.getElementById('newUserPrenom').value;
+            const nom = document.getElementById('newUserNom').value;
+            const role = document.getElementById('newUserRole').value;
+            const pin = document.getElementById('newUserPin').value;
+            const magasinDefaut = document.getElementById('newUserMagasinDefaut').value;
+            
+            // Récupérer les magasins autorisés
+            const magasinsAuth = Array.from(document.querySelectorAll('input[name="magasinAuth"]:checked'))
+                .map(cb => cb.value);
+            
+            if (magasinsAuth.length === 0) {
+                showCreateUserError('Sélectionnez au moins un magasin');
+                return;
+            }
+            
+            // Créer l'objet autorisations
+            const autorisations = {};
+            magasinsAuth.forEach(mag => {
+                autorisations[mag] = { acces: true };
+            });
+            
+            // Générer un ID unique
+            const userId = `${nom.toLowerCase()}${Date.now().toString().slice(-3)}`;
+            
+            try {
+                // Créer le nouveau profil
+                await ProfileService.createUser({
+                    id: userId,
+                    prenom: prenom,
+                    nom: nom,
+                    role: role,
+                    code: pin,
+                    actif: true,
+                    autorisations: autorisations,
+                    magasinParDefaut: magasinDefaut || magasinsAuth[0],
+                    dateCreation: new Date().toISOString()
+                });
+                
+                showCreateUserSuccess('Profil créé avec succès !');
+                
+                // Recharger la liste
+                await loadAllUsers();
+                
+                setTimeout(() => closeCreateUserModal(), 2000);
+                
+            } catch (error) {
+                console.error('Erreur création:', error);
+                showCreateUserError('Erreur lors de la création du profil');
+            }
+        }
+        
+        function showCreateUserError(message) {
+            document.getElementById('createUserError').textContent = message;
+            document.getElementById('createUserSuccess').textContent = '';
+        }
+        
+        function showCreateUserSuccess(message) {
+            document.getElementById('createUserSuccess').textContent = message;
+            document.getElementById('createUserError').textContent = '';
+        }
+        
         function showError(message) {
             // Implémenter notification d'erreur
             alert(message);
