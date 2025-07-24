@@ -167,13 +167,13 @@
                      permissions.role === 'Administrateur';
             
             // Afficher les composants
-            displayComponents();
+            await displayComponents();
             
             document.getElementById('loadingMessage').style.display = 'none';
         }
         
         // Afficher tous les composants
-        function displayComponents() {
+        async function displayComponents() {
             // Composant Informations personnelles
             document.getElementById('infosPersonnellesSection').innerHTML = 
                 InfosPersonnellesComponent.render(currentUser, currentAuth);
@@ -186,17 +186,23 @@
             if (isAdmin) {
                 const adminSection = document.getElementById('adminSection');
                 adminSection.style.display = 'block';
+                
+                // IMPORTANT: Attendre le render asynchrone
+                const gestionHtml = await GestionUtilisateursComponent.render();
+                
                 adminSection.innerHTML = `
                     <div class="compte-section-container">
                         <div class="compte-section-header">
                             <h2>👥 Gestion des utilisateurs</h2>
                         </div>
                         <div class="compte-section-content">
-                            ${GestionUtilisateursComponent.render()}
+                            ${gestionHtml}
                         </div>
                     </div>
                 `;
-                GestionUtilisateursComponent.init();
+                
+                // Initialiser APRÈS avoir inséré le HTML
+                await GestionUtilisateursComponent.init();
             }
         }
         
