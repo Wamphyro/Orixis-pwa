@@ -12,7 +12,6 @@
     <meta name="apple-mobile-web-app-title" content="SAV Audio">
     <meta name="theme-color" content="#667eea">
     <link rel="manifest" href="../manifest.json">
-    <link rel="apple-touch-icon" href="../assets/images/icon-192.png">
     
     <!-- CSS -->
     <link rel="stylesheet" href="../src/css/main.css">
@@ -249,7 +248,7 @@
             }
         });
         
-        // Fonction d'envoi au SAV
+        // Fonction d'envoi au SAV MODIFIÉE
         function envoyerSAV() {
             if (!confirm('Confirmer l\'envoi de l\'escalade SAV aux assistantes ?')) {
                 return;
@@ -258,8 +257,19 @@
             const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
             const date = new Date();
             
+            // ADRESSES EMAIL DÉFINIES ICI
+            const destinataires = [
+                'korber@BROKERAUDIOLOGIE88.onmicrosoft.com'
+            ];
+            
             const templateParams = {
+                // AJOUT DES DESTINATAIRES
+                to_email: destinataires.join(', '),
+                reply_to: 'noreply@orixis.fr',
+                
+                // DONNÉES DE L'INTERVENTION
                 magasin: auth.magasin || 'Non spécifié',
+                intervenant: auth.collaborateur ? `${auth.collaborateur.prenom} ${auth.collaborateur.nom}` : 'Non spécifié',
                 date: date.toLocaleDateString('fr-FR'),
                 heure: date.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'}),
                 nom_client: document.getElementById('nom').value,
