@@ -13,7 +13,7 @@
     <link rel="manifest" href="../manifest.json">
     <meta name="theme-color" content="#667eea">
     
-    <!-- CSS CORRIGÉ -->
+    <!-- CSS -->
     <link rel="stylesheet" href="../src/css/main.css">
     <link rel="stylesheet" href="../src/css/contacts.css">
     
@@ -150,68 +150,8 @@
         </div>
     </div>
 
-    <!-- Modal de contact -->
-    <div class="modal-overlay" id="contactModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>📧 Nouveau message</h2>
-                <button class="modal-close" onclick="contactModal.close()">✕</button>
-            </div>
-            <div class="modal-body">
-                <div class="recipient-info" id="recipientInfo">
-                    <!-- Sera rempli dynamiquement -->
-                </div>
-                
-                <form id="contactForm">
-                    <div class="form-row">
-                        <label for="subject">Sujet</label>
-                        <select id="subject" name="subject" required>
-                            <option value="">Sélectionner un sujet</option>
-                            <option value="Escalade technique">Escalade technique</option>
-                            <option value="Question procédure">Question procédure</option>
-                            <option value="Demande formation">Demande formation</option>
-                            <option value="Problème urgent">Problème urgent</option>
-                            <option value="Autre">Autre</option>
-                        </select>
-                    </div>
-                    
-                    <div class="subject-other-input" id="subjectOtherInput">
-                        <label for="subjectOther">Précisez le sujet</label>
-                        <input type="text" id="subjectOther" name="subjectOther" placeholder="Décrivez brièvement votre sujet">
-                    </div>
-                    
-                    <div class="form-row">
-                        <label for="message">Message</label>
-                        <textarea id="message" name="message" required placeholder="Décrivez votre demande en détail..."></textarea>
-                    </div>
-                    
-                    <div class="form-row">
-                        <label>Priorité</label>
-                        <div class="priority-select">
-                            <label class="priority-option">
-                                <input type="radio" name="priority" value="normale" checked>
-                                Normale
-                            </label>
-                            <label class="priority-option urgent">
-                                <input type="radio" name="priority" value="urgente">
-                                Urgente
-                            </label>
-                        </div>
-                    </div>
-                </form>
-                
-                <div class="success-message" id="successMessage"></div>
-                <div class="error-message" id="errorMessage"></div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-cancel" onclick="contactModal.close()">Annuler</button>
-                <button type="button" class="btn-send" onclick="contactModal.send()">
-                    <span class="loading-spinner" id="loadingSpinner"></span>
-                    Envoyer
-                </button>
-            </div>
-        </div>
-    </div>
+    <!-- Le modal sera injecté ici par contact-modal.js -->
+    <!-- Pas de HTML de modal en dur ! -->
 
     <div class="footer">
         <p>Orixis - © 2025</p>
@@ -249,33 +189,50 @@
             contactModal.open(name, email, avatar);
         }
         
-        // Fonction pour copier dans le presse-papier
+        // Fonction pour copier dans le presse-papier avec tooltip
         function copyToClipboard(text, event) {
             event.preventDefault();
             
-            const tempInput = document.createElement('input');
-            tempInput.value = text;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            
-            try {
-                document.execCommand('copy');
-                event.currentTarget.classList.add('copied');
+            navigator.clipboard.writeText(text).then(() => {
+                // Créer le tooltip de confirmation
+                const tooltip = document.createElement('div');
+                tooltip.className = 'copy-tooltip';
+                tooltip.textContent = 'Copié !';
+                
+                // Positionner le tooltip
+                const rect = event.currentTarget.getBoundingClientRect();
+                tooltip.style.position = 'fixed';
+                tooltip.style.left = rect.left + rect.width/2 + 'px';
+                tooltip.style.top = rect.top - 40 + 'px';
+                tooltip.style.transform = 'translateX(-50%)';
+                
+                document.body.appendChild(tooltip);
+                
+                // Animation d'apparition
+                setTimeout(() => tooltip.classList.add('show'), 10);
+                
+                // Supprimer après animation
                 setTimeout(() => {
-                    event.currentTarget.classList.remove('copied');
+                    tooltip.classList.remove('show');
+                    setTimeout(() => tooltip.remove(), 300);
                 }, 2000);
-            } catch (err) {
+            }).catch(err => {
                 console.error('Erreur lors de la copie:', err);
-            }
+                // Fallback pour les anciens navigateurs
+                const tempInput = document.createElement('input');
+                tempInput.value = text;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+            });
             
-            document.body.removeChild(tempInput);
-            
-            // Pour mobile, ouvrir l'action par défaut
-            setTimeout(() => {
-                if (text.includes('+')) {
+            // Pour mobile, ouvrir l'action par défaut après un délai
+            if (text.includes('+')) {
+                setTimeout(() => {
                     window.location.href = `tel:${text}`;
-                }
-            }, 500);
+                }, 500);
+            }
         }
     </script>
 </body>
