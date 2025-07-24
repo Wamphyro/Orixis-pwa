@@ -17,6 +17,49 @@
     <link rel="stylesheet" href="../src/css/main.css">
     <link rel="stylesheet" href="../src/css/header-layout.css">
     <link rel="stylesheet" href="../src/css/home.css">
+    <style>
+        /* Styles pour le sélecteur de magasin */
+        .magasin-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-right: 20px;
+        }
+        
+        .magasin-selector label {
+            color: white;
+            font-weight: 600;
+        }
+        
+        .magasin-selector select {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 2px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 120px;
+        }
+        
+        .magasin-selector select:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.5);
+        }
+        
+        .magasin-selector select:focus {
+            outline: none;
+            background: rgba(255,255,255,0.2);
+            border-color: white;
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.2);
+        }
+        
+        .magasin-selector select option {
+            background: #2c3e50;
+            color: white;
+        }
+    </style>
 </head>
 <body>
     <!-- Header uniforme -->
@@ -28,8 +71,11 @@
                 <p>Système de Gestion des Interventions</p>
             </div>
             <div class="app-header-right">
-                <div class="header-user-info">
-                    <span id="magasin-info">Magasin: </span>
+                <div class="magasin-selector">
+                    <label for="magasinSelect">Magasin:</label>
+                    <select id="magasinSelect" onchange="changeMagasin(this.value)">
+                        <!-- Options générées dynamiquement -->
+                    </select>
                 </div>
                 <button class="header-logout-button" onclick="logout()">
                     🚪 Déconnexion
@@ -92,8 +138,73 @@
         window.addEventListener('load', () => {
             if (!checkAuth()) {
                 window.location.href = '../index.html';
+            } else {
+                setupMagasinSelector();
             }
         });
+        
+        // Configurer le sélecteur de magasin
+        function setupMagasinSelector() {
+            const auth = JSON.parse(localStorage.getItem('sav_auth'));
+            const permissions = JSON.parse(localStorage.getItem('sav_user_permissions') || '{}');
+            
+            const select = document.getElementById('magasinSelect');
+            
+            // Récupérer les magasins autorisés
+            let magasinsAutorises = auth.magasins || [];
+            
+            // Si on a des autorisations spécifiques, les utiliser
+            if (permissions.autorisations) {
+                magasinsAutorises = Object.keys(permissions.autorisations)
+                    .filter(mag => permissions.autorisations[mag].acces === true);
+            }
+            
+            // S'assurer qu'on a au moins le magasin actuel
+            if (magasinsAutorises.length === 0 && auth.magasin) {
+                magasinsAutorises = [auth.magasin];
+            }
+            
+            // Remplir le select
+            magasinsAutorises.forEach(magasin => {
+                const option = document.createElement('option');
+                option.value = magasin;
+                option.textContent = magasin;
+                if (magasin === auth.magasin) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+            
+            // Si un seul magasin, masquer le sélecteur
+            if (magasinsAutorises.length <= 1) {
+                document.querySelector('.magasin-selector').style.display = 'none';
+                document.querySelector('.header-user-info').style.display = 'block';
+                document.querySelector('.header-user-info').innerHTML = `<span>Magasin: ${auth.magasin}</span>`;
+            }
+        }
+        
+        // Changer de magasin
+        function changeMagasin(nouveauMagasin) {
+            const auth = JSON.parse(localStorage.getItem('sav_auth'));
+            const permissions = JSON.parse(localStorage.getItem('sav_user_permissions') || '{}');
+            
+            // Vérifier l'autorisation
+            if (permissions.autorisations && 
+                permissions.autorisations[nouveauMagasin] && 
+                permissions.autorisations[nouveauMagasin].acces) {
+                
+                // Mettre à jour le magasin actif
+                auth.magasin = nouveauMagasin;
+                localStorage.setItem('sav_auth', JSON.stringify(auth));
+                
+                // Recharger la page pour appliquer les changements
+                location.reload();
+            } else {
+                alert('Vous n\'avez pas accès à ce magasin');
+                // Remettre la sélection précédente
+                document.getElementById('magasinSelect').value = auth.magasin;
+            }
+        }
         
         // Fonction de déconnexion
         function logout() {
@@ -104,15 +215,8 @@
             }
         }
         
-        // Afficher les infos du magasin connecté
+        // Afficher les infos au chargement
         document.addEventListener('DOMContentLoaded', function() {
-            // Récupérer les infos d'authentification
-            const auth = localStorage.getItem('sav_auth');
-            if (auth) {
-                const authData = JSON.parse(auth);
-                document.getElementById('magasin-info').textContent = `Magasin: ${authData.magasin}`;
-            }
-            
             // Animation des cards
             const cards = document.querySelectorAll('.menu-card');
             cards.forEach((card, index) => {
