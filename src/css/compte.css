@@ -758,3 +758,81 @@
         max-width: 95%;
     }
 }
+/* ========================================
+   AJOUTS POUR LA GESTION DES RÔLES
+   À ajouter dans compte.css
+   ======================================== */
+
+/* Info permissions dans le modal */
+.role-info {
+    background: #f0f3ff;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+    border: 2px solid #e0e6ff;
+}
+
+.role-info h4 {
+    margin: 0 0 15px 0;
+    color: #667eea;
+    font-size: 1.1rem;
+}
+
+#permissionsList {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 10px;
+}
+
+.permission-item {
+    padding: 8px 12px;
+    background: white;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #e9ecef;
+}
+
+/* Badge de rôle avec niveau */
+.role-badge {
+    cursor: help; /* Pour montrer qu'on peut survoler pour voir le niveau */
+    position: relative;
+}
+
+.role-badge:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    z-index: 10;
+}
+
+/* Amélioration visuelle des filtres */
+.filter-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.filter-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.filter-btn:hover::before {
+    left: 100%;
+}
