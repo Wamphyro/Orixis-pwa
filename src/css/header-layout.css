@@ -19,6 +19,7 @@
 }
 
 .app-header-left {
+    flex: 0 0 200px; /* Largeur fixe pour équilibrer */
     display: flex;
     align-items: center;
     gap: 20px;
@@ -27,11 +28,14 @@
 .app-header-center {
     flex: 1;
     text-align: center;
+    padding: 0 20px; /* Padding pour éviter que le texte touche les bords */
 }
 
 .app-header-right {
+    flex: 0 0 200px; /* Largeur fixe pour équilibrer */
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: 15px;
 }
 
@@ -119,6 +123,7 @@
     .app-header-left,
     .app-header-center,
     .app-header-right {
+        flex: initial; /* Annule les largeurs fixes sur mobile */
         width: 100%;
         justify-content: center;
         text-align: center;
