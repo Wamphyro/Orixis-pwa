@@ -188,7 +188,12 @@
                 adminSection.style.display = 'block';
                 adminSection.innerHTML = `
                     <div class="compte-section-container">
-                        ${GestionUtilisateursComponent.render()}
+                        <div class="compte-section-header">
+                            <h2>👥 Gestion des utilisateurs</h2>
+                        </div>
+                        <div class="compte-section-content">
+                            ${GestionUtilisateursComponent.render()}
+                        </div>
                     </div>
                 `;
                 GestionUtilisateursComponent.init();
