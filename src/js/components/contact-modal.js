@@ -102,7 +102,7 @@ class ContactModal {
                             <!-- Champ autre (caché par défaut) -->
                             <div class="form-row subject-other-input" id="subjectOtherDiv">
                                 <label for="subjectOther">Précisez l'objet</label>
-                                <input type="text" id="subjectOther" placeholder="Décrivez brièvement votre sujet...">
+                                <input type="text" id="subjectOther" placeholder="Décrivez brièvement l'objet de votre demande...">
                             </div>
 
                             <!-- Message -->
