@@ -105,10 +105,6 @@ export class CompteService {
         const autorisations = user.autorisations || {};
         const magasins = Object.keys(autorisations).filter(mag => autorisations[mag].acces === true);
         
-        // Pour l'instant, tous les admins peuvent éditer et supprimer
-        let canEdit = isAdmin;
-        let canDelete = isAdmin;
-        
         return `
             <div class="user-card" id="card-${user.id}">
                 <div class="card-header">
@@ -156,7 +152,7 @@ export class CompteService {
                     <button class="btn-action btn-pin" onclick="changePin('${user.id}')">
                         🔐 Changer
                     </button>
-                    ${canEdit ? `
+                    ${isAdmin ? `
                         <button class="btn-action btn-edit" onclick="editUser('${user.id}')">
                             ✏️ Modifier
                         </button>
@@ -166,8 +162,6 @@ export class CompteService {
                         <button class="btn-action btn-save" style="display: none;" onclick="saveUser('${user.id}')">
                             💾 Sauvegarder
                         </button>
-                    ` : ''}
-                    ${canDelete ? `
                         <button class="btn-action btn-delete" onclick="deleteUser('${user.id}')">
                             🗑️ Supprimer
                         </button>
