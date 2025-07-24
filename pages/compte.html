@@ -36,40 +36,24 @@
     </div>
 
     <div class="container">
-        <!-- Section Mon Profil (visible pour tous) -->
-        <div id="myProfileSection" class="user-cards-container">
-            <!-- La carte du profil actuel sera générée ici -->
+        <!-- Barre de recherche pour admin uniquement -->
+        <div id="adminControls" class="admin-controls" style="display: none;">
+            <div class="search-bar">
+                <input type="text" id="searchUser" placeholder="🔍 Rechercher un utilisateur..." onkeyup="filterUsers()">
+            </div>
+            <div class="filter-buttons">
+                <button class="filter-btn active" onclick="filterByRole('all')">Tous</button>
+                <button class="filter-btn" onclick="filterByRole('technicien')">🔧 Techniciens</button>
+                <button class="filter-btn" onclick="filterByRole('audioprothesiste')">🦻 Audioprothésistes</button>
+                <button class="filter-btn" onclick="filterByRole('assistant')">📋 Assistants</button>
+                <button class="filter-btn" onclick="filterByRole('manager')">👔 Managers</button>
+                <button class="filter-btn" onclick="filterByRole('admin')">👑 Admins</button>
+            </div>
         </div>
 
-        <!-- Section Admin (visible seulement pour les admins) -->
-        <div id="adminSection" class="admin-section" style="display: none;">
-            <!-- Header avec bouton création -->
-            <div class="admin-header">
-                <h2>👥 Gestion des utilisateurs</h2>
-                <button class="btn-primary" onclick="openCreateUserModal()">
-                    ➕ Créer un nouveau profil
-                </button>
-            </div>
-            
-            <!-- Contrôles admin -->
-            <div class="admin-controls">
-                <div class="search-bar">
-                    <input type="text" id="searchUser" placeholder="🔍 Rechercher un utilisateur..." onkeyup="filterUsers()">
-                </div>
-                <div class="filter-buttons">
-                    <button class="filter-btn active" onclick="filterByRole('all')">Tous</button>
-                    <button class="filter-btn" onclick="filterByRole('technicien')">🔧 Techniciens</button>
-                    <button class="filter-btn" onclick="filterByRole('audioprothesiste')">🦻 Audioprothésistes</button>
-                    <button class="filter-btn" onclick="filterByRole('assistant')">📋 Assistants</button>
-                    <button class="filter-btn" onclick="filterByRole('manager')">👔 Managers</button>
-                    <button class="filter-btn" onclick="filterByRole('admin')">👑 Admins</button>
-                </div>
-            </div>
-
-            <!-- Liste des utilisateurs -->
-            <div id="userCardsContainer" class="user-cards-container">
-                <!-- Les cartes seront générées dynamiquement -->
-            </div>
+        <!-- Conteneur des cartes utilisateur -->
+        <div id="userCardsContainer" class="user-cards-container">
+            <!-- Les cartes seront générées dynamiquement -->
         </div>
 
         <!-- Message de chargement -->
@@ -111,78 +95,6 @@
                     <div class="modal-actions">
                         <button type="button" class="btn-secondary" onclick="closePinModal()">Annuler</button>
                         <button type="submit" class="btn-primary">Valider</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal création utilisateur (admin) -->
-    <div id="createUserModal" class="modal">
-        <div class="modal-content modal-large">
-            <div class="modal-header">
-                <h2>➕ Créer un nouveau profil utilisateur</h2>
-                <button class="modal-close" onclick="closeCreateUserModal()">✕</button>
-            </div>
-            <div class="modal-body">
-                <form id="createUserForm" onsubmit="handleCreateUser(event)">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Prénom *</label>
-                            <input type="text" id="newUserPrenom" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Nom *</label>
-                            <input type="text" id="newUserNom" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Rôle *</label>
-                        <select id="newUserRole" required>
-                            <option value="">-- Sélectionner un rôle --</option>
-                            <option value="technicien">🔧 Technicien</option>
-                            <option value="audioprothesiste">🦻 Audioprothésiste</option>
-                            <option value="assistant">📋 Assistant SAV</option>
-                            <option value="manager">👔 Manager</option>
-                            <option value="admin">👑 Administrateur</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Code PIN (4 chiffres) *</label>
-                        <input type="password" id="newUserPin" pattern="[0-9]{4}" maxlength="4" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Magasin par défaut</label>
-                        <select id="newUserMagasinDefaut">
-                            <option value="">-- Sélectionner --</option>
-                            <option value="9DIJ">9DIJ</option>
-                            <option value="9AVA">9AVA</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Autorisations magasins</label>
-                        <div class="magasins-checkboxes">
-                            <label class="checkbox-label">
-                                <input type="checkbox" value="9DIJ" name="magasinAuth">
-                                <span>9DIJ</span>
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" value="9AVA" name="magasinAuth">
-                                <span>9AVA</span>
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <div class="error-message" id="createUserError"></div>
-                    <div class="success-message" id="createUserSuccess"></div>
-                    
-                    <div class="modal-actions">
-                        <button type="button" class="btn-secondary" onclick="closeCreateUserModal()">Annuler</button>
-                        <button type="submit" class="btn-primary">Créer le profil</button>
                     </div>
                 </form>
             </div>
@@ -239,44 +151,27 @@
                 currentUser = await getUtilisateurDetails(auth.collaborateur.id);
             }
             
-            // Si pas de currentUser, utiliser les données de l'auth
-            if (!currentUser && auth.collaborateur) {
-                currentUser = {
-                    id: auth.collaborateur.id,
-                    nom: auth.collaborateur.nom,
-                    prenom: auth.collaborateur.prenom,
-                    role: auth.collaborateur.role || 'technicien',
-                    autorisations: permissions.autorisations || {}
-                };
-            }
-            
             // Vérifier si admin
             isAdmin = currentUser?.role === 'admin' || permissions.role === 'admin';
             
-            // Afficher la carte du profil actuel avec magasins
-            displayCurrentUserCard();
-            
             // Afficher les contrôles admin si nécessaire
             if (isAdmin) {
-                document.getElementById('adminSection').style.display = 'block';
+                document.getElementById('adminControls').style.display = 'block';
                 await loadAllUsers();
+            } else {
+                // Créer les données de l'utilisateur actuel
+                const userData = currentUser || {
+                    id: auth.collaborateur?.id,
+                    nom: auth.collaborateur?.nom || permissions.nom || 'Utilisateur',
+                    prenom: auth.collaborateur?.prenom || permissions.prenom || '',
+                    role: permissions.role || 'technicien',
+                    autorisations: permissions.autorisations || {}
+                };
+                userData.magasinActuel = auth.magasin;
+                displaySingleUserCard(userData);
             }
             
             document.getElementById('loadingMessage').style.display = 'none';
-        }
-        
-        // Afficher la carte du profil actuel avec les magasins
-        function displayCurrentUserCard() {
-            const container = document.getElementById('myProfileSection');
-            const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
-            
-            // Créer une carte enrichie pour l'utilisateur actuel
-            const userData = {
-                ...currentUser,
-                magasinActuel: auth.magasin
-            };
-            
-            container.innerHTML = CompteService.createUserCard(userData, false, true);
         }
         
         // Charger tous les utilisateurs (admin only)
@@ -289,7 +184,13 @@
             }
         }
         
-        // Afficher les cartes utilisateurs
+        // Afficher une seule carte (utilisateur normal)
+        function displaySingleUserCard(user) {
+            const container = document.getElementById('userCardsContainer');
+            container.innerHTML = CompteService.createUserCard(user, false, true);
+        }
+        
+        // Afficher toutes les cartes (admin)
         function displayUserCards(users) {
             const container = document.getElementById('userCardsContainer');
             container.innerHTML = users.map(user => 
@@ -322,13 +223,53 @@
             }
         }
         
+        window.editUser = async function(userId) {
+            const user = allUsers.find(u => u.id === userId);
+            if (!user) return;
+            
+            // Activer le mode édition
+            const card = document.getElementById(`card-${userId}`);
+            const fields = card.querySelectorAll('.editable');
+            const editBtn = card.querySelector('.btn-edit');
+            const saveBtn = card.querySelector('.btn-save');
+            
+            if (editBtn.style.display !== 'none') {
+                // Passer en mode édition
+                fields.forEach(field => field.contentEditable = true);
+                editBtn.style.display = 'none';
+                saveBtn.style.display = 'inline-block';
+            }
+        }
+        
+        window.saveUser = async function(userId) {
+            const card = document.getElementById(`card-${userId}`);
+            const nom = card.querySelector('[data-field="nom"]').textContent;
+            const prenom = card.querySelector('[data-field="prenom"]').textContent;
+            const roleSelect = card.querySelector('[data-field="role"]');
+            const role = roleSelect.value;
+            
+            try {
+                await CompteService.updateUser(userId, { nom, prenom, role });
+                
+                // Désactiver le mode édition
+                const fields = card.querySelectorAll('.editable');
+                fields.forEach(field => field.contentEditable = false);
+                
+                card.querySelector('.btn-edit').style.display = 'inline-block';
+                card.querySelector('.btn-save').style.display = 'none';
+                
+                showSuccess('Informations mises à jour');
+            } catch (error) {
+                showError('Erreur lors de la sauvegarde');
+            }
+        }
+        
         window.changePin = function(userId) {
             document.getElementById('targetUserId').value = userId;
             
             // Si c'est l'utilisateur lui-même ou pas admin, demander l'ancien code
             if (!isAdmin || userId === currentUser?.id) {
                 document.getElementById('oldPinGroup').style.display = 'block';
-                document.getElementById('oldPin').setAttribute('required', '');
             } else {
                 document.getElementById('oldPinGroup').style.display = 'none';
                 document.getElementById('oldPin').removeAttribute('required');
@@ -384,118 +325,13 @@
             }
         }
         
-        // Fonctions pour créer un utilisateur (admin)
-        window.openCreateUserModal = function() {
-            document.getElementById('createUserModal').classList.add('active');
-        }
-        
-        window.closeCreateUserModal = function() {
-            document.getElementById('createUserModal').classList.remove('active');
-            document.getElementById('createUserForm').reset();
-            document.getElementById('createUserError').textContent = '';
-            document.getElementById('createUserSuccess').textContent = '';
-        }
-        
-        window.handleCreateUser = async function(event) {
-            event.preventDefault();
-            
-            const prenom = document.getElementById('newUserPrenom').value;
-            const nom = document.getElementById('newUserNom').value;
-            const role = document.getElementById('newUserRole').value;
-            const pin = document.getElementById('newUserPin').value;
-            const magasinDefaut = document.getElementById('newUserMagasinDefaut').value;
-            
-            // Récupérer les magasins autorisés
-            const magasinsAuth = Array.from(document.querySelectorAll('input[name="magasinAuth"]:checked'))
-                .map(cb => cb.value);
-            
-            if (magasinsAuth.length === 0) {
-                showCreateUserError('Sélectionnez au moins un magasin');
-                return;
-            }
-            
-            // Créer l'objet autorisations
-            const autorisations = {};
-            magasinsAuth.forEach(mag => {
-                autorisations[mag] = { acces: true };
-            });
-            
-            // Générer un ID unique
-            const userId = `${nom.toLowerCase()}${Date.now().toString().slice(-3)}`;
-            
-            try {
-                // Créer le nouveau profil
-                await CompteService.createUser({
-                    id: userId,
-                    prenom: prenom,
-                    nom: nom,
-                    role: role,
-                    code: pin,
-                    actif: true,
-                    autorisations: autorisations,
-                    magasinParDefaut: magasinDefaut || magasinsAuth[0],
-                    dateCreation: new Date().toISOString()
-                });
-                
-                showCreateUserSuccess('Profil créé avec succès !');
-                
-                // Recharger la liste
-                await loadAllUsers();
-                
-                setTimeout(() => closeCreateUserModal(), 2000);
-                
-            } catch (error) {
-                console.error('Erreur création:', error);
-                showCreateUserError('Erreur lors de la création du profil');
-            }
-        }
-        
-        window.editUser = async function(userId) {
-            const user = allUsers.find(u => u.id === userId);
-            if (!user) return;
-            
-            // Activer le mode édition
-            const card = document.getElementById(`card-${userId}`);
-            const fields = card.querySelectorAll('.editable');
-            const editBtn = card.querySelector('.btn-edit');
-            const saveBtn = card.querySelector('.btn-save');
-            
-            if (editBtn.style.display !== 'none') {
-                // Passer en mode édition
-                fields.forEach(field => field.contentEditable = true);
-                editBtn.style.display = 'none';
-                saveBtn.style.display = 'inline-block';
-            }
-        }
-        
-        window.saveUser = async function(userId) {
-            const card = document.getElementById(`card-${userId}`);
-            const nom = card.querySelector('[data-field="nom"]').textContent;
-            const prenom = card.querySelector('[data-field="prenom"]').textContent;
-            const roleSelect = card.querySelector('[data-field="role"]');
-            const role = roleSelect.value;
-            
-            try {
-                await CompteService.updateUser(userId, { nom, prenom, role });
-                
-                // Désactiver le mode édition
-                const fields = card.querySelectorAll('.editable');
-                fields.forEach(field => field.contentEditable = false);
-                
-                card.querySelector('.btn-edit').style.display = 'inline-block';
-                card.querySelector('.btn-save').style.display = 'none';
-                
-                showSuccess('Informations mises à jour');
-            } catch (error) {
-                showError('Erreur lors de la sauvegarde');
-            }
-        }
-        
         function showError(message) {
+            // Implémenter notification d'erreur
             alert(message);
         }
         
         function showSuccess(message) {
+            // Implémenter notification de succès
             alert(message);
         }
         
@@ -507,16 +343,6 @@
         function showPinSuccess(message) {
             document.getElementById('pinSuccess').textContent = message;
             document.getElementById('pinError').textContent = '';
-        }
-        
-        function showCreateUserError(message) {
-            document.getElementById('createUserError').textContent = message;
-            document.getElementById('createUserSuccess').textContent = '';
-        }
-        
-        function showCreateUserSuccess(message) {
-            document.getElementById('createUserSuccess').textContent = message;
-            document.getElementById('createUserError').textContent = '';
         }
     </script>
 </body>
