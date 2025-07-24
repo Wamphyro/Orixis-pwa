@@ -185,7 +185,10 @@
             }
             
             // Vérifier si admin
-            isAdmin = currentUser?.role === 'admin' || permissions.role === 'admin';
+            isAdmin = currentUser?.role === 'admin' || 
+                     currentUser?.role === 'Administrateur' ||
+                     permissions.role === 'admin' ||
+                     permissions.role === 'Administrateur';
             
             // Afficher les informations personnelles
             displayUserInfo();
@@ -294,6 +297,7 @@
         function getRoleLabel(role) {
             const labels = {
                 'admin': '👑 Administrateur',
+                'Administrateur': '👑 Administrateur',
                 'manager': '👔 Manager',
                 'audioprothesiste': '🦻 Audioprothésiste',
                 'assistant': '📋 Assistant SAV',
