@@ -274,6 +274,39 @@
             }
         }
         
+        window.deleteUser = async function(userId) {
+            // Chercher l'utilisateur pour afficher son nom
+            const userCard = document.getElementById(`card-${userId}`);
+            const userName = userCard ? userCard.querySelector('h3').textContent.trim() : userId;
+            
+            if (confirm(`Êtes-vous sûr de vouloir supprimer l'utilisateur ${userName} ?\n\nCette action est irréversible !`)) {
+                try {
+                    await CompteService.deleteUser(userId);
+                    
+                    // Recharger la liste des utilisateurs
+                    if (typeof GestionUtilisateursComponent !== 'undefined') {
+                        await GestionUtilisateursComponent.loadUsers();
+                    }
+                    
+                    alert('Utilisateur supprimé avec succès');
+                } catch (error) {
+                    console.error('Erreur suppression:', error);
+                    alert('Erreur lors de la suppression de l\'utilisateur');
+                }
+            }
+        }
+        
+        window.editUser = function(userId) {
+            // TODO: Implémenter la modification d'utilisateur
+            console.log('Modification utilisateur:', userId);
+            alert('Fonction de modification en cours de développement');
+        }
+        
+        window.saveUser = function(userId) {
+            // TODO: Implémenter la sauvegarde
+            console.log('Sauvegarde utilisateur:', userId);
+        }
+        
         function showError(message) {
             // TODO: Implémenter notification d'erreur
             alert(message);
