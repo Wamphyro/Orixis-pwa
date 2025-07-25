@@ -430,7 +430,7 @@ function validerEtape(etape) {
 }
 
 // ========================================
-// RECHERCHE CLIENT
+// RECHERCHE CLIENT - CORRIGÉ
 // ========================================
 
 async function rechercherClient() {
@@ -439,10 +439,15 @@ async function rechercherClient() {
     
     if (recherche.length < 2) {
         resultsDiv.classList.remove('active');
+        resultsDiv.innerHTML = '';
         return;
     }
     
     try {
+        // Afficher un indicateur de chargement
+        resultsDiv.innerHTML = '<div class="search-result-item">Recherche en cours...</div>';
+        resultsDiv.classList.add('active');
+        
         const clients = await ClientsService.rechercherClients(recherche);
         
         if (clients.length > 0) {
@@ -450,16 +455,20 @@ async function rechercherClient() {
                 <div class="search-result-item" onclick="selectionnerClient('${client.id}')">
                     <strong>${client.prenom} ${client.nom}</strong>
                     <br>
-                    <small>${client.telephone || ''} - ${client.email || ''}</small>
+                    <small>
+                        ${client.telephone || ''} 
+                        ${client.email ? '- ' + client.email : ''}
+                        ${client.magasinReference ? '- Magasin: ' + client.magasinReference : ''}
+                    </small>
                 </div>
             `).join('');
-            resultsDiv.classList.add('active');
         } else {
             resultsDiv.innerHTML = '<div class="search-result-item">Aucun client trouvé</div>';
-            resultsDiv.classList.add('active');
         }
+        resultsDiv.classList.add('active');
     } catch (error) {
         console.error('Erreur recherche client:', error);
+        resultsDiv.innerHTML = '<div class="search-result-item">Erreur lors de la recherche</div>';
     }
 }
 
@@ -474,13 +483,23 @@ async function selectionnerClient(clientId) {
             document.getElementById('clientSearch').style.display = 'none';
             document.getElementById('clientSelected').style.display = 'block';
             document.getElementById('selectedClientName').textContent = `${client.prenom} ${client.nom}`;
-            document.getElementById('selectedClientInfo').textContent = `${client.telephone || ''} - ${client.email || ''}`;
+            
+            // Afficher les infos complètes incluant le magasin
+            let infoText = '';
+            if (client.telephone) infoText += client.telephone;
+            if (client.email) infoText += (infoText ? ' - ' : '') + client.email;
+            if (client.magasinReference) {
+                infoText += (infoText ? ' - ' : '') + `Magasin: ${client.magasinReference}`;
+            }
+            document.getElementById('selectedClientInfo').textContent = infoText;
             
             // Masquer les résultats
             document.getElementById('clientSearchResults').classList.remove('active');
+            document.getElementById('clientSearchResults').innerHTML = '';
         }
     } catch (error) {
         console.error('Erreur sélection client:', error);
+        alert('Erreur lors de la sélection du client');
     }
 }
 
@@ -490,6 +509,8 @@ function changerClient() {
     document.getElementById('clientSearch').style.display = 'block';
     document.getElementById('clientSearch').value = '';
     document.getElementById('clientSelected').style.display = 'none';
+    document.getElementById('clientSearchResults').innerHTML = '';
+    document.getElementById('clientSearchResults').classList.remove('active');
 }
 
 function ouvrirNouveauClient() {
@@ -500,7 +521,7 @@ function ouvrirNouveauClient() {
 }
 
 // ========================================
-// CRÉATION CLIENT
+// CRÉATION CLIENT - CORRIGÉ
 // ========================================
 
 async function chargerMagasinsPourNouveauClient() {
@@ -518,21 +539,22 @@ async function chargerMagasinsPourNouveauClient() {
             if (data.actif !== false) {
                 magasins.push({
                     id: doc.id,
-                    nom: data.nom || doc.id
+                    code: data.code || doc.id,  // Utiliser le code si disponible
+                    nom: data.nom || data.code || doc.id
                 });
             }
         });
         
-        // Trier par nom
-        magasins.sort((a, b) => a.nom.localeCompare(b.nom));
+        // Trier par code
+        magasins.sort((a, b) => a.code.localeCompare(b.code));
         
         // Ajouter les options
         const auth = JSON.parse(localStorage.getItem('sav_auth'));
         magasins.forEach(magasin => {
             const option = document.createElement('option');
-            option.value = magasin.id;
-            option.textContent = magasin.nom;
-            if (magasin.id === auth.magasin) {
+            option.value = magasin.code;  // Utiliser le code comme valeur
+            option.textContent = magasin.nom;  // Afficher le nom (qui est maintenant le code)
+            if (magasin.code === auth.magasin || magasin.id === auth.magasin) {
                 option.selected = true;
             }
             select.appendChild(option);
@@ -587,7 +609,7 @@ async function creerNouveauClient() {
         
     } catch (error) {
         console.error('Erreur création client:', error);
-        alert('Erreur lors de la création du client');
+        alert('Erreur lors de la création du client: ' + error.message);
     }
 }
 
@@ -725,7 +747,7 @@ function retirerProduit(index) {
 }
 
 // ========================================
-// INFORMATIONS DE LIVRAISON
+// INFORMATIONS DE LIVRAISON - CORRIGÉ
 // ========================================
 
 async function chargerMagasins() {
@@ -744,28 +766,52 @@ async function chargerMagasins() {
             if (data.actif !== false) {
                 magasins.push({
                     id: doc.id,
-                    nom: data.nom || doc.id
+                    code: data.code || doc.id,  // Utiliser le code si disponible, sinon l'ID
+                    nom: data.nom || data.code || doc.id  // Utiliser le nom, ou le code, ou l'ID
                 });
             }
         });
         
-        // Trier par nom
-        magasins.sort((a, b) => a.nom.localeCompare(b.nom));
+        // Si le client a un magasin de référence qui n'est pas dans la liste, l'ajouter
+        if (nouvelleCommande.client && nouvelleCommande.client.magasinReference) {
+            const magasinClient = nouvelleCommande.client.magasinReference;
+            const existeDeja = magasins.some(m => m.code === magasinClient || m.id === magasinClient);
+            
+            if (!existeDeja) {
+                // Ajouter le magasin du client même s'il n'existe pas dans la collection
+                magasins.push({
+                    id: magasinClient,
+                    code: magasinClient,
+                    nom: magasinClient + ' (Référence client)'
+                });
+            }
+        }
+        
+        // Trier par code
+        magasins.sort((a, b) => a.code.localeCompare(b.code));
         
         // Ajouter les options
         magasins.forEach(magasin => {
             const option = document.createElement('option');
-            option.value = magasin.id;
-            option.textContent = magasin.nom;
-            if (magasin.id === auth.magasin) {
+            option.value = magasin.code;  // Utiliser le code comme valeur
+            option.textContent = magasin.nom;  // Afficher le nom (qui est maintenant le code)
+            
+            // Pré-sélectionner le magasin du client
+            if (nouvelleCommande.client && 
+                (magasin.code === nouvelleCommande.client.magasinReference || 
+                 magasin.id === nouvelleCommande.client.magasinReference)) {
+                option.selected = true;
+            } else if (!nouvelleCommande.client && magasin.code === auth.magasin) {
+                // Si pas de client, sélectionner le magasin de l'utilisateur
                 option.selected = true;
             }
+            
             select.appendChild(option);
         });
         
         // Si aucun magasin sélectionné, prendre le premier
         if (!select.value && magasins.length > 0) {
-            select.value = magasins[0].id;
+            select.value = magasins[0].code;
         }
         
         nouvelleCommande.magasinLivraison = select.value;
@@ -775,15 +821,28 @@ async function chargerMagasins() {
         // En cas d'erreur, utiliser les magasins du localStorage
         const auth = JSON.parse(localStorage.getItem('sav_auth'));
         const select = document.getElementById('magasinLivraison');
-        const magasins = auth.magasins || [auth.magasin];
+        let magasins = auth.magasins || [auth.magasin];
+        
+        // Ajouter le magasin du client s'il n'est pas dans la liste
+        if (nouvelleCommande.client && nouvelleCommande.client.magasinReference) {
+            const magasinClient = nouvelleCommande.client.magasinReference;
+            if (!magasins.includes(magasinClient)) {
+                magasins.push(magasinClient);
+            }
+        }
         
         magasins.forEach(magasin => {
             const option = document.createElement('option');
             option.value = magasin;
             option.textContent = magasin;
-            if (magasin === auth.magasin) {
+            
+            // Pré-sélectionner le magasin du client
+            if (nouvelleCommande.client && magasin === nouvelleCommande.client.magasinReference) {
+                option.selected = true;
+            } else if (!nouvelleCommande.client && magasin === auth.magasin) {
                 option.selected = true;
             }
+            
             select.appendChild(option);
         });
         
@@ -813,7 +872,7 @@ function setDateLivraisonDefaut() {
 }
 
 // ========================================
-// RÉCAPITULATIF ET VALIDATION
+// RÉCAPITULATIF ET VALIDATION - CORRIGÉ
 // ========================================
 
 function afficherRecapitulatif() {
@@ -824,6 +883,7 @@ function afficherRecapitulatif() {
             <p><strong>${nouvelleCommande.client.prenom} ${nouvelleCommande.client.nom}</strong></p>
             <p>${nouvelleCommande.client.telephone || ''}</p>
             <p>${nouvelleCommande.client.email || ''}</p>
+            <p><strong>Magasin de référence :</strong> ${nouvelleCommande.client.magasinReference}</p>
         `;
     }
     
@@ -853,7 +913,7 @@ function afficherRecapitulatif() {
     recapLivraison.innerHTML = `
         <p><strong>Type:</strong> ${COMMANDES_CONFIG.TYPES_PREPARATION[typePrep]?.label}</p>
         <p><strong>Urgence:</strong> ${COMMANDES_CONFIG.NIVEAUX_URGENCE[urgence]?.label}</p>
-        <p><strong>Magasin:</strong> ${magasinLivraison}</p>
+        <p><strong>Magasin de livraison:</strong> ${magasinLivraison}</p>
         <p><strong>Date prévue:</strong> ${new Date(dateLivraison).toLocaleDateString('fr-FR')}</p>
     `;
     
@@ -884,7 +944,7 @@ async function validerCommande() {
         
     } catch (error) {
         console.error('Erreur création commande:', error);
-        afficherErreur('Erreur lors de la création de la commande');
+        afficherErreur('Erreur lors de la création de la commande: ' + error.message);
     }
 }
 
