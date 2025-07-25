@@ -91,6 +91,11 @@ async function chargerDonnees() {
         // Charger les commandes
         commandesData = await CommandesService.getCommandes();
         
+        // Si pas de commandes, initialiser un tableau vide
+        if (!commandesData) {
+            commandesData = [];
+        }
+        
         // Charger les statistiques
         const stats = await CommandesService.getStatistiques();
         afficherStatistiques(stats);
@@ -100,7 +105,14 @@ async function chargerDonnees() {
         
     } catch (error) {
         console.error('Erreur chargement données:', error);
-        afficherErreur('Erreur lors du chargement des données');
+        // En cas d'erreur, initialiser avec des données vides
+        commandesData = [];
+        afficherStatistiques({
+            parStatut: {},
+            parUrgence: {},
+            retards: 0
+        });
+        afficherCommandes();
     }
 }
 
@@ -142,8 +154,8 @@ function afficherCommandes() {
             <td>${afficherStatut(commande.statut)}</td>
             <td>${formaterDate(commande.dates.livraisonPrevue, 'jour')}</td>
             <td class="table-actions">
-                <button class="btn-action" onclick="window.voirDetailCommande('${commande.id}')">👁️</button>
-                ${peutModifierStatut(commande) ? `<button class="btn-action" onclick="window.changerStatutCommande('${commande.id}')">✏️</button>` : ''}
+                <button class="btn-action" onclick="voirDetailCommande('${commande.id}')">👁️</button>
+                ${peutModifierStatut(commande) ? `<button class="btn-action" onclick="changerStatutCommande('${commande.id}')">✏️</button>` : ''}
             </td>
         `;
         tbody.appendChild(tr);
@@ -493,12 +505,46 @@ function ouvrirNouveauClient() {
 
 async function chargerMagasinsPourNouveauClient() {
     try {
-        const auth = JSON.parse(localStorage.getItem('sav_auth'));
         const select = document.getElementById('newClientMagasin');
         select.innerHTML = '';
         
-        // Ajouter les magasins autorisés
+        // Charger tous les magasins depuis Firebase
+        const { collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const magasinsSnapshot = await getDocs(collection(db, 'magasins'));
+        
+        const magasins = [];
+        magasinsSnapshot.forEach((doc) => {
+            const data = doc.data();
+            if (data.actif !== false) {
+                magasins.push({
+                    id: doc.id,
+                    nom: data.nom || doc.id
+                });
+            }
+        });
+        
+        // Trier par nom
+        magasins.sort((a, b) => a.nom.localeCompare(b.nom));
+        
+        // Ajouter les options
+        const auth = JSON.parse(localStorage.getItem('sav_auth'));
+        magasins.forEach(magasin => {
+            const option = document.createElement('option');
+            option.value = magasin.id;
+            option.textContent = magasin.nom;
+            if (magasin.id === auth.magasin) {
+                option.selected = true;
+            }
+            select.appendChild(option);
+        });
+        
+    } catch (error) {
+        console.error('Erreur chargement magasins:', error);
+        // En cas d'erreur, utiliser les magasins du localStorage
+        const auth = JSON.parse(localStorage.getItem('sav_auth'));
+        const select = document.getElementById('newClientMagasin');
         const magasins = auth.magasins || [auth.magasin];
+        
         magasins.forEach(magasin => {
             const option = document.createElement('option');
             option.value = magasin;
@@ -508,8 +554,6 @@ async function chargerMagasinsPourNouveauClient() {
             }
             select.appendChild(option);
         });
-    } catch (error) {
-        console.error('Erreur chargement magasins:', error);
     }
 }
 
@@ -690,8 +734,49 @@ async function chargerMagasins() {
         const select = document.getElementById('magasinLivraison');
         select.innerHTML = '';
         
-        // Ajouter les magasins
+        // Charger tous les magasins depuis Firebase
+        const { collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const magasinsSnapshot = await getDocs(collection(db, 'magasins'));
+        
+        const magasins = [];
+        magasinsSnapshot.forEach((doc) => {
+            const data = doc.data();
+            if (data.actif !== false) {
+                magasins.push({
+                    id: doc.id,
+                    nom: data.nom || doc.id
+                });
+            }
+        });
+        
+        // Trier par nom
+        magasins.sort((a, b) => a.nom.localeCompare(b.nom));
+        
+        // Ajouter les options
+        magasins.forEach(magasin => {
+            const option = document.createElement('option');
+            option.value = magasin.id;
+            option.textContent = magasin.nom;
+            if (magasin.id === auth.magasin) {
+                option.selected = true;
+            }
+            select.appendChild(option);
+        });
+        
+        // Si aucun magasin sélectionné, prendre le premier
+        if (!select.value && magasins.length > 0) {
+            select.value = magasins[0].id;
+        }
+        
+        nouvelleCommande.magasinLivraison = select.value;
+        
+    } catch (error) {
+        console.error('Erreur chargement magasins:', error);
+        // En cas d'erreur, utiliser les magasins du localStorage
+        const auth = JSON.parse(localStorage.getItem('sav_auth'));
+        const select = document.getElementById('magasinLivraison');
         const magasins = auth.magasins || [auth.magasin];
+        
         magasins.forEach(magasin => {
             const option = document.createElement('option');
             option.value = magasin;
@@ -703,9 +788,6 @@ async function chargerMagasins() {
         });
         
         nouvelleCommande.magasinLivraison = select.value;
-        
-    } catch (error) {
-        console.error('Erreur chargement magasins:', error);
     }
 }
 
