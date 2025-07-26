@@ -19,6 +19,18 @@
     <link rel="stylesheet" href="../src/css/commandes-modal.css">
 </head>
 <body>
+
+    <script>
+window.voirDetailCommande = function(id) {
+    alert('Commande ID: ' + id);
+    console.log('voirDetailCommande appelée avec:', id);
+};
+
+window.ouvrirNouvelleCommande = function() {
+    alert('Nouvelle commande');
+    console.log('ouvrirNouvelleCommande appelée');
+};
+</script>
     <!-- Header uniforme -->
     <div class="app-header">
         <div class="app-header-content">
