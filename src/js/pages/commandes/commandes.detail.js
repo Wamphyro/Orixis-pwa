@@ -71,53 +71,57 @@ function afficherDetailCommande(commande) {
         showLabels: true            // Afficher les labels
     });
     
-    // Informations client
+    // Informations client - VERSION COMPACTE
     const detailClient = document.getElementById('detailClient');
     detailClient.innerHTML = `
-        <div class="detail-info">
-            <span class="detail-label">Nom :</span>
-            <span class="detail-value">${commande.client.prenom} ${commande.client.nom}</span>
-        </div>
-        <div class="detail-info">
-            <span class="detail-label">Téléphone :</span>
-            <span class="detail-value">${commande.client.telephone || '-'}</span>
-        </div>
-        <div class="detail-info">
-            <span class="detail-label">Email :</span>
-            <span class="detail-value">${commande.client.email || '-'}</span>
-        </div>
-        <div class="detail-info">
-            <span class="detail-label">Magasin :</span>
-            <span class="detail-value">${commande.magasinReference}</span>
+        <div class="detail-info-compact">
+            <div class="info-row">
+                <span class="detail-label">Nom :</span>
+                <span class="detail-value">${commande.client.prenom} ${commande.client.nom}</span>
+            </div>
+            <div class="info-row">
+                <span class="detail-label">Tél :</span>
+                <span class="detail-value">${commande.client.telephone || '-'}</span>
+            </div>
+            <div class="info-row">
+                <span class="detail-label">Email :</span>
+                <span class="detail-value">${commande.client.email || '-'}</span>
+            </div>
+            <div class="info-row">
+                <span class="detail-label">Magasin :</span>
+                <span class="detail-value">${commande.magasinReference}</span>
+            </div>
         </div>
     `;
     
-    // Produits commandés (SANS PRIX) - MODIFIÉ pour afficher les NS
+    // Produits commandés - NOUVEAU DESIGN SANS TABLEAU
     const detailProduits = document.getElementById('detailProduits');
     detailProduits.innerHTML = `
-        <table class="detail-table">
-            <thead>
-                <tr>
-                    <th>Produit</th>
-                    <th>Qté</th>
-                    <th>N° Série</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${commande.produits.map(p => `
-                    <tr>
-                        <td>
+        <div class="produits-list">
+            ${commande.produits.map(p => `
+                <div class="produit-item">
+                    <div class="produit-header">
+                        <div class="produit-nom">
                             ${p.designation}
-                            ${p.cote ? `<small>(${p.cote})</small>` : ''}
-                        </td>
-                        <td style="text-align: center;">${p.quantite}</td>
-                        <td>
-                            ${p.numeroSerie ? `<code>${p.numeroSerie}</code>` : '<em style="color: #999;">Non saisi</em>'}
-                        </td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>
+                            ${p.cote ? `<span class="produit-cote">(${p.cote})</span>` : ''}
+                        </div>
+                        <div class="produit-quantite">
+                            <span class="qty-label">Qté:</span>
+                            <span class="qty-value">${p.quantite}</span>
+                        </div>
+                    </div>
+                    ${(p.type === 'appareil_auditif' || p.necessiteCote || p.numeroSerie) ? `
+                        <div class="produit-serial ${p.numeroSerie ? 'serial-ok' : 'serial-missing'}">
+                            <span class="serial-icon">${p.numeroSerie ? '✓' : '⚠️'}</span>
+                            <span class="serial-label">N° Série :</span>
+                            <span class="serial-value">
+                                ${p.numeroSerie ? `<code>${p.numeroSerie}</code>` : 'Non saisi'}
+                            </span>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('')}
+        </div>
     `;
     
     // Informations de livraison

@@ -1235,6 +1235,149 @@ body.modal-open {
     border-bottom: 2px solid #e9ecef;
 }
 
+/* NOUVEAU : Info client compacte */
+.detail-info-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.info-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.info-row .detail-label {
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 14px;
+    min-width: 70px;
+}
+
+.info-row .detail-value {
+    color: #2c3e50;
+    font-size: 14px;
+    flex: 1;
+}
+
+/* NOUVEAU : Liste produits sans tableau */
+.produits-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.produit-item {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px;
+    transition: all 0.2s ease;
+}
+
+.produit-item:hover {
+    border-color: #dee2e6;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.produit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.produit-nom {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 15px;
+}
+
+.produit-cote {
+    font-weight: normal;
+    color: #6c757d;
+    font-size: 14px;
+    margin-left: 8px;
+}
+
+.produit-quantite {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #f8f9fa;
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+
+.qty-label {
+    font-size: 13px;
+    color: #6c757d;
+}
+
+.qty-value {
+    font-weight: 600;
+    color: #495057;
+}
+
+/* Ligne numéro de série */
+.produit-serial {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 14px;
+    margin-top: 8px;
+}
+
+.produit-serial.serial-ok {
+    background: #e8f5e9;
+    border: 1px solid #4caf50;
+}
+
+.produit-serial.serial-missing {
+    background: #fff3e0;
+    border: 1px solid #ff9800;
+}
+
+.serial-icon {
+    font-size: 16px;
+}
+
+.produit-serial.serial-ok .serial-icon {
+    color: #4caf50;
+}
+
+.produit-serial.serial-missing .serial-icon {
+    color: #ff9800;
+}
+
+.serial-label {
+    font-weight: 600;
+    color: #6c757d;
+}
+
+.serial-value {
+    flex: 1;
+    color: #495057;
+}
+
+.serial-value code {
+    background: rgba(0,0,0,0.05);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+}
+
+.produit-serial.serial-missing .serial-value {
+    color: #f57c00;
+    font-style: italic;
+}
+
+/* Anciens styles conservés pour compatibilité */
 .detail-info {
     margin-bottom: 12px;
 }
@@ -1250,7 +1393,7 @@ body.modal-open {
     color: #2c3e50;
 }
 
-/* TABLEAU PRODUITS */
+/* Anciens styles de tableau - Conservés pour autres usages éventuels */
 .detail-table {
     width: 100%;
     border-collapse: collapse;
@@ -1271,16 +1414,6 @@ body.modal-open {
 
 .detail-table tbody tr:hover {
     background: #f8f9fa;
-}
-
-/* Styles pour l'affichage des NS dans le tableau */
-.detail-table code {
-    background: #f8f9fa;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-family: 'Courier New', monospace;
-    font-size: 13px;
-    color: #495057;
 }
 
 /* ACTIONS DÉTAIL */
@@ -1419,5 +1552,26 @@ body.modal-open {
     .notification {
         max-width: 100%;
         min-width: auto;
+    }
+    
+    /* Responsive info client */
+    .info-row .detail-label {
+        min-width: 60px;
+        font-size: 13px;
+    }
+    
+    /* Responsive produits */
+    .produit-header {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .produit-nom {
+        font-size: 14px;
+    }
+    
+    .produit-serial {
+        flex-wrap: wrap;
+        font-size: 13px;
     }
 }
