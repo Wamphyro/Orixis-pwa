@@ -118,11 +118,7 @@ function afficherEtape(etape) {
         document.getElementById(`step${i}`).classList.add('completed');
     }
     
-    // Mettre à jour l'attribut data-step du stepper pour l'animation
-    const stepperContainer = document.getElementById('stepperContainer');
-    if (stepperContainer) {
-        stepperContainer.setAttribute('data-step', etape);
-    }
+    // Plus besoin de data-step avec le CSS simplifié
     
     // Gérer les boutons
     document.getElementById('btnPrevStep').disabled = etape === 1;
