@@ -1,16 +1,15 @@
 // ========================================
-// DIALOG.COMPONENT.JS - Dialogues modernes et élégants (CORRIGÉ)
+// DIALOG.COMPONENT.JS - Dialogues modernes et élégants (VERSION PROPRE)
 // ========================================
 // Chemin: src/js/shared/ui/dialog.component.js
 //
-// CORRECTION le 26/07/2025 : Réactivation des styles intégrés
-// Problème : Les styles étaient désactivés et les dialogs ne s'affichaient pas
-// Solution : Réactivation de injectStyles() avec z-index élevé (25000)
-// Impact : Les dialogs s'affichent maintenant correctement au-dessus de tout
+// NETTOYAGE le 26/07/2025 : Suppression des styles intégrés
+// Les styles sont maintenant dans src/css/commandes/commandes-modal.css
+// Section 2: DIALOG STYLES (lignes 281-500)
 //
 // DÉPENDANCES:
+// - Styles CSS dans commandes-modal.css (obligatoire)
 // - Utilisé par les fonctions prompt/alert dans commandes.detail.js
-// - Fonctionne de manière autonome avec styles intégrés
 // ========================================
 
 export class Dialog {
@@ -40,238 +39,11 @@ export class Dialog {
         }
         
         // ========================================
-        // RÉACTIVATION DES STYLES INTÉGRÉS
-        // Nécessaire car les styles CSS externes ne fonctionnent pas
+        // STYLES EXTERNES UNIQUEMENT
+        // Les styles sont dans commandes-modal.css
+        // Section 2: DIALOG STYLES (lignes 281-500)
         // ========================================
-        if (!document.getElementById('dialog-styles')) {
-            this.injectStyles();
-        }
-    }
-    
-    /**
-     * FONCTION RÉACTIVÉE - Injection des styles CSS
-     * Styles intégrés avec z-index très élevé pour passer au-dessus de tout
-     */
-    injectStyles() {
-        const style = document.createElement('style');
-        style.id = 'dialog-styles';
-        style.textContent = `
-            #dialog-container {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                display: none;
-                z-index: 25000; /* Très élevé pour passer au-dessus de tout */
-                animation: fadeIn 0.2s ease-out;
-            }
-            
-            #dialog-container.active {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            
-            .dialog-overlay {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.6);
-                backdrop-filter: blur(3px);
-            }
-            
-            .dialog-box {
-                position: relative;
-                background: white;
-                border-radius: 16px;
-                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-                max-width: 90%;
-                min-width: 320px;
-                max-width: 500px;
-                animation: slideUp 0.3s ease-out;
-                overflow: hidden;
-                z-index: 25001;
-            }
-            
-            .dialog-header {
-                padding: 20px 24px;
-                border-bottom: 1px solid #e0e0e0;
-                display: flex;
-                align-items: center;
-                gap: 12px;
-            }
-            
-            .dialog-icon {
-                font-size: 24px;
-                width: 40px;
-                height: 40px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                border-radius: 50%;
-                flex-shrink: 0;
-            }
-            
-            .dialog-icon.info {
-                background: #e3f2fd;
-                color: #1976d2;
-            }
-            
-            .dialog-icon.success {
-                background: #e8f5e9;
-                color: #2e7d32;
-            }
-            
-            .dialog-icon.warning {
-                background: #fff3e0;
-                color: #f57c00;
-            }
-            
-            .dialog-icon.error {
-                background: #ffebee;
-                color: #c62828;
-            }
-            
-            .dialog-icon.confirm {
-                background: #f3e5f5;
-                color: #7b1fa2;
-            }
-            
-            .dialog-title {
-                font-size: 18px;
-                font-weight: 600;
-                color: #212121;
-                margin: 0;
-                flex: 1;
-            }
-            
-            .dialog-body {
-                padding: 24px;
-                font-size: 15px;
-                line-height: 1.6;
-                color: #424242;
-            }
-            
-            .dialog-input {
-                width: 100%;
-                padding: 12px 16px;
-                border: 2px solid #e0e0e0;
-                border-radius: 8px;
-                font-size: 15px;
-                margin-top: 16px;
-                transition: border-color 0.2s;
-                font-family: inherit;
-                box-sizing: border-box;
-            }
-            
-            .dialog-input:focus {
-                outline: none;
-                border-color: #1976d2;
-                box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
-            }
-            
-            .dialog-footer {
-                padding: 16px 24px;
-                display: flex;
-                justify-content: flex-end;
-                gap: 12px;
-                background: #fafafa;
-            }
-            
-            .dialog-btn {
-                padding: 10px 20px;
-                border: none;
-                border-radius: 8px;
-                font-size: 14px;
-                font-weight: 500;
-                cursor: pointer;
-                transition: all 0.2s;
-                font-family: inherit;
-                min-width: 80px;
-            }
-            
-            .dialog-btn:hover {
-                transform: translateY(-1px);
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            }
-            
-            .dialog-btn:active {
-                transform: translateY(0);
-            }
-            
-            .dialog-btn.primary {
-                background: #1976d2;
-                color: white;
-            }
-            
-            .dialog-btn.primary:hover {
-                background: #1565c0;
-            }
-            
-            .dialog-btn.secondary {
-                background: #f5f5f5;
-                color: #424242;
-            }
-            
-            .dialog-btn.secondary:hover {
-                background: #e0e0e0;
-            }
-            
-            .dialog-btn.danger {
-                background: #f44336;
-                color: white;
-            }
-            
-            .dialog-btn.danger:hover {
-                background: #d32f2f;
-            }
-            
-            @keyframes fadeIn {
-                from { opacity: 0; }
-                to { opacity: 1; }
-            }
-            
-            @keyframes slideUp {
-                from {
-                    transform: translateY(20px);
-                    opacity: 0;
-                }
-                to {
-                    transform: translateY(0);
-                    opacity: 1;
-                }
-            }
-            
-            @media (max-width: 480px) {
-                .dialog-box {
-                    margin: 16px;
-                    max-width: calc(100% - 32px);
-                    min-width: auto;
-                }
-                
-                .dialog-header {
-                    padding: 16px 20px;
-                }
-                
-                .dialog-body {
-                    padding: 20px;
-                }
-                
-                .dialog-footer {
-                    padding: 12px 20px;
-                    flex-wrap: wrap;
-                }
-                
-                .dialog-btn {
-                    flex: 1;
-                    min-width: 0;
-                }
-            }
-        `;
-        document.head.appendChild(style);
+        console.log('✅ Dialog initialisé - Styles CSS externes');
     }
     
     show(options) {
@@ -524,20 +296,19 @@ export default {
 /* ========================================
    HISTORIQUE DES DIFFICULTÉS
    
-   [26/07/2025] - Dialog ne s'affichait pas
-   Problème: injectStyles() était désactivé et styles CSS externes non chargés
-   Cause: Conflit entre styles centralisés et composant autonome
-   Solution: Réactivation de injectStyles() avec z-index 25000
-   Impact: Les dialogs s'affichent maintenant correctement
+   [26/07/2025] - Nettoyage des styles intégrés
+   Avant: injectStyles() créait des styles CSS dans le JS
+   Maintenant: Utilise uniquement commandes-modal.css
+   Impact: Code plus propre, styles centralisés
    
-   [26/07/2025] - Amélioration de la validation
-   Ajout: Vérification de .trim() pour les inputs requis
-   Ajout: Focus automatique sur l'input en cas d'erreur
-   Impact: Meilleure UX pour la saisie
+   [26/07/2025] - Largeur fixe harmonisée
+   Problème: Taille variable des dialogs selon le contenu
+   Solution: Largeur fixe 480px dans le CSS (responsive)
+   Impact: Cohérence visuelle pour tous les dialogs
    
    NOTES POUR REPRISES FUTURES:
-   - Le z-index est volontairement très élevé (25000)
-   - Les styles sont intégrés pour éviter les dépendances CSS
-   - La validation trim() évite les espaces vides
-   - Le focus automatique améliore l'accessibilité
+   - OBLIGATOIRE: commandes-modal.css doit être chargé
+   - La largeur fixe est dans .dialog-box (480px)
+   - Responsive avec max-width: 90%
+   - Aucun CSS intégré dans ce composant
    ======================================== */
