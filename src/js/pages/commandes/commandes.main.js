@@ -1,14 +1,10 @@
 // ========================================
-// COMMANDES.MAIN.JS - Point d'entrée principal (VERSION FINALE)
+// COMMANDES.MAIN.JS - Point d'entrée principal
 // ========================================
 
-// EXPOSITION IMMÉDIATE pour que les onclick du HTML fonctionnent
-window.ouvrirNouvelleCommande = () => {
-    console.log('ouvrirNouvelleCommande sera disponible après chargement');
-};
-window.voirDetailCommande = (id) => {
-    console.log('voirDetailCommande sera disponible après chargement, id:', id);
-};
+// EXPOSITION IMMÉDIATE des fonctions pour les onclick HTML
+window.ouvrirNouvelleCommande = () => {};
+window.voirDetailCommande = () => {};
 window.filtrerCommandes = () => {};
 window.resetFiltres = () => {};
 window.pagePrecedente = () => {};
@@ -26,13 +22,7 @@ window.etapePrecedente = () => {};
 window.etapeSuivante = () => {};
 window.validerCommande = () => {};
 window.changerStatutCommande = () => {};
-window.fermerModal = (id) => {
-    const modal = document.getElementById(id);
-    if (modal) {
-        modal.style.display = 'none';
-        document.body.classList.remove('modal-open');
-    }
-};
+window.fermerModal = () => {};
 window.logout = () => {};
 window.selectionnerCote = () => {};
 window.annulerSelectionCote = () => {};
@@ -71,7 +61,7 @@ import {
 } from './commandes.detail.js';
 
 // ========================================
-// VARIABLES GLOBALES (partagées entre modules)
+// VARIABLES GLOBALES
 // ========================================
 
 export const state = {
@@ -90,7 +80,6 @@ export const state = {
 // INITIALISATION
 // ========================================
 
-// Vérifier l'authentification
 function checkAuth() {
     const auth = localStorage.getItem('sav_auth');
     if (!auth) return false;
@@ -106,7 +95,6 @@ function checkAuth() {
     return authData.authenticated;
 }
 
-// Initialisation au chargement
 window.addEventListener('load', async () => {
     if (!checkAuth()) {
         window.location.href = '../../index.html';
@@ -152,10 +140,7 @@ window.addEventListener('load', async () => {
     window.selectionnerCote = selectionnerCote;
     window.annulerSelectionCote = annulerSelectionCote;
     
-    console.log('✅ Fonctions exposées globalement :', {
-        ouvrirNouvelleCommande: typeof window.ouvrirNouvelleCommande,
-        voirDetailCommande: typeof window.voirDetailCommande
-    });
+    console.log('✅ Fonctions exposées globalement');
     
     // Charger les données initiales
     await chargerDonnees();
@@ -177,7 +162,6 @@ function initModales() {
         closeOnOverlayClick: false,
         closeOnEscape: true,
         onBeforeClose: async () => {
-            // Si on est en train d'ouvrir une autre modal, ne pas demander confirmation
             if (window.skipConfirmation) {
                 window.skipConfirmation = false;
                 return true;
@@ -190,7 +174,6 @@ function initModales() {
             return true;
         },
         onClose: () => {
-            // Réinitialiser le formulaire via le module create
             if (window.resetNouvelleCommande) {
                 window.resetNouvelleCommande();
             }
@@ -211,7 +194,6 @@ function initModales() {
             const formClient = document.getElementById('formNouveauClient');
             if (formClient) formClient.reset();
             
-            // Rouvrir la modal de nouvelle commande
             setTimeout(() => {
                 modalManager.open('modalNouvelleCommande');
             }, 300);
@@ -266,7 +248,6 @@ function initEventListeners() {
     const urgenceInputs = document.querySelectorAll('input[name="urgence"]');
     urgenceInputs.forEach(input => {
         input.addEventListener('change', () => {
-            // Appeler la fonction du module create
             if (window.setDateLivraisonDefaut) {
                 window.setDateLivraisonDefaut();
             }
@@ -293,13 +274,7 @@ window.addEventListener('beforeunload', () => {
 // ========================================
 
 export function ouvrirModal(modalId) {
-    // FIX DÉFINITIF : Ouvrir directement la modal sans passer par modalManager
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.style.display = 'block';
-        modal.classList.add('active');
-        document.body.classList.add('modal-open');
-    }
+    modalManager.open(modalId);
 }
 
 export function afficherSucces(message) {
