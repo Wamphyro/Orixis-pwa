@@ -12,15 +12,23 @@ import DialogComponent from './ui/dialog.component.js';
 export const Dialog = DialogComponent;
 
 // Notifications toast
-export { notify } from './ui/notification.component.js';
+import { notify } from './ui/notification.component.js';
+export { notify };
 
 // Modal (déjà existant - à déplacer dans ui/)
-export { 
+import { 
     Modal, 
     ModalManager, 
     modalManager, 
     confirmerAction 
 } from './ui/modal.component.js';
+
+export { 
+    Modal, 
+    ModalManager, 
+    modalManager, 
+    confirmerAction 
+};
 
 // ========================================
 // UTILITAIRES
