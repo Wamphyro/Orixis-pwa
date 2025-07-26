@@ -4,7 +4,7 @@
 //
 // DESCRIPTION:
 // Gère l'affichage de la liste des commandes avec un tableau simplifié
-// Modifié le 27/07/2025 : Ajout bouton suppression et filtrage des commandes supprimées
+// Modifié le 28/07/2025 : Retrait du bouton suppression
 //
 // STRUCTURE:
 // 1. Initialisation du module (lignes 20-25)
@@ -69,7 +69,7 @@ export async function chargerDonnees() {
 }
 
 // ========================================
-// AFFICHAGE (MODIFIÉ - Tableau simplifié + bouton suppression)
+// AFFICHAGE (MODIFIÉ - Sans bouton suppression)
 // ========================================
 
 function afficherStatistiques(stats) {
@@ -93,9 +93,8 @@ function afficherCommandes() {
     const commandesPage = commandesFiltrees.slice(start, end);
     
     // ========================================
-    // MODIFICATION PRINCIPALE : Tableau simplifié + bouton suppression
-    // Colonnes supprimées : Produits, Date livraison
-    // Nouveau bouton : Corbeille rouge pour suppression
+    // TABLEAU SIMPLIFIÉ - Sans bouton suppression
+    // Colonnes : N° Commande, Date, Client, Type, Urgence, Statut, Actions
     // ========================================
     if (commandesPage.length === 0) {
         tbody.innerHTML = '<tr class="no-data"><td colspan="7">Aucune commande trouvée</td></tr>';
@@ -114,7 +113,6 @@ function afficherCommandes() {
             <td>${afficherStatut(commande.statut)}</td>
             <td class="table-actions">
                 <button class="btn-action" onclick="voirDetailCommande('${commande.id}')">👁️</button>
-                ${peutSupprimer(commande) ? `<button class="btn-action btn-delete" onclick="supprimerCommande('${commande.id}')" title="Supprimer la commande">🗑️</button>` : ''}
             </td>
         `;
         tbody.appendChild(tr);
@@ -125,13 +123,16 @@ function afficherCommandes() {
 }
 
 // ========================================
-// NOUVELLE FONCTION : Vérifier si on peut supprimer
-// Ajoutée le 27/07/2025
+// FONCTION peutSupprimer() - DÉSACTIVÉE
+// Conservée mais commentée au cas où on voudrait la réactiver
+// Suppression de la fonctionnalité demandée le 28/07/2025
 // ========================================
+/*
 function peutSupprimer(commande) {
     // Ne peut pas supprimer si déjà supprimée ou livrée
     return commande.statut !== 'supprime' && commande.statut !== 'livree';
 }
+*/
 
 // ========================================
 // NOTE: La fonction afficherProduits() n'est plus utilisée
@@ -160,14 +161,14 @@ function peutModifierStatut(commande) {
 }
 
 // ========================================
-// FILTRES (MODIFIÉ - Exclure les commandes supprimées)
+// FILTRES (Conserve l'exclusion des commandes supprimées)
 // ========================================
 
 function filtrerCommandesLocalement() {
     return state.commandesData.filter(commande => {
         // ========================================
-        // NOUVEAU : Exclure systématiquement les commandes supprimées
-        // Ajouté le 27/07/2025
+        // Exclure systématiquement les commandes supprimées
+        // (au cas où il y en aurait déjà en base)
         // ========================================
         if (commande.statut === 'supprime') {
             return false;
@@ -309,9 +310,15 @@ function formatDate(timestamp) {
    Raison: Permettre la suppression (soft delete) des commandes
    Impact: Les commandes supprimées sont filtrées et n'apparaissent plus
    
+   [28/07/2025] - Retrait de la fonctionnalité de suppression
+   Modification: Suppression du bouton 🗑️ et désactivation de peutSupprimer()
+   Raison: Demande utilisateur - simplification de l'interface
+   Impact: Plus de suppression possible depuis le tableau
+   
    NOTES POUR REPRISES FUTURES:
    - La fonction afficherProduits() est conservée mais non utilisée
    - Le colspan reste à 7 colonnes
-   - Les commandes supprimées restent en base mais sont filtrées
-   - La suppression nécessite une validation nom/prénom (voir detail.js)
+   - Les commandes supprimées restent filtrées (au cas où)
+   - La fonction peutSupprimer() est commentée mais conservée
+   - La suppression reste possible via l'API si besoin
    ======================================== */
