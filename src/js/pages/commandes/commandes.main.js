@@ -1,5 +1,5 @@
 // ========================================
-// COMMANDES.MAIN.JS - Point d'entrée principal (VERSION CORRIGÉE)
+// COMMANDES.MAIN.JS - Point d'entrée principal (VERSION FINALE)
 // ========================================
 
 import { initFirebase } from '../../services/firebase.service.js';
@@ -87,30 +87,40 @@ window.addEventListener('load', async () => {
     // Initialiser les modales
     initModales();
     
-    // HACK: Retirer TOUS les event listeners du modal component
-    setTimeout(() => {
-        const modal = modalManager.get('modalNouvelleCommande');
-        if (modal && modal.closeButton) {
-            // Cloner le bouton pour retirer TOUS les event listeners
-            const oldButton = modal.closeButton;
-            const newButton = oldButton.cloneNode(true);
-            oldButton.parentNode.replaceChild(newButton, oldButton);
-            
-            // Ajouter notre propre handler
-            newButton.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                modalManager.close('modalNouvelleCommande');
-            });
-            
-            // Mettre à jour la référence
-            modal.closeButton = newButton;
-        }
-    }, 500);
-    
     // Initialiser les modules
     await initListeCommandes();
     initCreationCommande();
+    
+    // EXPOSER LES FONCTIONS APRÈS L'IMPORT
+    window.modalManager = modalManager;
+    window.ouvrirNouvelleCommande = ouvrirNouvelleCommande;
+    window.filtrerCommandes = filtrerCommandes;
+    window.resetFiltres = resetFiltres;
+    window.pagePrecedente = pagePrecedente;
+    window.pageSuivante = pageSuivante;
+    window.rechercherClient = rechercherClient;
+    window.selectionnerClient = selectionnerClient;
+    window.changerClient = changerClient;
+    window.ouvrirNouveauClient = ouvrirNouveauClient;
+    window.creerNouveauClient = creerNouveauClient;
+    window.appliquerPack = appliquerPack;
+    window.rechercherProduit = rechercherProduit;
+    window.ajouterProduit = ajouterProduit;
+    window.retirerProduit = retirerProduit;
+    window.etapePrecedente = etapePrecedente;
+    window.etapeSuivante = etapeSuivante;
+    window.validerCommande = validerCommande;
+    window.voirDetailCommande = voirDetailCommande;
+    window.changerStatutCommande = changerStatutCommande;
+    window.fermerModal = fermerModal;
+    window.logout = logout;
+    window.selectionnerCote = selectionnerCote;
+    window.annulerSelectionCote = annulerSelectionCote;
+    
+    console.log('✅ Fonctions exposées globalement :', {
+        ouvrirNouvelleCommande: typeof window.ouvrirNouvelleCommande,
+        voirDetailCommande: typeof window.voirDetailCommande
+    });
     
     // Charger les données initiales
     await chargerDonnees();
@@ -120,9 +130,6 @@ window.addEventListener('load', async () => {
     
     // Initialiser les événements
     initEventListeners();
-    
-    // SOLUTION DÉFINITIVE : Attacher les événements après le chargement complet
-    attacherEvenementsBoutons();
 });
 
 // ========================================
@@ -178,49 +185,6 @@ function initModales() {
 }
 
 // ========================================
-// SOLUTION : ATTACHER LES ÉVÉNEMENTS AUX BOUTONS
-// ========================================
-
-function attacherEvenementsBoutons() {
-    // Bouton nouvelle commande
-    const btnNouvelleCommande = document.getElementById('btnNouvelleCommande');
-    if (btnNouvelleCommande) {
-        btnNouvelleCommande.addEventListener('click', () => {
-            console.log('Clic sur nouvelle commande');
-            ouvrirNouvelleCommande();
-        });
-    }
-    
-    // Observer pour les boutons créés dynamiquement
-    const tableBody = document.getElementById('commandesTableBody');
-    if (tableBody) {
-        // Utiliser la délégation d'événements pour les boutons dynamiques
-        tableBody.addEventListener('click', (e) => {
-            const btn = e.target.closest('.btn-action');
-            if (!btn) return;
-            
-            // Extraire l'action depuis l'attribut onclick
-            const onclickAttr = btn.getAttribute('onclick');
-            if (onclickAttr) {
-                // Extraire le nom de la fonction et les paramètres
-                const match = onclickAttr.match(/(\w+)\(['"](.+)['"]\)/);
-                if (match) {
-                    const functionName = match[1];
-                    const parameter = match[2];
-                    
-                    // Appeler la fonction appropriée
-                    if (functionName === 'voirDetailCommande' && window.voirDetailCommande) {
-                        window.voirDetailCommande(parameter);
-                    } else if (functionName === 'changerStatutCommande' && window.changerStatutCommande) {
-                        window.changerStatutCommande(parameter);
-                    }
-                }
-            }
-        });
-    }
-}
-
-// ========================================
 // AFFICHAGE DES INFOS UTILISATEUR
 // ========================================
 
@@ -233,38 +197,6 @@ function afficherInfosUtilisateur() {
         }
     }
 }
-
-// ========================================
-// EXPOSITION DES FONCTIONS GLOBALES
-// ========================================
-
-// Exposer modalManager globalement pour les autres modules
-window.modalManager = modalManager;
-
-// Toutes les fonctions utilisées dans le HTML avec onclick
-window.ouvrirNouvelleCommande = ouvrirNouvelleCommande;
-window.filtrerCommandes = filtrerCommandes;
-window.resetFiltres = resetFiltres;
-window.pagePrecedente = pagePrecedente;
-window.pageSuivante = pageSuivante;
-window.rechercherClient = rechercherClient;
-window.selectionnerClient = selectionnerClient;
-window.changerClient = changerClient;
-window.ouvrirNouveauClient = ouvrirNouveauClient;
-window.creerNouveauClient = creerNouveauClient;
-window.appliquerPack = appliquerPack;
-window.rechercherProduit = rechercherProduit;
-window.ajouterProduit = ajouterProduit;
-window.retirerProduit = retirerProduit;
-window.etapePrecedente = etapePrecedente;
-window.etapeSuivante = etapeSuivante;
-window.validerCommande = validerCommande;
-window.voirDetailCommande = voirDetailCommande;
-window.changerStatutCommande = changerStatutCommande;
-window.fermerModal = fermerModal;
-window.logout = logout;
-window.selectionnerCote = selectionnerCote;
-window.annulerSelectionCote = annulerSelectionCote;
 
 // ========================================
 // UTILITAIRES GLOBAUX
