@@ -382,13 +382,9 @@ window.changerStatutDetail = async function(commandeId, nouveauStatut) {
 window.saisirNumerosSerie = async function(commandeId) {
     console.log('🔍 Clic sur saisir NS, commande:', commandeId);
     
-    // Utiliser la fonction globale définie dans commandes.serial.js
-    if (window.ouvrirSaisieNumerosSerie) {
-        await window.ouvrirSaisieNumerosSerie(commandeId);
-    } else {
-        console.error('❌ Fonction ouvrirSaisieNumerosSerie non trouvée');
-        afficherErreur('Module de saisie des numéros de série non chargé');
-    }
+    // Importer et appeler directement la fonction
+    const { ouvrirSaisieNumerosSerie } = await import('./commandes.serial.js');
+    await ouvrirSaisieNumerosSerie(commandeId);
 };
 
 // NOUVEAU : Terminer la préparation avec vérification NS
