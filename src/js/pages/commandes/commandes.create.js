@@ -100,6 +100,9 @@ function resetNouvelleCommande() {
 }
 
 function afficherEtape(etape) {
+    // Mettre à jour l'étape actuelle
+    etapeActuelle = etape;
+    
     // Masquer toutes les étapes
     for (let i = 1; i <= 4; i++) {
         document.getElementById(`stepContent${i}`).classList.add('hidden');
@@ -113,6 +116,12 @@ function afficherEtape(etape) {
     // Marquer les étapes précédentes comme complétées
     for (let i = 1; i < etape; i++) {
         document.getElementById(`step${i}`).classList.add('completed');
+    }
+    
+    // Mettre à jour l'attribut data-step du stepper pour l'animation
+    const stepperContainer = document.getElementById('stepperContainer');
+    if (stepperContainer) {
+        stepperContainer.setAttribute('data-step', etape);
     }
     
     // Gérer les boutons
