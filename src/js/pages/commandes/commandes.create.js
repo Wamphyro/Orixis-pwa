@@ -263,17 +263,19 @@ export function changerClient() {
 }
 
 export function ouvrirNouveauClient() {
-    // Désactiver temporairement le onBeforeClose pour éviter la double confirmation
-    window.modalManager.get('modalNouvelleCommande').options.onBeforeClose = null;
+    // Marquer qu'on est en train d'ouvrir nouveau client
+    window.ouvrirNouveauClientEnCours = true;
+    
+    // Fermer la modal actuelle
     window.fermerModal('modalNouvelleCommande');
     
-    // Restaurer le onBeforeClose après fermeture
-    setTimeout(() => {
-        window.modalManager.get('modalNouvelleCommande').options.onBeforeClose = window.originalOnBeforeClose;
-    }, 300);
-    
+    // Charger les magasins et ouvrir la modal nouveau client
     chargerMagasinsPourNouveauClient();
-    ouvrirModal('modalNouveauClient');
+    
+    // Attendre un peu avant d'ouvrir la nouvelle modal
+    setTimeout(() => {
+        ouvrirModal('modalNouveauClient');
+    }, 300);
 }
 
 async function chargerMagasinsPourNouveauClient() {

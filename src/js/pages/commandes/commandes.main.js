@@ -180,6 +180,9 @@ function afficherInfosUtilisateur() {
 // EXPOSITION DES FONCTIONS GLOBALES
 // ========================================
 
+// Exposer modalManager globalement pour les autres modules
+window.modalManager = modalManager;
+
 // Toutes les fonctions utilisées dans le HTML avec onclick
 window.ouvrirNouvelleCommande = ouvrirNouvelleCommande;
 window.filtrerCommandes = filtrerCommandes;
@@ -210,7 +213,26 @@ window.annulerSelectionCote = annulerSelectionCote;
 // ========================================
 
 function fermerModal(modalId) {
+    // Si on ferme la modal nouvelle commande pour ouvrir nouveau client, désactiver temporairement onBeforeClose
+    if (modalId === 'modalNouvelleCommande' && window.ouvrirNouveauClientEnCours) {
+        const modal = modalManager.get('modalNouvelleCommande');
+        if (modal) {
+            modal.options.onBeforeClose = null;
+        }
+    }
+    
     modalManager.close(modalId);
+    
+    // Restaurer onBeforeClose après fermeture
+    if (modalId === 'modalNouvelleCommande' && window.ouvrirNouveauClientEnCours) {
+        setTimeout(() => {
+            const modal = modalManager.get('modalNouvelleCommande');
+            if (modal && window.originalOnBeforeClose) {
+                modal.options.onBeforeClose = window.originalOnBeforeClose;
+            }
+            window.ouvrirNouveauClientEnCours = false;
+        }, 300);
+    }
 }
 
 async function logout() {
