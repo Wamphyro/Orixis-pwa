@@ -65,7 +65,7 @@
             </div>
             
             <div class="commandes-actions">
-                <button class="btn btn-primary" id="btnNouvelleCommande">
+                <button class="btn btn-primary" onclick="ouvrirNouvelleCommande()">
                     <span>➕</span> Nouvelle commande
                 </button>
             </div>
@@ -437,77 +437,6 @@
     </div>
 
     <!-- Scripts -->
-<script type="module" src="../src/js/pages/commandes/commandes.main.js"></script>
-
-<!-- AJOUTEZ CE SCRIPT ICI -->
-<script>
-// HOTFIX IMMÉDIAT - Force l'attachement des événements
-setTimeout(() => {
-    console.log('🔧 Application du hotfix...');
-    
-    // Bouton nouvelle commande
-    const btnNouvelle = document.getElementById('btnNouvelleCommande');
-    if (btnNouvelle) {
-        btnNouvelle.onclick = function() {
-            console.log('✅ Ouverture nouvelle commande');
-            const modal = document.getElementById('modalNouvelleCommande');
-            if (modal) {
-                modal.style.display = 'block';
-                document.body.classList.add('modal-open');
-                
-                // Réinitialiser le formulaire si la fonction existe
-                if (window.resetNouvelleCommande) {
-                    window.resetNouvelleCommande();
-                }
-                
-                // Afficher la première étape
-                document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
-                document.getElementById('stepContent1').classList.remove('hidden');
-            }
-        };
-    }
-    
-    // Observer pour les boutons du tableau
-    const observer = new MutationObserver(() => {
-        // Attacher les événements aux boutons œil
-        document.querySelectorAll('.btn-action').forEach(btn => {
-            if (btn.textContent === '👁️' && !btn.hasAttribute('data-hotfixed')) {
-                btn.setAttribute('data-hotfixed', 'true');
-                const onclick = btn.getAttribute('onclick');
-                if (onclick && onclick.includes('voirDetailCommande')) {
-                    const match = onclick.match(/voirDetailCommande\('(.+?)'\)/);
-                    if (match) {
-                        btn.onclick = function() {
-                            console.log('✅ Voir détail:', match[1]);
-                            if (window.voirDetailCommande) {
-                                window.voirDetailCommande(match[1]);
-                            }
-                        };
-                    }
-                }
-            }
-        });
-    });
-    
-    const tableBody = document.getElementById('commandesTableBody');
-    if (tableBody) {
-        observer.observe(tableBody, { childList: true, subtree: true });
-    }
-    
-    console.log('✅ Hotfix appliqué');
-}, 1000);
-
-// Gestion fermeture modales
-document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('modal-close')) {
-        const modal = e.target.closest('.modal');
-        if (modal) {
-            modal.style.display = 'none';
-            document.body.classList.remove('modal-open');
-        }
-    }
-});
-</script>
-
+    <script type="module" src="../src/js/pages/commandes/commandes.main.js"></script>
 </body>
 </html>
