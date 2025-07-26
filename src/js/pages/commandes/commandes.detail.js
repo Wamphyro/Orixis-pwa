@@ -27,7 +27,7 @@ import { COMMANDES_CONFIG } from '../../data/commandes.data.js';
 import { Dialog, confirmerAction, createOrderTimeline, notify } from '../../shared/index.js';
 import { chargerDonnees } from './commandes.list.js';
 import { afficherSucces, afficherErreur } from './commandes.main.js';
-import { ouvrirSaisieNumerosSerie, verifierNumerosSerie } from './commandes.serial.js';
+// Le module serial est importé dans main.js et expose ses fonctions via window
 
 // ========================================
 // DÉTAIL COMMANDE
@@ -380,7 +380,15 @@ window.changerStatutDetail = async function(commandeId, nouveauStatut) {
 
 // NOUVEAU : Saisir les numéros de série
 window.saisirNumerosSerie = async function(commandeId) {
-    await ouvrirSaisieNumerosSerie(commandeId);
+    console.log('🔍 Clic sur saisir NS, commande:', commandeId);
+    
+    // Utiliser la fonction globale définie dans commandes.serial.js
+    if (window.ouvrirSaisieNumerosSerie) {
+        await window.ouvrirSaisieNumerosSerie(commandeId);
+    } else {
+        console.error('❌ Fonction ouvrirSaisieNumerosSerie non trouvée');
+        afficherErreur('Module de saisie des numéros de série non chargé');
+    }
 };
 
 // NOUVEAU : Terminer la préparation avec vérification NS
