@@ -8,7 +8,8 @@
 // ========================================
 
 // Dialog (remplace alert, confirm, prompt)
-export { default as Dialog } from './ui/dialog.component.js';
+import DialogComponent from './ui/dialog.component.js';
+export const Dialog = DialogComponent;
 
 // Notifications toast
 export { notify } from './ui/notification.component.js';
@@ -225,11 +226,11 @@ export const retry = async (fn, retries = 3, delay = 1000) => {
 
 export default {
     // UI Components
-    Dialog,
-    notify,
-    Modal,
-    modalManager,
-    confirmerAction,
+    Dialog: Dialog,
+    notify: notify,
+    Modal: Modal,
+    modalManager: modalManager,
+    confirmerAction: confirmerAction,
     
     // Utils
     formatDate,
