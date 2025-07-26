@@ -1,5 +1,5 @@
 /* ========================================
-   COMMANDES.CSS - Page de gestion des commandes
+   COMMANDES.CSS - Page de gestion des commandes (LISTE UNIQUEMENT)
    ======================================== */
 
 /* ========================================
@@ -172,6 +172,34 @@
     font-style: italic;
 }
 
+/* Actions tableau */
+.table-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-action {
+    background: none;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    color: #495057;
+}
+
+.btn-action:hover {
+    background: #f8f9fa;
+    border-color: #667eea;
+    color: #667eea;
+    transform: scale(1.05);
+}
+
+/* ========================================
+   BADGES STATUT ET URGENCE
+   ======================================== */
+
 /* Badges statut */
 .status-badge {
     display: inline-flex;
@@ -241,30 +269,6 @@
     color: #dc3545;
 }
 
-/* Actions tableau */
-.table-actions {
-    display: flex;
-    gap: 8px;
-}
-
-.btn-action {
-    background: none;
-    border: 2px solid #e9ecef;
-    border-radius: 8px;
-    padding: 6px 12px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.2s ease;
-    color: #495057;
-}
-
-.btn-action:hover {
-    background: #f8f9fa;
-    border-color: #667eea;
-    color: #667eea;
-    transform: scale(1.05);
-}
-
 /* ========================================
    PAGINATION
    ======================================== */
@@ -305,382 +309,6 @@
 }
 
 /* ========================================
-   PANIER FLOTTANT
-   ======================================== */
-.panier-flottant {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    background: white;
-    border-radius: 20px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-    width: 350px;
-    max-height: 500px;
-    transition: all 0.3s ease;
-    z-index: 100;
-}
-
-.panier-flottant.hidden {
-    transform: translateY(120%);
-    opacity: 0;
-}
-
-.panier-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 20px;
-    border-radius: 20px 20px 0 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.panier-header h3 {
-    margin: 0;
-    font-size: 18px;
-}
-
-.panier-count {
-    background: white;
-    color: #667eea;
-    padding: 5px 12px;
-    border-radius: 15px;
-    font-weight: 700;
-    font-size: 14px;
-}
-
-.panier-items {
-    max-height: 300px;
-    overflow-y: auto;
-    padding: 20px;
-}
-
-.panier-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px;
-    border-bottom: 1px solid #f1f3f5;
-    gap: 10px;
-}
-
-.panier-item-info {
-    flex: 1;
-}
-
-.panier-item-name {
-    font-weight: 600;
-    font-size: 14px;
-    color: #2c3e50;
-}
-
-.panier-item-details {
-    font-size: 12px;
-    color: #6c757d;
-}
-
-.panier-item-remove {
-    background: #f8d7da;
-    color: #721c24;
-    border: none;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.panier-item-remove:hover {
-    background: #f5c6cb;
-    transform: scale(1.1);
-}
-
-.panier-actions {
-    padding: 20px;
-    border-top: 1px solid #f1f3f5;
-}
-
-/* ========================================
-   STEPPER (ÉTAPES)
-   ======================================== */
-.stepper {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 40px;
-    padding: 0 40px;
-}
-
-.step {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    position: relative;
-    flex: 1;
-}
-
-.step:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    top: 20px;
-    left: 50%;
-    width: 100%;
-    height: 2px;
-    background: #e9ecef;
-    z-index: -1;
-}
-
-.step.active:not(:last-child)::after {
-    background: linear-gradient(to right, #667eea 50%, #e9ecef 50%);
-}
-
-.step.completed:not(:last-child)::after {
-    background: #667eea;
-}
-
-.step-number {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: #e9ecef;
-    color: #6c757d;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    transition: all 0.3s ease;
-}
-
-.step.active .step-number {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    transform: scale(1.1);
-}
-
-.step.completed .step-number {
-    background: #28a745;
-    color: white;
-}
-
-.step-label {
-    font-size: 14px;
-    color: #6c757d;
-    font-weight: 500;
-}
-
-.step.active .step-label {
-    color: #667eea;
-    font-weight: 600;
-}
-
-/* ========================================
-   TIMELINE (DÉTAIL COMMANDE)
-   ======================================== */
-.timeline-container {
-    padding: 30px;
-    background: #f8f9fa;
-    border-radius: 15px;
-    margin-bottom: 30px;
-}
-
-.timeline {
-    position: relative;
-    padding: 20px 0;
-}
-
-.timeline-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 30px;
-    position: relative;
-}
-
-.timeline-item:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    left: 20px;
-    top: 40px;
-    height: calc(100% + 20px);
-    width: 2px;
-    background: #e9ecef;
-}
-
-.timeline-item.completed:not(:last-child)::after {
-    background: #28a745;
-}
-
-.timeline-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: #e9ecef;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    margin-right: 20px;
-    flex-shrink: 0;
-}
-
-.timeline-item.completed .timeline-icon {
-    background: #28a745;
-    color: white;
-}
-
-.timeline-item.active .timeline-icon {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    animation: pulse 2s infinite;
-}
-
-.timeline-content {
-    flex: 1;
-}
-
-.timeline-title {
-    font-weight: 600;
-    color: #2c3e50;
-    margin-bottom: 5px;
-}
-
-.timeline-date {
-    font-size: 14px;
-    color: #6c757d;
-}
-
-/* ========================================
-   FORMULAIRES MODAUX
-   ======================================== */
-.client-search,
-.product-search {
-    position: relative;
-    margin-bottom: 20px;
-}
-
-.search-results {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: white;
-    border: 2px solid #e9ecef;
-    border-radius: 10px;
-    max-height: 300px;
-    overflow-y: auto;
-    z-index: 10;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-    display: none;
-}
-
-.search-results.active {
-    display: block;
-}
-
-.search-result-item {
-    padding: 15px;
-    cursor: pointer;
-    border-bottom: 1px solid #f1f3f5;
-    transition: all 0.2s ease;
-}
-
-.search-result-item:hover {
-    background: #f8f9fa;
-}
-
-.client-selected {
-    background: #e7f3ef;
-    border: 2px solid #28a745;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
-}
-
-.divider {
-    text-align: center;
-    color: #6c757d;
-    margin: 30px 0;
-    position: relative;
-}
-
-.divider::before,
-.divider::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    width: 45%;
-    height: 1px;
-    background: #e9ecef;
-}
-
-.divider::before {
-    left: 0;
-}
-
-.divider::after {
-    right: 0;
-}
-
-/* ========================================
-   SÉLECTEUR D'URGENCE
-   ======================================== */
-.urgence-selector {
-    display: flex;
-    gap: 15px;
-    margin-top: 10px;
-}
-
-.urgence-option {
-    flex: 1;
-    cursor: pointer;
-}
-
-.urgence-option input[type="radio"] {
-    display: none;
-}
-
-.urgence-option .urgence-badge {
-    display: block;
-    text-align: center;
-    padding: 15px;
-    border: 2px solid transparent;
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.urgence-option input[type="radio"]:checked + .urgence-badge {
-    border-color: currentColor;
-    transform: scale(1.05);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-/* ========================================
-   RÉCAPITULATIF
-   ======================================== */
-.recap-section {
-    background: #f8f9fa;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
-}
-
-.recap-section h4 {
-    color: #667eea;
-    margin-bottom: 15px;
-}
-
-.recap-total {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 20px;
-    border-radius: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 20px;
-    font-weight: 700;
-}
-
-/* ========================================
    ANIMATIONS
    ======================================== */
 @keyframes fadeInUp {
@@ -691,18 +319,6 @@
     to {
         opacity: 1;
         transform: translateY(0);
-    }
-}
-
-@keyframes pulse {
-    0% {
-        box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
-    }
-    70% {
-        box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
-    }
-    100% {
-        box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
     }
 }
 
@@ -741,24 +357,6 @@
     .commandes-table {
         min-width: 800px;
     }
-    
-    .panier-flottant {
-        width: calc(100% - 40px);
-        left: 20px;
-        right: 20px;
-    }
-    
-    .stepper {
-        padding: 0 20px;
-    }
-    
-    .step-label {
-        font-size: 12px;
-    }
-    
-    .timeline-container {
-        padding: 20px;
-    }
 }
 
 @media (max-width: 480px) {
@@ -769,10 +367,5 @@
     .commandes-actions .btn {
         font-size: 14px;
         padding: 12px 20px;
-    }
-    
-    .modal-content {
-        margin: 20px;
-        max-height: calc(100vh - 40px);
     }
 }
