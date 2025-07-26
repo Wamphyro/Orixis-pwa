@@ -87,6 +87,9 @@ window.addEventListener('load', async () => {
     // Initialiser les modales
     initModales();
     
+    // Patcher les boutons close des modales
+    patchModalCloseButtons();
+    
     // Initialiser les modules
     await initListeCommandes();
     initCreationCommande();
@@ -156,6 +159,42 @@ function initModales() {
             closeOnEscape: false  // Forcer la sélection
         });
     }
+}
+
+// Remplacer le bouton close après l'initialisation
+function patchModalCloseButtons() {
+    // Attendre que les modales soient initialisées
+    setTimeout(() => {
+        // Patcher le bouton close de la modal nouvelle commande
+        const modalNouvelleCommande = document.querySelector('#modalNouvelleCommande .modal-close');
+        if (modalNouvelleCommande) {
+            modalNouvelleCommande.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                // Utiliser directement modalManager qui gère onBeforeClose
+                modalManager.close('modalNouvelleCommande');
+            };
+        }
+        
+        // Patcher les autres boutons close aussi
+        const modalDetailCommande = document.querySelector('#modalDetailCommande .modal-close');
+        if (modalDetailCommande) {
+            modalDetailCommande.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                modalManager.close('modalDetailCommande');
+            };
+        }
+        
+        const modalNouveauClient = document.querySelector('#modalNouveauClient .modal-close');
+        if (modalNouveauClient) {
+            modalNouveauClient.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                modalManager.close('modalNouveauClient');
+            };
+        }
+    }, 100);
 }
 
 // ========================================
