@@ -4,7 +4,7 @@
 //
 // DESCRIPTION:
 // Service de gestion des commandes avec Firebase
-// Modifié le 27/07/2025 : Ajout de la méthode supprimerCommande
+// Modifié le 27/07/2025 : Correction des serverTimestamp dans arrayUnion
 //
 // STRUCTURE:
 // 1. Imports et configuration (lignes 15-25)
@@ -154,12 +154,13 @@ export class CommandesService {
                 // Commentaires
                 commentaires: commandeData.commentaires || '',
                 
-                // Historique
+                // Historique (ici on peut utiliser serverTimestamp car pas dans arrayUnion)
                 historique: [{
-                    date: serverTimestamp(),
+                    date: new Date(),
                     action: 'creation',
                     utilisateur: this.getUtilisateurActuel(),
-                    details: 'Commande créée'
+                    details: 'Commande créée',
+                    timestamp: Date.now()
                 }]
             };
             
@@ -318,11 +319,13 @@ export class CommandesService {
             // Préparer les mises à jour
             const updates = {
                 statut: nouveauStatut,
+                // CORRECTION : Utiliser new Date() au lieu de serverTimestamp() dans arrayUnion
                 historique: arrayUnion({
-                    date: serverTimestamp(),
+                    date: new Date(),
                     action: `statut_${nouveauStatut}`,
                     utilisateur: this.getUtilisateurActuel(),
-                    details: `Statut changé en ${COMMANDES_CONFIG.STATUTS[nouveauStatut].label}`
+                    details: `Statut changé en ${COMMANDES_CONFIG.STATUTS[nouveauStatut].label}`,
+                    timestamp: Date.now()
                 })
             };
             
@@ -474,11 +477,13 @@ export class CommandesService {
             
             const updates = {
                 numerosSerieAssignes: numerosSerie,
+                // CORRECTION : Utiliser new Date() au lieu de serverTimestamp()
                 historique: arrayUnion({
-                    date: serverTimestamp(),
+                    date: new Date(),
                     action: 'numeros_serie',
                     utilisateur: this.getUtilisateurActuel(),
-                    details: 'Numéros de série assignés'
+                    details: 'Numéros de série assignés',
+                    timestamp: Date.now()
                 })
             };
             
@@ -520,11 +525,13 @@ export class CommandesService {
             await updateDoc(doc(db, 'commandes', commandeId), {
                 patientPrevenu: true,
                 'dates.patientPrevenu': serverTimestamp(),
+                // CORRECTION : Utiliser new Date() au lieu de serverTimestamp()
                 historique: arrayUnion({
-                    date: serverTimestamp(),
+                    date: new Date(),
                     action: 'patient_prevenu',
                     utilisateur: this.getUtilisateurActuel(),
-                    details: 'Patient prévenu de la disponibilité'
+                    details: 'Patient prévenu de la disponibilité',
+                    timestamp: Date.now()
                 })
             });
             
@@ -662,9 +669,15 @@ export class CommandesService {
    Solution: Soft delete avec statut "supprime"
    Impact: Les commandes supprimées restent en base mais sont filtrées
    
+   [27/07/2025] - Correction serverTimestamp dans arrayUnion
+   Problème: Firebase n'accepte pas serverTimestamp() dans arrayUnion()
+   Solution: Utiliser new Date() à la place avec timestamp Unix
+   Impact: Toutes les méthodes utilisant l'historique corrigées
+   
    NOTES POUR REPRISES FUTURES:
    - La suppression est un soft delete (statut "supprime")
    - Les commandes supprimées sont exclues des statistiques
    - La validation nom/prénom se fait côté UI (detail.js)
    - Impossible de supprimer une commande livrée
+   - Ne jamais utiliser serverTimestamp() dans arrayUnion()
    ======================================== */
