@@ -437,34 +437,116 @@
     </div>
 
     <!-- Scripts -->
-    <script src="../src/js/pages/commandes/commandes.main.js" type="module"></script>
+<script type="module" src="../src/js/pages/commandes/commandes.main.js"></script>
+
 <script>
-// Fix immédiat - Les fonctions seront définies dès le chargement
-window.ouvrirNouvelleCommande = function() {
-    const modal = document.getElementById('modalNouvelleCommande');
-    if (modal) {
-        modal.style.display = 'block';
-        document.body.classList.add('modal-open');
+// Fix définitif - Override des fonctions après un court délai
+setTimeout(() => {
+    // Override ouvrirNouvelleCommande
+    if (window.ouvrirNouvelleCommande) {
+        const originalOuvrirNouvelleCommande = window.ouvrirNouvelleCommande;
+        window.ouvrirNouvelleCommande = function() {
+            console.log('🚀 Ouverture nouvelle commande (override)');
+            
+            // Essayer d'abord la fonction originale
+            try {
+                originalOuvrirNouvelleCommande();
+            } catch(e) {
+                console.error('Erreur fonction originale:', e);
+            }
+            
+            // Forcer l'ouverture si la modal n'est pas visible
+            setTimeout(() => {
+                const modal = document.getElementById('modalNouvelleCommande');
+                if (modal && modal.style.display !== 'block') {
+                    console.log('💪 Forçage ouverture modal');
+                    modal.style.display = 'block';
+                    modal.classList.add('show', 'active');
+                    document.body.classList.add('modal-open');
+                    
+                    // Créer un backdrop si nécessaire
+                    if (!document.querySelector('.modal-backdrop')) {
+                        const backdrop = document.createElement('div');
+                        backdrop.className = 'modal-backdrop fade show';
+                        document.body.appendChild(backdrop);
+                    }
+                }
+            }, 100);
+        };
     }
-};
-
-window.voirDetailCommande = function(id) {
-    const modal = document.getElementById('modalDetailCommande');
-    if (modal) {
-        modal.style.display = 'block';
-        document.body.classList.add('modal-open');
+    
+    // Override voirDetailCommande
+    if (window.voirDetailCommande) {
+        const originalVoirDetailCommande = window.voirDetailCommande;
+        window.voirDetailCommande = function(id) {
+            console.log('🔍 Voir détail commande (override):', id);
+            
+            // Essayer d'abord la fonction originale
+            try {
+                originalVoirDetailCommande(id);
+            } catch(e) {
+                console.error('Erreur fonction originale:', e);
+            }
+            
+            // Forcer l'ouverture si la modal n'est pas visible
+            setTimeout(() => {
+                const modal = document.getElementById('modalDetailCommande');
+                if (modal && modal.style.display !== 'block') {
+                    console.log('💪 Forçage ouverture modal détail');
+                    modal.style.display = 'block';
+                    modal.classList.add('show', 'active');
+                    document.body.classList.add('modal-open');
+                    
+                    // Afficher l'ID dans le titre
+                    const titleSpan = document.getElementById('detailNumCommande');
+                    if (titleSpan) {
+                        titleSpan.textContent = id;
+                    }
+                    
+                    // Créer un backdrop si nécessaire
+                    if (!document.querySelector('.modal-backdrop')) {
+                        const backdrop = document.createElement('div');
+                        backdrop.className = 'modal-backdrop fade show';
+                        document.body.appendChild(backdrop);
+                    }
+                }
+            }, 100);
+        };
     }
-};
+    
+    console.log('✅ Override des fonctions appliqué');
+}, 1000);
 
-// Fermeture basique
+// Gestion de la fermeture des modales
 document.addEventListener('click', function(e) {
     if (e.target.classList.contains('modal-close')) {
         const modal = e.target.closest('.modal');
         if (modal) {
             modal.style.display = 'none';
+            modal.classList.remove('show', 'active');
             document.body.classList.remove('modal-open');
+            
+            // Retirer le backdrop
+            const backdrop = document.querySelector('.modal-backdrop');
+            if (backdrop) {
+                backdrop.remove();
+            }
         }
     }
 });
-</script></body>
+
+// Fermeture sur clic backdrop
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('modal-backdrop')) {
+        // Fermer toutes les modales ouvertes
+        document.querySelectorAll('.modal[style*="display: block"]').forEach(modal => {
+            modal.style.display = 'none';
+            modal.classList.remove('show', 'active');
+        });
+        document.body.classList.remove('modal-open');
+        e.target.remove();
+    }
+});
+</script>
+</body>
 </html>
