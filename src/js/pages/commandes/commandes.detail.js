@@ -4,7 +4,7 @@
 
 import { CommandesService } from '../../services/commandes.service.js';
 import { COMMANDES_CONFIG } from '../../data/commandes.data.js';
-import { confirmerAction } from '../../shared/modal.component.js';
+import { Dialog, confirmerAction } from '../../shared';
 import { chargerDonnees } from './commandes.list.js';
 import { afficherSucces, afficherErreur } from './commandes.main.js';
 
@@ -335,12 +335,11 @@ window.changerStatutDetail = async function(commandeId, nouveauStatut) {
 
 window.saisirNumerosSerie = async function(commandeId) {
     // TODO: Implémenter la saisie des numéros de série
-    alert('Fonctionnalité de saisie des numéros de série à implémenter');
+    await Dialog.info('Fonctionnalité de saisie des numéros de série à implémenter');
 };
 
 window.saisirExpedition = async function(commandeId) {
-    // TODO: Implémenter la saisie des informations d'expédition
-    const numeroSuivi = prompt('Numéro de suivi du colis :');
+    const numeroSuivi = await Dialog.prompt('Numéro de suivi du colis :');
     if (!numeroSuivi) return;
     
     try {
@@ -403,7 +402,7 @@ window.annulerCommande = async function(commandeId) {
     });
     
     if (confirme) {
-        const motif = prompt('Motif d\'annulation :');
+        const motif = await Dialog.prompt('Motif d\'annulation :');
         if (!motif) return;
         
         try {

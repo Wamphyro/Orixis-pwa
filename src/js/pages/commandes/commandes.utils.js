@@ -2,8 +2,16 @@
 // COMMANDES.UTILS.JS - Fonctions utilitaires partagées
 // ========================================
 
+import { 
+    formatDate as sharedFormatDate, 
+    formatMoney as sharedFormatMoney,
+    isValidEmail,
+    isValidPhone,
+    debounce as sharedDebounce
+} from '../../shared';
+
 // ========================================
-// FORMATAGE DES DATES
+// FORMATAGE DES DATES (wrapper avec formats spécifiques)
 // ========================================
 
 export function formatDate(timestamp, format = 'complet') {
@@ -13,33 +21,22 @@ export function formatDate(timestamp, format = 'complet') {
     
     switch (format) {
         case 'jour':
-            return date.toLocaleDateString('fr-FR');
+            return sharedFormatDate(date, 'DD/MM/YYYY');
             
         case 'heure':
-            return date.toLocaleTimeString('fr-FR', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            });
+            return sharedFormatDate(date, 'HH:mm');
             
         case 'complet':
         default:
-            return `${date.toLocaleDateString('fr-FR')} à ${date.toLocaleTimeString('fr-FR', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            })}`;
+            return sharedFormatDate(date, 'DD/MM/YYYY HH:mm');
     }
 }
 
 // ========================================
-// FORMATAGE MONÉTAIRE
+// FORMATAGE MONÉTAIRE (utilise shared)
 // ========================================
 
-export function formatMoney(amount) {
-    return new Intl.NumberFormat('fr-FR', {
-        style: 'currency',
-        currency: 'EUR'
-    }).format(amount);
-}
+export const formatMoney = sharedFormatMoney;
 
 // ========================================
 // GÉNÉRATION DE NUMÉROS
@@ -55,18 +52,11 @@ export function genererNumeroCommande(date = new Date()) {
 }
 
 // ========================================
-// VALIDATION
+// VALIDATION (utilise shared)
 // ========================================
 
-export function validerTelephone(telephone) {
-    const regex = /^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$/;
-    return regex.test(telephone.replace(/\s/g, ''));
-}
-
-export function validerEmail(email) {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
-}
+export const validerTelephone = isValidPhone;
+export const validerEmail = isValidEmail;
 
 // ========================================
 // CALCUL DES DÉLAIS
@@ -115,20 +105,10 @@ export function logError(context, error) {
 }
 
 // ========================================
-// DEBOUNCE
+// DEBOUNCE (utilise shared)
 // ========================================
 
-export function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
+export const debounce = sharedDebounce;
 
 // ========================================
 // HELPERS DOM

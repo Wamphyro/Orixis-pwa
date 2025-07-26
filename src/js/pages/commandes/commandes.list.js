@@ -3,7 +3,8 @@
 // ========================================
 
 import { CommandesService } from '../../services/commandes.service.js';
-import { COMMANDES_CONFIG, formaterDate, formaterPrix } from '../../data/commandes.data.js';
+import { COMMANDES_CONFIG } from '../../data/commandes.data.js';
+import { formatDate as formatDateUtil, formatMoney } from '../../shared';
 import { state } from './commandes.main.js';
 
 // ========================================
@@ -83,13 +84,13 @@ function afficherCommandes() {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td><strong>${commande.numeroCommande}</strong></td>
-            <td>${formaterDate(commande.dates.commande, 'jour')}</td>
+            <td>${formatDate(commande.dates.commande)}</td>
             <td>${commande.client.prenom} ${commande.client.nom}</td>
             <td>${afficherProduits(commande.produits)}</td>
             <td>${COMMANDES_CONFIG.TYPES_PREPARATION[commande.typePreparation]?.label || commande.typePreparation}</td>
             <td>${afficherUrgence(commande.niveauUrgence)}</td>
             <td>${afficherStatut(commande.statut)}</td>
-            <td>${formaterDate(commande.dates.livraisonPrevue, 'jour')}</td>
+            <td>${formatDate(commande.dates.livraisonPrevue)}</td>
             <td class="table-actions">
                 <button class="btn-action" onclick="voirDetailCommande('${commande.id}')">👁️</button>
                 ${peutModifierStatut(commande) ? `<button class="btn-action" onclick="changerStatutCommande('${commande.id}')">✏️</button>` : ''}
@@ -240,4 +241,15 @@ export function pageSuivante() {
         state.currentPage++;
         afficherCommandes();
     }
+}
+
+// ========================================
+// FONCTION UTILITAIRE LOCALE
+// ========================================
+
+function formatDate(timestamp) {
+    if (!timestamp) return '-';
+    
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return formatDateUtil(date, 'DD/MM/YYYY');
 }

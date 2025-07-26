@@ -3,7 +3,7 @@
 // ========================================
 
 import { initFirebase } from '../../services/firebase.service.js';
-import { modalManager, confirmerAction } from '../../shared/modal.component.js';
+import { modalManager, confirmerAction, Dialog, notify } from '../../shared';
 import { 
     initListeCommandes, 
     chargerDonnees, 
@@ -107,11 +107,11 @@ function initModales() {
     modalManager.register('modalNouvelleCommande', {
         closeOnOverlayClick: false,
         closeOnEscape: true,
-        onBeforeClose: () => {
+        onBeforeClose: async () => {
             // Importé depuis commandes.create.js
             const { nouvelleCommande } = window.commandeCreateState || {};
             if (nouvelleCommande && (nouvelleCommande.produits.length > 0 || nouvelleCommande.clientId)) {
-                return confirm('Voulez-vous vraiment fermer ? Les données non sauvegardées seront perdues.');
+                return await Dialog.confirm('Voulez-vous vraiment fermer ? Les données non sauvegardées seront perdues.');
             }
             return true;
         },
@@ -255,11 +255,9 @@ export function ouvrirModal(modalId) {
 }
 
 export function afficherSucces(message) {
-    // TODO: Implémenter un système de notification
-    alert('✅ ' + message);
+    notify.success(message);
 }
 
 export function afficherErreur(message) {
-    // TODO: Implémenter un système de notification
-    alert('❌ ' + message);
+    notify.error(message);
 }

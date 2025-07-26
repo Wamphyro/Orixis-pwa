@@ -7,6 +7,7 @@ import { ClientsService } from '../../services/clients.service.js';
 import { ProduitsService } from '../../services/produits.service.js';
 import { CommandesService } from '../../services/commandes.service.js';
 import { COMMANDES_CONFIG, formaterPrix } from '../../data/commandes.data.js';
+import { Dialog, notify } from '../../shared';
 import { chargerDonnees } from './commandes.list.js';
 import { ouvrirModal, afficherSucces, afficherErreur } from './commandes.main.js';
 
@@ -124,8 +125,8 @@ export function etapePrecedente() {
     }
 }
 
-export function etapeSuivante() {
-    if (!validerEtape(etapeActuelle)) {
+export async function etapeSuivante() {
+    if (!await validerEtape(etapeActuelle)) {
         return;
     }
     
@@ -135,23 +136,23 @@ export function etapeSuivante() {
     }
 }
 
-function validerEtape(etape) {
+async function validerEtape(etape) {
     switch (etape) {
         case 1:
             if (!nouvelleCommande.clientId) {
-                alert('Veuillez sélectionner un client');
+                await Dialog.alert('Veuillez sélectionner un client', 'Attention');
                 return false;
             }
             break;
         case 2:
             if (nouvelleCommande.produits.length === 0) {
-                alert('Veuillez ajouter au moins un produit');
+                await Dialog.alert('Veuillez ajouter au moins un produit', 'Attention');
                 return false;
             }
             break;
         case 3:
             if (!nouvelleCommande.magasinLivraison) {
-                alert('Veuillez sélectionner un magasin de livraison');
+                await Dialog.alert('Veuillez sélectionner un magasin de livraison', 'Attention');
                 return false;
             }
             break;
@@ -225,7 +226,7 @@ export async function selectionnerClient(clientId) {
         }
     } catch (error) {
         console.error('Erreur sélection client:', error);
-        alert('Erreur lors de la sélection du client');
+        notify.error('Erreur lors de la sélection du client');
     }
 }
 
@@ -322,7 +323,7 @@ export async function creerNouveauClient() {
         
     } catch (error) {
         console.error('Erreur création client:', error);
-        alert('Erreur lors de la création du client: ' + error.message);
+        await Dialog.error('Erreur lors de la création du client: ' + error.message);
     }
 }
 
@@ -339,7 +340,7 @@ export async function appliquerPack() {
     if (!packId) return;
     
     // TODO: Appliquer le pack sélectionné
-    alert('Fonctionnalité en cours de développement');
+    await Dialog.info('Fonctionnalité en cours de développement');
 }
 
 export async function rechercherProduit() {
