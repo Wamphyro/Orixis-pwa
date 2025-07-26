@@ -27,7 +27,7 @@ import { COMMANDES_CONFIG } from '../../data/commandes.data.js';
 import { Dialog, confirmerAction, createOrderTimeline, notify } from '../../shared/index.js';
 import { chargerDonnees } from './commandes.list.js';
 import { afficherSucces, afficherErreur } from './commandes.main.js';
-// Le module serial est importé dans main.js et expose ses fonctions via window
+
 
 // ========================================
 // DÉTAIL COMMANDE
@@ -393,6 +393,9 @@ window.terminerPreparation = async function(commandeId) {
         // Récupérer la commande pour vérifier les NS
         const commande = await CommandesService.getCommande(commandeId);
         if (!commande) return;
+        
+        // Importer et utiliser verifierNumerosSerie
+        const { verifierNumerosSerie } = await import('./commandes.serial.js');
         
         // Vérifier que les NS sont saisis pour les appareils auditifs
         const nsValides = await verifierNumerosSerie(commande);
