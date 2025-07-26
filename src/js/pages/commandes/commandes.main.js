@@ -103,23 +103,23 @@ window.addEventListener('load', async () => {
 // ========================================
 
 function initModales() {
-    // Définir la fonction onBeforeClose
-    const onBeforeCloseFunction = async () => {
-        const { nouvelleCommande } = window.commandeCreateState || {};
-        if (nouvelleCommande && (nouvelleCommande.produits.length > 0 || nouvelleCommande.clientId)) {
-            return await Dialog.confirm('Voulez-vous vraiment fermer ? Les données non sauvegardées seront perdues.');
-        }
-        return true;
-    };
-    
-    // Stocker la fonction pour pouvoir la restaurer plus tard
-    window.originalOnBeforeClose = onBeforeCloseFunction;
-    
     // Modal nouvelle commande
     modalManager.register('modalNouvelleCommande', {
         closeOnOverlayClick: false,
         closeOnEscape: true,
-        onBeforeClose: onBeforeCloseFunction,
+        onBeforeClose: async () => {
+            // Si on est en train d'ouvrir une autre modal, ne pas demander confirmation
+            if (window.skipConfirmation) {
+                window.skipConfirmation = false;
+                return true;
+            }
+            
+            const { nouvelleCommande } = window.commandeCreateState || {};
+            if (nouvelleCommande && (nouvelleCommande.produits.length > 0 || nouvelleCommande.clientId)) {
+                return await Dialog.confirm('Voulez-vous vraiment fermer ? Les données non sauvegardées seront perdues.');
+            }
+            return true;
+        },
         onClose: () => {
             // Réinitialiser le formulaire via le module create
             if (window.resetNouvelleCommande) {
@@ -134,7 +134,7 @@ function initModales() {
         closeOnEscape: true
     });
     
-    // Modal nouveau client - MÊME TAILLE QUE LES AUTRES
+    // Modal nouveau client
     modalManager.register('modalNouveauClient', {
         closeOnOverlayClick: false,
         closeOnEscape: true,
@@ -142,12 +142,8 @@ function initModales() {
             const formClient = document.getElementById('formNouveauClient');
             if (formClient) formClient.reset();
             
-            // Rouvrir la modal de nouvelle commande SANS déclencher onBeforeClose
+            // Rouvrir la modal de nouvelle commande
             setTimeout(() => {
-                // Restaurer le onBeforeClose avant de rouvrir
-                if (window.modalManager.get('modalNouvelleCommande')) {
-                    window.modalManager.get('modalNouvelleCommande').options.onBeforeClose = window.originalOnBeforeClose;
-                }
                 modalManager.open('modalNouvelleCommande');
             }, 300);
         }
@@ -213,26 +209,7 @@ window.annulerSelectionCote = annulerSelectionCote;
 // ========================================
 
 function fermerModal(modalId) {
-    // Si on ferme la modal nouvelle commande pour ouvrir nouveau client, désactiver temporairement onBeforeClose
-    if (modalId === 'modalNouvelleCommande' && window.ouvrirNouveauClientEnCours) {
-        const modal = modalManager.get('modalNouvelleCommande');
-        if (modal) {
-            modal.options.onBeforeClose = null;
-        }
-    }
-    
     modalManager.close(modalId);
-    
-    // Restaurer onBeforeClose après fermeture
-    if (modalId === 'modalNouvelleCommande' && window.ouvrirNouveauClientEnCours) {
-        setTimeout(() => {
-            const modal = modalManager.get('modalNouvelleCommande');
-            if (modal && window.originalOnBeforeClose) {
-                modal.options.onBeforeClose = window.originalOnBeforeClose;
-            }
-            window.ouvrirNouveauClientEnCours = false;
-        }, 300);
-    }
 }
 
 async function logout() {

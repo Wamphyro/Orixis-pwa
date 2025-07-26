@@ -263,8 +263,8 @@ export function changerClient() {
 }
 
 export function ouvrirNouveauClient() {
-    // Marquer qu'on est en train d'ouvrir nouveau client
-    window.ouvrirNouveauClientEnCours = true;
+    // Marquer qu'on veut passer d'une modal à l'autre sans confirmation
+    window.skipConfirmation = true;
     
     // Fermer la modal actuelle
     window.fermerModal('modalNouvelleCommande');
@@ -364,16 +364,187 @@ export async function creerNouveauClient() {
 // ========================================
 
 async function chargerPackTemplates() {
-    // TODO: Charger les packs depuis Firebase
+    try {
+        const select = document.getElementById('packTemplate');
+        select.innerHTML = '<option value="">-- Commande personnalisée --</option>';
+        
+        const { collection, getDocs, query, where, orderBy } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        
+        const q = query(
+            collection(db, 'packTemplates'),
+            where('actif', '==', true),
+            orderBy('ordre', 'asc')
+        );
+        
+        const snapshot = await getDocs(q);
+        
+        snapshot.forEach((doc) => {
+            const pack = doc.data();
+            const option = document.createElement('option');
+            option.value = doc.id;
+            option.textContent = pack.nom;
+            option.dataset.description = pack.description || '';
+            select.appendChild(option);
+        });
+        
+    } catch (error) {
+        console.error('Erreur chargement packs:', error);
+    }
 }
 
 export async function appliquerPack() {
     const packId = document.getElementById('packTemplate').value;
     if (!packId) return;
     
-    // TODO: Appliquer le pack sélectionné
-    await Dialog.info('Fonctionnalité en cours de développement');
+    try {
+        const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        
+        const packDoc = await getDoc(doc(db, 'packTemplates', packId));
+        if (!packDoc.exists()) return;
+        
+        const pack = packDoc.data();
+        
+        // Vider le panier actuel
+        nouvelleCommande.produits = [];
+        
+        // Traiter chaque produit du pack
+        for (const produitPack of pack.produits) {
+            if (produitPack.reference) {
+                // Si on a une référence directe, chercher le produit
+                const produits = await ProduitsService.rechercherProduits(produitPack.reference);
+                if (produits.length > 0) {
+                    const produit = produits[0];
+                    
+                    if (produit.necessiteCote && produitPack.cote === 'both') {
+                        // Ajouter les deux côtés
+                        nouvelleCommande.produits.push({
+                            ...produit,
+                            cote: 'droit',
+                            quantite: produitPack.quantite || 1
+                        });
+                        nouvelleCommande.produits.push({
+                            ...produit,
+                            cote: 'gauche',
+                            quantite: produitPack.quantite || 1
+                        });
+                    } else {
+                        nouvelleCommande.produits.push({
+                            ...produit,
+                            quantite: produitPack.quantite || 1
+                        });
+                    }
+                }
+            } else if (produitPack.categorie) {
+                // Si on a une catégorie, chercher un produit de cette catégorie
+                const { collection, getDocs, query, where, limit } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                
+                let q = query(
+                    collection(db, 'produits'),
+                    where('actif', '==', true),
+                    where('categorie', '==', produitPack.categorie),
+                    limit(1)
+                );
+                
+                // Si on a un type spécifique
+                if (produitPack.type) {
+                    q = query(
+                        collection(db, 'produits'),
+                        where('actif', '==', true),
+                        where('type', '==', produitPack.type),
+                        where('categorie', '==', produitPack.categorie),
+                        limit(1)
+                    );
+                }
+                
+                const snapshot = await getDocs(q);
+                
+                if (!snapshot.empty) {
+                    const produitDoc = snapshot.docs[0];
+                    const produit = { id: produitDoc.id, ...produitDoc.data() };
+                    
+                    if (produit.necessiteCote && produitPack.cote === 'both') {
+                        // Pour les appareils auditifs, demander la sélection
+                        produitEnCoursSelection = produit;
+                        produitEnCoursSelection.quantiteFromPack = produitPack.quantite || 1;
+                        
+                        // Afficher le sélecteur de côté
+                        afficherSelecteurCotePourPack(produit);
+                    } else {
+                        nouvelleCommande.produits.push({
+                            ...produit,
+                            quantite: produitPack.quantite || 1
+                        });
+                    }
+                }
+            }
+        }
+        
+        // Rafraîchir l'affichage
+        afficherPanierTemporaire();
+        
+        notify.success(`Pack "${pack.nom}" appliqué avec succès`);
+        
+    } catch (error) {
+        console.error('Erreur application pack:', error);
+        notify.error('Erreur lors de l\'application du pack');
+    }
 }
+
+function afficherSelecteurCotePourPack(produit) {
+    const selectorHtml = `
+        <div id="coteSelector" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+             background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); 
+             z-index: 10000; min-width: 400px;">
+            <h3 style="margin-bottom: 20px; text-align: center; color: #2c3e50;">
+                Sélectionner les appareils pour le pack<br><strong>${produit.designation}</strong>
+            </h3>
+            <div style="display: flex; gap: 15px; justify-content: center; margin-bottom: 20px;">
+                <button onclick="selectionnerCotePack('both')" style="background: white; border: 3px solid #9C27B0; 
+                        border-radius: 15px; padding: 20px; cursor: pointer; transition: all 0.3s ease;
+                        display: flex; flex-direction: column; align-items: center; gap: 10px;"
+                        onmouseover="this.style.background='#F3E5F5'" onmouseout="this.style.background='white'">
+                    <span style="font-size: 40px;">👂👂</span>
+                    <span style="color: #9C27B0; font-weight: bold;">Les deux côtés</span>
+                </button>
+            </div>
+            <button onclick="annulerSelectionCote()" style="background: #f8f9fa; border: 2px solid #e9ecef; 
+                    border-radius: 10px; padding: 10px 20px; cursor: pointer; width: 100%; 
+                    color: #6c757d; font-weight: 500;">
+                Annuler le pack
+            </button>
+        </div>
+        <div id="coteSelectorOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+             background: rgba(0,0,0,0.5); z-index: 9999;" onclick="annulerSelectionCote()"></div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', selectorHtml);
+}
+
+window.selectionnerCotePack = function(cote) {
+    if (!produitEnCoursSelection) return;
+    
+    if (cote === 'both') {
+        nouvelleCommande.produits.push({
+            ...produitEnCoursSelection,
+            cote: 'droit',
+            quantite: produitEnCoursSelection.quantiteFromPack || 1
+        });
+        nouvelleCommande.produits.push({
+            ...produitEnCoursSelection,
+            cote: 'gauche',
+            quantite: produitEnCoursSelection.quantiteFromPack || 1
+        });
+    }
+    
+    const selector = document.getElementById('coteSelector');
+    const overlay = document.getElementById('coteSelectorOverlay');
+    if (selector) selector.remove();
+    if (overlay) overlay.remove();
+    
+    produitEnCoursSelection = null;
+    
+    afficherPanierTemporaire();
+};
 
 export async function rechercherProduit() {
     const recherche = document.getElementById('productSearch').value;
