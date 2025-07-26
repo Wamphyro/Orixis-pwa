@@ -409,80 +409,175 @@ window.terminerPreparation = async function(commandeId) {
 };
 
 // ========================================
-// FONCTION SAISIR EXPÉDITION - VERSION SIMPLIFIÉE ET CORRIGÉE
+// FONCTION SAISIR EXPÉDITION - RETOUR AU SYSTÈME ORIGINAL CORRIGÉ
 // À remplacer dans commandes.detail.js
 // ========================================
 
-// MODIFIÉ : Saisir expédition avec transporteur et numéro
+// MODIFIÉ : Saisir expédition avec transporteur et numéro (SYSTÈME ORIGINAL)
 window.saisirExpedition = async function(commandeId) {
     try {
         console.log('🚀 Début saisir expédition pour commande:', commandeId);
         
-        // Étape 1 : Demander le numéro de suivi (OBLIGATOIRE)
-        const numeroSuivi = await Dialog.prompt(
-            'Saisissez le numéro de suivi du colis :',
-            '',
-            '📦 Expédition du colis'
-        );
+        // Créer un dialog custom avec les deux champs (comme avant)
+        const result = await new Promise((resolve) => {
+            // Créer le HTML du dialog
+            const dialogHtml = `
+                <div class="dialog-overlay"></div>
+                <div class="dialog-box">
+                    <div class="dialog-header">
+                        <div class="dialog-icon info">📦</div>
+                        <h3 class="dialog-title">Expédition du colis</h3>
+                    </div>
+                    <div class="dialog-body">
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Transporteur :</label>
+                            <select id="expeditionTransporteur" style="width: 100%; padding: 8px; border: 2px solid #e0e0e0; border-radius: 6px; box-sizing: border-box;">
+                                <option value="Colissimo">Colissimo</option>
+                                <option value="Chronopost">Chronopost</option>
+                                <option value="UPS">UPS</option>
+                                <option value="DHL">DHL</option>
+                                <option value="Fedex">Fedex</option>
+                                <option value="GLS">GLS</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Numéro de suivi :</label>
+                            <input type="text" id="expeditionNumeroSuivi" 
+                                   placeholder="Ex: 1234567890" 
+                                   style="width: 100%; padding: 8px; border: 2px solid #e0e0e0; border-radius: 6px; box-sizing: border-box;"
+                                   required>
+                        </div>
+                    </div>
+                    <div class="dialog-footer">
+                        <button class="dialog-btn secondary expedition-cancel">Annuler</button>
+                        <button class="dialog-btn primary expedition-confirm">Valider l'expédition</button>
+                    </div>
+                </div>
+            `;
+            
+            // Ajouter au conteneur dialog
+            const dialogContainer = document.getElementById('dialog-container');
+            if (!dialogContainer) {
+                console.error('❌ Dialog container introuvable');
+                resolve(null);
+                return;
+            }
+            
+            dialogContainer.innerHTML = dialogHtml;
+            dialogContainer.classList.add('active');
+            
+            // Récupérer les éléments
+            const transporteurSelect = document.getElementById('expeditionTransporteur');
+            const numeroSuiviInput = document.getElementById('expeditionNumeroSuivi');
+            const confirmBtn = document.querySelector('.expedition-confirm');
+            const cancelBtn = document.querySelector('.expedition-cancel');
+            const overlay = document.querySelector('.dialog-overlay');
+            
+            // Focus sur le champ numéro de suivi
+            setTimeout(() => {
+                if (numeroSuiviInput) {
+                    numeroSuiviInput.focus();
+                }
+            }, 100);
+            
+            // Fonction de validation et confirmation
+            const handleConfirm = () => {
+                const transporteur = transporteurSelect ? transporteurSelect.value : 'Colissimo';
+                const numeroSuivi = numeroSuiviInput ? numeroSuiviInput.value.trim() : '';
+                
+                console.log('📝 Validation - Transporteur:', transporteur);
+                console.log('📝 Validation - Numéro:', numeroSuivi);
+                
+                if (!numeroSuivi) {
+                    // Mettre en rouge le champ requis
+                    if (numeroSuiviInput) {
+                        numeroSuiviInput.style.borderColor = '#f44336';
+                        numeroSuiviInput.focus();
+                    }
+                    return;
+                }
+                
+                // Fermer le dialog
+                dialogContainer.classList.remove('active');
+                setTimeout(() => {
+                    dialogContainer.innerHTML = '';
+                }, 200);
+                
+                // Retourner les valeurs
+                resolve({
+                    transporteur: transporteur,
+                    numeroSuivi: numeroSuivi
+                });
+            };
+            
+            // Fonction d'annulation
+            const handleCancel = () => {
+                dialogContainer.classList.remove('active');
+                setTimeout(() => {
+                    dialogContainer.innerHTML = '';
+                }, 200);
+                resolve(null);
+            };
+            
+            // Event listeners
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', handleConfirm);
+            }
+            
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', handleCancel);
+            }
+            
+            if (overlay) {
+                overlay.addEventListener('click', handleCancel);
+            }
+            
+            // Gestion du clavier
+            const handleKeydown = (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleConfirm();
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    handleCancel();
+                }
+            };
+            
+            document.addEventListener('keydown', handleKeydown);
+            
+            // Nettoyer l'event listener après fermeture
+            const originalResolve = resolve;
+            resolve = (value) => {
+                document.removeEventListener('keydown', handleKeydown);
+                originalResolve(value);
+            };
+        });
         
-        console.log('📝 Numéro saisi:', numeroSuivi);
-        
-        // Vérification que l'utilisateur n'a pas annulé
-        if (numeroSuivi === false || numeroSuivi === null) {
+        // Si l'utilisateur a annulé
+        if (!result) {
             console.log('❌ Annulation utilisateur');
             return;
         }
         
-        // Vérification que le numéro n'est pas vide
-        if (!numeroSuivi || !numeroSuivi.toString().trim()) {
-            console.log('❌ Numéro vide');
-            await Dialog.alert('Le numéro de suivi est obligatoire', 'Attention');
-            return;
-        }
+        console.log('✅ Données récupérées:', result);
         
-        // Étape 2 : Demander le transporteur (OPTIONNEL)
-        const transporteurs = ['Colissimo', 'Chronopost', 'UPS', 'DHL', 'Fedex', 'GLS', 'Autre'];
-        
-        // Créer une liste des transporteurs
-        const listeTransporteurs = transporteurs.map((t, index) => 
-            `${index + 1}. ${t}`
-        ).join('\n');
-        
-        const choixTransporteur = await Dialog.prompt(
-            `Choisissez le transporteur :\n\n${listeTransporteurs}\n\nTapez le numéro (1-7) ou laissez vide pour Colissimo :`,
-            '1',
-            '🚚 Transporteur'
-        );
-        
-        // Déterminer le transporteur
-        let transporteur = 'Colissimo'; // Par défaut
-        
-        if (choixTransporteur && choixTransporteur !== false) {
-            const index = parseInt(choixTransporteur) - 1;
-            if (index >= 0 && index < transporteurs.length) {
-                transporteur = transporteurs[index];
-            }
-        }
-        
-        console.log('🚚 Transporteur choisi:', transporteur);
-        console.log('📦 Numéro final:', numeroSuivi.toString().trim());
-        
-        // Étape 3 : Envoyer au service
+        // Envoyer au service
         console.log('⏳ Envoi au service CommandesService...');
         
         await CommandesService.changerStatut(commandeId, 'expediee', {
-            numeroSuivi: numeroSuivi.toString().trim(),
-            transporteur: transporteur
+            numeroSuivi: result.numeroSuivi,
+            transporteur: result.transporteur
         });
         
         console.log('✅ Statut changé avec succès');
         
-        // Étape 4 : Rafraîchir l'interface
+        // Rafraîchir l'interface
         await chargerDonnees();
         await voirDetailCommande(commandeId);
         
         // Notification de succès
-        afficherSucces(`Expédition validée - ${transporteur} - N° ${numeroSuivi.toString().trim()}`);
+        afficherSucces(`Expédition validée - ${result.transporteur} - N° ${result.numeroSuivi}`);
         
         console.log('🎉 Processus terminé avec succès');
         
@@ -490,7 +585,6 @@ window.saisirExpedition = async function(commandeId) {
         console.error('❌ Erreur validation expédition:', error);
         console.error('Stack:', error.stack);
         
-        // Message d'erreur détaillé
         let messageErreur = 'Erreur lors de la validation de l\'expédition';
         if (error.message) {
             messageErreur += ' : ' + error.message;
