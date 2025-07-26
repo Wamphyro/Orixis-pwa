@@ -355,27 +355,38 @@
                     </div>
                 </div>
                 
-                <!-- Informations détaillées -->
+                <!-- ========================================
+                     MODIFICATION : Nouvelle structure des sections
+                     Client et Livraison dans la colonne de gauche
+                     Produits dans la colonne de droite
+                     ======================================== -->
                 <div class="detail-sections">
-                    <div class="detail-section">
-                        <h3>Informations client</h3>
-                        <div id="detailClient"></div>
+                    <!-- Colonne de gauche : Client + Livraison -->
+                    <div class="detail-column-left">
+                        <div class="detail-section">
+                            <h3>Informations client</h3>
+                            <div id="detailClient"></div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h3>Informations de livraison</h3>
+                            <div id="detailLivraison"></div>
+                        </div>
                     </div>
                     
-                    <div class="detail-section">
-                        <h3>Produits commandés</h3>
-                        <div id="detailProduits"></div>
+                    <!-- Colonne de droite : Produits -->
+                    <div class="detail-column-right">
+                        <div class="detail-section">
+                            <h3>Produits commandés</h3>
+                            <div id="detailProduits"></div>
+                        </div>
                     </div>
-                    
-                    <div class="detail-section">
-                        <h3>Informations de livraison</h3>
-                        <div id="detailLivraison"></div>
-                    </div>
-                    
-                    <div class="detail-section" id="sectionExpedition" style="display: none;">
-                        <h3>Expédition</h3>
-                        <div id="detailExpedition"></div>
-                    </div>
+                </div>
+                
+                <!-- Section expédition sur toute la largeur -->
+                <div class="detail-section full-width" id="sectionExpedition" style="display: none;">
+                    <h3>Expédition</h3>
+                    <div id="detailExpedition"></div>
                 </div>
                 
                 <!-- Actions selon le statut -->
