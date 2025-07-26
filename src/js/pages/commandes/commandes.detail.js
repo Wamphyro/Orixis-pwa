@@ -411,29 +411,28 @@ window.terminerPreparation = async function(commandeId) {
 // MODIFIÉ : Saisir expédition avec transporteur et numéro
 window.saisirExpedition = async function(commandeId) {
     try {
-        // Créer un formulaire d'expédition
-        const dialog = await Dialog.custom({
+        // Demander d'abord le transporteur
+        const transporteurs = ['Colissimo', 'Chronopost', 'UPS', 'DHL', 'Fedex', 'GLS', 'Autre'];
+        let transporteurHtml = '<select id="transporteurSelect" style="width: 100%; padding: 8px; border: 2px solid #e0e0e0; border-radius: 6px;">';
+        transporteurs.forEach(t => {
+            transporteurHtml += `<option value="${t}">${t}</option>`;
+        });
+        transporteurHtml += '</select>';
+        
+        // Utiliser un custom dialog qui retourne les valeurs
+        const result = await Dialog.custom({
             type: 'info',
             title: '📦 Expédition du colis',
             message: `
                 <div style="margin-bottom: 15px;">
                     <label style="display: block; margin-bottom: 5px; font-weight: 600;">Transporteur :</label>
-                    <select id="dialogTransporteur" style="width: 100%; padding: 8px; border: 2px solid #e0e0e0; border-radius: 6px;">
-                        <option value="Colissimo">Colissimo</option>
-                        <option value="Chronopost">Chronopost</option>
-                        <option value="UPS">UPS</option>
-                        <option value="DHL">DHL</option>
-                        <option value="Fedex">Fedex</option>
-                        <option value="GLS">GLS</option>
-                        <option value="Autre">Autre</option>
-                    </select>
+                    ${transporteurHtml}
                 </div>
                 <div>
                     <label style="display: block; margin-bottom: 5px; font-weight: 600;">Numéro de suivi :</label>
-                    <input type="text" id="dialogNumeroSuivi" 
+                    <input type="text" id="numeroSuiviInput" 
                            placeholder="Ex: 1234567890" 
-                           style="width: 100%; padding: 8px; border: 2px solid #e0e0e0; border-radius: 6px;"
-                           required>
+                           style="width: 100%; padding: 8px; border: 2px solid #e0e0e0; border-radius: 6px;">
                 </div>
             `,
             showCancel: true,
@@ -441,21 +440,24 @@ window.saisirExpedition = async function(commandeId) {
             cancelText: 'Annuler'
         });
         
-        if (!dialog) return;
+        if (!result) return;
         
-        // Récupérer les valeurs
-        const transporteur = document.getElementById('dialogTransporteur')?.value;
-        const numeroSuivi = document.getElementById('dialogNumeroSuivi')?.value?.trim();
+        // Récupérer les valeurs AVANT que le dialog se ferme
+        const transporteurElement = document.getElementById('transporteurSelect');
+        const numeroSuiviElement = document.getElementById('numeroSuiviInput');
         
-        if (!numeroSuivi) {
+        if (!numeroSuiviElement || !numeroSuiviElement.value.trim()) {
             await Dialog.alert('Le numéro de suivi est obligatoire', 'Attention');
             return;
         }
         
+        const transporteur = transporteurElement ? transporteurElement.value : 'Colissimo';
+        const numeroSuivi = numeroSuiviElement.value.trim();
+        
         // Envoyer au service
         await CommandesService.changerStatut(commandeId, 'expediee', {
             numeroSuivi: numeroSuivi,
-            transporteur: transporteur || 'Colissimo'
+            transporteur: transporteur
         });
         
         await chargerDonnees();
