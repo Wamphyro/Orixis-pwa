@@ -7,6 +7,7 @@
    Il combine les styles originaux des modales commandes + les styles des composants shared.
    Modifié le 27/07/2025 : Ajout des styles pour le modal de saisie des NS
    Modifié le 28/07/2025 : Repositionnement des sections dans le modal détail
+   Modifié le 29/07/2025 : Fix FOUC - Ajout de #modalSaisieNS dans les règles de masquage
    
    TABLE DES MATIÈRES:
    1. MODAL BASE STYLES (lignes 30-280) - Styles de base pour toutes les modales
@@ -832,16 +833,19 @@ body.modal-open {
 
 /* ========================================
    FIX FOUC - Cacher les modales au chargement
+   MODIFIÉ le 29/07/2025 : Ajout de #modalSaisieNS
    ======================================== */
 #modalNouvelleCommande,
 #modalDetailCommande,
-#modalNouveauClient {
+#modalNouveauClient,
+#modalSaisieNS {
     display: none !important; /* Force le masquage initial */
 }
 
 #modalNouvelleCommande.active,
 #modalDetailCommande.active,
-#modalNouveauClient.active {
+#modalNouveauClient.active,
+#modalSaisieNS.active {
     display: flex !important;
 }
 
@@ -1618,10 +1622,16 @@ body.modal-open {
    Solution: Nouvelle structure avec 2 colonnes (gauche: client+livraison, droite: produits)
    Impact: Meilleure organisation visuelle des informations
    
+   [29/07/2025] - Fix modal numéros de série qui ne s'ouvrait pas
+   Problème: #modalSaisieNS n'était pas dans les règles FOUC (display: none initial)
+   Solution: Ajout de #modalSaisieNS dans les sélecteurs CSS de masquage/affichage
+   Impact: Le modal s'ouvre maintenant correctement avec la classe .active
+   
    NOTES POUR REPRISES FUTURES:
    - Le bouton suppression a une animation de rotation
    - Le badge status-supprime est barré avec opacity réduite
    - Les couleurs utilisent le rouge Bootstrap (#dc3545)
    - La nouvelle structure utilise flexbox pour les colonnes
    - Section expédition reste sur toute la largeur en bas
+   - IMPORTANT: Toujours ajouter les nouvelles modales dans les règles FOUC
    ======================================== */
