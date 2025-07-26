@@ -1,5 +1,19 @@
 /* ========================================
    COMMANDES.CSS - Page de gestion des commandes (LISTE UNIQUEMENT)
+   Chemin: src/css/commandes/commandes.css
+   
+   DESCRIPTION:
+   Ce fichier contient UNIQUEMENT les styles de la page liste des commandes.
+   Les styles des modales et composants UI sont dans commandes-modal.css
+   
+   STRUCTURE:
+   1. En-tête et statistiques
+   2. Filtres
+   3. Tableau des commandes
+   4. Badges statut et urgence
+   5. Pagination
+   6. Animations
+   7. Responsive
    ======================================== */
 
 /* ========================================
