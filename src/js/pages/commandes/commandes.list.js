@@ -4,7 +4,7 @@
 //
 // DESCRIPTION:
 // Gère l'affichage de la liste des commandes avec un tableau simplifié
-// Colonnes supprimées : Produits, Date de livraison
+// Modifié le 27/07/2025 : Ajout bouton suppression et filtrage des commandes supprimées
 //
 // STRUCTURE:
 // 1. Initialisation du module (lignes 20-25)
@@ -69,7 +69,7 @@ export async function chargerDonnees() {
 }
 
 // ========================================
-// AFFICHAGE (MODIFIÉ - Tableau simplifié)
+// AFFICHAGE (MODIFIÉ - Tableau simplifié + bouton suppression)
 // ========================================
 
 function afficherStatistiques(stats) {
@@ -93,9 +93,9 @@ function afficherCommandes() {
     const commandesPage = commandesFiltrees.slice(start, end);
     
     // ========================================
-    // MODIFICATION PRINCIPALE : Tableau simplifié
+    // MODIFICATION PRINCIPALE : Tableau simplifié + bouton suppression
     // Colonnes supprimées : Produits, Date livraison
-    // Nouveau colspan : 7 au lieu de 9
+    // Nouveau bouton : Corbeille rouge pour suppression
     // ========================================
     if (commandesPage.length === 0) {
         tbody.innerHTML = '<tr class="no-data"><td colspan="7">Aucune commande trouvée</td></tr>';
@@ -114,7 +114,7 @@ function afficherCommandes() {
             <td>${afficherStatut(commande.statut)}</td>
             <td class="table-actions">
                 <button class="btn-action" onclick="voirDetailCommande('${commande.id}')">👁️</button>
-                ${peutModifierStatut(commande) ? `<button class="btn-action" onclick="changerStatutCommande('${commande.id}')">✏️</button>` : ''}
+                ${peutSupprimer(commande) ? `<button class="btn-action btn-delete" onclick="supprimerCommande('${commande.id}')" title="Supprimer la commande">🗑️</button>` : ''}
             </td>
         `;
         tbody.appendChild(tr);
@@ -122,6 +122,15 @@ function afficherCommandes() {
     
     // Mettre à jour la pagination
     updatePagination(totalPages);
+}
+
+// ========================================
+// NOUVELLE FONCTION : Vérifier si on peut supprimer
+// Ajoutée le 27/07/2025
+// ========================================
+function peutSupprimer(commande) {
+    // Ne peut pas supprimer si déjà supprimée ou livrée
+    return commande.statut !== 'supprime' && commande.statut !== 'livree';
 }
 
 // ========================================
@@ -147,15 +156,23 @@ function afficherStatut(statut) {
 }
 
 function peutModifierStatut(commande) {
-    return commande.statut !== 'livree' && commande.statut !== 'annulee';
+    return commande.statut !== 'livree' && commande.statut !== 'annulee' && commande.statut !== 'supprime';
 }
 
 // ========================================
-// FILTRES
+// FILTRES (MODIFIÉ - Exclure les commandes supprimées)
 // ========================================
 
 function filtrerCommandesLocalement() {
     return state.commandesData.filter(commande => {
+        // ========================================
+        // NOUVEAU : Exclure systématiquement les commandes supprimées
+        // Ajouté le 27/07/2025
+        // ========================================
+        if (commande.statut === 'supprime') {
+            return false;
+        }
+        
         // Filtre recherche
         if (state.filtres.recherche) {
             const recherche = state.filtres.recherche.toLowerCase();
@@ -287,8 +304,14 @@ function formatDate(timestamp) {
    Raison: Rendre le tableau plus lisible et moins chargé
    Impact: Les infos restent accessibles via le détail
    
+   [27/07/2025] - Ajout de la suppression sécurisée
+   Modification: Remplacement du bouton ✏️ par 🗑️
+   Raison: Permettre la suppression (soft delete) des commandes
+   Impact: Les commandes supprimées sont filtrées et n'apparaissent plus
+   
    NOTES POUR REPRISES FUTURES:
    - La fonction afficherProduits() est conservée mais non utilisée
-   - Le colspan passe de 9 à 7 colonnes
-   - Les données complètes restent dans le détail commande
+   - Le colspan reste à 7 colonnes
+   - Les commandes supprimées restent en base mais sont filtrées
+   - La suppression nécessite une validation nom/prénom (voir detail.js)
    ======================================== */

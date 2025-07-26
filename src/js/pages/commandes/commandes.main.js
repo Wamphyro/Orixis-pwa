@@ -1,5 +1,18 @@
 // ========================================
 // COMMANDES.MAIN.JS - Point d'entrée principal (VERSION COMPLÈTE)
+// Chemin: src/js/pages/commandes/commandes.main.js
+//
+// DESCRIPTION:
+// Point d'entrée principal du module commandes
+// Modifié le 27/07/2025 : Ajout de l'exposition de supprimerCommande
+//
+// STRUCTURE:
+// 1. Imports (lignes 15-35)
+// 2. Variables globales (lignes 37-50)
+// 3. Initialisation (lignes 52-130)
+// 4. Gestion des modales (lignes 132-200)
+// 5. Exposition des fonctions (lignes 202-250)
+// 6. Utilitaires (lignes 252-300)
 // ========================================
 
 import { initFirebase } from '../../services/firebase.service.js';
@@ -221,6 +234,13 @@ window.selectionnerCote = selectionnerCote;
 window.annulerSelectionCote = annulerSelectionCote;
 
 // ========================================
+// NOUVELLE EXPOSITION : supprimerCommande
+// Ajoutée le 27/07/2025
+// Note: La fonction est définie dans commandes.detail.js
+// ========================================
+// window.supprimerCommande est définie dans commandes.detail.js
+
+// ========================================
 // UTILITAIRES GLOBAUX
 // ========================================
 
@@ -290,3 +310,17 @@ export function afficherSucces(message) {
 export function afficherErreur(message) {
     notify.error(message);
 }
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [27/07/2025] - Ajout de la fonction supprimerCommande
+   Modification: Exposition de la fonction window.supprimerCommande
+   Raison: Permettre la suppression sécurisée depuis le tableau
+   Impact: La fonction est définie dans commandes.detail.js
+   
+   NOTES POUR REPRISES FUTURES:
+   - supprimerCommande est définie dans detail.js, pas ici
+   - Elle nécessite une validation nom/prénom
+   - Elle change le statut en "supprime" (soft delete)
+   ======================================== */
