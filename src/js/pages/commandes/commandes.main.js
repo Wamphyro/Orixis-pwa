@@ -4,15 +4,15 @@
 //
 // DESCRIPTION:
 // Point d'entrée principal du module commandes
-// Modifié le 27/07/2025 : Ajout de l'exposition de supprimerCommande
+// Modifié le 27/07/2025 : Ajout de l'exposition de supprimerCommande et import serial
 //
 // STRUCTURE:
-// 1. Imports (lignes 15-35)
-// 2. Variables globales (lignes 37-50)
+// 1. Imports (lignes 15-36)
+// 2. Variables globales (lignes 38-50)
 // 3. Initialisation (lignes 52-130)
 // 4. Gestion des modales (lignes 132-200)
-// 5. Exposition des fonctions (lignes 202-250)
-// 6. Utilitaires (lignes 252-300)
+// 5. Exposition des fonctions (lignes 202-251)
+// 6. Utilitaires (lignes 253-300)
 // ========================================
 
 import { initFirebase } from '../../services/firebase.service.js';
@@ -47,6 +47,7 @@ import {
     voirDetailCommande, 
     changerStatutCommande 
 } from './commandes.detail.js';
+import './commandes.serial.js'; // Import du module de gestion des NS
 
 // ========================================
 // VARIABLES GLOBALES (partagées entre modules)
@@ -319,8 +320,13 @@ export function afficherErreur(message) {
    Raison: Permettre la suppression sécurisée depuis le tableau
    Impact: La fonction est définie dans commandes.detail.js
    
+   [27/07/2025] - Import du module serial
+   Modification: Ajout de l'import './commandes.serial.js'
+   Raison: Gestion des numéros de série
+   
    NOTES POUR REPRISES FUTURES:
    - supprimerCommande est définie dans detail.js, pas ici
    - Elle nécessite une validation nom/prénom
    - Elle change le statut en "supprime" (soft delete)
+   - Le module serial est importé pour side-effects
    ======================================== */

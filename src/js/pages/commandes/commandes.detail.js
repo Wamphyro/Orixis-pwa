@@ -1,31 +1,33 @@
 // ========================================
-// COMMANDES.DETAIL.JS - Gestion du détail et des modifications (SANS PRIX)
+// COMMANDES.DETAIL.JS - Gestion du détail et des modifications (CORRIGÉ)
 // Chemin: src/js/pages/commandes/commandes.detail.js
 //
 // DESCRIPTION:
 // Gère l'affichage détaillé d'une commande et les actions de modification de statut.
 // Utilise le composant Timeline pour afficher la progression visuelle.
-// Modifié le 27/07/2025 : Ajout suppression sécurisée par numéro de commande
+// Modifié le 27/07/2025 : Ajout suppression sécurisée + saisie NS + flux expédition
 //
 // STRUCTURE:
-// 1. Imports et dépendances (lignes 15-25)
-// 2. Affichage du détail (lignes 27-175)
-// 3. Changement de statut (lignes 177-250)
-// 4. Actions spécifiques (lignes 252-350)
-// 5. Fonction de suppression sécurisée (lignes 352-420)
-// 6. Fonctions utilitaires (lignes 422-430)
+// 1. Imports et dépendances (lignes 15-30)
+// 2. Affichage du détail (lignes 32-200)
+// 3. Changement de statut (lignes 202-320)
+// 4. Actions spécifiques (lignes 322-500)
+// 5. Fonction de suppression sécurisée (lignes 502-570)
+// 6. Fonctions utilitaires (lignes 572-580)
 //
 // DÉPENDANCES:
 // - CommandesService: Accès aux données des commandes
 // - Timeline component: Pour l'affichage de la progression
 // - Dialog/notify: Pour les interactions utilisateur
+// - commandes.serial: Pour la gestion des numéros de série
 // ========================================
 
 import { CommandesService } from '../../services/commandes.service.js';
 import { COMMANDES_CONFIG } from '../../data/commandes.data.js';
-import { Dialog, confirmerAction, createOrderTimeline } from '../../shared/index.js';
+import { Dialog, confirmerAction, createOrderTimeline, notify } from '../../shared/index.js';
 import { chargerDonnees } from './commandes.list.js';
 import { afficherSucces, afficherErreur } from './commandes.main.js';
+import { ouvrirSaisieNumerosSerie, verifierNumerosSerie } from './commandes.serial.js';
 
 // ========================================
 // DÉTAIL COMMANDE
@@ -53,8 +55,7 @@ function afficherDetailCommande(commande) {
     document.getElementById('detailNumCommande').textContent = commande.numeroCommande;
     
     // ========================================
-    // TIMELINE avec le composant (CHANGEMENT MAJEUR)
-    // Remplace l'ancienne fonction afficherTimeline()
+    // TIMELINE avec le composant
     // ========================================
     const timelineContainer = document.getElementById('timeline');
     
@@ -91,7 +92,7 @@ function afficherDetailCommande(commande) {
         </div>
     `;
     
-    // Produits commandés (SANS PRIX)
+    // Produits commandés (SANS PRIX) - MODIFIÉ pour afficher les NS
     const detailProduits = document.getElementById('detailProduits');
     detailProduits.innerHTML = `
         <table class="detail-table">
@@ -99,6 +100,7 @@ function afficherDetailCommande(commande) {
                 <tr>
                     <th>Produit</th>
                     <th>Qté</th>
+                    <th>N° Série</th>
                 </tr>
             </thead>
             <tbody>
@@ -107,9 +109,11 @@ function afficherDetailCommande(commande) {
                         <td>
                             ${p.designation}
                             ${p.cote ? `<small>(${p.cote})</small>` : ''}
-                            ${p.numeroSerie ? `<br><small>NS: ${p.numeroSerie}</small>` : ''}
                         </td>
                         <td style="text-align: center;">${p.quantite}</td>
+                        <td>
+                            ${p.numeroSerie ? `<code>${p.numeroSerie}</code>` : '<em style="color: #999;">Non saisi</em>'}
+                        </td>
                     </tr>
                 `).join('')}
             </tbody>
@@ -143,9 +147,9 @@ function afficherDetailCommande(commande) {
         ` : ''}
     `;
     
-    // Section expédition (si nécessaire)
+    // Section expédition (MODIFIÉE pour afficher plus d'infos)
     const sectionExpedition = document.getElementById('sectionExpedition');
-    if (commande.expedition?.necessiteExpedition) {
+    if (commande.expedition?.necessiteExpedition || commande.expedition?.envoi?.numeroSuivi) {
         sectionExpedition.style.display = 'block';
         const detailExpedition = document.getElementById('detailExpedition');
         
@@ -156,13 +160,28 @@ function afficherDetailCommande(commande) {
                     <span class="detail-value">${commande.expedition.envoi.transporteur}</span>
                 </div>
                 <div class="detail-info">
-                    <span class="detail-label">N° suivi :</span>
-                    <span class="detail-value">${commande.expedition.envoi.numeroSuivi}</span>
+                    <span class="detail-label">N° suivi envoi :</span>
+                    <span class="detail-value"><strong>${commande.expedition.envoi.numeroSuivi}</strong></span>
                 </div>
                 <div class="detail-info">
                     <span class="detail-label">Date envoi :</span>
                     <span class="detail-value">${formatDate(commande.expedition.envoi.dateEnvoi)}</span>
                 </div>
+                ${commande.expedition.reception?.numeroSuiviRecu ? `
+                    <hr style="margin: 15px 0;">
+                    <div class="detail-info">
+                        <span class="detail-label">N° suivi réception :</span>
+                        <span class="detail-value"><strong>${commande.expedition.reception.numeroSuiviRecu}</strong></span>
+                    </div>
+                    <div class="detail-info">
+                        <span class="detail-label">Date réception :</span>
+                        <span class="detail-value">${formatDate(commande.expedition.reception.dateReception)}</span>
+                    </div>
+                    <div class="detail-info">
+                        <span class="detail-label">Colis conforme :</span>
+                        <span class="detail-value">${commande.expedition.reception.colisConforme ? '✅ Oui' : '❌ Non'}</span>
+                    </div>
+                ` : ''}
             `;
         } else {
             detailExpedition.innerHTML = '<p>En attente d\'expédition</p>';
@@ -175,11 +194,6 @@ function afficherDetailCommande(commande) {
     afficherActionsCommande(commande);
 }
 
-// ========================================
-// NOTE: L'ancienne fonction afficherTimeline() a été supprimée
-// car nous utilisons maintenant le composant Timeline
-// ========================================
-
 function afficherActionsCommande(commande) {
     const detailActions = document.getElementById('detailActions');
     let actions = [];
@@ -189,7 +203,7 @@ function afficherActionsCommande(commande) {
         case 'nouvelle':
             actions.push(`
                 <button class="btn btn-primary" onclick="changerStatutDetail('${commande.id}', 'preparation')">
-                    Commencer la préparation
+                    🔵 Commencer la préparation
                 </button>
             `);
             break;
@@ -197,28 +211,30 @@ function afficherActionsCommande(commande) {
         case 'preparation':
             actions.push(`
                 <button class="btn btn-primary" onclick="saisirNumerosSerie('${commande.id}')">
-                    Saisir les numéros de série
+                    📝 Saisir les numéros de série
                 </button>
-                <button class="btn btn-primary" onclick="changerStatutDetail('${commande.id}', 'terminee')">
-                    Terminer la préparation
+                <button class="btn btn-success" onclick="terminerPreparation('${commande.id}')">
+                    ✅ Terminer la préparation
                 </button>
             `);
             break;
             
         case 'terminee':
-            if (commande.expedition?.necessiteExpedition) {
+            // MODIFIÉ : Proposer expédition OU livraison directe
+            if (commande.expedition?.necessiteExpedition || 
+                commande.magasinLivraison !== commande.magasinReference) {
                 actions.push(`
                     <button class="btn btn-primary" onclick="saisirExpedition('${commande.id}')">
-                        📦 Valider l'expédition
-                    </button>
-                `);
-            } else {
-                actions.push(`
-                    <button class="btn btn-primary" onclick="changerStatutDetail('${commande.id}', 'livree')">
-                        ✅ Marquer comme livrée
+                        📦 Expédier le colis
                     </button>
                 `);
             }
+            // Toujours proposer la livraison directe
+            actions.push(`
+                <button class="btn btn-success" onclick="livrerDirectement('${commande.id}')">
+                    ✅ Livrer directement au patient
+                </button>
+            `);
             break;
             
         case 'expediee':
@@ -238,7 +254,7 @@ function afficherActionsCommande(commande) {
                 `);
             }
             actions.push(`
-                <button class="btn btn-primary" onclick="changerStatutDetail('${commande.id}', 'livree')">
+                <button class="btn btn-success" onclick="changerStatutDetail('${commande.id}', 'livree')">
                     ✅ Livrer au patient
                 </button>
             `);
@@ -289,7 +305,7 @@ export async function changerStatutCommande(commandeId) {
     }
 }
 
-// Fonction exposée pour les actions depuis la modal détail (VERSION CORRIGÉE)
+// Fonction exposée pour les actions depuis la modal détail
 window.changerStatutDetail = async function(commandeId, nouveauStatut) {
     console.log('🔄 Début changement statut:', { commandeId, nouveauStatut });
     
@@ -356,50 +372,178 @@ window.changerStatutDetail = async function(commandeId, nouveauStatut) {
 // ACTIONS SPÉCIFIQUES
 // ========================================
 
+// NOUVEAU : Saisir les numéros de série
 window.saisirNumerosSerie = async function(commandeId) {
-    // TODO: Implémenter la saisie des numéros de série
-    await Dialog.info('Fonctionnalité de saisie des numéros de série à implémenter');
+    await ouvrirSaisieNumerosSerie(commandeId);
 };
 
-window.saisirExpedition = async function(commandeId) {
-    const numeroSuivi = await Dialog.prompt('Numéro de suivi du colis :');
-    if (!numeroSuivi) return;
-    
+// NOUVEAU : Terminer la préparation avec vérification NS
+window.terminerPreparation = async function(commandeId) {
     try {
+        // Récupérer la commande pour vérifier les NS
+        const commande = await CommandesService.getCommande(commandeId);
+        if (!commande) return;
+        
+        // Vérifier que les NS sont saisis pour les appareils auditifs
+        const nsValides = await verifierNumerosSerie(commande);
+        if (!nsValides) {
+            // La fonction verifierNumerosSerie affiche déjà le message d'erreur
+            return;
+        }
+        
+        // Si tout est OK, changer le statut
+        await changerStatutDetail(commandeId, 'terminee');
+        
+    } catch (error) {
+        console.error('Erreur terminer préparation:', error);
+        afficherErreur('Erreur lors de la finalisation de la préparation');
+    }
+};
+
+// MODIFIÉ : Saisir expédition avec transporteur et numéro
+window.saisirExpedition = async function(commandeId) {
+    try {
+        // Créer un formulaire d'expédition
+        const dialog = await Dialog.custom({
+            type: 'info',
+            title: '📦 Expédition du colis',
+            message: `
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Transporteur :</label>
+                    <select id="dialogTransporteur" style="width: 100%; padding: 8px; border: 2px solid #e0e0e0; border-radius: 6px;">
+                        <option value="Colissimo">Colissimo</option>
+                        <option value="Chronopost">Chronopost</option>
+                        <option value="UPS">UPS</option>
+                        <option value="DHL">DHL</option>
+                        <option value="Fedex">Fedex</option>
+                        <option value="GLS">GLS</option>
+                        <option value="Autre">Autre</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Numéro de suivi :</label>
+                    <input type="text" id="dialogNumeroSuivi" 
+                           placeholder="Ex: 1234567890" 
+                           style="width: 100%; padding: 8px; border: 2px solid #e0e0e0; border-radius: 6px;"
+                           required>
+                </div>
+            `,
+            showCancel: true,
+            confirmText: 'Valider l\'expédition',
+            cancelText: 'Annuler'
+        });
+        
+        if (!dialog) return;
+        
+        // Récupérer les valeurs
+        const transporteur = document.getElementById('dialogTransporteur')?.value;
+        const numeroSuivi = document.getElementById('dialogNumeroSuivi')?.value?.trim();
+        
+        if (!numeroSuivi) {
+            await Dialog.alert('Le numéro de suivi est obligatoire', 'Attention');
+            return;
+        }
+        
+        // Envoyer au service
         await CommandesService.changerStatut(commandeId, 'expediee', {
             numeroSuivi: numeroSuivi,
-            transporteur: 'Colissimo' // TODO: Permettre le choix du transporteur
+            transporteur: transporteur || 'Colissimo'
         });
         
         await chargerDonnees();
-        window.modalManager.close('modalDetailCommande');
-        afficherSucces('Expédition validée');
+        await voirDetailCommande(commandeId);
+        afficherSucces('Expédition validée avec succès');
+        
     } catch (error) {
         console.error('Erreur validation expédition:', error);
         afficherErreur('Erreur lors de la validation de l\'expédition');
     }
 };
 
+// MODIFIÉ : Valider réception avec vérification du numéro
 window.validerReception = async function(commandeId) {
+    try {
+        // Récupérer la commande pour avoir le numéro de suivi
+        const commande = await CommandesService.getCommande(commandeId);
+        if (!commande) return;
+        
+        const numeroSuiviEnvoi = commande.expedition?.envoi?.numeroSuivi;
+        if (!numeroSuiviEnvoi) {
+            await Dialog.alert('Aucun numéro de suivi trouvé pour cette expédition', 'Erreur');
+            return;
+        }
+        
+        // Demander le numéro de suivi reçu
+        const numeroSuiviRecu = await Dialog.prompt(
+            `Pour confirmer la réception, veuillez saisir le numéro de suivi du colis reçu.\n\nNuméro attendu : ${numeroSuiviEnvoi}`,
+            '',
+            '📥 Validation de la réception'
+        );
+        
+        if (!numeroSuiviRecu) return;
+        
+        // Vérifier que les numéros correspondent
+        const numerosCorrespondent = numeroSuiviRecu.trim() === numeroSuiviEnvoi.trim();
+        
+        if (!numerosCorrespondent) {
+            const forcer = await confirmerAction({
+                titre: '⚠️ Numéros différents',
+                message: `Le numéro saisi (${numeroSuiviRecu}) ne correspond pas au numéro d'envoi (${numeroSuiviEnvoi}).\n\nVoulez-vous quand même valider la réception ?`,
+                boutonConfirmer: 'Oui, valider quand même',
+                boutonAnnuler: 'Non, vérifier',
+                danger: true
+            });
+            
+            if (!forcer) return;
+        }
+        
+        // Demander si le colis est conforme
+        const colisConforme = await confirmerAction({
+            titre: 'État du colis',
+            message: 'Le colis est-il arrivé en bon état et conforme à la commande ?',
+            boutonConfirmer: 'Oui, conforme',
+            boutonAnnuler: 'Non, problème'
+        });
+        
+        // Valider la réception
+        await CommandesService.changerStatut(commandeId, 'receptionnee', {
+            numeroSuiviRecu: numeroSuiviRecu.trim(),
+            colisConforme: colisConforme
+        });
+        
+        await chargerDonnees();
+        await voirDetailCommande(commandeId);
+        
+        if (colisConforme) {
+            afficherSucces('Réception validée - Colis conforme');
+        } else {
+            notify.warning('Réception validée - Problème signalé sur le colis');
+        }
+        
+    } catch (error) {
+        console.error('Erreur validation réception:', error);
+        afficherErreur('Erreur lors de la validation de la réception');
+    }
+};
+
+// NOUVEAU : Livrer directement sans expédition
+window.livrerDirectement = async function(commandeId) {
     const confirme = await confirmerAction({
-        titre: 'Valider la réception',
-        message: 'Confirmez-vous avoir reçu le colis en bon état ?',
-        boutonConfirmer: 'Oui, colis reçu',
+        titre: 'Livraison directe',
+        message: 'Confirmez-vous la livraison directe au patient (sans expédition) ?',
+        boutonConfirmer: 'Oui, livrer',
         boutonAnnuler: 'Annuler'
     });
     
     if (confirme) {
         try {
-            await CommandesService.changerStatut(commandeId, 'receptionnee', {
-                colisConforme: true
-            });
-            
+            await CommandesService.changerStatut(commandeId, 'livree');
             await chargerDonnees();
             window.modalManager.close('modalDetailCommande');
-            afficherSucces('Réception validée');
+            afficherSucces('Commande livrée avec succès');
         } catch (error) {
-            console.error('Erreur validation réception:', error);
-            afficherErreur('Erreur lors de la validation de la réception');
+            console.error('Erreur livraison directe:', error);
+            afficherErreur('Erreur lors de la livraison');
         }
     }
 };
@@ -444,9 +588,7 @@ window.annulerCommande = async function(commandeId) {
 };
 
 // ========================================
-// NOUVELLE FONCTION : SUPPRESSION SÉCURISÉE
-// Ajoutée le 27/07/2025
-// Modifiée : Validation par numéro de commande
+// FONCTION SUPPRESSION SÉCURISÉE
 // ========================================
 window.supprimerCommande = async function(commandeId) {
     try {
@@ -542,10 +684,21 @@ function formatDate(timestamp) {
    Solution: Fonction supprimerCommande avec validation par numéro de commande
    Impact: Soft delete avec statut "supprime"
    
+   [27/07/2025] - Ajout saisie NS et flux expédition
+   Problème: Pas de saisie NS, flux expédition incomplet
+   Solution: 
+   - Import du module commandes.serial.js
+   - Fonction terminerPreparation avec vérification NS
+   - saisirExpedition avec transporteur et numéro
+   - validerReception avec vérification du numéro
+   - livrerDirectement pour skip l'expédition
+   
    NOTES POUR REPRISES FUTURES:
    - Le composant Timeline gère automatiquement l'orientation
    - Les styles sont dans commandes-modal.css section 4
    - Ne pas générer de HTML manuel pour la timeline
    - La modal reste ouverte après changement de statut
    - La suppression nécessite la saisie exacte du numéro de commande
+   - Les NS sont obligatoires pour les appareils auditifs
+   - L'expédition est optionnelle (bouton livrer directement)
    ======================================== */

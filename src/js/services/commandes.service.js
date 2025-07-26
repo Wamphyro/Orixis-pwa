@@ -4,14 +4,14 @@
 //
 // DESCRIPTION:
 // Service de gestion des commandes avec Firebase
-// Modifié le 27/07/2025 : Correction des serverTimestamp dans arrayUnion
+// Modifié le 27/07/2025 : Correction des serverTimestamp dans arrayUnion + validation NS
 //
 // STRUCTURE:
 // 1. Imports et configuration (lignes 15-25)
 // 2. Méthodes CRUD principales (lignes 30-200)
-// 3. Gestion des statuts (lignes 202-400)
-// 4. Méthode de suppression (lignes 402-450)
-// 5. Statistiques et helpers (lignes 452-600)
+// 3. Gestion des statuts (lignes 202-450)
+// 4. Méthode de suppression (lignes 452-500)
+// 5. Statistiques et helpers (lignes 502-650)
 // ========================================
 
 import { db } from './firebase.service.js';
@@ -98,7 +98,8 @@ export class CommandesService {
                     quantite: p.quantite || 1,
                     cote: p.cote || null,
                     numeroSerie: null,
-                    prixUnitaire: p.prixUnitaire || 0
+                    prixUnitaire: p.prixUnitaire || 0,
+                    necessiteCote: p.necessiteCote || false
                 })),
                 
                 // Prix
@@ -342,6 +343,13 @@ export class CommandesService {
                     if (donnees.numerosSerieAssignes) {
                         updates.numerosSerieAssignes = donnees.numerosSerieAssignes;
                     }
+                    // Vérifier que les NS sont saisis pour les appareils auditifs
+                    const appareilsSansNS = commande.produits.filter(p => 
+                        (p.type === 'appareil_auditif' || p.necessiteCote) && !p.numeroSerie
+                    );
+                    if (appareilsSansNS.length > 0) {
+                        throw new Error('Les numéros de série sont obligatoires pour tous les appareils auditifs');
+                    }
                     break;
                     
                 case 'expediee':
@@ -351,6 +359,8 @@ export class CommandesService {
                         updates['expedition.envoi.dateEnvoi'] = serverTimestamp();
                         updates['expedition.envoi.scanPar'] = this.getUtilisateurActuel();
                         updates['expedition.envoi.transporteur'] = donnees.transporteur || 'Colissimo';
+                    } else {
+                        throw new Error('Le numéro de suivi est obligatoire pour l\'expédition');
                     }
                     break;
                     
@@ -360,6 +370,14 @@ export class CommandesService {
                     updates['expedition.reception.recuPar'] = this.getUtilisateurActuel();
                     updates['expedition.reception.numeroSuiviRecu'] = donnees.numeroSuiviRecu || '';
                     updates['expedition.reception.colisConforme'] = donnees.colisConforme !== false;
+                    
+                    // Vérifier que le numéro de suivi correspond
+                    if (donnees.numeroSuiviRecu && commande.expedition?.envoi?.numeroSuivi) {
+                        if (donnees.numeroSuiviRecu !== commande.expedition.envoi.numeroSuivi) {
+                            console.warn('⚠️ Les numéros de suivi ne correspondent pas');
+                            updates['expedition.reception.commentaires'] = 'Numéros de suivi différents';
+                        }
+                    }
                     break;
                     
                 case 'livree':
@@ -674,10 +692,16 @@ export class CommandesService {
    Solution: Utiliser new Date() à la place avec timestamp Unix
    Impact: Toutes les méthodes utilisant l'historique corrigées
    
+   [27/07/2025] - Validation NS obligatoire
+   Problème: On pouvait terminer sans NS pour les appareils auditifs
+   Solution: Vérification dans case 'terminee'
+   Impact: Bloque le passage au statut terminé si NS manquants
+   
    NOTES POUR REPRISES FUTURES:
    - La suppression est un soft delete (statut "supprime")
    - Les commandes supprimées sont exclues des statistiques
    - La validation nom/prénom se fait côté UI (detail.js)
    - Impossible de supprimer une commande livrée
    - Ne jamais utiliser serverTimestamp() dans arrayUnion()
+   - Les NS sont obligatoires pour terminer la préparation
    ======================================== */

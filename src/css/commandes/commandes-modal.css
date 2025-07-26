@@ -5,13 +5,15 @@
    DESCRIPTION:
    Ce fichier centralise TOUS les styles des composants UI utilisés dans le module commandes.
    Il combine les styles originaux des modales commandes + les styles des composants shared.
+   Modifié le 27/07/2025 : Ajout des styles pour le modal de saisie des NS
    
    TABLE DES MATIÈRES:
    1. MODAL BASE STYLES (lignes 30-280) - Styles de base pour toutes les modales
    2. DIALOG STYLES (lignes 281-500) - Boîtes de dialogue (alert, confirm, prompt)
    3. NOTIFICATION STYLES (lignes 501-700) - Notifications toast
    4. TIMELINE STYLES (lignes 701-1150) - Timeline pour le suivi des statuts
-   5. MODALES COMMANDES SPÉCIFIQUES (lignes 1151+) - Styles custom pour commandes
+   5. MODALES COMMANDES SPÉCIFIQUES (lignes 1151-1650) - Styles custom pour commandes
+   6. MODAL NUMÉROS DE SÉRIE (lignes 1651+) - Styles pour la saisie des NS
    
    DÉPENDANCES JS (avec loadStyles() à commenter):
    - src/js/shared/ui/modal.component.js (ligne ~43)
@@ -1271,6 +1273,16 @@ body.modal-open {
     background: #f8f9fa;
 }
 
+/* Styles pour l'affichage des NS dans le tableau */
+.detail-table code {
+    background: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: #495057;
+}
+
 /* ACTIONS DÉTAIL */
 .detail-actions {
     background: #f8f9fa;
@@ -1284,6 +1296,74 @@ body.modal-open {
 
 .detail-actions .btn {
     min-width: 160px;
+}
+
+/* ========================================
+   6. MODAL NUMÉROS DE SÉRIE
+   Ajouté le 27/07/2025
+   ======================================== */
+
+/* Alert info */
+.ns-info-alert {
+    background: #e3f2fd;
+    border-left: 4px solid #2196f3;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.alert-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+/* Sections */
+.ns-section-title {
+    color: #667eea;
+    font-size: 16px;
+    margin-top: 20px;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+/* Champs de saisie */
+.ns-field-group {
+    margin-bottom: 20px;
+}
+
+.ns-field-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #495057;
+}
+
+.ns-reference {
+    background: #e9ecef;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: normal;
+}
+
+.ns-input {
+    font-family: 'Courier New', monospace;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* État vide */
+.ns-empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #28a745;
+    font-size: 16px;
 }
 
 /* ========================================
