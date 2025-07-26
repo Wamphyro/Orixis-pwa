@@ -1,5 +1,5 @@
 // ========================================
-// COMMANDES.DETAIL.JS - Gestion du détail et des modifications
+// COMMANDES.DETAIL.JS - Gestion du détail et des modifications (SANS PRIX)
 // ========================================
 
 import { CommandesService } from '../../services/commandes.service.js';
@@ -57,7 +57,7 @@ function afficherDetailCommande(commande) {
         </div>
     `;
     
-    // Produits commandés
+    // Produits commandés (SANS PRIX)
     const detailProduits = document.getElementById('detailProduits');
     detailProduits.innerHTML = `
         <table class="detail-table">
@@ -65,8 +65,6 @@ function afficherDetailCommande(commande) {
                 <tr>
                     <th>Produit</th>
                     <th>Qté</th>
-                    <th>Prix unit.</th>
-                    <th>Total</th>
                 </tr>
             </thead>
             <tbody>
@@ -77,18 +75,10 @@ function afficherDetailCommande(commande) {
                             ${p.cote ? `<small>(${p.cote})</small>` : ''}
                             ${p.numeroSerie ? `<br><small>NS: ${p.numeroSerie}</small>` : ''}
                         </td>
-                        <td>${p.quantite}</td>
-                        <td>${formatMoney(p.prixUnitaire)}</td>
-                        <td>${formatMoney(p.prixUnitaire * p.quantite)}</td>
+                        <td style="text-align: center;">${p.quantite}</td>
                     </tr>
                 `).join('')}
             </tbody>
-            <tfoot>
-                <tr>
-                    <th colspan="3">Total</th>
-                    <th>${formatMoney(commande.prixTotal)}</th>
-                </tr>
-            </tfoot>
         </table>
     `;
     
@@ -429,11 +419,4 @@ function formatDate(timestamp) {
     
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return date.toLocaleDateString('fr-FR');
-}
-
-function formatMoney(amount) {
-    return new Intl.NumberFormat('fr-FR', {
-        style: 'currency',
-        currency: 'EUR'
-    }).format(amount);
 }

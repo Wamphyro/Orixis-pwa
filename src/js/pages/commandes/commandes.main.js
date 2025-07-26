@@ -1,5 +1,5 @@
 // ========================================
-// COMMANDES.MAIN.JS - Point d'entrée principal
+// COMMANDES.MAIN.JS - Point d'entrée principal (VERSION COMPLÈTE)
 // ========================================
 
 import { initFirebase } from '../../services/firebase.service.js';
@@ -103,18 +103,23 @@ window.addEventListener('load', async () => {
 // ========================================
 
 function initModales() {
+    // Définir la fonction onBeforeClose
+    const onBeforeCloseFunction = async () => {
+        const { nouvelleCommande } = window.commandeCreateState || {};
+        if (nouvelleCommande && (nouvelleCommande.produits.length > 0 || nouvelleCommande.clientId)) {
+            return await Dialog.confirm('Voulez-vous vraiment fermer ? Les données non sauvegardées seront perdues.');
+        }
+        return true;
+    };
+    
+    // Stocker la fonction pour pouvoir la restaurer plus tard
+    window.originalOnBeforeClose = onBeforeCloseFunction;
+    
     // Modal nouvelle commande
     modalManager.register('modalNouvelleCommande', {
         closeOnOverlayClick: false,
         closeOnEscape: true,
-        onBeforeClose: async () => {
-            // Importé depuis commandes.create.js
-            const { nouvelleCommande } = window.commandeCreateState || {};
-            if (nouvelleCommande && (nouvelleCommande.produits.length > 0 || nouvelleCommande.clientId)) {
-                return await Dialog.confirm('Voulez-vous vraiment fermer ? Les données non sauvegardées seront perdues.');
-            }
-            return true;
-        },
+        onBeforeClose: onBeforeCloseFunction,
         onClose: () => {
             // Réinitialiser le formulaire via le module create
             if (window.resetNouvelleCommande) {
@@ -129,17 +134,22 @@ function initModales() {
         closeOnEscape: true
     });
     
-    // Modal nouveau client
+    // Modal nouveau client - MÊME TAILLE QUE LES AUTRES
     modalManager.register('modalNouveauClient', {
         closeOnOverlayClick: false,
         closeOnEscape: true,
         onClose: () => {
             const formClient = document.getElementById('formNouveauClient');
             if (formClient) formClient.reset();
-            // Rouvrir la modal de nouvelle commande
+            
+            // Rouvrir la modal de nouvelle commande SANS déclencher onBeforeClose
             setTimeout(() => {
+                // Restaurer le onBeforeClose avant de rouvrir
+                if (window.modalManager.get('modalNouvelleCommande')) {
+                    window.modalManager.get('modalNouvelleCommande').options.onBeforeClose = window.originalOnBeforeClose;
+                }
                 modalManager.open('modalNouvelleCommande');
-            }, 300); // Petit délai pour l'animation
+            }, 300);
         }
     });
     
