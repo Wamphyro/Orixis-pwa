@@ -112,8 +112,12 @@ function attacherEvenementsBoutonsCommandes() {
     document.querySelectorAll('.btn-voir-detail').forEach(btn => {
         btn.addEventListener('click', function() {
             const commandeId = this.getAttribute('data-id');
+            console.log('Clic sur voir détail:', commandeId);
+            // Appel direct de la fonction
             if (window.voirDetailCommande) {
                 window.voirDetailCommande(commandeId);
+            } else {
+                console.error('voirDetailCommande non trouvée');
             }
         });
     });
