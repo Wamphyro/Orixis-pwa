@@ -439,12 +439,13 @@ export class CommandesService {
                     timestamp: Date.now(),
                     statutAvantSuppression: commande.statut
                 },
-                // Ajouter à l'historique
+                // Ajouter à l'historique (sans serverTimestamp dans arrayUnion)
                 historique: arrayUnion({
-                    date: serverTimestamp(),
+                    date: new Date(),  // Utiliser Date normale au lieu de serverTimestamp
                     action: 'suppression',
                     utilisateur: utilisateur,
-                    details: `Commande supprimée (motif: ${infos.motif || 'Suppression manuelle'})`
+                    details: `Commande supprimée (motif: ${infos.motif || 'Suppression manuelle'})`,
+                    timestamp: Date.now()
                 })
             };
             
