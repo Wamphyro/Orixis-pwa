@@ -219,6 +219,7 @@ window.fermerModal = fermerModal;
 window.logout = logout;
 window.selectionnerCote = selectionnerCote;
 window.annulerSelectionCote = annulerSelectionCote;
+window.voirDetailCommande = voirDetailCommande;
 
 // ========================================
 // UTILITAIRES GLOBAUX
