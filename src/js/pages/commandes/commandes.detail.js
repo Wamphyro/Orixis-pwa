@@ -4,15 +4,16 @@
 //
 // DESCRIPTION:
 // Gère l'affichage détaillé d'une commande et les actions de modification de statut.
-// Modifié le 27/07/2025 : Ajout de la fonction de suppression sécurisée
+// Utilise le composant Timeline pour afficher la progression visuelle.
+// Modifié le 27/07/2025 : Ajout suppression sécurisée par numéro de commande
 //
 // STRUCTURE:
 // 1. Imports et dépendances (lignes 15-25)
 // 2. Affichage du détail (lignes 27-175)
 // 3. Changement de statut (lignes 177-250)
 // 4. Actions spécifiques (lignes 252-350)
-// 5. Fonction de suppression sécurisée (lignes 352-450)
-// 6. Fonctions utilitaires (lignes 452-460)
+// 5. Fonction de suppression sécurisée (lignes 352-420)
+// 6. Fonctions utilitaires (lignes 422-430)
 //
 // DÉPENDANCES:
 // - CommandesService: Accès aux données des commandes
@@ -445,6 +446,7 @@ window.annulerCommande = async function(commandeId) {
 // ========================================
 // NOUVELLE FONCTION : SUPPRESSION SÉCURISÉE
 // Ajoutée le 27/07/2025
+// Modifiée : Validation par numéro de commande
 // ========================================
 window.supprimerCommande = async function(commandeId) {
     try {
@@ -455,64 +457,39 @@ window.supprimerCommande = async function(commandeId) {
             return;
         }
         
-        // Créer le HTML du modal personnalisé
-        const modalContent = `
-            <div style="margin-bottom: 20px;">
-                <p style="font-weight: 600; margin-bottom: 10px;">
-                    Vous êtes sur le point de supprimer la commande <strong>${commande.numeroCommande}</strong>
-                </p>
-                <p style="color: #666; margin-bottom: 20px;">
-                    Client : <strong>${commande.client.prenom} ${commande.client.nom}</strong>
-                </p>
-                <p style="color: #dc3545; font-weight: 600; margin-bottom: 15px;">
-                    ⚠️ Pour confirmer la suppression, veuillez saisir EXACTEMENT le nom et prénom du client :
-                </p>
-            </div>
-            <div style="display: flex; gap: 10px;">
-                <input type="text" 
-                       id="confirmPrenom" 
-                       placeholder="Prénom" 
-                       style="flex: 1; padding: 12px; border: 2px solid #dee2e6; border-radius: 8px; font-size: 16px;"
-                       autocomplete="off">
-                <input type="text" 
-                       id="confirmNom" 
-                       placeholder="Nom" 
-                       style="flex: 1; padding: 12px; border: 2px solid #dee2e6; border-radius: 8px; font-size: 16px;"
-                       autocomplete="off">
-            </div>
-        `;
+        // Demander la confirmation avec saisie du numéro de commande
+        const numeroSaisi = await Dialog.prompt(
+            `Pour confirmer la suppression de la commande de ${commande.client.prenom} ${commande.client.nom}, veuillez saisir le numéro de commande : ${commande.numeroCommande}`,
+            '',
+            '🗑️ Suppression de commande'
+        );
         
-        // Utiliser Dialog.custom pour afficher le modal
-        const result = await Dialog.custom({
-            type: 'warning',
-            title: '🗑️ Suppression de commande',
-            message: modalContent,
-            showCancel: true,
-            danger: true,
-            confirmText: 'Supprimer définitivement',
-            cancelText: 'Annuler'
+        // Si annulation
+        if (!numeroSaisi) {
+            return;
+        }
+        
+        // Validation du numéro de commande
+        if (numeroSaisi.trim() !== commande.numeroCommande) {
+            afficherErreur('Le numéro de commande saisi ne correspond pas');
+            // Relancer la fonction pour une nouvelle tentative
+            return window.supprimerCommande(commandeId);
+        }
+        
+        // Si validation OK, demander une dernière confirmation
+        const confirme = await confirmerAction({
+            titre: '⚠️ Confirmation finale',
+            message: `Êtes-vous absolument sûr de vouloir supprimer définitivement la commande ${commande.numeroCommande} ?`,
+            boutonConfirmer: 'Oui, supprimer définitivement',
+            boutonAnnuler: 'Non, conserver',
+            danger: true
         });
         
-        if (result) {
-            // Récupérer les valeurs saisies
-            const prenomSaisi = document.getElementById('confirmPrenom')?.value.trim() || '';
-            const nomSaisi = document.getElementById('confirmNom')?.value.trim() || '';
-            
-            // Validation (insensible à la casse)
-            const prenomValide = prenomSaisi.toLowerCase() === commande.client.prenom.toLowerCase();
-            const nomValide = nomSaisi.toLowerCase() === commande.client.nom.toLowerCase();
-            
-            if (!prenomValide || !nomValide) {
-                afficherErreur('Le nom et prénom saisis ne correspondent pas au client');
-                // Relancer la fonction pour une nouvelle tentative
-                return window.supprimerCommande(commandeId);
-            }
-            
-            // Si validation OK, procéder à la suppression
+        if (confirme) {
             try {
                 await CommandesService.supprimerCommande(commandeId, {
-                    motif: `Suppression confirmée par saisie nom/prénom`,
-                    nomPrenom: `${prenomSaisi} ${nomSaisi}`
+                    motif: `Suppression confirmée par saisie du numéro de commande`,
+                    numeroCommandeValide: numeroSaisi
                 });
                 
                 // Recharger les données
@@ -562,7 +539,7 @@ function formatDate(timestamp) {
    
    [27/07/2025] - Ajout suppression sécurisée
    Problème: Besoin de supprimer des commandes avec validation
-   Solution: Fonction supprimerCommande avec validation nom/prénom
+   Solution: Fonction supprimerCommande avec validation par numéro de commande
    Impact: Soft delete avec statut "supprime"
    
    NOTES POUR REPRISES FUTURES:
@@ -570,5 +547,5 @@ function formatDate(timestamp) {
    - Les styles sont dans commandes-modal.css section 4
    - Ne pas générer de HTML manuel pour la timeline
    - La modal reste ouverte après changement de statut
-   - La suppression nécessite validation nom/prénom exacte
+   - La suppression nécessite la saisie exacte du numéro de commande
    ======================================== */
