@@ -136,6 +136,10 @@ function initModales() {
         onClose: () => {
             const formClient = document.getElementById('formNouveauClient');
             if (formClient) formClient.reset();
+            // Rouvrir la modal de nouvelle commande
+            setTimeout(() => {
+                modalManager.open('modalNouvelleCommande');
+            }, 300); // Petit délai pour l'animation
         }
     });
     
