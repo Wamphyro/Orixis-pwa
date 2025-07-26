@@ -7,6 +7,7 @@ import { ClientsService } from '../services/clients.service.js';
 import { ProduitsService } from '../services/produits.service.js';
 import { CommandesService } from '../services/commandes.service.js';
 import { COMMANDES_CONFIG, formaterDate, formaterPrix } from '../data/commandes.data.js';
+import { modalManager, confirmerAction } from '../shared/modal.component.js';
 
 // Variables globales
 let commandesData = [];
@@ -68,12 +69,63 @@ window.addEventListener('load', async () => {
     // Initialiser Firebase
     await initFirebase();
     
+    // Initialiser les modales
+    initModales();
+    
     // Charger les données initiales
     await chargerDonnees();
     
     // Initialiser les événements
     initEventListeners();
 });
+
+// ========================================
+// GESTION DES MODALES
+// ========================================
+
+function initModales() {
+    // Modal nouvelle commande
+    modalManager.register('modalNouvelleCommande', {
+        closeOnOverlayClick: false,  // Pas de fermeture en cliquant à l'extérieur
+        closeOnEscape: true,
+        onBeforeClose: () => {
+            // Vérifier s'il y a des données non sauvegardées
+            if (nouvelleCommande.produits.length > 0 || nouvelleCommande.clientId) {
+                return confirm('Voulez-vous vraiment fermer ? Les données non sauvegardées seront perdues.');
+            }
+            return true;
+        },
+        onClose: () => {
+            // Réinitialiser le formulaire
+            resetNouvelleCommande();
+        }
+    });
+    
+    // Modal détail commande
+    modalManager.register('modalDetailCommande', {
+        closeOnOverlayClick: false,
+        closeOnEscape: true
+    });
+    
+    // Modal nouveau client
+    modalManager.register('modalNouveauClient', {
+        closeOnOverlayClick: false,
+        closeOnEscape: true,
+        onClose: () => {
+            // Réouvrir la modal de commande si nécessaire
+            const formClient = document.getElementById('formNouveauClient');
+            if (formClient) formClient.reset();
+        }
+    });
+    
+    // Modal sélection côté (si elle existe dans le HTML)
+    if (document.getElementById('modalSelectionCote')) {
+        modalManager.register('modalSelectionCote', {
+            closeOnOverlayClick: false,
+            closeOnEscape: false  // Forcer la sélection
+        });
+    }
+}
 
 // ========================================
 // AFFICHAGE DES DONNÉES
@@ -217,6 +269,7 @@ window.changerStatutCommande = changerStatutCommande;
 window.fermerModal = fermerModal;
 window.logout = logout;
 window.selectionnerCote = selectionnerCote;
+window.annulerSelectionCote = annulerSelectionCote;
 
 function filtrerCommandesLocalement() {
     return commandesData.filter(commande => {
@@ -337,6 +390,14 @@ function pageSuivante() {
 
 function ouvrirNouvelleCommande() {
     // Réinitialiser
+    resetNouvelleCommande();
+    
+    // Afficher la modal
+    afficherEtape(1);
+    ouvrirModal('modalNouvelleCommande');
+}
+
+function resetNouvelleCommande() {
     etapeActuelle = 1;
     nouvelleCommande = {
         clientId: null,
@@ -349,9 +410,17 @@ function ouvrirNouvelleCommande() {
         commentaires: ''
     };
     
-    // Afficher la modal
+    // Réinitialiser l'affichage
     afficherEtape(1);
-    ouvrirModal('modalNouvelleCommande');
+    const clientSearch = document.getElementById('clientSearch');
+    if (clientSearch) {
+        clientSearch.value = '';
+        clientSearch.style.display = 'block';
+    }
+    const clientSelected = document.getElementById('clientSelected');
+    if (clientSelected) {
+        clientSelected.style.display = 'none';
+    }
 }
 
 function afficherEtape(etape) {
@@ -434,7 +503,7 @@ function validerEtape(etape) {
 }
 
 // ========================================
-// RECHERCHE CLIENT - CORRIGÉ
+// RECHERCHE CLIENT
 // ========================================
 
 async function rechercherClient() {
@@ -525,7 +594,7 @@ function ouvrirNouveauClient() {
 }
 
 // ========================================
-// CRÉATION CLIENT - CORRIGÉ
+// CRÉATION CLIENT
 // ========================================
 
 async function chargerMagasinsPourNouveauClient() {
@@ -795,9 +864,6 @@ function annulerSelectionCote() {
     produitEnCoursSelection = null;
 }
 
-// Exposer les fonctions pour la sélection de côté
-window.annulerSelectionCote = annulerSelectionCote;
-
 function afficherPanierTemporaire() {
     const container = document.getElementById('tempCartItems');
     
@@ -828,7 +894,7 @@ function retirerProduit(index) {
 }
 
 // ========================================
-// INFORMATIONS DE LIVRAISON - CORRIGÉ
+// INFORMATIONS DE LIVRAISON
 // ========================================
 
 async function chargerMagasins() {
@@ -953,7 +1019,7 @@ function setDateLivraisonDefaut() {
 }
 
 // ========================================
-// RÉCAPITULATIF ET VALIDATION - CORRIGÉ
+// RÉCAPITULATIF ET VALIDATION
 // ========================================
 
 function afficherRecapitulatif() {
@@ -1054,7 +1120,15 @@ async function changerStatutCommande(commandeId) {
         const prochainStatut = COMMANDES_CONFIG.STATUTS[commande.statut]?.suivant;
         if (!prochainStatut) return;
         
-        if (confirm(`Passer la commande au statut "${COMMANDES_CONFIG.STATUTS[prochainStatut].label}" ?`)) {
+        const confirme = await confirmerAction({
+            titre: 'Confirmation du changement de statut',
+            message: `Passer la commande au statut "${COMMANDES_CONFIG.STATUTS[prochainStatut].label}" ?`,
+            boutonConfirmer: 'Confirmer',
+            boutonAnnuler: 'Annuler',
+            danger: false
+        });
+        
+        if (confirme) {
             await CommandesService.changerStatut(commandeId, prochainStatut);
             await chargerDonnees();
             afficherSucces('Statut mis à jour');
@@ -1071,11 +1145,11 @@ async function changerStatutCommande(commandeId) {
 // ========================================
 
 function ouvrirModal(modalId) {
-    document.getElementById(modalId).classList.add('active');
+    modalManager.open(modalId);
 }
 
 function fermerModal(modalId) {
-    document.getElementById(modalId).classList.remove('active');
+    modalManager.close(modalId);
 }
 
 function afficherSucces(message) {
@@ -1089,8 +1163,16 @@ function afficherErreur(message) {
 }
 
 // Déconnexion
-function logout() {
-    if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+async function logout() {
+    const confirme = await confirmerAction({
+        titre: 'Déconnexion',
+        message: 'Voulez-vous vraiment vous déconnecter ?',
+        boutonConfirmer: 'Déconnexion',
+        boutonAnnuler: 'Annuler',
+        danger: true
+    });
+    
+    if (confirme) {
         localStorage.removeItem('sav_auth');
         localStorage.removeItem('sav_user_permissions');
         window.location.href = '../index.html';
@@ -1105,15 +1187,6 @@ function initEventListeners() {
         input.addEventListener('change', setDateLivraisonDefaut);
     });
     
-    // Fermer les modals en cliquant sur le fond
-    document.querySelectorAll('.modal').forEach(modal => {
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                fermerModal(modal.id);
-            }
-        });
-    });
-    
     // Fermer les résultats de recherche en cliquant ailleurs
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.client-search') && !e.target.closest('.product-search')) {
@@ -1123,3 +1196,8 @@ function initEventListeners() {
         }
     });
 }
+
+// Cleanup au déchargement de la page
+window.addEventListener('beforeunload', () => {
+    modalManager.destroyAll();
+});
