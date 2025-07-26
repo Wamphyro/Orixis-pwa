@@ -258,7 +258,15 @@ export function changerClient() {
 }
 
 export function ouvrirNouveauClient() {
+    // Désactiver temporairement le onBeforeClose pour éviter la double confirmation
+    window.modalManager.get('modalNouvelleCommande').options.onBeforeClose = null;
     window.fermerModal('modalNouvelleCommande');
+    
+    // Restaurer le onBeforeClose après fermeture
+    setTimeout(() => {
+        window.modalManager.get('modalNouvelleCommande').options.onBeforeClose = window.originalOnBeforeClose;
+    }, 300);
+    
     chargerMagasinsPourNouveauClient();
     ouvrirModal('modalNouveauClient');
 }
