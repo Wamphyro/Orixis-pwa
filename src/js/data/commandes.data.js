@@ -1,5 +1,17 @@
 // ========================================
 // COMMANDES.DATA.JS - Constantes et données de référence
+// Chemin: src/js/data/commandes.data.js
+//
+// DESCRIPTION:
+// Centralise toutes les configurations liées aux commandes
+// Modifié le 27/07/2025 : Ajout du statut "supprime"
+//
+// STRUCTURE:
+// 1. Configuration générale (lignes 15-20)
+// 2. Statuts de commande (lignes 22-85)
+// 3. Types de préparation (lignes 87-110)
+// 4. Niveaux d'urgence (lignes 112-135)
+// 5. Autres configurations (lignes 137+)
 // ========================================
 
 export const COMMANDES_CONFIG = {
@@ -50,6 +62,16 @@ export const COMMANDES_CONFIG = {
             icon: '❌',
             couleur: '#f8d7da',
             suivant: null
+        },
+        // ========================================
+        // NOUVEAU STATUT : Supprimée
+        // Ajouté le 27/07/2025 pour la suppression sécurisée
+        // ========================================
+        supprime: {
+            label: 'Supprimée',
+            icon: '🗑️',
+            couleur: '#dc3545',
+            suivant: null // Statut final, pas de transition possible
         }
     },
     
@@ -161,18 +183,21 @@ export const COMMANDES_CONFIG = {
         COMMANDE_CREEE: 'Commande créée avec succès',
         COMMANDE_MISE_A_JOUR: 'Commande mise à jour',
         COMMANDE_ANNULEE: 'Commande annulée',
+        COMMANDE_SUPPRIMEE: 'Commande supprimée avec succès', // NOUVEAU
         
         // Confirmations
         CONFIRMER_ANNULATION: 'Êtes-vous sûr de vouloir annuler cette commande ?',
         CONFIRMER_VALIDATION: 'Confirmer la validation de cette étape ?',
         CONFIRMER_EXPEDITION: 'Confirmer l\'expédition ? Le numéro de suivi est-il correct ?',
+        CONFIRMER_SUPPRESSION: 'Êtes-vous sûr de vouloir supprimer cette commande ?', // NOUVEAU
         
         // Erreurs
         ERREUR_CLIENT_REQUIS: 'Veuillez sélectionner un client',
         ERREUR_PRODUITS_REQUIS: 'Veuillez ajouter au moins un produit',
         ERREUR_SCAN_REQUIS: 'Veuillez scanner le code-barres du colis',
         ERREUR_NUMERO_SERIE: 'Veuillez saisir les numéros de série',
-        ERREUR_DROITS: 'Vous n\'avez pas les droits pour cette action'
+        ERREUR_DROITS: 'Vous n\'avez pas les droits pour cette action',
+        ERREUR_VALIDATION_NOM: 'Le nom et prénom saisis ne correspondent pas au client' // NOUVEAU
     },
     
     // Validations
@@ -251,7 +276,16 @@ export function getProchainStatut(statutActuel) {
 
 // Fonction helper pour vérifier si une commande peut être annulée
 export function peutEtreAnnulee(statut) {
-    return !['livree', 'annulee'].includes(statut);
+    return !['livree', 'annulee', 'supprime'].includes(statut);
+}
+
+// ========================================
+// NOUVELLE FONCTION : Vérifier si une commande peut être supprimée
+// Ajoutée le 27/07/2025
+// ========================================
+export function peutEtreSupprimee(statut) {
+    // Ne peut pas supprimer si déjà supprimée ou livrée
+    return !['livree', 'supprime'].includes(statut);
 }
 
 // Fonction helper pour calculer le délai de livraison
@@ -273,3 +307,17 @@ export function calculerDelaiLivraison(urgence = 'normal') {
     
     return maintenant;
 }
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [27/07/2025] - Ajout du statut "supprime"
+   Problème: Besoin de supprimer des commandes sans perte de données
+   Solution: Ajout d'un statut "supprime" pour soft delete
+   Impact: Les commandes supprimées restent en base mais n'apparaissent plus
+   
+   NOTES POUR REPRISES FUTURES:
+   - Le statut "supprime" est un statut final comme "livree" et "annulee"
+   - Les commandes supprimées sont filtrées dans commandes.list.js
+   - La suppression nécessite une validation nom/prénom pour sécurité
+   ======================================== */
