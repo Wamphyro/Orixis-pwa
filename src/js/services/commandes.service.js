@@ -1,5 +1,17 @@
 // ========================================
 // COMMANDES.SERVICE.JS - Gestion des commandes Firebase
+// Chemin: src/js/services/commandes.service.js
+//
+// DESCRIPTION:
+// Service de gestion des commandes avec Firebase
+// Modifié le 27/07/2025 : Ajout de la méthode supprimerCommande
+//
+// STRUCTURE:
+// 1. Imports et configuration (lignes 15-25)
+// 2. Méthodes CRUD principales (lignes 30-200)
+// 3. Gestion des statuts (lignes 202-400)
+// 4. Méthode de suppression (lignes 402-450)
+// 5. Statistiques et helpers (lignes 452-600)
 // ========================================
 
 import { db } from './firebase.service.js';
@@ -381,6 +393,73 @@ export class CommandesService {
         }
     }
     
+    // ========================================
+    // NOUVELLE MÉTHODE : SUPPRESSION SÉCURISÉE
+    // Ajoutée le 27/07/2025
+    // ========================================
+    
+    /**
+     * Supprime une commande (soft delete)
+     * Change le statut en "supprime" et enregistre les informations
+     * @param {string} commandeId - ID de la commande
+     * @param {Object} infos - Informations de suppression
+     * @returns {Promise<void>}
+     */
+    static async supprimerCommande(commandeId, infos = {}) {
+        try {
+            const { doc, updateDoc, serverTimestamp, arrayUnion } = 
+                await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+            
+            // Récupérer la commande pour vérifier qu'elle existe
+            const commande = await this.getCommande(commandeId);
+            if (!commande) {
+                throw new Error('Commande introuvable');
+            }
+            
+            // Vérifier que la commande peut être supprimée
+            if (commande.statut === 'supprime') {
+                throw new Error('Cette commande est déjà supprimée');
+            }
+            
+            if (commande.statut === 'livree') {
+                throw new Error('Impossible de supprimer une commande livrée');
+            }
+            
+            // Récupérer les infos utilisateur
+            const utilisateur = this.getUtilisateurActuel();
+            
+            // Préparer les données de suppression
+            const updateData = {
+                statut: 'supprime',
+                suppression: {
+                    date: serverTimestamp(),
+                    utilisateur: utilisateur,
+                    motif: infos.motif || 'Suppression manuelle',
+                    nomPrenomValide: infos.nomPrenom || '',
+                    timestamp: Date.now(),
+                    statutAvantSuppression: commande.statut
+                },
+                // Ajouter à l'historique
+                historique: arrayUnion({
+                    date: serverTimestamp(),
+                    action: 'suppression',
+                    utilisateur: utilisateur,
+                    details: `Commande supprimée (motif: ${infos.motif || 'Suppression manuelle'})`
+                })
+            };
+            
+            // Effectuer la mise à jour
+            const commandeRef = doc(db, 'commandes', commandeId);
+            await updateDoc(commandeRef, updateData);
+            
+            console.log('✅ Commande supprimée (soft delete):', commandeId);
+            
+        } catch (error) {
+            console.error('❌ Erreur suppression commande:', error);
+            throw new Error('Impossible de supprimer la commande : ' + error.message);
+        }
+    }
+    
     /**
      * Mettre à jour les numéros de série
      * @param {string} commandeId - ID de la commande
@@ -474,8 +553,13 @@ export class CommandesService {
             
             const maintenant = new Date();
             
-            // Compter par statut et urgence
+            // Compter par statut et urgence (en excluant les supprimées)
             commandes.forEach(commande => {
+                // Exclure les commandes supprimées des stats
+                if (commande.statut === 'supprime') {
+                    return;
+                }
+                
                 // Par statut
                 stats.parStatut[commande.statut] = (stats.parStatut[commande.statut] || 0) + 1;
                 
@@ -568,3 +652,18 @@ export class CommandesService {
         return [];
     }
 }
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [27/07/2025] - Ajout de la méthode supprimerCommande
+   Fonctionnalité: Suppression sécurisée avec validation nom/prénom
+   Solution: Soft delete avec statut "supprime"
+   Impact: Les commandes supprimées restent en base mais sont filtrées
+   
+   NOTES POUR REPRISES FUTURES:
+   - La suppression est un soft delete (statut "supprime")
+   - Les commandes supprimées sont exclues des statistiques
+   - La validation nom/prénom se fait côté UI (detail.js)
+   - Impossible de supprimer une commande livrée
+   ======================================== */
