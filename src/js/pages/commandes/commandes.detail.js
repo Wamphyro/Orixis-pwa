@@ -1,15 +1,12 @@
 // ========================================
-// COMMANDES.DETAIL.JS - Gestion du détail et des modifications (VERSION AMÉLIORÉE)
+// COMMANDES.DETAIL.JS - Gestion du détail et des modifications (SANS PRIX)
 // ========================================
 
 import { CommandesService } from '../../services/commandes.service.js';
 import { COMMANDES_CONFIG } from '../../data/commandes.data.js';
-import { Dialog, confirmerAction, notify } from '../../shared/index.js';
+import { Dialog, confirmerAction } from '../../shared/index.js';
 import { chargerDonnees } from './commandes.list.js';
 import { afficherSucces, afficherErreur } from './commandes.main.js';
-
-// Variable pour stocker la commande actuelle
-let commandeActuelle = null;
 
 // ========================================
 // DÉTAIL COMMANDE
@@ -17,17 +14,8 @@ let commandeActuelle = null;
 
 export async function voirDetailCommande(commandeId) {
     try {
-        // Afficher un loader pendant le chargement
-        afficherLoader(true);
-        
         const commande = await CommandesService.getCommande(commandeId);
-        if (!commande) {
-            afficherErreur('Commande introuvable');
-            return;
-        }
-        
-        // Stocker la commande actuelle
-        commandeActuelle = commande;
+        if (!commande) return;
         
         // Afficher les informations dans la modal
         afficherDetailCommande(commande);
@@ -38,32 +26,6 @@ export async function voirDetailCommande(commandeId) {
     } catch (error) {
         console.error('Erreur chargement détail:', error);
         afficherErreur('Erreur lors du chargement des détails');
-    } finally {
-        afficherLoader(false);
-    }
-}
-
-// Fonction pour rafraîchir uniquement le contenu du modal
-async function rafraichirDetailCommande() {
-    if (!commandeActuelle) return;
-    
-    try {
-        // Recharger les données depuis Firebase
-        const commande = await CommandesService.getCommande(commandeActuelle.id);
-        if (!commande) return;
-        
-        // Mettre à jour la commande actuelle
-        commandeActuelle = commande;
-        
-        // Rafraîchir l'affichage
-        afficherDetailCommande(commande);
-        
-        // Animation de succès sur la timeline
-        animerTimeline();
-        
-    } catch (error) {
-        console.error('Erreur rafraîchissement:', error);
-        afficherErreur('Erreur lors du rafraîchissement');
     }
 }
 
@@ -95,7 +57,7 @@ function afficherDetailCommande(commande) {
         </div>
     `;
     
-    // Produits commandés
+    // Produits commandés (SANS PRIX)
     const detailProduits = document.getElementById('detailProduits');
     detailProduits.innerHTML = `
         <table class="detail-table">
@@ -175,25 +137,6 @@ function afficherDetailCommande(commande) {
         sectionExpedition.style.display = 'none';
     }
     
-    // Historique de la commande (si présent)
-    if (commande.historique && commande.historique.length > 0) {
-        const historiqueSection = document.createElement('div');
-        historiqueSection.className = 'detail-section';
-        historiqueSection.innerHTML = `
-            <h3>Historique</h3>
-            <div class="historique-list">
-                ${commande.historique.map(h => `
-                    <div class="historique-item">
-                        <span class="historique-date">${formatDate(h.date)} ${formatTime(h.date)}</span>
-                        <span class="historique-action">${h.details}</span>
-                        <span class="historique-user">par ${h.utilisateur.prenom} ${h.utilisateur.nom}</span>
-                    </div>
-                `).join('')}
-            </div>
-        `;
-        document.querySelector('.detail-sections').appendChild(historiqueSection);
-    }
-    
     // Actions disponibles
     afficherActionsCommande(commande);
 }
@@ -215,7 +158,7 @@ function afficherTimeline(commande) {
         }
         
         return `
-            <div class="${className}" data-statut="${statut}">
+            <div class="${className}">
                 <div class="timeline-icon">${config.icon}</div>
                 <div class="timeline-content">
                     <div class="timeline-title">${config.label}</div>
@@ -224,17 +167,6 @@ function afficherTimeline(commande) {
             </div>
         `;
     }).join('');
-}
-
-function animerTimeline() {
-    // Ajouter une animation pulse sur l'étape active
-    const activeItem = document.querySelector('.timeline-item.active');
-    if (activeItem) {
-        activeItem.classList.add('pulse');
-        setTimeout(() => {
-            activeItem.classList.remove('pulse');
-        }, 1000);
-    }
 }
 
 function getDateForStatut(commande, statut) {
@@ -260,29 +192,23 @@ function afficherActionsCommande(commande) {
     const detailActions = document.getElementById('detailActions');
     let actions = [];
     
-    // Désactiver les boutons pendant le chargement
-    detailActions.classList.remove('loading');
-    
     // Actions selon le statut
     switch (commande.statut) {
         case 'nouvelle':
             actions.push(`
                 <button class="btn btn-primary" onclick="changerStatutDetail('${commande.id}', 'preparation')">
-                    <span class="btn-icon">🔄</span>
-                    <span class="btn-text">Commencer la préparation</span>
+                    Commencer la préparation
                 </button>
             `);
             break;
             
         case 'preparation':
             actions.push(`
-                <button class="btn btn-secondary" onclick="saisirNumerosSerie('${commande.id}')">
-                    <span class="btn-icon">🔢</span>
-                    <span class="btn-text">Saisir les numéros de série</span>
+                <button class="btn btn-primary" onclick="saisirNumerosSerie('${commande.id}')">
+                    Saisir les numéros de série
                 </button>
                 <button class="btn btn-primary" onclick="changerStatutDetail('${commande.id}', 'terminee')">
-                    <span class="btn-icon">✅</span>
-                    <span class="btn-text">Terminer la préparation</span>
+                    Terminer la préparation
                 </button>
             `);
             break;
@@ -291,15 +217,13 @@ function afficherActionsCommande(commande) {
             if (commande.expedition?.necessiteExpedition) {
                 actions.push(`
                     <button class="btn btn-primary" onclick="saisirExpedition('${commande.id}')">
-                        <span class="btn-icon">📦</span>
-                        <span class="btn-text">Valider l'expédition</span>
+                        📦 Valider l'expédition
                     </button>
                 `);
             } else {
                 actions.push(`
                     <button class="btn btn-primary" onclick="changerStatutDetail('${commande.id}', 'livree')">
-                        <span class="btn-icon">✅</span>
-                        <span class="btn-text">Marquer comme livrée</span>
+                        ✅ Marquer comme livrée
                     </button>
                 `);
             }
@@ -308,8 +232,7 @@ function afficherActionsCommande(commande) {
         case 'expediee':
             actions.push(`
                 <button class="btn btn-primary" onclick="validerReception('${commande.id}')">
-                    <span class="btn-icon">📥</span>
-                    <span class="btn-text">Valider la réception</span>
+                    📥 Valider la réception
                 </button>
             `);
             break;
@@ -318,15 +241,13 @@ function afficherActionsCommande(commande) {
             if (!commande.patientPrevenu) {
                 actions.push(`
                     <button class="btn btn-secondary" onclick="marquerPatientPrevenu('${commande.id}')">
-                        <span class="btn-icon">📞</span>
-                        <span class="btn-text">Patient prévenu</span>
+                        📞 Patient prévenu
                     </button>
                 `);
             }
             actions.push(`
                 <button class="btn btn-primary" onclick="changerStatutDetail('${commande.id}', 'livree')">
-                    <span class="btn-icon">✅</span>
-                    <span class="btn-text">Livrer au patient</span>
+                    ✅ Livrer au patient
                 </button>
             `);
             break;
@@ -336,19 +257,10 @@ function afficherActionsCommande(commande) {
     if (commande.statut !== 'annulee' && commande.statut !== 'livree') {
         actions.push(`
             <button class="btn btn-danger" onclick="annulerCommande('${commande.id}')">
-                <span class="btn-icon">❌</span>
-                <span class="btn-text">Annuler la commande</span>
+                ❌ Annuler la commande
             </button>
         `);
     }
-    
-    // Ajouter un bouton pour rafraîchir
-    actions.push(`
-        <button class="btn btn-secondary" onclick="rafraichirDetail()">
-            <span class="btn-icon">🔄</span>
-            <span class="btn-text">Rafraîchir</span>
-        </button>
-    `);
     
     detailActions.innerHTML = actions.join('');
 }
@@ -388,37 +300,22 @@ export async function changerStatutCommande(commandeId) {
 // Fonction exposée pour les actions depuis la modal détail
 window.changerStatutDetail = async function(commandeId, nouveauStatut) {
     try {
-        const labelStatut = COMMANDES_CONFIG.STATUTS[nouveauStatut]?.label || nouveauStatut;
-        
         const confirme = await confirmerAction({
             titre: 'Confirmation',
-            message: `Confirmer le passage au statut "${labelStatut}" ?`,
+            message: `Confirmer le changement de statut ?`,
             boutonConfirmer: 'Confirmer',
             boutonAnnuler: 'Annuler'
         });
         
-        if (!confirme) return;
-        
-        // Afficher un loader sur les boutons
-        afficherLoaderActions(true);
-        
-        // Effectuer le changement
-        await CommandesService.changerStatut(commandeId, nouveauStatut);
-        
-        // Rafraîchir le modal au lieu de le fermer
-        await rafraichirDetailCommande();
-        
-        // Rafraîchir aussi la liste en arrière-plan
-        await chargerDonnees();
-        
-        // Notification de succès
-        notify.success(`Statut mis à jour : ${labelStatut}`);
-        
+        if (confirme) {
+            await CommandesService.changerStatut(commandeId, nouveauStatut);
+            await chargerDonnees();
+            window.modalManager.close('modalDetailCommande');
+            afficherSucces('Statut mis à jour');
+        }
     } catch (error) {
         console.error('Erreur changement statut:', error);
-        afficherErreur('Erreur lors du changement de statut: ' + error.message);
-    } finally {
-        afficherLoaderActions(false);
+        afficherErreur('Erreur lors du changement de statut');
     }
 };
 
@@ -427,221 +324,89 @@ window.changerStatutDetail = async function(commandeId, nouveauStatut) {
 // ========================================
 
 window.saisirNumerosSerie = async function(commandeId) {
-    try {
-        // Créer un formulaire pour saisir les NS
-        const commande = commandeActuelle;
-        let formulaireHtml = '<div style="display: flex; flex-direction: column; gap: 15px;">';
-        
-        commande.produits.forEach((produit, index) => {
-            if (produit.type === 'appareil_auditif' && produit.cote) {
-                formulaireHtml += `
-                    <div>
-                        <label style="font-weight: 600; margin-bottom: 5px; display: block;">
-                            ${produit.designation} (${produit.cote})
-                        </label>
-                        <input type="text" 
-                               id="ns_${index}" 
-                               placeholder="Numéro de série"
-                               style="width: 100%; padding: 8px; border: 2px solid #e0e0e0; border-radius: 6px;">
-                    </div>
-                `;
-            }
-        });
-        
-        formulaireHtml += '</div>';
-        
-        const result = await Dialog.custom({
-            type: 'info',
-            title: 'Saisir les numéros de série',
-            message: formulaireHtml,
-            showCancel: true,
-            confirmText: 'Valider',
-            cancelText: 'Annuler'
-        });
-        
-        if (!result) return;
-        
-        // Récupérer les valeurs saisies
-        const numerosSerie = {};
-        commande.produits.forEach((produit, index) => {
-            if (produit.type === 'appareil_auditif' && produit.cote) {
-                const input = document.getElementById(`ns_${index}`);
-                if (input && input.value) {
-                    numerosSerie[produit.cote] = input.value;
-                }
-            }
-        });
-        
-        // Mettre à jour les NS
-        await CommandesService.mettreAJourNumerosSerie(commandeId, numerosSerie);
-        
-        // Rafraîchir
-        await rafraichirDetailCommande();
-        
-        notify.success('Numéros de série enregistrés');
-        
-    } catch (error) {
-        console.error('Erreur saisie NS:', error);
-        afficherErreur('Erreur lors de la saisie des numéros de série');
-    }
+    // TODO: Implémenter la saisie des numéros de série
+    await Dialog.info('Fonctionnalité de saisie des numéros de série à implémenter');
 };
 
 window.saisirExpedition = async function(commandeId) {
+    const numeroSuivi = await Dialog.prompt('Numéro de suivi du colis :');
+    if (!numeroSuivi) return;
+    
     try {
-        // Récupérer les transporteurs depuis les paramètres
-        const transporteurs = ['Colissimo', 'Chronopost', 'UPS', 'Livraison interne'];
-        
-        // Créer le formulaire d'expédition
-        const formulaireHtml = `
-            <div style="display: flex; flex-direction: column; gap: 15px;">
-                <div>
-                    <label style="font-weight: 600; margin-bottom: 5px; display: block;">
-                        Transporteur
-                    </label>
-                    <select id="transporteur" style="width: 100%; padding: 8px; border: 2px solid #e0e0e0; border-radius: 6px;">
-                        ${transporteurs.map(t => `<option value="${t}" ${t === 'Colissimo' ? 'selected' : ''}>${t}</option>`).join('')}
-                    </select>
-                </div>
-                <div>
-                    <label style="font-weight: 600; margin-bottom: 5px; display: block;">
-                        Numéro de suivi
-                    </label>
-                    <input type="text" 
-                           id="numeroSuivi" 
-                           placeholder="Ex: 6C12345678901"
-                           style="width: 100%; padding: 8px; border: 2px solid #e0e0e0; border-radius: 6px;"
-                           required>
-                </div>
-            </div>
-        `;
-        
-        const result = await Dialog.custom({
-            type: 'info',
-            title: '📦 Valider l\'expédition',
-            message: formulaireHtml,
-            showCancel: true,
-            confirmText: 'Valider',
-            cancelText: 'Annuler'
-        });
-        
-        if (!result) return;
-        
-        const transporteur = document.getElementById('transporteur').value;
-        const numeroSuivi = document.getElementById('numeroSuivi').value;
-        
-        if (!numeroSuivi) {
-            notify.warning('Le numéro de suivi est obligatoire');
-            return;
-        }
-        
-        afficherLoaderActions(true);
-        
         await CommandesService.changerStatut(commandeId, 'expediee', {
             numeroSuivi: numeroSuivi,
-            transporteur: transporteur
+            transporteur: 'Colissimo' // TODO: Permettre le choix du transporteur
         });
         
-        await rafraichirDetailCommande();
         await chargerDonnees();
-        
-        notify.success(`Expédition validée avec ${transporteur}`);
+        window.modalManager.close('modalDetailCommande');
+        afficherSucces('Expédition validée');
     } catch (error) {
         console.error('Erreur validation expédition:', error);
         afficherErreur('Erreur lors de la validation de l\'expédition');
-    } finally {
-        afficherLoaderActions(false);
     }
 };
 
 window.validerReception = async function(commandeId) {
-    try {
-        const confirme = await confirmerAction({
-            titre: 'Valider la réception',
-            message: 'Confirmez-vous avoir reçu le colis en bon état ?',
-            boutonConfirmer: 'Oui, colis reçu',
-            boutonAnnuler: 'Annuler'
-        });
-        
-        if (!confirme) return;
-        
-        afficherLoaderActions(true);
-        
-        await CommandesService.changerStatut(commandeId, 'receptionnee', {
-            colisConforme: true
-        });
-        
-        await rafraichirDetailCommande();
-        await chargerDonnees();
-        
-        notify.success('Réception validée');
-    } catch (error) {
-        console.error('Erreur validation réception:', error);
-        afficherErreur('Erreur lors de la validation de la réception');
-    } finally {
-        afficherLoaderActions(false);
+    const confirme = await confirmerAction({
+        titre: 'Valider la réception',
+        message: 'Confirmez-vous avoir reçu le colis en bon état ?',
+        boutonConfirmer: 'Oui, colis reçu',
+        boutonAnnuler: 'Annuler'
+    });
+    
+    if (confirme) {
+        try {
+            await CommandesService.changerStatut(commandeId, 'receptionnee', {
+                colisConforme: true
+            });
+            
+            await chargerDonnees();
+            window.modalManager.close('modalDetailCommande');
+            afficherSucces('Réception validée');
+        } catch (error) {
+            console.error('Erreur validation réception:', error);
+            afficherErreur('Erreur lors de la validation de la réception');
+        }
     }
 };
 
 window.marquerPatientPrevenu = async function(commandeId) {
     try {
-        afficherLoaderActions(true);
-        
         await CommandesService.marquerPatientPrevenu(commandeId);
-        await rafraichirDetailCommande();
-        
-        notify.success('Patient marqué comme prévenu');
+        await voirDetailCommande(commandeId); // Rafraîchir la modal
+        afficherSucces('Patient marqué comme prévenu');
     } catch (error) {
         console.error('Erreur marquage patient:', error);
         afficherErreur('Erreur lors du marquage du patient');
-    } finally {
-        afficherLoaderActions(false);
     }
 };
 
 window.annulerCommande = async function(commandeId) {
-    try {
-        const confirme = await confirmerAction({
-            titre: 'Annuler la commande',
-            message: 'Êtes-vous sûr de vouloir annuler cette commande ? Cette action est irréversible.',
-            boutonConfirmer: 'Annuler la commande',
-            boutonAnnuler: 'Non, conserver',
-            danger: true
-        });
-        
-        if (!confirme) return;
-        
-        const motif = await Dialog.prompt('Motif d\'annulation :', '', 'Annulation');
+    const confirme = await confirmerAction({
+        titre: 'Annuler la commande',
+        message: 'Êtes-vous sûr de vouloir annuler cette commande ? Cette action est irréversible.',
+        boutonConfirmer: 'Annuler la commande',
+        boutonAnnuler: 'Non, conserver',
+        danger: true
+    });
+    
+    if (confirme) {
+        const motif = await Dialog.prompt('Motif d\'annulation :');
         if (!motif) return;
         
-        afficherLoaderActions(true);
-        
-        await CommandesService.changerStatut(commandeId, 'annulee', {
-            motif: motif
-        });
-        
-        await rafraichirDetailCommande();
-        await chargerDonnees();
-        
-        notify.error('Commande annulée');
-    } catch (error) {
-        console.error('Erreur annulation:', error);
-        afficherErreur('Erreur lors de l\'annulation');
-    } finally {
-        afficherLoaderActions(false);
-    }
-};
-
-// Fonction pour rafraîchir manuellement
-window.rafraichirDetail = async function() {
-    try {
-        afficherLoaderActions(true);
-        await rafraichirDetailCommande();
-        notify.info('Données rafraîchies');
-    } catch (error) {
-        console.error('Erreur rafraîchissement:', error);
-        afficherErreur('Erreur lors du rafraîchissement');
-    } finally {
-        afficherLoaderActions(false);
+        try {
+            await CommandesService.changerStatut(commandeId, 'annulee', {
+                motif: motif
+            });
+            
+            await chargerDonnees();
+            window.modalManager.close('modalDetailCommande');
+            afficherSucces('Commande annulée');
+        } catch (error) {
+            console.error('Erreur annulation:', error);
+            afficherErreur('Erreur lors de l\'annulation');
+        }
     }
 };
 
@@ -654,38 +419,4 @@ function formatDate(timestamp) {
     
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return date.toLocaleDateString('fr-FR');
-}
-
-function formatTime(timestamp) {
-    if (!timestamp) return '';
-    
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-}
-
-function afficherLoader(show) {
-    // Ajouter un loader global si nécessaire
-    const modalBody = document.querySelector('#modalDetailCommande .modal-body');
-    if (modalBody) {
-        modalBody.style.opacity = show ? '0.5' : '1';
-    }
-}
-
-function afficherLoaderActions(show) {
-    const detailActions = document.getElementById('detailActions');
-    if (detailActions) {
-        if (show) {
-            detailActions.classList.add('loading');
-            // Désactiver tous les boutons
-            detailActions.querySelectorAll('button').forEach(btn => {
-                btn.disabled = true;
-            });
-        } else {
-            detailActions.classList.remove('loading');
-            // Réactiver les boutons
-            detailActions.querySelectorAll('button').forEach(btn => {
-                btn.disabled = false;
-            });
-        }
-    }
 }
