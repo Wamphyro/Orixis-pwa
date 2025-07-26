@@ -357,6 +357,34 @@ function afficherActionsCommande(commande) {
 // CHANGEMENT DE STATUT
 // ========================================
 
+export async function changerStatutCommande(commandeId) {
+    try {
+        const commande = await CommandesService.getCommande(commandeId);
+        if (!commande) return;
+        
+        const prochainStatut = COMMANDES_CONFIG.STATUTS[commande.statut]?.suivant;
+        if (!prochainStatut) return;
+        
+        const confirme = await confirmerAction({
+            titre: 'Confirmation du changement de statut',
+            message: `Passer la commande au statut "${COMMANDES_CONFIG.STATUTS[prochainStatut].label}" ?`,
+            boutonConfirmer: 'Confirmer',
+            boutonAnnuler: 'Annuler',
+            danger: false
+        });
+        
+        if (confirme) {
+            await CommandesService.changerStatut(commandeId, prochainStatut);
+            await chargerDonnees();
+            afficherSucces('Statut mis à jour');
+        }
+        
+    } catch (error) {
+        console.error('Erreur changement statut:', error);
+        afficherErreur('Erreur lors du changement de statut');
+    }
+}
+
 // Fonction exposée pour les actions depuis la modal détail
 window.changerStatutDetail = async function(commandeId, nouveauStatut) {
     try {
