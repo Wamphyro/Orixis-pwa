@@ -437,6 +437,34 @@
     </div>
 
     <!-- Scripts -->
-    <script type="module" src="../src/js/pages/commandes/commandes.main.js"></script>
-</body>
+    <script src="../src/js/pages/commandes/commandes.main.js" type="module"></script>
+<script>
+// Fix immédiat - Les fonctions seront définies dès le chargement
+window.ouvrirNouvelleCommande = function() {
+    const modal = document.getElementById('modalNouvelleCommande');
+    if (modal) {
+        modal.style.display = 'block';
+        document.body.classList.add('modal-open');
+    }
+};
+
+window.voirDetailCommande = function(id) {
+    const modal = document.getElementById('modalDetailCommande');
+    if (modal) {
+        modal.style.display = 'block';
+        document.body.classList.add('modal-open');
+    }
+};
+
+// Fermeture basique
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('modal-close')) {
+        const modal = e.target.closest('.modal');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }
+    }
+});
+</script></body>
 </html>
