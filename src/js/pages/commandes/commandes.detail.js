@@ -408,63 +408,95 @@ window.terminerPreparation = async function(commandeId) {
     }
 };
 
+// ========================================
+// FONCTION SAISIR EXPÉDITION - VERSION SIMPLIFIÉE ET CORRIGÉE
+// À remplacer dans commandes.detail.js
+// ========================================
+
 // MODIFIÉ : Saisir expédition avec transporteur et numéro
 window.saisirExpedition = async function(commandeId) {
     try {
-        // Créer un formulaire d'expédition
-        const dialog = await Dialog.custom({
-            type: 'info',
-            title: '📦 Expédition du colis',
-            message: `
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Transporteur :</label>
-                    <select id="dialogTransporteur" style="width: 100%; padding: 8px; border: 2px solid #e0e0e0; border-radius: 6px;">
-                        <option value="Colissimo">Colissimo</option>
-                        <option value="Chronopost">Chronopost</option>
-                        <option value="UPS">UPS</option>
-                        <option value="DHL">DHL</option>
-                        <option value="Fedex">Fedex</option>
-                        <option value="GLS">GLS</option>
-                        <option value="Autre">Autre</option>
-                    </select>
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Numéro de suivi :</label>
-                    <input type="text" id="dialogNumeroSuivi" 
-                           placeholder="Ex: 1234567890" 
-                           style="width: 100%; padding: 8px; border: 2px solid #e0e0e0; border-radius: 6px;"
-                           required>
-                </div>
-            `,
-            showCancel: true,
-            confirmText: 'Valider l\'expédition',
-            cancelText: 'Annuler'
-        });
+        console.log('🚀 Début saisir expédition pour commande:', commandeId);
         
-        if (!dialog) return;
+        // Étape 1 : Demander le numéro de suivi (OBLIGATOIRE)
+        const numeroSuivi = await Dialog.prompt(
+            'Saisissez le numéro de suivi du colis :',
+            '',
+            '📦 Expédition du colis'
+        );
         
-        // Récupérer les valeurs
-        const transporteur = document.getElementById('dialogTransporteur')?.value;
-        const numeroSuivi = document.getElementById('dialogNumeroSuivi')?.value?.trim();
+        console.log('📝 Numéro saisi:', numeroSuivi);
         
-        if (!numeroSuivi) {
+        // Vérification que l'utilisateur n'a pas annulé
+        if (numeroSuivi === false || numeroSuivi === null) {
+            console.log('❌ Annulation utilisateur');
+            return;
+        }
+        
+        // Vérification que le numéro n'est pas vide
+        if (!numeroSuivi || !numeroSuivi.toString().trim()) {
+            console.log('❌ Numéro vide');
             await Dialog.alert('Le numéro de suivi est obligatoire', 'Attention');
             return;
         }
         
-        // Envoyer au service
+        // Étape 2 : Demander le transporteur (OPTIONNEL)
+        const transporteurs = ['Colissimo', 'Chronopost', 'UPS', 'DHL', 'Fedex', 'GLS', 'Autre'];
+        
+        // Créer une liste des transporteurs
+        const listeTransporteurs = transporteurs.map((t, index) => 
+            `${index + 1}. ${t}`
+        ).join('\n');
+        
+        const choixTransporteur = await Dialog.prompt(
+            `Choisissez le transporteur :\n\n${listeTransporteurs}\n\nTapez le numéro (1-7) ou laissez vide pour Colissimo :`,
+            '1',
+            '🚚 Transporteur'
+        );
+        
+        // Déterminer le transporteur
+        let transporteur = 'Colissimo'; // Par défaut
+        
+        if (choixTransporteur && choixTransporteur !== false) {
+            const index = parseInt(choixTransporteur) - 1;
+            if (index >= 0 && index < transporteurs.length) {
+                transporteur = transporteurs[index];
+            }
+        }
+        
+        console.log('🚚 Transporteur choisi:', transporteur);
+        console.log('📦 Numéro final:', numeroSuivi.toString().trim());
+        
+        // Étape 3 : Envoyer au service
+        console.log('⏳ Envoi au service CommandesService...');
+        
         await CommandesService.changerStatut(commandeId, 'expediee', {
-            numeroSuivi: numeroSuivi,
-            transporteur: transporteur || 'Colissimo'
+            numeroSuivi: numeroSuivi.toString().trim(),
+            transporteur: transporteur
         });
         
+        console.log('✅ Statut changé avec succès');
+        
+        // Étape 4 : Rafraîchir l'interface
         await chargerDonnees();
         await voirDetailCommande(commandeId);
-        afficherSucces('Expédition validée avec succès');
+        
+        // Notification de succès
+        afficherSucces(`Expédition validée - ${transporteur} - N° ${numeroSuivi.toString().trim()}`);
+        
+        console.log('🎉 Processus terminé avec succès');
         
     } catch (error) {
-        console.error('Erreur validation expédition:', error);
-        afficherErreur('Erreur lors de la validation de l\'expédition');
+        console.error('❌ Erreur validation expédition:', error);
+        console.error('Stack:', error.stack);
+        
+        // Message d'erreur détaillé
+        let messageErreur = 'Erreur lors de la validation de l\'expédition';
+        if (error.message) {
+            messageErreur += ' : ' + error.message;
+        }
+        
+        afficherErreur(messageErreur);
     }
 };
 

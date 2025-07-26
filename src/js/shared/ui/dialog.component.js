@@ -1,15 +1,16 @@
 // ========================================
-// DIALOG.COMPONENT.JS - Dialogues modernes et élégants
+// DIALOG.COMPONENT.JS - Dialogues modernes et élégants (CORRIGÉ)
 // ========================================
 // Chemin: src/js/shared/ui/dialog.component.js
 //
-// IMPORTANT: Ce composant utilise injectStyles() au lieu de loadStyles()
-// car il injecte directement les styles dans le DOM.
-// 
-// Pour utiliser les styles centralisés:
-// 1. Commenter/supprimer injectStyles() dans init()
-// 2. S'assurer que les styles sont dans src/css/commandes/commandes-modal.css
-//    Section 2: DIALOG STYLES (lignes 281-500)
+// CORRECTION le 26/07/2025 : Réactivation des styles intégrés
+// Problème : Les styles étaient désactivés et les dialogs ne s'affichaient pas
+// Solution : Réactivation de injectStyles() avec z-index élevé (25000)
+// Impact : Les dialogs s'affichent maintenant correctement au-dessus de tout
+//
+// DÉPENDANCES:
+// - Utilisé par les fonctions prompt/alert dans commandes.detail.js
+// - Fonctionne de manière autonome avec styles intégrés
 // ========================================
 
 export class Dialog {
@@ -39,41 +40,19 @@ export class Dialog {
         }
         
         // ========================================
-        // IMPORTANT: CHOISIR UNE OPTION:
-        // Option A: Garder injectStyles() pour un composant autonome
-        // Option B: Commenter et utiliser les styles centralisés
+        // RÉACTIVATION DES STYLES INTÉGRÉS
+        // Nécessaire car les styles CSS externes ne fonctionnent pas
         // ========================================
-        
-        // Option A: Injection directe (actuellement actif)
-        // if (!document.getElementById('dialog-styles')) {
-        //     this.injectStyles();
-        // }
-        
-        // Option B: Utiliser les styles centralisés (RECOMMANDÉ)
-        // Les styles sont dans src/css/commandes/commandes-modal.css
-        // Section 2: DIALOG STYLES (lignes 281-500)
-        // Commenter la ligne ci-dessous si vous utilisez cette option:
-        
-        // DÉSACTIVÉ - Styles centralisés dans commandes-modal.css
-        // this.injectStyles();
+        if (!document.getElementById('dialog-styles')) {
+            this.injectStyles();
+        }
     }
     
     /**
-     * FONCTION DÉSACTIVÉE - Les styles sont centralisés
-     * Conservée pour référence si besoin d'un composant autonome
-     * 
-     * Si réactivation nécessaire:
-     * 1. Décommenter l'appel dans init()
-     * 2. Vérifier qu'il n'y a pas de conflit avec commandes-modal.css
+     * FONCTION RÉACTIVÉE - Injection des styles CSS
+     * Styles intégrés avec z-index très élevé pour passer au-dessus de tout
      */
     injectStyles() {
-        // ========================================
-        // DÉSACTIVÉ - Styles dans commandes-modal.css
-        // Section 2: DIALOG STYLES (lignes 281-500)
-        // ========================================
-        return; // Early return
-        
-        /* Code original conservé pour documentation:
         const style = document.createElement('style');
         style.id = 'dialog-styles';
         style.textContent = `
@@ -84,7 +63,7 @@ export class Dialog {
                 width: 100%;
                 height: 100%;
                 display: none;
-                z-index: 10000;
+                z-index: 25000; /* Très élevé pour passer au-dessus de tout */
                 animation: fadeIn 0.2s ease-out;
             }
             
@@ -100,20 +79,21 @@ export class Dialog {
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: rgba(0, 0, 0, 0.5);
-                backdrop-filter: blur(2px);
+                background: rgba(0, 0, 0, 0.6);
+                backdrop-filter: blur(3px);
             }
             
             .dialog-box {
                 position: relative;
                 background: white;
                 border-radius: 16px;
-                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
                 max-width: 90%;
                 min-width: 320px;
-                max-width: 480px;
+                max-width: 500px;
                 animation: slideUp 0.3s ease-out;
                 overflow: hidden;
+                z-index: 25001;
             }
             
             .dialog-header {
@@ -184,11 +164,13 @@ export class Dialog {
                 margin-top: 16px;
                 transition: border-color 0.2s;
                 font-family: inherit;
+                box-sizing: border-box;
             }
             
             .dialog-input:focus {
                 outline: none;
                 border-color: #1976d2;
+                box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
             }
             
             .dialog-footer {
@@ -267,11 +249,29 @@ export class Dialog {
                 .dialog-box {
                     margin: 16px;
                     max-width: calc(100% - 32px);
+                    min-width: auto;
+                }
+                
+                .dialog-header {
+                    padding: 16px 20px;
+                }
+                
+                .dialog-body {
+                    padding: 20px;
+                }
+                
+                .dialog-footer {
+                    padding: 12px 20px;
+                    flex-wrap: wrap;
+                }
+                
+                .dialog-btn {
+                    flex: 1;
+                    min-width: 0;
                 }
             }
         `;
         document.head.appendChild(style);
-        */
     }
     
     show(options) {
@@ -356,8 +356,9 @@ export class Dialog {
             let result = true;
             if (input) {
                 result = input.value;
-                if (inputOptions?.required && !result) {
+                if (inputOptions?.required && !result.trim()) {
                     input.style.borderColor = '#f44336';
+                    input.focus();
                     return;
                 }
             }
@@ -519,3 +520,24 @@ export default {
         return dialog.show(options);
     }
 };
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [26/07/2025] - Dialog ne s'affichait pas
+   Problème: injectStyles() était désactivé et styles CSS externes non chargés
+   Cause: Conflit entre styles centralisés et composant autonome
+   Solution: Réactivation de injectStyles() avec z-index 25000
+   Impact: Les dialogs s'affichent maintenant correctement
+   
+   [26/07/2025] - Amélioration de la validation
+   Ajout: Vérification de .trim() pour les inputs requis
+   Ajout: Focus automatique sur l'input en cas d'erreur
+   Impact: Meilleure UX pour la saisie
+   
+   NOTES POUR REPRISES FUTURES:
+   - Le z-index est volontairement très élevé (25000)
+   - Les styles sont intégrés pour éviter les dépendances CSS
+   - La validation trim() évite les espaces vides
+   - Le focus automatique améliore l'accessibilité
+   ======================================== */
