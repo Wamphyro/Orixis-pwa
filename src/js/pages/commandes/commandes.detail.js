@@ -4,7 +4,7 @@
 
 import { CommandesService } from '../../services/commandes.service.js';
 import { COMMANDES_CONFIG } from '../../data/commandes.data.js';
-import { Dialog, confirmerAction } from '../../shared';
+import { Dialog, confirmerAction } from '../../shared/index.js';
 import { chargerDonnees } from './commandes.list.js';
 import { afficherSucces, afficherErreur } from './commandes.main.js';
 
