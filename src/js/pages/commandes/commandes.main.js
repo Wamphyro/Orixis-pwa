@@ -213,7 +213,12 @@ window.retirerProduit = retirerProduit;
 window.etapePrecedente = etapePrecedente;
 window.etapeSuivante = etapeSuivante;
 window.validerCommande = validerCommande;
-window.voirDetailCommande = voirDetailCommande;  // AJOUTER CETTE LIGNE
+window.voirDetailCommande = voirDetailCommande;
+// AJOUTEZ ceci pour debug :
+console.log('✅ Fonctions exposées globalement :', {
+    ouvrirNouvelleCommande: typeof window.ouvrirNouvelleCommande,
+    voirDetailCommande: typeof window.voirDetailCommande
+});  // AJOUTER CETTE LIGNE
 window.changerStatutCommande = changerStatutCommande;
 window.fermerModal = fermerModal;
 window.logout = logout;
