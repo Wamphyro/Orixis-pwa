@@ -1,5 +1,23 @@
 // ========================================
-// COMMANDES.LIST.JS - Gestion de la liste et des filtres
+// COMMANDES.LIST.JS - Gestion de la liste et des filtres (MODIFIÉ)
+// Chemin: src/js/pages/commandes/commandes.list.js
+//
+// DESCRIPTION:
+// Gère l'affichage de la liste des commandes avec un tableau simplifié
+// Colonnes supprimées : Produits, Date de livraison
+//
+// STRUCTURE:
+// 1. Initialisation du module (lignes 20-25)
+// 2. Chargement des données (lignes 27-55)
+// 3. Affichage avec tableau simplifié (lignes 57-140)
+// 4. Filtres (lignes 142-230)
+// 5. Pagination (lignes 232-265)
+// 6. Fonctions utilitaires (lignes 267-275)
+//
+// DÉPENDANCES:
+// - CommandesService: Service d'accès aux données
+// - COMMANDES_CONFIG: Configuration des statuts et types
+// - formatDate: Utilitaire de formatage
 // ========================================
 
 import { CommandesService } from '../../services/commandes.service.js';
@@ -51,7 +69,7 @@ export async function chargerDonnees() {
 }
 
 // ========================================
-// AFFICHAGE
+// AFFICHAGE (MODIFIÉ - Tableau simplifié)
 // ========================================
 
 function afficherStatistiques(stats) {
@@ -74,8 +92,13 @@ function afficherCommandes() {
     const end = start + state.itemsPerPage;
     const commandesPage = commandesFiltrees.slice(start, end);
     
+    // ========================================
+    // MODIFICATION PRINCIPALE : Tableau simplifié
+    // Colonnes supprimées : Produits, Date livraison
+    // Nouveau colspan : 7 au lieu de 9
+    // ========================================
     if (commandesPage.length === 0) {
-        tbody.innerHTML = '<tr class="no-data"><td colspan="9">Aucune commande trouvée</td></tr>';
+        tbody.innerHTML = '<tr class="no-data"><td colspan="7">Aucune commande trouvée</td></tr>';
         return;
     }
     
@@ -86,11 +109,9 @@ function afficherCommandes() {
             <td><strong>${commande.numeroCommande}</strong></td>
             <td>${formatDate(commande.dates.commande)}</td>
             <td>${commande.client.prenom} ${commande.client.nom}</td>
-            <td>${afficherProduits(commande.produits)}</td>
             <td>${COMMANDES_CONFIG.TYPES_PREPARATION[commande.typePreparation]?.label || commande.typePreparation}</td>
             <td>${afficherUrgence(commande.niveauUrgence)}</td>
             <td>${afficherStatut(commande.statut)}</td>
-            <td>${formatDate(commande.dates.livraisonPrevue)}</td>
             <td class="table-actions">
                 <button class="btn-action" onclick="voirDetailCommande('${commande.id}')">👁️</button>
                 ${peutModifierStatut(commande) ? `<button class="btn-action" onclick="changerStatutCommande('${commande.id}')">✏️</button>` : ''}
@@ -103,6 +124,10 @@ function afficherCommandes() {
     updatePagination(totalPages);
 }
 
+// ========================================
+// NOTE: La fonction afficherProduits() n'est plus utilisée
+// mais est conservée au cas où on voudrait la réactiver
+// ========================================
 function afficherProduits(produits) {
     if (!produits || produits.length === 0) return '-';
     const summary = produits.slice(0, 2).map(p => p.designation).join(', ');
@@ -253,3 +278,17 @@ function formatDate(timestamp) {
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return formatDateUtil(date, 'DD/MM/YYYY');
 }
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [2025-07-26] - Simplification du tableau
+   Modification: Suppression des colonnes Produits et Livraison
+   Raison: Rendre le tableau plus lisible et moins chargé
+   Impact: Les infos restent accessibles via le détail
+   
+   NOTES POUR REPRISES FUTURES:
+   - La fonction afficherProduits() est conservée mais non utilisée
+   - Le colspan passe de 9 à 7 colonnes
+   - Les données complètes restent dans le détail commande
+   ======================================== */
