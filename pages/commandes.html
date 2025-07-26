@@ -17,7 +17,6 @@
     <link rel="stylesheet" href="../src/css/main.css">
     <link rel="stylesheet" href="../src/css/commandes.css">
     <link rel="stylesheet" href="../src/css/commandes-modal.css">
-    <link rel="stylesheet" href="../src/css/commandes-modal-enhanced.css">
 </head>
 <body>
     <!-- Header uniforme -->
@@ -158,22 +157,6 @@
             </span>
             <button class="pagination-btn" onclick="pageSuivante()" id="btnNext" disabled>
                 Suivant →
-            </button>
-        </div>
-    </div>
-
-    <!-- Panier flottant -->
-    <div id="panierFlottant" class="panier-flottant hidden">
-        <div class="panier-header">
-            <h3>🛒 Panier</h3>
-            <span class="panier-count">0</span>
-        </div>
-        <div class="panier-items" id="panierItems">
-            <!-- Items du panier -->
-        </div>
-        <div class="panier-actions">
-            <button class="btn btn-primary" onclick="validerPanier()">
-                Valider la commande
             </button>
         </div>
     </div>
@@ -332,11 +315,6 @@
                         <h4>Livraison</h4>
                         <div id="recapLivraison"></div>
                     </div>
-                    
-                    <div class="recap-total">
-                        <span>Total estimé :</span>
-                        <span id="recapTotal">0 €</span>
-                    </div>
                 </div>
             </div>
             
@@ -403,7 +381,7 @@
 
     <!-- Modal Nouveau Client -->
     <div id="modalNouveauClient" class="modal">
-        <div class="modal-content">
+        <div class="modal-content modal-large">
             <div class="modal-header">
                 <h2>Nouveau Client</h2>
                 <button class="modal-close" onclick="fermerModal('modalNouveauClient')">&times;</button>
