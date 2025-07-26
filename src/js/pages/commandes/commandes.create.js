@@ -128,6 +128,7 @@ function afficherEtape(etape) {
     // Actions spécifiques par étape
     switch (etape) {
         case 2:
+            console.log('📍 Arrivée à l\'étape 2 - Chargement des packs');
             chargerPackTemplates();
             break;
         case 3:
@@ -364,31 +365,56 @@ export async function creerNouveauClient() {
 // ========================================
 
 async function chargerPackTemplates() {
+    console.log('🔄 Chargement des packs...');
     try {
         const select = document.getElementById('packTemplate');
+        if (!select) {
+            console.error('❌ Select packTemplate introuvable');
+            return;
+        }
+        
         select.innerHTML = '<option value="">-- Commande personnalisée --</option>';
         
         const { collection, getDocs, query, where, orderBy } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
         
-        const q = query(
-            collection(db, 'packTemplates'),
-            where('actif', '==', true),
-            orderBy('ordre', 'asc')
-        );
+        console.log('📦 Requête Firebase packTemplates...');
         
-        const snapshot = await getDocs(q);
+        // Essayer d'abord sans filtre pour voir s'il y a des données
+        const snapshot = await getDocs(collection(db, 'packTemplates'));
         
+        console.log(`✅ ${snapshot.size} packs trouvés`);
+        
+        const packs = [];
         snapshot.forEach((doc) => {
             const pack = doc.data();
+            console.log('Pack:', doc.id, pack);
+            if (pack.actif !== false) { // Inclure si actif est true ou undefined
+                packs.push({
+                    id: doc.id,
+                    ...pack
+                });
+            }
+        });
+        
+        // Trier par ordre
+        packs.sort((a, b) => (a.ordre || 999) - (b.ordre || 999));
+        
+        // Ajouter au select
+        packs.forEach(pack => {
             const option = document.createElement('option');
-            option.value = doc.id;
+            option.value = pack.id;
             option.textContent = pack.nom;
-            option.dataset.description = pack.description || '';
+            if (pack.description) {
+                option.dataset.description = pack.description;
+            }
             select.appendChild(option);
         });
         
+        console.log(`✅ ${packs.length} packs ajoutés au select`);
+        
     } catch (error) {
-        console.error('Erreur chargement packs:', error);
+        console.error('❌ Erreur chargement packs:', error);
+        notify.error('Erreur lors du chargement des packs');
     }
 }
 
