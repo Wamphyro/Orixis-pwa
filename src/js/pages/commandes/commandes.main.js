@@ -2,6 +2,8 @@
 // COMMANDES.MAIN.JS - Point d'entrée principal (VERSION FINALE)
 // ========================================
 
+// Pas besoin du helper modal qui n'existe pas
+
 // EXPOSITION IMMÉDIATE pour que les onclick du HTML fonctionnent
 window.ouvrirNouvelleCommande = () => {
     console.log('ouvrirNouvelleCommande sera disponible après chargement');
@@ -26,7 +28,11 @@ window.etapePrecedente = () => {};
 window.etapeSuivante = () => {};
 window.validerCommande = () => {};
 window.changerStatutCommande = () => {};
-window.fermerModal = () => {};
+window.fermerModal = (id) => {
+    if (window.modalManager) {
+        window.modalManager.close(id);
+    }
+};
 window.logout = () => {};
 window.selectionnerCote = () => {};
 window.annulerSelectionCote = () => {};
