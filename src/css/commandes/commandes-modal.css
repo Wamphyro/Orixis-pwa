@@ -833,19 +833,19 @@ body.modal-open {
 
 /* ========================================
    FIX FOUC - Cacher les modales au chargement
-   MODIFIÉ le 29/07/2025 : Ajout de #modalSaisieNS
+   MODIFIÉ le 29/07/2025 : Ajout de #modalNumerosSerie (corrigé)
    ======================================== */
 #modalNouvelleCommande,
 #modalDetailCommande,
 #modalNouveauClient,
-#modalSaisieNS {
+#modalNumerosSerie {
     display: none !important; /* Force le masquage initial */
 }
 
 #modalNouvelleCommande.active,
 #modalDetailCommande.active,
 #modalNouveauClient.active,
-#modalSaisieNS.active {
+#modalNumerosSerie.active {
     display: flex !important;
 }
 
@@ -1623,8 +1623,8 @@ body.modal-open {
    Impact: Meilleure organisation visuelle des informations
    
    [29/07/2025] - Fix modal numéros de série qui ne s'ouvrait pas
-   Problème: #modalSaisieNS n'était pas dans les règles FOUC (display: none initial)
-   Solution: Ajout de #modalSaisieNS dans les sélecteurs CSS de masquage/affichage
+   Problème: #modalSaisieNS n'était pas le bon ID (c'est #modalNumerosSerie)
+   Solution: Corrigé l'ID dans les sélecteurs CSS de masquage/affichage
    Impact: Le modal s'ouvre maintenant correctement avec la classe .active
    
    NOTES POUR REPRISES FUTURES:
