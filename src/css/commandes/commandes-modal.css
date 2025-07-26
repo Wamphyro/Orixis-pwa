@@ -41,7 +41,7 @@
     display: none;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 1000; /* Base pour les modals */
     opacity: 0;
     transition: opacity 0.3s ease;
     backdrop-filter: blur(2px);
@@ -257,7 +257,7 @@ body.modal-open {
     width: 100%;
     height: 100%;
     display: none;
-    z-index: 10000;
+    z-index: 20000; /* Augmenté de 10000 à 20000 pour passer au-dessus des modals */
     animation: fadeIn 0.2s ease-out;
 }
 
@@ -441,7 +441,7 @@ body.modal-open {
     position: fixed;
     top: 20px;
     right: 20px;
-    z-index: 11000;
+    z-index: 30000; /* Augmenté de 11000 à 30000 pour être au-dessus de tout */
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -1626,6 +1626,11 @@ body.modal-open {
    Problème: #modalSaisieNS n'était pas le bon ID (c'est #modalNumerosSerie)
    Solution: Corrigé l'ID dans les sélecteurs CSS de masquage/affichage
    Impact: Le modal s'ouvre maintenant correctement avec la classe .active
+   
+   [29/07/2025] - Fix Dialog caché derrière les modals
+   Problème: Les dialogs (alert, prompt) étaient cachés derrière les modals
+   Solution: Augmenté les z-index (modal: 1000, dialog: 20000, notifications: 30000)
+   Impact: Les dialogs s'affichent maintenant correctement au-dessus des modals
    
    NOTES POUR REPRISES FUTURES:
    - Le bouton suppression a une animation de rotation
