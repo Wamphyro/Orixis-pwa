@@ -213,13 +213,12 @@ window.retirerProduit = retirerProduit;
 window.etapePrecedente = etapePrecedente;
 window.etapeSuivante = etapeSuivante;
 window.validerCommande = validerCommande;
-window.voirDetailCommande = voirDetailCommande;
+window.voirDetailCommande = voirDetailCommande;  // AJOUTER CETTE LIGNE
 window.changerStatutCommande = changerStatutCommande;
 window.fermerModal = fermerModal;
 window.logout = logout;
 window.selectionnerCote = selectionnerCote;
 window.annulerSelectionCote = annulerSelectionCote;
-window.voirDetailCommande = voirDetailCommande;
 
 // ========================================
 // UTILITAIRES GLOBAUX

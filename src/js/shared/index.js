@@ -30,6 +30,10 @@ export {
     confirmerAction 
 };
 
+// Timeline
+import Timeline, { createTimeline, createOrderTimeline } from './ui/timeline.component.js';
+export { Timeline, createTimeline, createOrderTimeline };
+
 // ========================================
 // UTILITAIRES
 // ========================================
@@ -239,6 +243,9 @@ export default {
     Modal: Modal,
     modalManager: modalManager,
     confirmerAction: confirmerAction,
+    Timeline: Timeline,
+    createTimeline: createTimeline,
+    createOrderTimeline: createOrderTimeline,
     
     // Utils
     formatDate,
