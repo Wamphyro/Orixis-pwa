@@ -2,32 +2,6 @@
 // COMMANDES.MAIN.JS - Point d'entrée principal (VERSION COMPLÈTE)
 // ========================================
 
-// EXPOSITION IMMÉDIATE DES FONCTIONS POUR LE HTML
-// Ces fonctions seront remplacées par les vraies après le chargement des modules
-window.ouvrirNouvelleCommande = () => console.log('Chargement en cours...');
-window.voirDetailCommande = () => console.log('Chargement en cours...');
-window.filtrerCommandes = () => console.log('Chargement en cours...');
-window.resetFiltres = () => console.log('Chargement en cours...');
-window.pagePrecedente = () => console.log('Chargement en cours...');
-window.pageSuivante = () => console.log('Chargement en cours...');
-window.rechercherClient = () => console.log('Chargement en cours...');
-window.selectionnerClient = () => console.log('Chargement en cours...');
-window.changerClient = () => console.log('Chargement en cours...');
-window.ouvrirNouveauClient = () => console.log('Chargement en cours...');
-window.creerNouveauClient = () => console.log('Chargement en cours...');
-window.appliquerPack = () => console.log('Chargement en cours...');
-window.rechercherProduit = () => console.log('Chargement en cours...');
-window.ajouterProduit = () => console.log('Chargement en cours...');
-window.retirerProduit = () => console.log('Chargement en cours...');
-window.etapePrecedente = () => console.log('Chargement en cours...');
-window.etapeSuivante = () => console.log('Chargement en cours...');
-window.validerCommande = () => console.log('Chargement en cours...');
-window.changerStatutCommande = () => console.log('Chargement en cours...');
-window.fermerModal = () => console.log('Chargement en cours...');
-window.logout = () => console.log('Chargement en cours...');
-window.selectionnerCote = () => console.log('Chargement en cours...');
-window.annulerSelectionCote = () => console.log('Chargement en cours...');
-
 import { initFirebase } from '../../services/firebase.service.js';
 import { modalManager, confirmerAction, Dialog, notify } from '../../shared/index.js';
 import { 
@@ -113,37 +87,30 @@ window.addEventListener('load', async () => {
     // Initialiser les modales
     initModales();
     
+    // HACK: Retirer TOUS les event listeners du modal component
+    setTimeout(() => {
+        const modal = modalManager.get('modalNouvelleCommande');
+        if (modal && modal.closeButton) {
+            // Cloner le bouton pour retirer TOUS les event listeners
+            const oldButton = modal.closeButton;
+            const newButton = oldButton.cloneNode(true);
+            oldButton.parentNode.replaceChild(newButton, oldButton);
+            
+            // Ajouter notre propre handler
+            newButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                modalManager.close('modalNouvelleCommande');
+            });
+            
+            // Mettre à jour la référence
+            modal.closeButton = newButton;
+        }
+    }, 500);
+    
     // Initialiser les modules
     await initListeCommandes();
     initCreationCommande();
-    
-    // MAINTENANT QUE LES MODULES SONT CHARGÉS, REMPLACER LES FONCTIONS
-    window.modalManager = modalManager;
-    window.ouvrirNouvelleCommande = ouvrirNouvelleCommande;
-    window.filtrerCommandes = filtrerCommandes;
-    window.resetFiltres = resetFiltres;
-    window.pagePrecedente = pagePrecedente;
-    window.pageSuivante = pageSuivante;
-    window.rechercherClient = rechercherClient;
-    window.selectionnerClient = selectionnerClient;
-    window.changerClient = changerClient;
-    window.ouvrirNouveauClient = ouvrirNouveauClient;
-    window.creerNouveauClient = creerNouveauClient;
-    window.appliquerPack = appliquerPack;
-    window.rechercherProduit = rechercherProduit;
-    window.ajouterProduit = ajouterProduit;
-    window.retirerProduit = retirerProduit;
-    window.etapePrecedente = etapePrecedente;
-    window.etapeSuivante = etapeSuivante;
-    window.validerCommande = validerCommande;
-    window.voirDetailCommande = voirDetailCommande;
-    window.changerStatutCommande = changerStatutCommande;
-    window.fermerModal = fermerModal;
-    window.logout = logout;
-    window.selectionnerCote = selectionnerCote;
-    window.annulerSelectionCote = annulerSelectionCote;
-    
-    console.log('✅ Modules chargés et fonctions exposées');
     
     // Charger les données initiales
     await chargerDonnees();
@@ -220,6 +187,38 @@ function afficherInfosUtilisateur() {
         }
     }
 }
+
+// ========================================
+// EXPOSITION DES FONCTIONS GLOBALES
+// ========================================
+
+// Exposer modalManager globalement pour les autres modules
+window.modalManager = modalManager;
+
+// Toutes les fonctions utilisées dans le HTML avec onclick
+window.ouvrirNouvelleCommande = ouvrirNouvelleCommande;
+window.filtrerCommandes = filtrerCommandes;
+window.resetFiltres = resetFiltres;
+window.pagePrecedente = pagePrecedente;
+window.pageSuivante = pageSuivante;
+window.rechercherClient = rechercherClient;
+window.selectionnerClient = selectionnerClient;
+window.changerClient = changerClient;
+window.ouvrirNouveauClient = ouvrirNouveauClient;
+window.creerNouveauClient = creerNouveauClient;
+window.appliquerPack = appliquerPack;
+window.rechercherProduit = rechercherProduit;
+window.ajouterProduit = ajouterProduit;
+window.retirerProduit = retirerProduit;
+window.etapePrecedente = etapePrecedente;
+window.etapeSuivante = etapeSuivante;
+window.validerCommande = validerCommande;
+window.voirDetailCommande = voirDetailCommande;
+window.changerStatutCommande = changerStatutCommande;
+window.fermerModal = fermerModal;
+window.logout = logout;
+window.selectionnerCote = selectionnerCote;
+window.annulerSelectionCote = annulerSelectionCote;
 
 // ========================================
 // UTILITAIRES GLOBAUX
