@@ -7,7 +7,7 @@ import { ClientsService } from '../../services/clients.service.js';
 import { ProduitsService } from '../../services/produits.service.js';
 import { CommandesService } from '../../services/commandes.service.js';
 import { COMMANDES_CONFIG, formaterPrix } from '../../data/commandes.data.js';
-import { Dialog, notify } from '../../shared';
+import { Dialog, notify } from '../../shared/index.js';
 import { chargerDonnees } from './commandes.list.js';
 import { ouvrirModal, afficherSucces, afficherErreur } from './commandes.main.js';
 
