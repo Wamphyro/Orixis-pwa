@@ -2,6 +2,35 @@
 // COMMANDES.MAIN.JS - Point d'entrée principal (VERSION FINALE)
 // ========================================
 
+// EXPOSITION IMMÉDIATE pour que les onclick du HTML fonctionnent
+window.ouvrirNouvelleCommande = () => {
+    console.log('ouvrirNouvelleCommande sera disponible après chargement');
+};
+window.voirDetailCommande = (id) => {
+    console.log('voirDetailCommande sera disponible après chargement, id:', id);
+};
+window.filtrerCommandes = () => {};
+window.resetFiltres = () => {};
+window.pagePrecedente = () => {};
+window.pageSuivante = () => {};
+window.rechercherClient = () => {};
+window.selectionnerClient = () => {};
+window.changerClient = () => {};
+window.ouvrirNouveauClient = () => {};
+window.creerNouveauClient = () => {};
+window.appliquerPack = () => {};
+window.rechercherProduit = () => {};
+window.ajouterProduit = () => {};
+window.retirerProduit = () => {};
+window.etapePrecedente = () => {};
+window.etapeSuivante = () => {};
+window.validerCommande = () => {};
+window.changerStatutCommande = () => {};
+window.fermerModal = () => {};
+window.logout = () => {};
+window.selectionnerCote = () => {};
+window.annulerSelectionCote = () => {};
+
 import { initFirebase } from '../../services/firebase.service.js';
 import { modalManager, confirmerAction, Dialog, notify } from '../../shared/index.js';
 import { 
