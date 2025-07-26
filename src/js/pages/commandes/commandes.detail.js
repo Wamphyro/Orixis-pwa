@@ -1,10 +1,27 @@
 // ========================================
 // COMMANDES.DETAIL.JS - Gestion du détail et des modifications (SANS PRIX)
+// Chemin: src/js/pages/commandes/commandes.detail.js
+//
+// DESCRIPTION:
+// Gère l'affichage détaillé d'une commande et les actions de modification de statut.
+// Utilise le composant Timeline pour afficher la progression visuelle.
+//
+// STRUCTURE:
+// 1. Imports et dépendances (lignes 15-25)
+// 2. Affichage du détail (lignes 27-175)
+// 3. Changement de statut (lignes 177-250)
+// 4. Actions spécifiques (lignes 252-350)
+// 5. Fonctions utilitaires (lignes 352-360)
+//
+// DÉPENDANCES:
+// - CommandesService: Accès aux données des commandes
+// - Timeline component: Pour l'affichage de la progression
+// - Dialog/notify: Pour les interactions utilisateur
 // ========================================
 
 import { CommandesService } from '../../services/commandes.service.js';
 import { COMMANDES_CONFIG } from '../../data/commandes.data.js';
-import { Dialog, confirmerAction } from '../../shared/index.js';
+import { Dialog, confirmerAction, createOrderTimeline } from '../../shared/index.js';
 import { chargerDonnees } from './commandes.list.js';
 import { afficherSucces, afficherErreur } from './commandes.main.js';
 
@@ -33,8 +50,23 @@ function afficherDetailCommande(commande) {
     // Numéro de commande
     document.getElementById('detailNumCommande').textContent = commande.numeroCommande;
     
-    // Timeline du statut
-    afficherTimeline(commande);
+    // ========================================
+    // TIMELINE avec le composant (CHANGEMENT MAJEUR)
+    // Remplace l'ancienne fonction afficherTimeline()
+    // ========================================
+    const timelineContainer = document.getElementById('timeline');
+    
+    // Vider le conteneur avant de créer la nouvelle timeline
+    timelineContainer.innerHTML = '';
+    
+    // Utiliser le composant Timeline avec orientation horizontale
+    createOrderTimeline(timelineContainer, commande, {
+        orientation: 'horizontal',  // Force l'affichage horizontal
+        theme: 'colorful',          // Thème avec gradients colorés
+        animated: true,             // Animations activées
+        showDates: true,            // Afficher les dates
+        showLabels: true            // Afficher les labels
+    });
     
     // Informations client
     const detailClient = document.getElementById('detailClient');
@@ -141,52 +173,10 @@ function afficherDetailCommande(commande) {
     afficherActionsCommande(commande);
 }
 
-function afficherTimeline(commande) {
-    const timeline = document.getElementById('timeline');
-    const statuts = ['nouvelle', 'preparation', 'terminee', 'expediee', 'receptionnee', 'livree'];
-    
-    timeline.innerHTML = statuts.map(statut => {
-        const config = COMMANDES_CONFIG.STATUTS[statut];
-        let className = 'timeline-item';
-        
-        if (commande.statut === 'annulee') {
-            className += ' disabled';
-        } else if (statut === commande.statut) {
-            className += ' active';
-        } else if (statuts.indexOf(statut) < statuts.indexOf(commande.statut)) {
-            className += ' completed';
-        }
-        
-        return `
-            <div class="${className}">
-                <div class="timeline-icon">${config.icon}</div>
-                <div class="timeline-content">
-                    <div class="timeline-title">${config.label}</div>
-                    <div class="timeline-date">${getDateForStatut(commande, statut)}</div>
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
-function getDateForStatut(commande, statut) {
-    switch (statut) {
-        case 'nouvelle':
-            return formatDate(commande.dates.commande);
-        case 'preparation':
-            return formatDate(commande.dates.preparationDebut) || '-';
-        case 'terminee':
-            return formatDate(commande.dates.preparationFin) || '-';
-        case 'expediee':
-            return formatDate(commande.dates.expeditionValidee) || '-';
-        case 'receptionnee':
-            return formatDate(commande.dates.receptionValidee) || '-';
-        case 'livree':
-            return formatDate(commande.dates.livraisonClient) || '-';
-        default:
-            return '-';
-    }
-}
+// ========================================
+// NOTE: L'ancienne fonction afficherTimeline() a été supprimée
+// car nous utilisons maintenant le composant Timeline
+// ========================================
 
 function afficherActionsCommande(commande) {
     const detailActions = document.getElementById('detailActions');
@@ -420,3 +410,17 @@ function formatDate(timestamp) {
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return date.toLocaleDateString('fr-FR');
 }
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [2024-01-XX] - Timeline verticale au lieu d'horizontale
+   Problème: La timeline s'affichait verticalement malgré les styles
+   Cause: Utilisation de HTML statique au lieu du composant Timeline
+   Résolution: Remplacé par createOrderTimeline() avec orientation: 'horizontal'
+   
+   NOTES POUR REPRISES FUTURES:
+   - Le composant Timeline gère automatiquement l'orientation
+   - Les styles sont dans commandes-modal.css section 4
+   - Ne pas générer de HTML manuel pour la timeline
+   ======================================== */

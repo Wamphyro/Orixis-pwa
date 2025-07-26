@@ -13,7 +13,9 @@
     <link rel="manifest" href="../manifest.json">
     <meta name="theme-color" content="#667eea">
     
-    <!-- CSS -->
+    <!-- ========================================
+         CSS - Chemins mis à jour pour le dossier commandes/
+         ======================================== -->
     <link rel="stylesheet" href="../src/css/main.css">
     <link rel="stylesheet" href="../src/css/commandes/commandes.css">
     <link rel="stylesheet" href="../src/css/commandes/commandes-modal.css">
@@ -341,10 +343,14 @@
             </div>
             
             <div class="modal-body">
-                <!-- Timeline du statut -->
+                <!-- ========================================
+                     Timeline du statut
+                     IMPORTANT: Le div timeline sera rempli par le composant Timeline JS
+                     Ne pas ajouter de HTML statique ici
+                     ======================================== -->
                 <div class="timeline-container">
                     <div class="timeline" id="timeline">
-                        <!-- Étapes générées dynamiquement -->
+                        <!-- Timeline générée dynamiquement par createOrderTimeline() -->
                     </div>
                 </div>
                 
