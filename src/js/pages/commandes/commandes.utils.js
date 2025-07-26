@@ -8,7 +8,7 @@ import {
     isValidEmail,
     isValidPhone,
     debounce as sharedDebounce
-} from '../../shared';
+} from '../../shared/index.js';
 
 // ========================================
 // FORMATAGE DES DATES (wrapper avec formats spécifiques)
