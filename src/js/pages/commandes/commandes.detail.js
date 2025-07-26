@@ -287,25 +287,66 @@ export async function changerStatutCommande(commandeId) {
     }
 }
 
-// Fonction exposée pour les actions depuis la modal détail
+// Fonction exposée pour les actions depuis la modal détail (VERSION CORRIGÉE)
 window.changerStatutDetail = async function(commandeId, nouveauStatut) {
+    console.log('🔄 Début changement statut:', { commandeId, nouveauStatut });
+    
     try {
+        // Vérifier que CommandesService est disponible
+        if (!CommandesService || typeof CommandesService.changerStatut !== 'function') {
+            throw new Error('CommandesService.changerStatut non disponible');
+        }
+        
+        // Obtenir le label du statut pour un message plus clair
+        const labelStatut = COMMANDES_CONFIG.STATUTS[nouveauStatut]?.label || nouveauStatut;
+        
         const confirme = await confirmerAction({
-            titre: 'Confirmation',
-            message: `Confirmer le changement de statut ?`,
+            titre: 'Confirmation du changement de statut',
+            message: `Êtes-vous sûr de vouloir passer la commande au statut "${labelStatut}" ?`,
             boutonConfirmer: 'Confirmer',
-            boutonAnnuler: 'Annuler'
+            boutonAnnuler: 'Annuler',
+            danger: false
         });
         
         if (confirme) {
+            console.log('✅ Confirmation reçue, appel au service...');
+            
+            // Appeler le service pour changer le statut
             await CommandesService.changerStatut(commandeId, nouveauStatut);
+            
+            console.log('✅ Statut changé avec succès dans Firebase');
+            
+            // Recharger les données de la liste
             await chargerDonnees();
-            window.modalManager.close('modalDetailCommande');
-            afficherSucces('Statut mis à jour');
+            
+            // Recharger et rafraîchir la modal avec les nouvelles données
+            const commandeMAJ = await CommandesService.getCommande(commandeId);
+            if (commandeMAJ) {
+                afficherDetailCommande(commandeMAJ);
+            }
+            
+            afficherSucces(`Commande passée au statut : ${labelStatut}`);
+        } else {
+            console.log('❌ Changement annulé par l\'utilisateur');
         }
     } catch (error) {
-        console.error('Erreur changement statut:', error);
-        afficherErreur('Erreur lors du changement de statut');
+        console.error('❌ Erreur changement statut:', error);
+        console.error('Stack trace:', error.stack);
+        
+        // Message d'erreur détaillé
+        let messageErreur = 'Erreur lors du changement de statut';
+        
+        if (error.message) {
+            if (error.message.includes('non autorisé')) {
+                messageErreur = error.message;
+            } else if (error.message.includes('Firebase')) {
+                messageErreur = 'Erreur de connexion à la base de données';
+            } else {
+                messageErreur += ` : ${error.message}`;
+            }
+        }
+        
+        afficherErreur(messageErreur);
     }
 };
 
@@ -419,8 +460,14 @@ function formatDate(timestamp) {
    Cause: Utilisation de HTML statique au lieu du composant Timeline
    Résolution: Remplacé par createOrderTimeline() avec orientation: 'horizontal'
    
+   [2025-07-26] - Erreur changement de statut
+   Problème: Message d'erreur générique lors du changement de statut
+   Cause: Mauvaise gestion des erreurs dans changerStatutDetail
+   Résolution: Ajout de logs et messages d'erreur détaillés
+   
    NOTES POUR REPRISES FUTURES:
    - Le composant Timeline gère automatiquement l'orientation
    - Les styles sont dans commandes-modal.css section 4
    - Ne pas générer de HTML manuel pour la timeline
+   - La modal reste ouverte après changement de statut
    ======================================== */
