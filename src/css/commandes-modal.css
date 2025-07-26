@@ -3,6 +3,21 @@
    ======================================== */
 
 /* ========================================
+   FIX FOUC - Cacher les modales au chargement
+   ======================================== */
+#modalNouvelleCommande,
+#modalDetailCommande,
+#modalNouveauClient {
+    display: none !important; /* Force le masquage initial */
+}
+
+#modalNouvelleCommande.active,
+#modalDetailCommande.active,
+#modalNouveauClient.active {
+    display: flex !important;
+}
+
+/* ========================================
    PERSONNALISATION DES MODALES COMMANDES
    ======================================== */
 
