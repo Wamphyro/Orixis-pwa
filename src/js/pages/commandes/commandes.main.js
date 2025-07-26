@@ -115,6 +115,9 @@ window.addEventListener('load', async () => {
     // Charger les données initiales
     await chargerDonnees();
     
+    // Activer les animations après le chargement
+    document.body.classList.add('page-loaded');
+    
     // Initialiser les événements
     initEventListeners();
 });

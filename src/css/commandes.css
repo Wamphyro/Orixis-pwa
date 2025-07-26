@@ -29,15 +29,9 @@
     text-align: center;
     min-width: 140px;
     transition: all 0.3s ease;
-    animation: fadeInUp 0.5s ease forwards;
-    opacity: 0;
 }
 
-.stat-card:nth-child(1) { animation-delay: 0.1s; }
-.stat-card:nth-child(2) { animation-delay: 0.2s; }
-.stat-card:nth-child(3) { animation-delay: 0.3s; }
-.stat-card:nth-child(4) { animation-delay: 0.4s; }
-
+/* Animations au survol uniquement */
 .stat-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
@@ -309,8 +303,18 @@
 }
 
 /* ========================================
-   ANIMATIONS
+   ANIMATIONS (activées après chargement)
    ======================================== */
+.page-loaded .stat-card {
+    animation: fadeInUp 0.5s ease forwards;
+    opacity: 0;
+}
+
+.page-loaded .stat-card:nth-child(1) { animation-delay: 0.1s; }
+.page-loaded .stat-card:nth-child(2) { animation-delay: 0.2s; }
+.page-loaded .stat-card:nth-child(3) { animation-delay: 0.3s; }
+.page-loaded .stat-card:nth-child(4) { animation-delay: 0.4s; }
+
 @keyframes fadeInUp {
     from {
         opacity: 0;
