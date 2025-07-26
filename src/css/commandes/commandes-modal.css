@@ -6,6 +6,7 @@
    Ce fichier centralise TOUS les styles des composants UI utilisés dans le module commandes.
    Il combine les styles originaux des modales commandes + les styles des composants shared.
    Modifié le 27/07/2025 : Ajout des styles pour le modal de saisie des NS
+   Modifié le 28/07/2025 : Repositionnement des sections dans le modal détail
    
    TABLE DES MATIÈRES:
    1. MODAL BASE STYLES (lignes 30-280) - Styles de base pour toutes les modales
@@ -1179,6 +1180,7 @@ body.modal-open {
 /* ========================================
    MODAL DÉTAIL COMMANDE
    Note: Utilise les styles timeline de la section 4
+   MODIFIÉ le 28/07/2025 : Nouvelle organisation des sections
    ======================================== */
 
 /* TIMELINE CONTAINER (spécifique commandes) */
@@ -1213,43 +1215,36 @@ body.modal-open {
     color: #495057;
 }
 
-/* SECTIONS DÉTAIL - VERSION SIMPLE */
+/* SECTIONS DÉTAIL - NOUVELLE ORGANISATION */
 .detail-sections {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto;
+    display: flex;
     gap: 20px;
     margin-bottom: 30px;
 }
 
+/* Colonne de gauche : Client + Livraison */
+.detail-column-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Colonne de droite : Produits */
+.detail-column-right {
+    flex: 1;
+}
+
+/* Styles communs pour toutes les sections */
 .detail-section {
     background: #f8f9fa;
     border-radius: 12px;
     padding: 20px;
 }
 
-/* Client en haut à gauche */
-.detail-section:nth-child(1) {
-    grid-column: 1;
-    grid-row: 1;
-}
-
-/* Produits à droite, sur 2 lignes */
-.detail-section:nth-child(2) {
-    grid-column: 2;
-    grid-row: 1 / 3;
-}
-
-/* Livraison en bas à gauche */
-.detail-section:nth-child(3) {
-    grid-column: 1;
-    grid-row: 2;
-}
-
 /* Section expédition sur toute la largeur */
-.detail-section:nth-child(4) {
-    grid-column: 1 / 3;
-    grid-row: 3;
+.detail-section.full-width {
+    margin-top: 20px;
 }
 
 .detail-section h3 {
@@ -1550,18 +1545,15 @@ body.modal-open {
         flex-direction: column;
     }
     
+    /* Responsive pour le modal détail */
     .detail-sections {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto;
+        flex-direction: column;
     }
     
-    /* Tout en colonne unique sur mobile */
-    .detail-section:nth-child(1),
-    .detail-section:nth-child(2),
-    .detail-section:nth-child(3),
-    .detail-section:nth-child(4) {
-        grid-column: 1;
-        grid-row: auto;
+    .detail-column-left,
+    .detail-column-right {
+        flex: auto;
+        width: 100%;
     }
     
     .timeline {
@@ -1610,3 +1602,24 @@ body.modal-open {
         font-size: 13px;
     }
 }
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [27/07/2025] - Ajout styles bouton suppression
+   Ajout: Styles pour .btn-action.btn-delete
+   Design: Corbeille rouge avec rotation au survol
+   Impact: Amélioration visuelle pour l'action de suppression
+   
+   [28/07/2025] - Réorganisation des sections du modal détail
+   Problème: Les informations de livraison étaient en bas à gauche
+   Solution: Nouvelle structure avec 2 colonnes (gauche: client+livraison, droite: produits)
+   Impact: Meilleure organisation visuelle des informations
+   
+   NOTES POUR REPRISES FUTURES:
+   - Le bouton suppression a une animation de rotation
+   - Le badge status-supprime est barré avec opacity réduite
+   - Les couleurs utilisent le rouge Bootstrap (#dc3545)
+   - La nouvelle structure utilise flexbox pour les colonnes
+   - Section expédition reste sur toute la largeur en bas
+   ======================================== */
