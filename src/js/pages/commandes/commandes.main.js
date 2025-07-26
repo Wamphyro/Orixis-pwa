@@ -1,5 +1,5 @@
 // ========================================
-// COMMANDES.MAIN.JS - Point d'entrée principal (VERSION COMPLÈTE)
+// COMMANDES.MAIN.JS - Point d'entrée principal (VERSION CORRIGÉE)
 // ========================================
 
 import { initFirebase } from '../../services/firebase.service.js';
@@ -120,6 +120,9 @@ window.addEventListener('load', async () => {
     
     // Initialiser les événements
     initEventListeners();
+    
+    // SOLUTION DÉFINITIVE : Attacher les événements après le chargement complet
+    attacherEvenementsBoutons();
 });
 
 // ========================================
@@ -175,6 +178,49 @@ function initModales() {
 }
 
 // ========================================
+// SOLUTION : ATTACHER LES ÉVÉNEMENTS AUX BOUTONS
+// ========================================
+
+function attacherEvenementsBoutons() {
+    // Bouton nouvelle commande
+    const btnNouvelleCommande = document.getElementById('btnNouvelleCommande');
+    if (btnNouvelleCommande) {
+        btnNouvelleCommande.addEventListener('click', () => {
+            console.log('Clic sur nouvelle commande');
+            ouvrirNouvelleCommande();
+        });
+    }
+    
+    // Observer pour les boutons créés dynamiquement
+    const tableBody = document.getElementById('commandesTableBody');
+    if (tableBody) {
+        // Utiliser la délégation d'événements pour les boutons dynamiques
+        tableBody.addEventListener('click', (e) => {
+            const btn = e.target.closest('.btn-action');
+            if (!btn) return;
+            
+            // Extraire l'action depuis l'attribut onclick
+            const onclickAttr = btn.getAttribute('onclick');
+            if (onclickAttr) {
+                // Extraire le nom de la fonction et les paramètres
+                const match = onclickAttr.match(/(\w+)\(['"](.+)['"]\)/);
+                if (match) {
+                    const functionName = match[1];
+                    const parameter = match[2];
+                    
+                    // Appeler la fonction appropriée
+                    if (functionName === 'voirDetailCommande' && window.voirDetailCommande) {
+                        window.voirDetailCommande(parameter);
+                    } else if (functionName === 'changerStatutCommande' && window.changerStatutCommande) {
+                        window.changerStatutCommande(parameter);
+                    }
+                }
+            }
+        });
+    }
+}
+
+// ========================================
 // AFFICHAGE DES INFOS UTILISATEUR
 // ========================================
 
@@ -214,11 +260,6 @@ window.etapePrecedente = etapePrecedente;
 window.etapeSuivante = etapeSuivante;
 window.validerCommande = validerCommande;
 window.voirDetailCommande = voirDetailCommande;
-// AJOUTEZ ceci pour debug :
-console.log('✅ Fonctions exposées globalement :', {
-    ouvrirNouvelleCommande: typeof window.ouvrirNouvelleCommande,
-    voirDetailCommande: typeof window.voirDetailCommande
-});  // AJOUTER CETTE LIGNE
 window.changerStatutCommande = changerStatutCommande;
 window.fermerModal = fermerModal;
 window.logout = logout;

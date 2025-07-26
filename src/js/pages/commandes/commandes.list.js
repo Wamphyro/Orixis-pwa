@@ -1,5 +1,5 @@
 // ========================================
-// COMMANDES.LIST.JS - Gestion de la liste et des filtres
+// COMMANDES.LIST.JS - Gestion de la liste et des filtres (VERSION CORRIGÉE)
 // ========================================
 
 import { CommandesService } from '../../services/commandes.service.js';
@@ -92,15 +92,41 @@ function afficherCommandes() {
             <td>${afficherStatut(commande.statut)}</td>
             <td>${formatDate(commande.dates.livraisonPrevue)}</td>
             <td class="table-actions">
-                <button class="btn-action" onclick="voirDetailCommande('${commande.id}')">👁️</button>
-                ${peutModifierStatut(commande) ? `<button class="btn-action" onclick="changerStatutCommande('${commande.id}')">✏️</button>` : ''}
+                <button class="btn-action btn-voir-detail" data-id="${commande.id}">👁️</button>
+                ${peutModifierStatut(commande) ? `<button class="btn-action btn-modifier-statut" data-id="${commande.id}">✏️</button>` : ''}
             </td>
         `;
         tbody.appendChild(tr);
     });
     
+    // Attacher les événements aux boutons après création
+    attacherEvenementsBoutonsCommandes();
+    
     // Mettre à jour la pagination
     updatePagination(totalPages);
+}
+
+// NOUVELLE FONCTION : Attacher les événements aux boutons
+function attacherEvenementsBoutonsCommandes() {
+    // Boutons voir détail
+    document.querySelectorAll('.btn-voir-detail').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const commandeId = this.getAttribute('data-id');
+            if (window.voirDetailCommande) {
+                window.voirDetailCommande(commandeId);
+            }
+        });
+    });
+    
+    // Boutons modifier statut
+    document.querySelectorAll('.btn-modifier-statut').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const commandeId = this.getAttribute('data-id');
+            if (window.changerStatutCommande) {
+                window.changerStatutCommande(commandeId);
+            }
+        });
+    });
 }
 
 function afficherProduits(produits) {
