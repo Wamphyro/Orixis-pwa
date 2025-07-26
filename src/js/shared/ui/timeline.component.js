@@ -1,7 +1,15 @@
 // ========================================
 // TIMELINE.COMPONENT.JS - Composant Timeline réutilisable
 // ========================================
-// À placer dans : src/js/shared/ui/timeline.component.js
+// Chemin: src/js/shared/ui/timeline.component.js
+//
+// IMPORTANT: Les styles CSS ont été centralisés dans:
+// src/css/commandes/commandes-modal.css (Section 4: TIMELINE STYLES, lignes 701-1150)
+// 
+// Historique:
+// - Avant: Chargeait ./styles/timeline.css via loadStyles()
+// - Maintenant: Utilise les styles centralisés pour éviter les conflits
+// ========================================
 
 export class Timeline {
     constructor(options = {}) {
@@ -39,8 +47,8 @@ export class Timeline {
             return;
         }
         
-        // Charger les styles
-        this.loadStyles();
+        // IMPORTANT: loadStyles() désactivé - Styles dans src/css/commandes/commandes-modal.css
+        // this.loadStyles(); // DÉSACTIVÉ le 2024-XX-XX
         
         // Configurer le conteneur
         this.setupContainer();
@@ -49,7 +57,22 @@ export class Timeline {
         this.render();
     }
     
+    /**
+     * FONCTION DÉSACTIVÉE - Conservée pour référence historique
+     * Les styles sont maintenant dans src/css/commandes/commandes-modal.css
+     * Section: TIMELINE STYLES (lignes 701-1150)
+     */
     loadStyles() {
+        // ========================================
+        // DÉSACTIVÉ - NE PAS RÉACTIVER
+        // Raison: Éviter les conflits CSS avec les styles centralisés
+        // Les styles sont maintenant gérés dans:
+        // src/css/commandes/commandes-modal.css
+        // Section 4: TIMELINE STYLES (lignes 701-1150)
+        // ========================================
+        return; // Early return pour s'assurer que rien ne se charge
+        
+        /* Code original conservé pour documentation:
         // Vérifier si les styles sont déjà chargés
         if (document.getElementById('timeline-styles')) {
             return;
@@ -61,6 +84,7 @@ export class Timeline {
         link.rel = 'stylesheet';
         link.href = new URL('./styles/timeline.css', import.meta.url).href;
         document.head.appendChild(link);
+        */
     }
     
     setupContainer() {

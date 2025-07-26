@@ -1,7 +1,15 @@
 // ========================================
 // NOTIFICATION.COMPONENT.JS - Système de notifications toast
 // ========================================
-// À placer dans : src/js/shared/ui/notification.component.js
+// Chemin: src/js/shared/ui/notification.component.js
+//
+// IMPORTANT: Les styles CSS ont été centralisés dans:
+// src/css/commandes/commandes-modal.css (Section 3: NOTIFICATION STYLES, lignes 501-700)
+// 
+// Historique:
+// - Avant: Chargeait ./styles/notification.css via loadStyles()
+// - Maintenant: Utilise les styles centralisés pour éviter les conflits
+// ========================================
 
 export class NotificationManager {
     static instance = null;
@@ -27,11 +35,26 @@ export class NotificationManager {
             this.container = document.getElementById('notification-container');
         }
         
-        // Charger les styles CSS
-        this.loadStyles();
+        // IMPORTANT: loadStyles() désactivé - Styles dans src/css/commandes/commandes-modal.css
+        // this.loadStyles(); // DÉSACTIVÉ le 2024-XX-XX
     }
     
+    /**
+     * FONCTION DÉSACTIVÉE - Conservée pour référence historique
+     * Les styles sont maintenant dans src/css/commandes/commandes-modal.css
+     * Section: NOTIFICATION STYLES (lignes 501-700)
+     */
     loadStyles() {
+        // ========================================
+        // DÉSACTIVÉ - NE PAS RÉACTIVER
+        // Raison: Éviter les conflits CSS avec les styles centralisés
+        // Les styles sont maintenant gérés dans:
+        // src/css/commandes/commandes-modal.css
+        // Section 3: NOTIFICATION STYLES (lignes 501-700)
+        // ========================================
+        return; // Early return pour s'assurer que rien ne se charge
+        
+        /* Code original conservé pour documentation:
         // Vérifier si les styles sont déjà chargés
         if (document.getElementById('notification-styles')) {
             return;
@@ -43,6 +66,7 @@ export class NotificationManager {
         link.rel = 'stylesheet';
         link.href = new URL('./styles/notification.css', import.meta.url).href;
         document.head.appendChild(link);
+        */
     }
     
     show(options) {

@@ -1,7 +1,15 @@
 // ========================================
 // MODAL.COMPONENT.JS - Composant Modal réutilisable
 // ========================================
-// À placer dans : src/js/shared/ui/modal.component.js
+// Chemin: src/js/shared/ui/modal.component.js
+//
+// IMPORTANT: Les styles CSS ont été centralisés dans:
+// src/css/commandes/commandes-modal.css (Section 1: MODAL BASE STYLES, lignes 30-280)
+// 
+// Historique:
+// - Avant: Chargeait ./styles/modal.css via loadStyles()
+// - Maintenant: Utilise les styles centralisés pour éviter les conflits
+// ========================================
 
 export class Modal {
     constructor(modalId, options = {}) {
@@ -27,8 +35,8 @@ export class Modal {
     }
     
     init() {
-        // Charger les styles CSS externes
-        this.loadStyles();
+        // IMPORTANT: loadStyles() désactivé - Styles dans src/css/commandes/commandes-modal.css
+        // this.loadStyles(); // DÉSACTIVÉ le 2024-XX-XX
         
         // Trouver le bouton de fermeture
         this.closeButton = this.modalElement.querySelector('.modal-close');
@@ -40,7 +48,21 @@ export class Modal {
         this.modalElement.classList.remove('active');
     }
     
+    /**
+     * FONCTION DÉSACTIVÉE - Conservée pour référence historique
+     * Les styles sont maintenant dans src/css/commandes/commandes-modal.css
+     * Section: MODAL BASE STYLES (lignes 30-280)
+     */
     loadStyles() {
+        // ========================================
+        // DÉSACTIVÉ - NE PAS RÉACTIVER
+        // Raison: Éviter les conflits CSS avec les styles centralisés
+        // Les styles sont maintenant gérés dans:
+        // src/css/commandes/commandes-modal.css
+        // ========================================
+        return; // Early return pour s'assurer que rien ne se charge
+        
+        /* Code original conservé pour documentation:
         // Vérifier si les styles sont déjà chargés
         if (document.getElementById('modal-styles')) {
             return;
@@ -52,6 +74,7 @@ export class Modal {
         link.rel = 'stylesheet';
         link.href = new URL('./styles/modal.css', import.meta.url).href;
         document.head.appendChild(link);
+        */
     }
     
     attachEvents() {

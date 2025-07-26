@@ -1,7 +1,16 @@
 // ========================================
 // DIALOG.COMPONENT.JS - Dialogues modernes et élégants
 // ========================================
-// À placer dans : src/js/shared/ui/dialog.component.js
+// Chemin: src/js/shared/ui/dialog.component.js
+//
+// IMPORTANT: Ce composant utilise injectStyles() au lieu de loadStyles()
+// car il injecte directement les styles dans le DOM.
+// 
+// Pour utiliser les styles centralisés:
+// 1. Commenter/supprimer injectStyles() dans init()
+// 2. S'assurer que les styles sont dans src/css/commandes/commandes-modal.css
+//    Section 2: DIALOG STYLES (lignes 281-500)
+// ========================================
 
 export class Dialog {
     static instance = null;
@@ -29,13 +38,42 @@ export class Dialog {
             this.container = document.getElementById('dialog-container');
         }
         
-        // Ajouter les styles si pas déjà présents
-        if (!document.getElementById('dialog-styles')) {
-            this.injectStyles();
-        }
+        // ========================================
+        // IMPORTANT: CHOISIR UNE OPTION:
+        // Option A: Garder injectStyles() pour un composant autonome
+        // Option B: Commenter et utiliser les styles centralisés
+        // ========================================
+        
+        // Option A: Injection directe (actuellement actif)
+        // if (!document.getElementById('dialog-styles')) {
+        //     this.injectStyles();
+        // }
+        
+        // Option B: Utiliser les styles centralisés (RECOMMANDÉ)
+        // Les styles sont dans src/css/commandes/commandes-modal.css
+        // Section 2: DIALOG STYLES (lignes 281-500)
+        // Commenter la ligne ci-dessous si vous utilisez cette option:
+        
+        // DÉSACTIVÉ - Styles centralisés dans commandes-modal.css
+        // this.injectStyles();
     }
     
+    /**
+     * FONCTION DÉSACTIVÉE - Les styles sont centralisés
+     * Conservée pour référence si besoin d'un composant autonome
+     * 
+     * Si réactivation nécessaire:
+     * 1. Décommenter l'appel dans init()
+     * 2. Vérifier qu'il n'y a pas de conflit avec commandes-modal.css
+     */
     injectStyles() {
+        // ========================================
+        // DÉSACTIVÉ - Styles dans commandes-modal.css
+        // Section 2: DIALOG STYLES (lignes 281-500)
+        // ========================================
+        return; // Early return
+        
+        /* Code original conservé pour documentation:
         const style = document.createElement('style');
         style.id = 'dialog-styles';
         style.textContent = `
@@ -233,6 +271,7 @@ export class Dialog {
             }
         `;
         document.head.appendChild(style);
+        */
     }
     
     show(options) {
