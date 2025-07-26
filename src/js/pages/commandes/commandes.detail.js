@@ -6,6 +6,7 @@
 // Gère l'affichage détaillé d'une commande et les actions de modification de statut.
 // Utilise le composant Timeline pour afficher la progression visuelle.
 // Modifié le 27/07/2025 : Ajout suppression sécurisée + saisie NS + flux expédition
+// Modifié le 29/07/2025 : Toujours afficher les boutons expédition ET livraison directe
 //
 // STRUCTURE:
 // 1. Imports et dépendances (lignes 15-30)
@@ -226,17 +227,11 @@ function afficherActionsCommande(commande) {
             break;
             
         case 'terminee':
-            // MODIFIÉ : Proposer expédition OU livraison directe
-            if (commande.expedition?.necessiteExpedition || 
-                commande.magasinLivraison !== commande.magasinReference) {
-                actions.push(`
-                    <button class="btn btn-primary" onclick="saisirExpedition('${commande.id}')">
-                        📦 Expédier le colis
-                    </button>
-                `);
-            }
-            // Toujours proposer la livraison directe
+            // MODIFIÉ le 29/07/2025 : Toujours proposer les deux options (expédition ET livraison directe)
             actions.push(`
+                <button class="btn btn-primary" onclick="saisirExpedition('${commande.id}')">
+                    📦 Expédier le colis
+                </button>
                 <button class="btn btn-success" onclick="livrerDirectement('${commande.id}')">
                     ✅ Livrer directement au patient
                 </button>
@@ -706,6 +701,11 @@ function formatDate(timestamp) {
    - validerReception avec vérification du numéro
    - livrerDirectement pour skip l'expédition
    
+   [29/07/2025] - Bouton expédition manquant après préparation terminée
+   Problème: Le bouton "Expédier le colis" ne s'affichait que sous conditions
+   Solution: Toujours afficher les deux options (expédition ET livraison directe)
+   Impact: L'utilisateur a toujours le choix entre expédier ou livrer directement
+   
    NOTES POUR REPRISES FUTURES:
    - Le composant Timeline gère automatiquement l'orientation
    - Les styles sont dans commandes-modal.css section 4
@@ -714,4 +714,5 @@ function formatDate(timestamp) {
    - La suppression nécessite la saisie exacte du numéro de commande
    - Les NS sont obligatoires pour les appareils auditifs
    - L'expédition est optionnelle (bouton livrer directement)
+   - Les deux boutons (expédier + livrer) s'affichent toujours pour le statut "terminee"
    ======================================== */
