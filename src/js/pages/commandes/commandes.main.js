@@ -3,7 +3,7 @@
 // ========================================
 
 import { initFirebase } from '../../services/firebase.service.js';
-import { modalManager, confirmerAction, Dialog, notify } from '../../shared';
+import { modalManager, confirmerAction, Dialog, notify } from '../../shared/index.js';
 import { 
     initListeCommandes, 
     chargerDonnees, 
