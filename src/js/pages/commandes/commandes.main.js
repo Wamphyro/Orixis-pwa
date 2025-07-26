@@ -1,31 +1,32 @@
 // ========================================
-// COMMANDES.MAIN.JS - Point d'entrée principal
+// COMMANDES.MAIN.JS - Point d'entrée principal (VERSION COMPLÈTE)
 // ========================================
 
-// EXPOSITION IMMÉDIATE des fonctions pour les onclick HTML
-window.ouvrirNouvelleCommande = () => {};
-window.voirDetailCommande = () => {};
-window.filtrerCommandes = () => {};
-window.resetFiltres = () => {};
-window.pagePrecedente = () => {};
-window.pageSuivante = () => {};
-window.rechercherClient = () => {};
-window.selectionnerClient = () => {};
-window.changerClient = () => {};
-window.ouvrirNouveauClient = () => {};
-window.creerNouveauClient = () => {};
-window.appliquerPack = () => {};
-window.rechercherProduit = () => {};
-window.ajouterProduit = () => {};
-window.retirerProduit = () => {};
-window.etapePrecedente = () => {};
-window.etapeSuivante = () => {};
-window.validerCommande = () => {};
-window.changerStatutCommande = () => {};
-window.fermerModal = () => {};
-window.logout = () => {};
-window.selectionnerCote = () => {};
-window.annulerSelectionCote = () => {};
+// EXPOSITION IMMÉDIATE DES FONCTIONS POUR LE HTML
+// Ces fonctions seront remplacées par les vraies après le chargement des modules
+window.ouvrirNouvelleCommande = () => console.log('Chargement en cours...');
+window.voirDetailCommande = () => console.log('Chargement en cours...');
+window.filtrerCommandes = () => console.log('Chargement en cours...');
+window.resetFiltres = () => console.log('Chargement en cours...');
+window.pagePrecedente = () => console.log('Chargement en cours...');
+window.pageSuivante = () => console.log('Chargement en cours...');
+window.rechercherClient = () => console.log('Chargement en cours...');
+window.selectionnerClient = () => console.log('Chargement en cours...');
+window.changerClient = () => console.log('Chargement en cours...');
+window.ouvrirNouveauClient = () => console.log('Chargement en cours...');
+window.creerNouveauClient = () => console.log('Chargement en cours...');
+window.appliquerPack = () => console.log('Chargement en cours...');
+window.rechercherProduit = () => console.log('Chargement en cours...');
+window.ajouterProduit = () => console.log('Chargement en cours...');
+window.retirerProduit = () => console.log('Chargement en cours...');
+window.etapePrecedente = () => console.log('Chargement en cours...');
+window.etapeSuivante = () => console.log('Chargement en cours...');
+window.validerCommande = () => console.log('Chargement en cours...');
+window.changerStatutCommande = () => console.log('Chargement en cours...');
+window.fermerModal = () => console.log('Chargement en cours...');
+window.logout = () => console.log('Chargement en cours...');
+window.selectionnerCote = () => console.log('Chargement en cours...');
+window.annulerSelectionCote = () => console.log('Chargement en cours...');
 
 import { initFirebase } from '../../services/firebase.service.js';
 import { modalManager, confirmerAction, Dialog, notify } from '../../shared/index.js';
@@ -61,7 +62,7 @@ import {
 } from './commandes.detail.js';
 
 // ========================================
-// VARIABLES GLOBALES
+// VARIABLES GLOBALES (partagées entre modules)
 // ========================================
 
 export const state = {
@@ -80,6 +81,7 @@ export const state = {
 // INITIALISATION
 // ========================================
 
+// Vérifier l'authentification
 function checkAuth() {
     const auth = localStorage.getItem('sav_auth');
     if (!auth) return false;
@@ -95,6 +97,7 @@ function checkAuth() {
     return authData.authenticated;
 }
 
+// Initialisation au chargement
 window.addEventListener('load', async () => {
     if (!checkAuth()) {
         window.location.href = '../../index.html';
@@ -114,7 +117,7 @@ window.addEventListener('load', async () => {
     await initListeCommandes();
     initCreationCommande();
     
-    // EXPOSER LES FONCTIONS APRÈS L'IMPORT
+    // MAINTENANT QUE LES MODULES SONT CHARGÉS, REMPLACER LES FONCTIONS
     window.modalManager = modalManager;
     window.ouvrirNouvelleCommande = ouvrirNouvelleCommande;
     window.filtrerCommandes = filtrerCommandes;
@@ -140,7 +143,7 @@ window.addEventListener('load', async () => {
     window.selectionnerCote = selectionnerCote;
     window.annulerSelectionCote = annulerSelectionCote;
     
-    console.log('✅ Fonctions exposées globalement');
+    console.log('✅ Modules chargés et fonctions exposées');
     
     // Charger les données initiales
     await chargerDonnees();
@@ -162,6 +165,7 @@ function initModales() {
         closeOnOverlayClick: false,
         closeOnEscape: true,
         onBeforeClose: async () => {
+            // Si on est en train d'ouvrir une autre modal, ne pas demander confirmation
             if (window.skipConfirmation) {
                 window.skipConfirmation = false;
                 return true;
@@ -174,6 +178,7 @@ function initModales() {
             return true;
         },
         onClose: () => {
+            // Réinitialiser le formulaire via le module create
             if (window.resetNouvelleCommande) {
                 window.resetNouvelleCommande();
             }
@@ -194,6 +199,7 @@ function initModales() {
             const formClient = document.getElementById('formNouveauClient');
             if (formClient) formClient.reset();
             
+            // Rouvrir la modal de nouvelle commande
             setTimeout(() => {
                 modalManager.open('modalNouvelleCommande');
             }, 300);
@@ -248,6 +254,7 @@ function initEventListeners() {
     const urgenceInputs = document.querySelectorAll('input[name="urgence"]');
     urgenceInputs.forEach(input => {
         input.addEventListener('change', () => {
+            // Appeler la fonction du module create
             if (window.setDateLivraisonDefaut) {
                 window.setDateLivraisonDefaut();
             }
