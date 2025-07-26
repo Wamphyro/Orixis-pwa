@@ -107,7 +107,7 @@
 
 /* Corps de la modal */
 .modal-body {
-    padding: 24px;
+    padding: 30px; /* Augmenté de 24px à 30px */
     overflow-y: auto;
     flex: 1;
 }
@@ -1188,7 +1188,7 @@ body.modal-open {
     padding: 30px;
     background: #f8f9fa;
     border-radius: 15px;
-    margin-bottom: 30px;
+    margin-bottom: 40px; /* Augmenté de 30px à 40px */
 }
 
 /* Override pour timeline commandes */
@@ -1218,7 +1218,7 @@ body.modal-open {
 /* SECTIONS DÉTAIL - NOUVELLE ORGANISATION */
 .detail-sections {
     display: flex;
-    gap: 20px;
+    gap: 30px; /* Augmenté de 20px à 30px */
     margin-bottom: 30px;
 }
 
@@ -1227,7 +1227,7 @@ body.modal-open {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 25px; /* Augmenté de 20px à 25px */
 }
 
 /* Colonne de droite : Produits */
@@ -1245,6 +1245,7 @@ body.modal-open {
 /* Section expédition sur toute la largeur */
 .detail-section.full-width {
     margin-top: 20px;
+    margin-bottom: 30px; /* Ajout d'un margin-bottom pour espacer des boutons */
 }
 
 .detail-section h3 {
@@ -1445,6 +1446,7 @@ body.modal-open {
     gap: 12px;
     flex-wrap: wrap;
     justify-content: center;
+    margin-top: 30px; /* Ajout d'un margin-top pour espacer de la section précédente */
 }
 
 .detail-actions .btn {
