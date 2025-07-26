@@ -1,7 +1,7 @@
 // ========================================
 // MODAL.COMPONENT.JS - Composant Modal réutilisable
 // ========================================
-// À placer dans : src/js/shared/modal.component.js
+// À placer dans : src/js/shared/ui/modal.component.js
 
 export class Modal {
     constructor(modalId, options = {}) {
@@ -27,6 +27,9 @@ export class Modal {
     }
     
     init() {
+        // Charger les styles CSS externes
+        this.loadStyles();
+        
         // Trouver le bouton de fermeture
         this.closeButton = this.modalElement.querySelector('.modal-close');
         
@@ -35,6 +38,20 @@ export class Modal {
         
         // S'assurer que la modal est cachée au départ
         this.modalElement.classList.remove('active');
+    }
+    
+    loadStyles() {
+        // Vérifier si les styles sont déjà chargés
+        if (document.getElementById('modal-styles')) {
+            return;
+        }
+        
+        // Créer le lien vers le fichier CSS
+        const link = document.createElement('link');
+        link.id = 'modal-styles';
+        link.rel = 'stylesheet';
+        link.href = new URL('./styles/modal.css', import.meta.url).href;
+        document.head.appendChild(link);
     }
     
     attachEvents() {
@@ -62,10 +79,11 @@ export class Modal {
         }
     }
     
-    open() {
+    async open() {
         // Callback avant ouverture
         if (this.options.onOpen && typeof this.options.onOpen === 'function') {
-            this.options.onOpen(this);
+            const result = await this.options.onOpen(this);
+            if (result === false) return;
         }
         
         // Ouvrir la modal
@@ -89,10 +107,10 @@ export class Modal {
         }, this.options.animationDuration);
     }
     
-    close() {
+    async close() {
         // Callback avant fermeture (peut annuler)
         if (this.options.onBeforeClose && typeof this.options.onBeforeClose === 'function') {
-            const shouldClose = this.options.onBeforeClose(this);
+            const shouldClose = await this.options.onBeforeClose(this);
             if (shouldClose === false) return;
         }
         
