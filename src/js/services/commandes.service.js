@@ -435,7 +435,7 @@ export class CommandesService {
                     date: serverTimestamp(),
                     utilisateur: utilisateur,
                     motif: infos.motif || 'Suppression manuelle',
-                    nomPrenomValide: infos.nomPrenom || '',
+                    numeroCommandeValide: infos.numeroCommandeValide || '',
                     timestamp: Date.now(),
                     statutAvantSuppression: commande.statut
                 },
