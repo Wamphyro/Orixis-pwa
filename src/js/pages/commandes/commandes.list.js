@@ -4,7 +4,7 @@
 
 import { CommandesService } from '../../services/commandes.service.js';
 import { COMMANDES_CONFIG } from '../../data/commandes.data.js';
-import { formatDate as formatDateUtil, formatMoney } from '../../shared';
+import { formatDate as formatDateUtil, formatMoney } from '../../shared/index.js';
 import { state } from './commandes.main.js';
 
 // ========================================
