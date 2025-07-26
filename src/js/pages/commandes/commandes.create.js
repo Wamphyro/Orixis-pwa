@@ -1,12 +1,12 @@
 // ========================================
-// COMMANDES.CREATE.JS - Gestion de la création de commandes
+// COMMANDES.CREATE.JS - Gestion de la création de commandes (CORRIGÉ)
 // ========================================
 
 import { db } from '../../services/firebase.service.js';
 import { ClientsService } from '../../services/clients.service.js';
 import { ProduitsService } from '../../services/produits.service.js';
 import { CommandesService } from '../../services/commandes.service.js';
-import { COMMANDES_CONFIG, formaterPrix } from '../../data/commandes.data.js';
+import { COMMANDES_CONFIG } from '../../data/commandes.data.js';
 import { Dialog, notify } from '../../shared/index.js';
 import { chargerDonnees } from './commandes.list.js';
 import { ouvrirModal, afficherSucces, afficherErreur } from './commandes.main.js';
@@ -71,6 +71,8 @@ function resetNouvelleCommande() {
     
     // Réinitialiser l'affichage
     afficherEtape(1);
+    
+    // Réinitialiser la recherche client
     const clientSearch = document.getElementById('clientSearch');
     if (clientSearch) {
         clientSearch.value = '';
@@ -79,6 +81,21 @@ function resetNouvelleCommande() {
     const clientSelected = document.getElementById('clientSelected');
     if (clientSelected) {
         clientSelected.style.display = 'none';
+    }
+    
+    // IMPORTANT: Réinitialiser la recherche produit et le panier
+    const productSearch = document.getElementById('productSearch');
+    if (productSearch) {
+        productSearch.value = '';
+    }
+    const productSearchResults = document.getElementById('productSearchResults');
+    if (productSearchResults) {
+        productSearchResults.innerHTML = '';
+        productSearchResults.classList.remove('active');
+    }
+    const tempCartItems = document.getElementById('tempCartItems');
+    if (tempCartItems) {
+        tempCartItems.innerHTML = '<p>Aucun produit sélectionné</p>';
     }
 }
 
@@ -363,7 +380,6 @@ export async function rechercherProduit() {
                             <div class="product-name">${produit.designation}</div>
                             <div class="product-reference">${produit.reference}</div>
                         </div>
-                        <div class="product-price">${formaterPrix(produit.prix)}</div>
                     </div>
                     <div class="product-info">
                         ${produit.marque} - ${produit.categorie}
@@ -503,8 +519,7 @@ function afficherPanierTemporaire() {
             <div class="temp-cart-item-info">
                 <div class="temp-cart-item-name">${produit.designation}</div>
                 <div class="temp-cart-item-details">
-                    ${produit.cote ? `Côté: ${produit.cote} - ` : ''}
-                    ${formaterPrix(produit.prix)}
+                    ${produit.cote ? `Côté: ${produit.cote}` : ''}
                 </div>
             </div>
             <div class="temp-cart-item-actions">
@@ -648,19 +663,14 @@ function afficherRecapitulatif() {
     }
     
     const recapProduits = document.getElementById('recapProduits');
-    let total = 0;
-    recapProduits.innerHTML = nouvelleCommande.produits.map(produit => {
-        const sousTotal = produit.prix * (produit.quantite || 1);
-        total += sousTotal;
-        return `
-            <div style="margin-bottom: 10px;">
-                <strong>${produit.designation}</strong>
-                ${produit.cote ? `(${produit.cote})` : ''}
-                <br>
-                ${produit.quantite || 1} x ${formaterPrix(produit.prix)} = ${formaterPrix(sousTotal)}
-            </div>
-        `;
-    }).join('');
+    recapProduits.innerHTML = nouvelleCommande.produits.map(produit => `
+        <div style="margin-bottom: 10px;">
+            <strong>${produit.designation}</strong>
+            ${produit.cote ? `(${produit.cote})` : ''}
+            <br>
+            Quantité: ${produit.quantite || 1}
+        </div>
+    `).join('');
     
     const recapLivraison = document.getElementById('recapLivraison');
     const typePrep = document.getElementById('typePreparation').value;
@@ -674,8 +684,6 @@ function afficherRecapitulatif() {
         <p><strong>Magasin de livraison:</strong> ${magasinLivraison}</p>
         <p><strong>Date prévue:</strong> ${new Date(dateLivraison).toLocaleDateString('fr-FR')}</p>
     `;
-    
-    document.getElementById('recapTotal').textContent = formaterPrix(total);
 }
 
 export async function validerCommande() {
