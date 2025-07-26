@@ -32,6 +32,9 @@ let nouvelleCommande = {
     commentaires: ''
 };
 
+// Variable pour stocker temporairement le produit en cours de sélection
+let produitEnCoursSelection = null;
+
 // ========================================
 // INITIALISATION
 // ========================================
@@ -213,6 +216,7 @@ window.voirDetailCommande = voirDetailCommande;
 window.changerStatutCommande = changerStatutCommande;
 window.fermerModal = fermerModal;
 window.logout = logout;
+window.selectionnerCote = selectionnerCote;
 
 function filtrerCommandesLocalement() {
     return commandesData.filter(commande => {
@@ -672,50 +676,127 @@ async function ajouterProduit(produitId) {
         const produit = await ProduitsService.getProduit(produitId);
         if (!produit) return;
         
-        // Si appareil auditif, demander le côté
+        // Si appareil auditif, demander le côté avec une interface visuelle
         if (produit.necessiteCote) {
-            // TODO: Implémenter la sélection du côté
-            const cote = prompt('Quel côté ? (droit/gauche/both)');
-            if (!cote) return;
+            produitEnCoursSelection = produit;
             
-            if (cote === 'both') {
-                // Ajouter les deux côtés
-                nouvelleCommande.produits.push({
-                    ...produit,
-                    cote: 'droit',
-                    quantite: 1
-                });
-                nouvelleCommande.produits.push({
-                    ...produit,
-                    cote: 'gauche',
-                    quantite: 1
-                });
-            } else {
-                nouvelleCommande.produits.push({
-                    ...produit,
-                    cote: cote,
-                    quantite: 1
-                });
-            }
+            // Créer et afficher le sélecteur de côté
+            const selectorHtml = `
+                <div id="coteSelector" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                     background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); 
+                     z-index: 10000; min-width: 400px;">
+                    <h3 style="margin-bottom: 20px; text-align: center; color: #2c3e50;">
+                        Sélectionner le côté pour<br><strong>${produit.designation}</strong>
+                    </h3>
+                    <div style="display: flex; gap: 15px; justify-content: center; margin-bottom: 20px;">
+                        <button onclick="selectionnerCote('gauche')" style="background: white; border: 3px solid #2196F3; 
+                                border-radius: 15px; padding: 20px; cursor: pointer; transition: all 0.3s ease;
+                                display: flex; flex-direction: column; align-items: center; gap: 10px;"
+                                onmouseover="this.style.background='#E3F2FD'" onmouseout="this.style.background='white'">
+                            <span style="font-size: 40px;">👂</span>
+                            <span style="color: #2196F3; font-weight: bold;">Gauche</span>
+                        </button>
+                        <button onclick="selectionnerCote('droit')" style="background: white; border: 3px solid #F44336; 
+                                border-radius: 15px; padding: 20px; cursor: pointer; transition: all 0.3s ease;
+                                display: flex; flex-direction: column; align-items: center; gap: 10px;"
+                                onmouseover="this.style.background='#FFEBEE'" onmouseout="this.style.background='white'">
+                            <span style="font-size: 40px;">👂</span>
+                            <span style="color: #F44336; font-weight: bold;">Droit</span>
+                        </button>
+                        <button onclick="selectionnerCote('both')" style="background: white; border: 3px solid #9C27B0; 
+                                border-radius: 15px; padding: 20px; cursor: pointer; transition: all 0.3s ease;
+                                display: flex; flex-direction: column; align-items: center; gap: 10px;"
+                                onmouseover="this.style.background='#F3E5F5'" onmouseout="this.style.background='white'">
+                            <span style="font-size: 40px;">👂👂</span>
+                            <span style="color: #9C27B0; font-weight: bold;">Les deux</span>
+                        </button>
+                    </div>
+                    <button onclick="annulerSelectionCote()" style="background: #f8f9fa; border: 2px solid #e9ecef; 
+                            border-radius: 10px; padding: 10px 20px; cursor: pointer; width: 100%; 
+                            color: #6c757d; font-weight: 500;">
+                        Annuler
+                    </button>
+                </div>
+                <div id="coteSelectorOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                     background: rgba(0,0,0,0.5); z-index: 9999;" onclick="annulerSelectionCote()"></div>
+            `;
+            
+            // Ajouter le sélecteur au DOM
+            document.body.insertAdjacentHTML('beforeend', selectorHtml);
+            
         } else {
             // Produit normal
             nouvelleCommande.produits.push({
                 ...produit,
                 quantite: 1
             });
+            
+            // Mettre à jour l'affichage
+            afficherPanierTemporaire();
+            
+            // Masquer les résultats
+            document.getElementById('productSearchResults').classList.remove('active');
+            document.getElementById('productSearch').value = '';
         }
-        
-        // Mettre à jour l'affichage
-        afficherPanierTemporaire();
-        
-        // Masquer les résultats
-        document.getElementById('productSearchResults').classList.remove('active');
-        document.getElementById('productSearch').value = '';
         
     } catch (error) {
         console.error('Erreur ajout produit:', error);
     }
 }
+
+// Nouvelle fonction pour gérer la sélection du côté
+function selectionnerCote(cote) {
+    if (!produitEnCoursSelection) return;
+    
+    if (cote === 'both') {
+        // Ajouter les deux côtés
+        nouvelleCommande.produits.push({
+            ...produitEnCoursSelection,
+            cote: 'droit',
+            quantite: 1
+        });
+        nouvelleCommande.produits.push({
+            ...produitEnCoursSelection,
+            cote: 'gauche',
+            quantite: 1
+        });
+    } else {
+        // Ajouter un seul côté
+        nouvelleCommande.produits.push({
+            ...produitEnCoursSelection,
+            cote: cote,
+            quantite: 1
+        });
+    }
+    
+    // Retirer le sélecteur du DOM
+    const selector = document.getElementById('coteSelector');
+    const overlay = document.getElementById('coteSelectorOverlay');
+    if (selector) selector.remove();
+    if (overlay) overlay.remove();
+    
+    // Réinitialiser le produit en cours
+    produitEnCoursSelection = null;
+    
+    // Mettre à jour l'affichage
+    afficherPanierTemporaire();
+    
+    // Masquer les résultats de recherche
+    document.getElementById('productSearchResults').classList.remove('active');
+    document.getElementById('productSearch').value = '';
+}
+
+// Fonction pour annuler la sélection
+function annulerSelectionCote() {
+    const selector = document.getElementById('coteSelector');
+    const overlay = document.getElementById('coteSelectorOverlay');
+    if (selector) selector.remove();
+    if (overlay) overlay.remove();
+    produitEnCoursSelection = null;
+}
+
+// Exposer les fonctions pour la sélection de côté
+window.annulerSelectionCote = annulerSelectionCote;
 
 function afficherPanierTemporaire() {
     const container = document.getElementById('tempCartItems');
