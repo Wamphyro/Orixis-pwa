@@ -1213,13 +1213,22 @@ body.modal-open {
     color: #495057;
 }
 
-/* SECTIONS DÉTAIL */
+/* SECTIONS DÉTAIL - NOUVELLE STRUCTURE */
 .detail-sections {
     display: grid;
-    grid-template-columns: auto 1fr;  /* MODIFIÉ : auto pour s'adapter au contenu, 1fr pour prendre le reste */
+    grid-template-columns: auto 1fr;  /* Colonne gauche auto, colonne droite prend le reste */
     gap: 20px;
     margin-bottom: 30px;
-    align-items: start;  /* Aligner en haut */
+    align-items: start;
+}
+
+/* Colonne de gauche avec client + livraison */
+.detail-column-left {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 280px;
+    max-width: 350px;
 }
 
 .detail-section {
@@ -1228,11 +1237,14 @@ body.modal-open {
     padding: 20px;
 }
 
-/* Section client plus compacte */
-.detail-section:first-child {
-    padding: 15px 20px;  /* Moins de padding vertical */
-    min-width: 280px;    /* Largeur minimale pour éviter trop étroit */
-    max-width: 350px;    /* Largeur maximale pour éviter trop large */
+/* Section produits plus large */
+.detail-section-large {
+    min-height: 100%;  /* Prend toute la hauteur */
+}
+
+/* Sections client et livraison plus compactes */
+.detail-column-left .detail-section {
+    padding: 15px 20px;
 }
 
 .detail-section h3 {
@@ -1537,7 +1549,7 @@ body.modal-open {
         grid-template-columns: 1fr;  /* Une seule colonne sur mobile */
     }
     
-    .detail-section:first-child {
+    .detail-column-left {
         max-width: 100%;  /* Pleine largeur sur mobile */
     }
     

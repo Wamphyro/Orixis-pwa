@@ -124,31 +124,33 @@ function afficherDetailCommande(commande) {
         </div>
     `;
     
-    // Informations de livraison
+    // Informations de livraison - DANS LA MÊME LIGNE QUE CLIENT
     const detailLivraison = document.getElementById('detailLivraison');
     detailLivraison.innerHTML = `
-        <div class="detail-info">
-            <span class="detail-label">Type :</span>
-            <span class="detail-value">${COMMANDES_CONFIG.TYPES_PREPARATION[commande.typePreparation]?.label}</span>
-        </div>
-        <div class="detail-info">
-            <span class="detail-label">Urgence :</span>
-            <span class="detail-value">${COMMANDES_CONFIG.NIVEAUX_URGENCE[commande.niveauUrgence]?.label}</span>
-        </div>
-        <div class="detail-info">
-            <span class="detail-label">Magasin livraison :</span>
-            <span class="detail-value">${commande.magasinLivraison}</span>
-        </div>
-        <div class="detail-info">
-            <span class="detail-label">Date prévue :</span>
-            <span class="detail-value">${formatDate(commande.dates.livraisonPrevue)}</span>
-        </div>
-        ${commande.commentaires ? `
-            <div class="detail-info">
-                <span class="detail-label">Commentaires :</span>
-                <span class="detail-value">${commande.commentaires}</span>
+        <div class="detail-info-compact">
+            <div class="info-row">
+                <span class="detail-label">Type :</span>
+                <span class="detail-value">${COMMANDES_CONFIG.TYPES_PREPARATION[commande.typePreparation]?.label}</span>
             </div>
-        ` : ''}
+            <div class="info-row">
+                <span class="detail-label">Urgence :</span>
+                <span class="detail-value">${COMMANDES_CONFIG.NIVEAUX_URGENCE[commande.niveauUrgence]?.label}</span>
+            </div>
+            <div class="info-row">
+                <span class="detail-label">Magasin :</span>
+                <span class="detail-value">${commande.magasinLivraison}</span>
+            </div>
+            <div class="info-row">
+                <span class="detail-label">Date :</span>
+                <span class="detail-value">${formatDate(commande.dates.livraisonPrevue)}</span>
+            </div>
+            ${commande.commentaires ? `
+                <div class="info-row">
+                    <span class="detail-label">Note :</span>
+                    <span class="detail-value">${commande.commentaires}</span>
+                </div>
+            ` : ''}
+        </div>
     `;
     
     // Section expédition (MODIFIÉE pour afficher plus d'infos)
