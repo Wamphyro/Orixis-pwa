@@ -1,43 +1,34 @@
 // ========================================
-// COMMANDES.DETAIL.JS - Gestion du détail et des modifications (ÉDITION INLINE)
+// COMMANDES.DETAIL.JS - Gestion du détail et des modifications (CORRIGÉ)
 // Chemin: src/js/pages/commandes/commandes.detail.js
 //
 // DESCRIPTION:
 // Gère l'affichage détaillé d'une commande et les actions de modification de statut.
 // Utilise le composant Timeline pour afficher la progression visuelle.
-// NOUVEAU: Édition inline des sections client, livraison et produits
-// Modifié le 30/07/2025 : Ajout édition inline complète
+// Modifié le 27/07/2025 : Ajout suppression sécurisée + saisie NS + flux expédition
+// Modifié le 29/07/2025 : Toujours afficher les boutons expédition ET livraison directe
 //
 // STRUCTURE:
-// 1. Imports et variables globales (lignes 15-35)
-// 2. Affichage du détail (lignes 37-220)
-// 3. Gestion de l'édition inline (lignes 222-580)
-// 4. Changement de statut (lignes 582-700)
-// 5. Actions spécifiques (lignes 702-900)
-// 6. Fonctions utilitaires (lignes 902-950)
+// 1. Imports et dépendances (lignes 15-30)
+// 2. Affichage du détail (lignes 32-200)
+// 3. Changement de statut (lignes 202-320)
+// 4. Actions spécifiques (lignes 322-500)
+// 5. Fonction de suppression sécurisée (lignes 502-570)
+// 6. Fonctions utilitaires (lignes 572-580)
 //
 // DÉPENDANCES:
 // - CommandesService: Accès aux données des commandes
-// - ClientsService: Modification des clients
 // - Timeline component: Pour l'affichage de la progression
 // - Dialog/notify: Pour les interactions utilisateur
+// - commandes.serial: Pour la gestion des numéros de série
 // ========================================
 
 import { CommandesService } from '../../services/commandes.service.js';
-import { ClientsService } from '../../services/clients.service.js';
-import { ProduitsService } from '../../services/produits.service.js';
 import { COMMANDES_CONFIG } from '../../data/commandes.data.js';
 import { Dialog, confirmerAction, createOrderTimeline, notify } from '../../shared/index.js';
 import { chargerDonnees } from './commandes.list.js';
 import { afficherSucces, afficherErreur } from './commandes.main.js';
 
-// ========================================
-// VARIABLES GLOBALES POUR L'ÉDITION
-// ========================================
-
-let commandeActuelle = null;
-let sectionEnEdition = null;
-let valeursOriginales = {};
 
 // ========================================
 // DÉTAIL COMMANDE
@@ -47,9 +38,6 @@ export async function voirDetailCommande(commandeId) {
     try {
         const commande = await CommandesService.getCommande(commandeId);
         if (!commande) return;
-        
-        // Stocker la commande actuelle
-        commandeActuelle = commande;
         
         // Afficher les informations dans la modal
         afficherDetailCommande(commande);
@@ -77,27 +65,14 @@ function afficherDetailCommande(commande) {
     
     // Utiliser le composant Timeline avec orientation horizontale
     createOrderTimeline(timelineContainer, commande, {
-        orientation: 'horizontal',
-        theme: 'colorful',
-        animated: true,
-        showDates: true,
-        showLabels: true
+        orientation: 'horizontal',  // Force l'affichage horizontal
+        theme: 'colorful',          // Thème avec gradients colorés
+        animated: true,             // Animations activées
+        showDates: true,            // Afficher les dates
+        showLabels: true            // Afficher les labels
     });
     
-    // Afficher les sections avec possibilité d'édition
-    afficherSectionClient(commande);
-    afficherSectionLivraison(commande);
-    afficherSectionProduits(commande);
-    afficherSectionExpedition(commande);
-    
-    // Gérer la visibilité des boutons d'édition selon le statut
-    gererVisibiliteEdition(commande);
-    
-    // Actions disponibles
-    afficherActionsCommande(commande);
-}
-
-function afficherSectionClient(commande) {
+    // Informations client - VERSION COMPACTE
     const detailClient = document.getElementById('detailClient');
     detailClient.innerHTML = `
         <div class="detail-info-compact">
@@ -119,39 +94,8 @@ function afficherSectionClient(commande) {
             </div>
         </div>
     `;
-}
-
-function afficherSectionLivraison(commande) {
-    const detailLivraison = document.getElementById('detailLivraison');
-    detailLivraison.innerHTML = `
-        <div class="detail-info-compact">
-            <div class="info-row">
-                <span class="detail-label">Type :</span>
-                <span class="detail-value">${COMMANDES_CONFIG.TYPES_PREPARATION[commande.typePreparation]?.label}</span>
-            </div>
-            <div class="info-row">
-                <span class="detail-label">Urgence :</span>
-                <span class="detail-value">${COMMANDES_CONFIG.NIVEAUX_URGENCE[commande.niveauUrgence]?.label}</span>
-            </div>
-            <div class="info-row">
-                <span class="detail-label">Magasin :</span>
-                <span class="detail-value">${commande.magasinLivraison}</span>
-            </div>
-            <div class="info-row">
-                <span class="detail-label">Date :</span>
-                <span class="detail-value">${formatDate(commande.dates.livraisonPrevue)}</span>
-            </div>
-            ${commande.commentaires ? `
-                <div class="info-row">
-                    <span class="detail-label">Note :</span>
-                    <span class="detail-value">${commande.commentaires}</span>
-                </div>
-            ` : ''}
-        </div>
-    `;
-}
-
-function afficherSectionProduits(commande) {
+    
+    // Produits commandés - NOUVEAU DESIGN SANS TABLEAU
     const detailProduits = document.getElementById('detailProduits');
     detailProduits.innerHTML = `
         <div class="produits-list">
@@ -180,9 +124,37 @@ function afficherSectionProduits(commande) {
             `).join('')}
         </div>
     `;
-}
-
-function afficherSectionExpedition(commande) {
+    
+    // Informations de livraison - DANS LA MÊME LIGNE QUE CLIENT
+    const detailLivraison = document.getElementById('detailLivraison');
+    detailLivraison.innerHTML = `
+        <div class="detail-info-compact">
+            <div class="info-row">
+                <span class="detail-label">Type :</span>
+                <span class="detail-value">${COMMANDES_CONFIG.TYPES_PREPARATION[commande.typePreparation]?.label}</span>
+            </div>
+            <div class="info-row">
+                <span class="detail-label">Urgence :</span>
+                <span class="detail-value">${COMMANDES_CONFIG.NIVEAUX_URGENCE[commande.niveauUrgence]?.label}</span>
+            </div>
+            <div class="info-row">
+                <span class="detail-label">Magasin :</span>
+                <span class="detail-value">${commande.magasinLivraison}</span>
+            </div>
+            <div class="info-row">
+                <span class="detail-label">Date :</span>
+                <span class="detail-value">${formatDate(commande.dates.livraisonPrevue)}</span>
+            </div>
+            ${commande.commentaires ? `
+                <div class="info-row">
+                    <span class="detail-label">Note :</span>
+                    <span class="detail-value">${commande.commentaires}</span>
+                </div>
+            ` : ''}
+        </div>
+    `;
+    
+    // Section expédition (MODIFIÉE pour afficher plus d'infos)
     const sectionExpedition = document.getElementById('sectionExpedition');
     if (commande.expedition?.necessiteExpedition || commande.expedition?.envoi?.numeroSuivi) {
         sectionExpedition.style.display = 'block';
@@ -224,429 +196,10 @@ function afficherSectionExpedition(commande) {
     } else {
         sectionExpedition.style.display = 'none';
     }
+    
+    // Actions disponibles
+    afficherActionsCommande(commande);
 }
-
-function gererVisibiliteEdition(commande) {
-    // Masquer les boutons d'édition si commande terminée, livrée ou annulée
-    const statutsBloquants = ['terminee', 'expediee', 'receptionnee', 'livree', 'annulee', 'supprime'];
-    const editionBloquee = statutsBloquants.includes(commande.statut);
-    
-    document.getElementById('btnEditClient').style.display = editionBloquee ? 'none' : 'block';
-    document.getElementById('btnEditLivraison').style.display = editionBloquee ? 'none' : 'block';
-    document.getElementById('btnEditProduits').style.display = editionBloquee ? 'none' : 'block';
-    
-    if (editionBloquee) {
-        // S'assurer qu'aucune section n'est en édition
-        if (sectionEnEdition) {
-            cancelEditSection(sectionEnEdition);
-        }
-    }
-}
-
-// ========================================
-// GESTION DE L'ÉDITION INLINE
-// ========================================
-
-window.toggleEditSection = async function(section) {
-    console.log('🔄 Toggle édition section:', section);
-    
-    // Si une autre section est en édition, l'annuler
-    if (sectionEnEdition && sectionEnEdition !== section) {
-        cancelEditSection(sectionEnEdition);
-    }
-    
-    // Si cette section est déjà en édition, l'annuler
-    if (sectionEnEdition === section) {
-        cancelEditSection(section);
-        return;
-    }
-    
-    // Activer le mode édition pour cette section
-    await activerModeEdition(section);
-};
-
-async function activerModeEdition(section) {
-    try {
-        console.log('✏️ Activation mode édition:', section);
-        
-        // Marquer la section comme en édition
-        sectionEnEdition = section;
-        
-        // Masquer l'affichage normal et afficher le formulaire d'édition
-        document.getElementById(`detail${capitalizeFirst(section)}`).style.display = 'none';
-        document.getElementById(`edit${capitalizeFirst(section)}`).classList.remove('hidden');
-        
-        // Changer l'icône du bouton
-        const btn = document.getElementById(`btnEdit${capitalizeFirst(section)}`);
-        btn.innerHTML = '❌';
-        btn.title = 'Annuler les modifications';
-        
-        // Désactiver les autres boutons d'édition
-        ['client', 'livraison', 'produits'].forEach(s => {
-            if (s !== section) {
-                document.getElementById(`btnEdit${capitalizeFirst(s)}`).disabled = true;
-            }
-        });
-        
-        // Charger les données selon la section
-        switch (section) {
-            case 'client':
-                await chargerFormulaireClient();
-                break;
-            case 'livraison':
-                await chargerFormulaireLivraison();
-                break;
-            case 'produits':
-                await chargerFormulaireProduits();
-                break;
-        }
-        
-        console.log('✅ Mode édition activé pour:', section);
-        
-    } catch (error) {
-        console.error('❌ Erreur activation édition:', error);
-        afficherErreur('Erreur lors de l\'activation du mode édition');
-        cancelEditSection(section);
-    }
-}
-
-window.cancelEditSection = function(section) {
-    console.log('❌ Annulation édition section:', section);
-    
-    // Réafficher l'affichage normal et masquer le formulaire
-    document.getElementById(`detail${capitalizeFirst(section)}`).style.display = 'block';
-    document.getElementById(`edit${capitalizeFirst(section)}`).classList.add('hidden');
-    
-    // Restaurer l'icône du bouton
-    const btn = document.getElementById(`btnEdit${capitalizeFirst(section)}`);
-    btn.innerHTML = '✏️';
-    btn.title = `Modifier les informations ${section}`;
-    
-    // Réactiver tous les boutons d'édition
-    ['client', 'livraison', 'produits'].forEach(s => {
-        document.getElementById(`btnEdit${capitalizeFirst(s)}`).disabled = false;
-    });
-    
-    // Marquer qu'aucune section n'est en édition
-    sectionEnEdition = null;
-    valeursOriginales = {};
-};
-
-async function chargerFormulaireClient() {
-    // Récupérer les données client actuelles
-    const client = commandeActuelle.client;
-    
-    // Stocker les valeurs originales
-    valeursOriginales.client = {
-        prenom: client.prenom,
-        nom: client.nom,
-        telephone: client.telephone,
-        email: client.email,
-        magasinReference: commandeActuelle.magasinReference
-    };
-    
-    // Remplir le formulaire
-    document.getElementById('editClientPrenom').value = client.prenom || '';
-    document.getElementById('editClientNom').value = client.nom || '';
-    document.getElementById('editClientTelephone').value = client.telephone || '';
-    document.getElementById('editClientEmail').value = client.email || '';
-    
-    // Charger les magasins
-    await chargerMagasinsSelect('editClientMagasin', commandeActuelle.magasinReference);
-    
-    // Gérer la soumission du formulaire
-    document.getElementById('formEditClient').onsubmit = async (e) => {
-        e.preventDefault();
-        await saveEditSection('client');
-    };
-}
-
-async function chargerFormulaireLivraison() {
-    // Stocker les valeurs originales
-    valeursOriginales.livraison = {
-        typePreparation: commandeActuelle.typePreparation,
-        niveauUrgence: commandeActuelle.niveauUrgence,
-        magasinLivraison: commandeActuelle.magasinLivraison,
-        dateLivraison: commandeActuelle.dates.livraisonPrevue,
-        commentaires: commandeActuelle.commentaires
-    };
-    
-    // Remplir le formulaire
-    document.getElementById('editTypePreparation').value = commandeActuelle.typePreparation;
-    document.getElementById('editNiveauUrgence').value = commandeActuelle.niveauUrgence;
-    document.getElementById('editCommentaires').value = commandeActuelle.commentaires || '';
-    
-    // Date de livraison
-    const dateLivraison = commandeActuelle.dates.livraisonPrevue;
-    if (dateLivraison) {
-        const date = dateLivraison.toDate ? dateLivraison.toDate() : new Date(dateLivraison);
-        document.getElementById('editDateLivraison').value = date.toISOString().split('T')[0];
-    }
-    
-    // Charger les magasins
-    await chargerMagasinsSelect('editMagasinLivraison', commandeActuelle.magasinLivraison);
-    
-    // Gérer la soumission du formulaire
-    document.getElementById('formEditLivraison').onsubmit = async (e) => {
-        e.preventDefault();
-        await saveEditSection('livraison');
-    };
-}
-
-async function chargerFormulaireProduits() {
-    // Stocker les valeurs originales
-    valeursOriginales.produits = JSON.parse(JSON.stringify(commandeActuelle.produits));
-    
-    // Générer la liste des produits éditables
-    const container = document.getElementById('editProduitsList');
-    container.innerHTML = commandeActuelle.produits.map((produit, index) => `
-        <div class="edit-produit-item" data-index="${index}">
-            <div class="edit-produit-header">
-                <div class="edit-produit-nom">
-                    ${produit.designation}
-                    ${produit.cote ? `<span class="produit-cote">(${produit.cote})</span>` : ''}
-                </div>
-                <div class="edit-produit-controls">
-                    <label>Qté:</label>
-                    <input type="number" min="1" max="99" value="${produit.quantite}" 
-                           onchange="updateProduitQuantite(${index}, this.value)">
-                    <button type="button" class="btn-remove-produit" onclick="removeProduit(${index})">🗑️</button>
-                </div>
-            </div>
-        </div>
-    `).join('');
-}
-
-async function chargerMagasinsSelect(selectId, valeurSelectionnee) {
-    try {
-        const select = document.getElementById(selectId);
-        select.innerHTML = '';
-        
-        // Charger depuis Firebase
-        const { collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-        const { db } = await import('../../services/firebase.service.js');
-        
-        const magasinsSnapshot = await getDocs(collection(db, 'magasins'));
-        
-        const magasins = [];
-        magasinsSnapshot.forEach((doc) => {
-            const data = doc.data();
-            if (data.actif !== false) {
-                magasins.push({
-                    id: doc.id,
-                    code: data.code || doc.id,
-                    nom: data.nom || data.code || doc.id
-                });
-            }
-        });
-        
-        magasins.sort((a, b) => a.code.localeCompare(b.code));
-        
-        magasins.forEach(magasin => {
-            const option = document.createElement('option');
-            option.value = magasin.code;
-            option.textContent = magasin.nom;
-            if (magasin.code === valeurSelectionnee || magasin.id === valeurSelectionnee) {
-                option.selected = true;
-            }
-            select.appendChild(option);
-        });
-        
-    } catch (error) {
-        console.error('Erreur chargement magasins:', error);
-    }
-}
-
-window.saveEditSection = async function(section) {
-    try {
-        console.log('💾 Sauvegarde section:', section);
-        
-        let modifications = {};
-        let updateClient = false;
-        
-        switch (section) {
-            case 'client':
-                modifications = {
-                    prenom: document.getElementById('editClientPrenom').value,
-                    nom: document.getElementById('editClientNom').value,
-                    telephone: document.getElementById('editClientTelephone').value,
-                    email: document.getElementById('editClientEmail').value,
-                    magasinReference: document.getElementById('editClientMagasin').value
-                };
-                updateClient = true;
-                break;
-                
-            case 'livraison':
-                modifications = {
-                    typePreparation: document.getElementById('editTypePreparation').value,
-                    niveauUrgence: document.getElementById('editNiveauUrgence').value,
-                    magasinLivraison: document.getElementById('editMagasinLivraison').value,
-                    dateLivraison: new Date(document.getElementById('editDateLivraison').value),
-                    commentaires: document.getElementById('editCommentaires').value
-                };
-                break;
-                
-            case 'produits':
-                // Les modifications des produits sont déjà appliquées au fur et à mesure
-                modifications = {
-                    produits: getCurrentEditedProduits()
-                };
-                break;
-        }
-        
-        // Valider les modifications
-        if (!validerModifications(section, modifications)) {
-            return;
-        }
-        
-        // Sauvegarder selon le type
-        if (updateClient) {
-            await sauvegarderModificationsClient(modifications);
-        } else {
-            await sauvegarderModificationsCommande(section, modifications);
-        }
-        
-        // Recharger la commande et l'affichage
-        await actualiserCommande();
-        
-        // Désactiver le mode édition
-        cancelEditSection(section);
-        
-        afficherSucces(`Modifications ${section} sauvegardées avec succès`);
-        
-    } catch (error) {
-        console.error('❌ Erreur sauvegarde:', error);
-        afficherErreur('Erreur lors de la sauvegarde: ' + error.message);
-    }
-};
-
-async function sauvegarderModificationsClient(modifications) {
-    // Mettre à jour le client dans la collection clients
-    await ClientsService.mettreAJourClient(commandeActuelle.client.id, {
-        prenom: modifications.prenom,
-        nom: modifications.nom,
-        telephone: modifications.telephone,
-        email: modifications.email,
-        magasinReference: modifications.magasinReference
-    });
-    
-    // Mettre à jour aussi les infos client dans la commande
-    const updateCommande = {
-        'client.prenom': modifications.prenom,
-        'client.nom': modifications.nom,
-        'client.telephone': modifications.telephone,
-        'client.email': modifications.email,
-        magasinReference: modifications.magasinReference
-    };
-    
-    await CommandesService.mettreAJourCommande(commandeActuelle.id, updateCommande, 'Modification des informations client');
-}
-
-async function sauvegarderModificationsCommande(section, modifications) {
-    let updateData = {};
-    let descriptionModification = '';
-    
-    switch (section) {
-        case 'livraison':
-            updateData = {
-                typePreparation: modifications.typePreparation,
-                niveauUrgence: modifications.niveauUrgence,
-                magasinLivraison: modifications.magasinLivraison,
-                'dates.livraisonPrevue': modifications.dateLivraison,
-                commentaires: modifications.commentaires
-            };
-            descriptionModification = 'Modification des informations de livraison';
-            break;
-            
-        case 'produits':
-            updateData = {
-                produits: modifications.produits
-            };
-            descriptionModification = 'Modification des produits de la commande';
-            break;
-    }
-    
-    await CommandesService.mettreAJourCommande(commandeActuelle.id, updateData, descriptionModification);
-}
-
-async function actualiserCommande() {
-    // Recharger la commande depuis Firebase
-    const commandeMAJ = await CommandesService.getCommande(commandeActuelle.id);
-    if (commandeMAJ) {
-        commandeActuelle = commandeMAJ;
-        // Réafficher les sections mises à jour
-        afficherSectionClient(commandeActuelle);
-        afficherSectionLivraison(commandeActuelle);
-        afficherSectionProduits(commandeActuelle);
-    }
-}
-
-function validerModifications(section, modifications) {
-    switch (section) {
-        case 'client':
-            if (!modifications.prenom.trim() || !modifications.nom.trim()) {
-                afficherErreur('Le nom et le prénom sont obligatoires');
-                return false;
-            }
-            break;
-            
-        case 'livraison':
-            if (!modifications.dateLivraison || isNaN(modifications.dateLivraison.getTime())) {
-                afficherErreur('Date de livraison invalide');
-                return false;
-            }
-            break;
-            
-        case 'produits':
-            if (modifications.produits.length === 0) {
-                afficherErreur('Au moins un produit est requis');
-                return false;
-            }
-            break;
-    }
-    return true;
-}
-
-function getCurrentEditedProduits() {
-    const produits = [];
-    const items = document.querySelectorAll('.edit-produit-item');
-    
-    items.forEach((item, index) => {
-        const originalIndex = parseInt(item.dataset.index);
-        const quantiteInput = item.querySelector('input[type="number"]');
-        
-        if (originalIndex < commandeActuelle.produits.length) {
-            const produitOriginal = commandeActuelle.produits[originalIndex];
-            produits.push({
-                ...produitOriginal,
-                quantite: parseInt(quantiteInput.value) || 1
-            });
-        }
-    });
-    
-    return produits;
-}
-
-// Fonctions pour la gestion des produits en édition
-window.updateProduitQuantite = function(index, quantite) {
-    console.log('Mise à jour quantité produit', index, quantite);
-};
-
-window.removeProduit = function(index) {
-    const item = document.querySelector(`[data-index="${index}"]`);
-    if (item) {
-        item.remove();
-    }
-};
-
-window.rechercherProduitEdit = async function() {
-    // Fonctionnalité d'ajout de produits (simplifiée pour cet exemple)
-    console.log('Recherche produit pour ajout');
-};
-
-// ========================================
-// FONCTIONS ORIGINALES (CONSERVÉES)
-// ========================================
 
 function afficherActionsCommande(commande) {
     const detailActions = document.getElementById('detailActions');
@@ -674,6 +227,7 @@ function afficherActionsCommande(commande) {
             break;
             
         case 'terminee':
+            // MODIFIÉ le 29/07/2025 : Toujours proposer les deux options (expédition ET livraison directe)
             actions.push(`
                 <button class="btn btn-primary" onclick="saisirExpedition('${commande.id}')">
                     📦 Expédier le colis
@@ -720,8 +274,9 @@ function afficherActionsCommande(commande) {
     detailActions.innerHTML = actions.join('');
 }
 
-// Conserver toutes les fonctions de changement de statut existantes...
-// (je garde le code original pour ne pas tout réécrire)
+// ========================================
+// CHANGEMENT DE STATUT
+// ========================================
 
 export async function changerStatutCommande(commandeId) {
     try {
@@ -751,14 +306,17 @@ export async function changerStatutCommande(commandeId) {
     }
 }
 
+// Fonction exposée pour les actions depuis la modal détail
 window.changerStatutDetail = async function(commandeId, nouveauStatut) {
     console.log('🔄 Début changement statut:', { commandeId, nouveauStatut });
     
     try {
+        // Vérifier que CommandesService est disponible
         if (!CommandesService || typeof CommandesService.changerStatut !== 'function') {
             throw new Error('CommandesService.changerStatut non disponible');
         }
         
+        // Obtenir le label du statut pour un message plus clair
         const labelStatut = COMMANDES_CONFIG.STATUTS[nouveauStatut]?.label || nouveauStatut;
         
         const confirme = await confirmerAction({
@@ -772,15 +330,17 @@ window.changerStatutDetail = async function(commandeId, nouveauStatut) {
         if (confirme) {
             console.log('✅ Confirmation reçue, appel au service...');
             
+            // Appeler le service pour changer le statut
             await CommandesService.changerStatut(commandeId, nouveauStatut);
             
             console.log('✅ Statut changé avec succès dans Firebase');
             
+            // Recharger les données de la liste
             await chargerDonnees();
             
+            // Recharger et rafraîchir la modal avec les nouvelles données
             const commandeMAJ = await CommandesService.getCommande(commandeId);
             if (commandeMAJ) {
-                commandeActuelle = commandeMAJ;
                 afficherDetailCommande(commandeMAJ);
             }
             
@@ -792,6 +352,7 @@ window.changerStatutDetail = async function(commandeId, nouveauStatut) {
         console.error('❌ Erreur changement statut:', error);
         console.error('Stack trace:', error.stack);
         
+        // Message d'erreur détaillé
         let messageErreur = 'Erreur lors du changement de statut';
         
         if (error.message) {
@@ -809,28 +370,36 @@ window.changerStatutDetail = async function(commandeId, nouveauStatut) {
 };
 
 // ========================================
-// ACTIONS SPÉCIFIQUES (CONSERVÉES)
+// ACTIONS SPÉCIFIQUES
 // ========================================
 
+// NOUVEAU : Saisir les numéros de série
 window.saisirNumerosSerie = async function(commandeId) {
     console.log('🔍 Clic sur saisir NS, commande:', commandeId);
     
+    // Importer et appeler directement la fonction
     const { ouvrirSaisieNumerosSerie } = await import('./commandes.serial.js');
     await ouvrirSaisieNumerosSerie(commandeId);
 };
 
+// NOUVEAU : Terminer la préparation avec vérification NS
 window.terminerPreparation = async function(commandeId) {
     try {
+        // Récupérer la commande pour vérifier les NS
         const commande = await CommandesService.getCommande(commandeId);
         if (!commande) return;
         
+        // Importer et utiliser verifierNumerosSerie
         const { verifierNumerosSerie } = await import('./commandes.serial.js');
         
+        // Vérifier que les NS sont saisis pour les appareils auditifs
         const nsValides = await verifierNumerosSerie(commande);
         if (!nsValides) {
+            // La fonction verifierNumerosSerie affiche déjà le message d'erreur
             return;
         }
         
+        // Si tout est OK, changer le statut
         await changerStatutDetail(commandeId, 'terminee');
         
     } catch (error) {
@@ -839,8 +408,386 @@ window.terminerPreparation = async function(commandeId) {
     }
 };
 
-// [GARDER TOUTES LES AUTRES FONCTIONS EXISTANTES...]
-// saisirExpedition, validerReception, livrerDirectement, etc.
+// ========================================
+// FONCTION SAISIR EXPÉDITION - RETOUR AU SYSTÈME ORIGINAL CORRIGÉ
+// À remplacer dans commandes.detail.js
+// ========================================
+
+// MODIFIÉ : Saisir expédition avec transporteur et numéro (SYSTÈME ORIGINAL)
+window.saisirExpedition = async function(commandeId) {
+    try {
+        console.log('🚀 Début saisir expédition pour commande:', commandeId);
+        
+        // Créer un dialog custom avec les deux champs (comme avant)
+        const result = await new Promise((resolve) => {
+            // Créer le HTML du dialog
+            const dialogHtml = `
+                <div class="dialog-overlay"></div>
+                <div class="dialog-box">
+                    <div class="dialog-header">
+                        <div class="dialog-icon info">📦</div>
+                        <h3 class="dialog-title">Expédition du colis</h3>
+                    </div>
+                    <div class="dialog-body">
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Transporteur :</label>
+                            <select id="expeditionTransporteur" style="width: 100%; padding: 8px; border: 2px solid #e0e0e0; border-radius: 6px; box-sizing: border-box;">
+                                <option value="Colissimo">Colissimo</option>
+                                <option value="Chronopost">Chronopost</option>
+                                <option value="UPS">UPS</option>
+                                <option value="DHL">DHL</option>
+                                <option value="Fedex">Fedex</option>
+                                <option value="GLS">GLS</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Numéro de suivi :</label>
+                            <input type="text" id="expeditionNumeroSuivi" 
+                                   placeholder="Ex: 1234567890" 
+                                   style="width: 100%; padding: 8px; border: 2px solid #e0e0e0; border-radius: 6px; box-sizing: border-box;"
+                                   required>
+                        </div>
+                    </div>
+                    <div class="dialog-footer">
+                        <button class="dialog-btn secondary expedition-cancel">Annuler</button>
+                        <button class="dialog-btn primary expedition-confirm">Valider l'expédition</button>
+                    </div>
+                </div>
+            `;
+            
+            // Ajouter au conteneur dialog
+            const dialogContainer = document.getElementById('dialog-container');
+            if (!dialogContainer) {
+                console.error('❌ Dialog container introuvable');
+                resolve(null);
+                return;
+            }
+            
+            dialogContainer.innerHTML = dialogHtml;
+            dialogContainer.classList.add('active');
+            
+            // Récupérer les éléments
+            const transporteurSelect = document.getElementById('expeditionTransporteur');
+            const numeroSuiviInput = document.getElementById('expeditionNumeroSuivi');
+            const confirmBtn = document.querySelector('.expedition-confirm');
+            const cancelBtn = document.querySelector('.expedition-cancel');
+            const overlay = document.querySelector('.dialog-overlay');
+            
+            // Focus sur le champ numéro de suivi
+            setTimeout(() => {
+                if (numeroSuiviInput) {
+                    numeroSuiviInput.focus();
+                }
+            }, 100);
+            
+            // Fonction de validation et confirmation
+            const handleConfirm = () => {
+                const transporteur = transporteurSelect ? transporteurSelect.value : 'Colissimo';
+                const numeroSuivi = numeroSuiviInput ? numeroSuiviInput.value.trim() : '';
+                
+                console.log('📝 Validation - Transporteur:', transporteur);
+                console.log('📝 Validation - Numéro:', numeroSuivi);
+                
+                if (!numeroSuivi) {
+                    // Mettre en rouge le champ requis
+                    if (numeroSuiviInput) {
+                        numeroSuiviInput.style.borderColor = '#f44336';
+                        numeroSuiviInput.focus();
+                    }
+                    return;
+                }
+                
+                // Fermer le dialog
+                dialogContainer.classList.remove('active');
+                setTimeout(() => {
+                    dialogContainer.innerHTML = '';
+                }, 200);
+                
+                // Retourner les valeurs
+                resolve({
+                    transporteur: transporteur,
+                    numeroSuivi: numeroSuivi
+                });
+            };
+            
+            // Fonction d'annulation
+            const handleCancel = () => {
+                dialogContainer.classList.remove('active');
+                setTimeout(() => {
+                    dialogContainer.innerHTML = '';
+                }, 200);
+                resolve(null);
+            };
+            
+            // Event listeners
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', handleConfirm);
+            }
+            
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', handleCancel);
+            }
+            
+            if (overlay) {
+                overlay.addEventListener('click', handleCancel);
+            }
+            
+            // Gestion du clavier
+            const handleKeydown = (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleConfirm();
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    handleCancel();
+                }
+            };
+            
+            document.addEventListener('keydown', handleKeydown);
+            
+            // Nettoyer l'event listener après fermeture
+            const originalResolve = resolve;
+            resolve = (value) => {
+                document.removeEventListener('keydown', handleKeydown);
+                originalResolve(value);
+            };
+        });
+        
+        // Si l'utilisateur a annulé
+        if (!result) {
+            console.log('❌ Annulation utilisateur');
+            return;
+        }
+        
+        console.log('✅ Données récupérées:', result);
+        
+        // Envoyer au service
+        console.log('⏳ Envoi au service CommandesService...');
+        
+        await CommandesService.changerStatut(commandeId, 'expediee', {
+            numeroSuivi: result.numeroSuivi,
+            transporteur: result.transporteur
+        });
+        
+        console.log('✅ Statut changé avec succès');
+        
+        // Rafraîchir l'interface
+        await chargerDonnees();
+        await voirDetailCommande(commandeId);
+        
+        // Notification de succès
+        afficherSucces(`Expédition validée - ${result.transporteur} - N° ${result.numeroSuivi}`);
+        
+        console.log('🎉 Processus terminé avec succès');
+        
+    } catch (error) {
+        console.error('❌ Erreur validation expédition:', error);
+        console.error('Stack:', error.stack);
+        
+        let messageErreur = 'Erreur lors de la validation de l\'expédition';
+        if (error.message) {
+            messageErreur += ' : ' + error.message;
+        }
+        
+        afficherErreur(messageErreur);
+    }
+};
+
+// MODIFIÉ : Valider réception avec vérification du numéro
+window.validerReception = async function(commandeId) {
+    try {
+        // Récupérer la commande pour avoir le numéro de suivi
+        const commande = await CommandesService.getCommande(commandeId);
+        if (!commande) return;
+        
+        const numeroSuiviEnvoi = commande.expedition?.envoi?.numeroSuivi;
+        if (!numeroSuiviEnvoi) {
+            await Dialog.alert('Aucun numéro de suivi trouvé pour cette expédition', 'Erreur');
+            return;
+        }
+        
+        // Demander le numéro de suivi reçu
+        const numeroSuiviRecu = await Dialog.prompt(
+            `Pour confirmer la réception, veuillez saisir le numéro de suivi du colis reçu.\n\nNuméro attendu : ${numeroSuiviEnvoi}`,
+            '',
+            '📥 Validation de la réception'
+        );
+        
+        if (!numeroSuiviRecu) return;
+        
+        // Vérifier que les numéros correspondent
+        const numerosCorrespondent = numeroSuiviRecu.trim() === numeroSuiviEnvoi.trim();
+        
+        if (!numerosCorrespondent) {
+            const forcer = await confirmerAction({
+                titre: '⚠️ Numéros différents',
+                message: `Le numéro saisi (${numeroSuiviRecu}) ne correspond pas au numéro d'envoi (${numeroSuiviEnvoi}).\n\nVoulez-vous quand même valider la réception ?`,
+                boutonConfirmer: 'Oui, valider quand même',
+                boutonAnnuler: 'Non, vérifier',
+                danger: true
+            });
+            
+            if (!forcer) return;
+        }
+        
+        // Demander si le colis est conforme
+        const colisConforme = await confirmerAction({
+            titre: 'État du colis',
+            message: 'Le colis est-il arrivé en bon état et conforme à la commande ?',
+            boutonConfirmer: 'Oui, conforme',
+            boutonAnnuler: 'Non, problème'
+        });
+        
+        // Valider la réception
+        await CommandesService.changerStatut(commandeId, 'receptionnee', {
+            numeroSuiviRecu: numeroSuiviRecu.trim(),
+            colisConforme: colisConforme
+        });
+        
+        await chargerDonnees();
+        await voirDetailCommande(commandeId);
+        
+        if (colisConforme) {
+            afficherSucces('Réception validée - Colis conforme');
+        } else {
+            notify.warning('Réception validée - Problème signalé sur le colis');
+        }
+        
+    } catch (error) {
+        console.error('Erreur validation réception:', error);
+        afficherErreur('Erreur lors de la validation de la réception');
+    }
+};
+
+// NOUVEAU : Livrer directement sans expédition
+window.livrerDirectement = async function(commandeId) {
+    const confirme = await confirmerAction({
+        titre: 'Livraison directe',
+        message: 'Confirmez-vous la livraison directe au patient (sans expédition) ?',
+        boutonConfirmer: 'Oui, livrer',
+        boutonAnnuler: 'Annuler'
+    });
+    
+    if (confirme) {
+        try {
+            await CommandesService.changerStatut(commandeId, 'livree');
+            await chargerDonnees();
+            window.modalManager.close('modalDetailCommande');
+            afficherSucces('Commande livrée avec succès');
+        } catch (error) {
+            console.error('Erreur livraison directe:', error);
+            afficherErreur('Erreur lors de la livraison');
+        }
+    }
+};
+
+window.marquerPatientPrevenu = async function(commandeId) {
+    try {
+        await CommandesService.marquerPatientPrevenu(commandeId);
+        await voirDetailCommande(commandeId); // Rafraîchir la modal
+        afficherSucces('Patient marqué comme prévenu');
+    } catch (error) {
+        console.error('Erreur marquage patient:', error);
+        afficherErreur('Erreur lors du marquage du patient');
+    }
+};
+
+window.annulerCommande = async function(commandeId) {
+    const confirme = await confirmerAction({
+        titre: 'Annuler la commande',
+        message: 'Êtes-vous sûr de vouloir annuler cette commande ? Cette action est irréversible.',
+        boutonConfirmer: 'Annuler la commande',
+        boutonAnnuler: 'Non, conserver',
+        danger: true
+    });
+    
+    if (confirme) {
+        const motif = await Dialog.prompt('Motif d\'annulation :');
+        if (!motif) return;
+        
+        try {
+            await CommandesService.changerStatut(commandeId, 'annulee', {
+                motif: motif
+            });
+            
+            await chargerDonnees();
+            window.modalManager.close('modalDetailCommande');
+            afficherSucces('Commande annulée');
+        } catch (error) {
+            console.error('Erreur annulation:', error);
+            afficherErreur('Erreur lors de l\'annulation');
+        }
+    }
+};
+
+// ========================================
+// FONCTION SUPPRESSION SÉCURISÉE
+// ========================================
+window.supprimerCommande = async function(commandeId) {
+    try {
+        // Récupérer les infos de la commande
+        const commande = await CommandesService.getCommande(commandeId);
+        if (!commande) {
+            afficherErreur('Commande introuvable');
+            return;
+        }
+        
+        // Demander la confirmation avec saisie du numéro de commande
+        const numeroSaisi = await Dialog.prompt(
+            `Pour confirmer la suppression de la commande de ${commande.client.prenom} ${commande.client.nom}, veuillez saisir le numéro de commande : ${commande.numeroCommande}`,
+            '',
+            '🗑️ Suppression de commande'
+        );
+        
+        // Si annulation
+        if (!numeroSaisi) {
+            return;
+        }
+        
+        // Validation du numéro de commande
+        if (numeroSaisi.trim() !== commande.numeroCommande) {
+            afficherErreur('Le numéro de commande saisi ne correspond pas');
+            // Relancer la fonction pour une nouvelle tentative
+            return window.supprimerCommande(commandeId);
+        }
+        
+        // Si validation OK, demander une dernière confirmation
+        const confirme = await confirmerAction({
+            titre: '⚠️ Confirmation finale',
+            message: `Êtes-vous absolument sûr de vouloir supprimer définitivement la commande ${commande.numeroCommande} ?`,
+            boutonConfirmer: 'Oui, supprimer définitivement',
+            boutonAnnuler: 'Non, conserver',
+            danger: true
+        });
+        
+        if (confirme) {
+            try {
+                await CommandesService.supprimerCommande(commandeId, {
+                    motif: `Suppression confirmée par saisie du numéro de commande`,
+                    numeroCommandeValide: numeroSaisi
+                });
+                
+                // Recharger les données
+                await chargerDonnees();
+                
+                // Fermer le modal détail si ouvert
+                if (window.modalManager && window.modalManager.get('modalDetailCommande')?.isOpen) {
+                    window.modalManager.close('modalDetailCommande');
+                }
+                
+                afficherSucces('Commande supprimée avec succès');
+                
+            } catch (error) {
+                console.error('Erreur suppression:', error);
+                afficherErreur('Erreur lors de la suppression : ' + error.message);
+            }
+        }
+    } catch (error) {
+        console.error('Erreur suppression commande:', error);
+        afficherErreur('Erreur lors de la suppression');
+    }
+};
 
 // ========================================
 // FONCTIONS UTILITAIRES
@@ -853,27 +800,45 @@ function formatDate(timestamp) {
     return date.toLocaleDateString('fr-FR');
 }
 
-function capitalizeFirst(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
 /* ========================================
    HISTORIQUE DES DIFFICULTÉS
    
-   [30/07/2025] - Ajout édition inline complète
-   Fonctionnalité: Édition des sections client, livraison et produits
-   Implementation: 
-   - Boutons ✏️ dans chaque section
-   - Bascule entre mode consultation/édition
-   - Sauvegarde avec services dédiés
-   - Validation des modifications
-   - Historique des changements
-   Impact: Interface beaucoup plus interactive
+   [2024-01-XX] - Timeline verticale au lieu d'horizontale
+   Problème: La timeline s'affichait verticalement malgré les styles
+   Cause: Utilisation de HTML statique au lieu du composant Timeline
+   Résolution: Remplacé par createOrderTimeline() avec orientation: 'horizontal'
+   
+   [2025-07-26] - Erreur changement de statut
+   Problème: Message d'erreur générique lors du changement de statut
+   Cause: Mauvaise gestion des erreurs dans changerStatutDetail
+   Résolution: Ajout de logs et messages d'erreur détaillés
+   
+   [27/07/2025] - Ajout suppression sécurisée
+   Problème: Besoin de supprimer des commandes avec validation
+   Solution: Fonction supprimerCommande avec validation par numéro de commande
+   Impact: Soft delete avec statut "supprime"
+   
+   [27/07/2025] - Ajout saisie NS et flux expédition
+   Problème: Pas de saisie NS, flux expédition incomplet
+   Solution: 
+   - Import du module commandes.serial.js
+   - Fonction terminerPreparation avec vérification NS
+   - saisirExpedition avec transporteur et numéro
+   - validerReception avec vérification du numéro
+   - livrerDirectement pour skip l'expédition
+   
+   [29/07/2025] - Bouton expédition manquant après préparation terminée
+   Problème: Le bouton "Expédier le colis" ne s'affichait que sous conditions
+   Solution: Toujours afficher les deux options (expédition ET livraison directe)
+   Impact: L'utilisateur a toujours le choix entre expédier ou livrer directement
    
    NOTES POUR REPRISES FUTURES:
-   - Une seule section éditable à la fois
-   - Désactivation après statut "terminee"
-   - Modifications tracées dans l'historique
-   - Validation côté client et serveur
-   - Actualisation automatique de l'affichage
+   - Le composant Timeline gère automatiquement l'orientation
+   - Les styles sont dans commandes-modal.css section 4
+   - Ne pas générer de HTML manuel pour la timeline
+   - La modal reste ouverte après changement de statut
+   - La suppression nécessite la saisie exacte du numéro de commande
+   - Les NS sont obligatoires pour les appareils auditifs
+   - L'expédition est optionnelle (bouton livrer directement)
+   - Les deux boutons (expédier + livrer) s'affichent toujours pour le statut "terminee"
    ======================================== */
