@@ -1515,7 +1515,7 @@ window.editerProduits = function() {
     const section = document.getElementById('detailProduits').parentElement;
     const readOnlyDiv = document.getElementById('produitsReadOnly');
     const editForm = document.getElementById('produitsEditForm');
-    const container = document.getElementById('editProduitsContainer');
+    const container = document.getElementById('editProduitsExistants');
     
     // Générer les champs d'édition pour chaque produit
     container.innerHTML = commandeActuelle.produits.map((produit, index) => `
