@@ -1,188 +1,460 @@
-<!-- Modal Détail Commande - MODIFIÉ avec boutons édition -->
-<div id="modalDetailCommande" class="modal" style="display: none;">
-    <div class="modal-content modal-large">
-        <div class="modal-header">
-            <h2>Détail de la commande <span id="detailNumCommande"></span></h2>
-            <button class="modal-close">&times;</button>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAV Audio - Commandes</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SAV Audio">
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- ========================================
+         CSS - Chemins mis à jour pour le dossier commandes/
+         ======================================== -->
+    <link rel="stylesheet" href="../src/css/main.css">
+    <link rel="stylesheet" href="../src/css/commandes/commandes.css">
+    <link rel="stylesheet" href="../src/css/commandes/commandes-modal.css">
+</head>
+<body>
+    <!-- Header uniforme -->
+    <div class="app-header">
+        <div class="app-header-content">
+            <div class="app-header-left">
+                <a href="home.html" class="header-back-button">
+                    ← Retour
+                </a>
+            </div>
+            <div class="app-header-center">
+                <h1>📦 Gestion des Commandes</h1>
+                <p>Commandes d'appareils et accessoires</p>
+            </div>
+            <div class="app-header-right">
+                <div class="header-user-info">
+                    <span id="userName">-</span>
+                </div>
+                <button class="header-logout-button" onclick="logout()">
+                    🚪 Déconnexion
+                </button>
+            </div>
         </div>
-        
-        <div class="modal-body">
-            <!-- Timeline du statut -->
-            <div class="timeline-container">
-                <div class="timeline" id="timeline">
-                    <!-- Timeline générée dynamiquement par createOrderTimeline() -->
+    </div>
+
+    <div class="container">
+        <!-- Barre d'actions et statistiques -->
+        <div class="commandes-header">
+            <div class="commandes-stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="statNouvelles">0</div>
+                    <div class="stat-label">Nouvelles</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statPreparation">0</div>
+                    <div class="stat-label">En préparation</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statExpediees">0</div>
+                    <div class="stat-label">Expédiées</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statLivrees">0</div>
+                    <div class="stat-label">Livrées</div>
                 </div>
             </div>
             
-            <!-- ========================================
-                 SECTIONS MODIFIÉES avec boutons d'édition
-                 ======================================== -->
-            <div class="detail-sections">
-                <!-- Colonne de gauche : Client + Livraison -->
-                <div class="detail-column-left">
-                    <!-- SECTION CLIENT avec bouton édition -->
-                    <div class="detail-section" id="sectionClient">
-                        <div class="section-header">
-                            <h3>Informations client</h3>
-                            <button class="btn-edit-section" id="btnEditClient" onclick="toggleEditSection('client')" title="Modifier les informations client">
-                                ✏️
-                            </button>
+            <div class="commandes-actions">
+                <button class="btn btn-primary" onclick="ouvrirNouvelleCommande()">
+                    <span>➕</span> Nouvelle commande
+                </button>
+            </div>
+        </div>
+
+        <!-- Filtres -->
+        <div class="commandes-filters section">
+            <div class="filters-row">
+                <div class="filter-group">
+                    <label>Rechercher</label>
+                    <input type="text" id="searchInput" placeholder="Client, produit, n° commande..." 
+                           oninput="filtrerCommandes()">
+                </div>
+                
+                <div class="filter-group">
+                    <label>Statut</label>
+                    <select id="filterStatut" onchange="filtrerCommandes()">
+                        <option value="">Tous les statuts</option>
+                        <option value="nouvelle">⚪ Nouvelle</option>
+                        <option value="preparation">🔵 En préparation</option>
+                        <option value="terminee">🟢 Préparée</option>
+                        <option value="expediee">📦 Expédiée</option>
+                        <option value="receptionnee">📥 Réceptionnée</option>
+                        <option value="livree">✅ Livrée</option>
+                        <option value="annulee">❌ Annulée</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Période</label>
+                    <select id="filterPeriode" onchange="filtrerCommandes()">
+                        <option value="all">Toutes</option>
+                        <option value="today">Aujourd'hui</option>
+                        <option value="week">Cette semaine</option>
+                        <option value="month">Ce mois</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Urgence</label>
+                    <select id="filterUrgence" onchange="filtrerCommandes()">
+                        <option value="">Toutes</option>
+                        <option value="normal">Normal</option>
+                        <option value="urgent">🟡 Urgent</option>
+                        <option value="tres_urgent">🔴 Très urgent</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="filters-actions">
+                <button class="btn-reset" onclick="resetFiltres()">
+                    🔄 Réinitialiser
+                </button>
+            </div>
+        </div>
+
+        <!-- ========================================
+             TABLEAU DES COMMANDES - MODIFIÉ
+             Colonnes supprimées : Produits, Livraison
+             ======================================== -->
+        <div class="commandes-table-container section">
+            <table class="commandes-table">
+                <thead>
+                    <tr>
+                        <th>N° Commande</th>
+                        <th>Date</th>
+                        <th>Client</th>
+                        <th>Type</th>
+                        <th>Urgence</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="commandesTableBody">
+                    <!-- Lignes générées dynamiquement -->
+                    <tr class="no-data">
+                        <td colspan="7">Aucune commande pour le moment</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            <button class="pagination-btn" onclick="pagePrecedente()" id="btnPrev" disabled>
+                ← Précédent
+            </button>
+            <span class="pagination-info">
+                Page <span id="pageActuelle">1</span> sur <span id="pageTotal">1</span>
+            </span>
+            <button class="pagination-btn" onclick="pageSuivante()" id="btnNext" disabled>
+                Suivant →
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Nouvelle Commande -->
+    <div id="modalNouvelleCommande" class="modal" style="display: none;">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>Nouvelle Commande</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            
+            <!-- Indicateur d'étapes -->
+            <div class="stepper">
+                <div class="step active" id="step1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Client</div>
+                </div>
+                <div class="step" id="step2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Produits</div>
+                </div>
+                <div class="step" id="step3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Livraison</div>
+                </div>
+                <div class="step" id="step4">
+                    <div class="step-number">4</div>
+                    <div class="step-label">Validation</div>
+                </div>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Étape 1 : Sélection client -->
+                <div class="step-content" id="stepContent1">
+                    <h3>Sélection du client</h3>
+                    
+                    <div class="client-search">
+                        <input type="text" id="clientSearch" placeholder="Rechercher un client (nom, prénom, téléphone...)" 
+                               oninput="rechercherClient()">
+                        <div class="search-results" id="clientSearchResults"></div>
+                    </div>
+                    
+                    <div class="client-selected" id="clientSelected" style="display: none;">
+                        <h4>Client sélectionné :</h4>
+                        <div class="client-info">
+                            <p><strong id="selectedClientName"></strong></p>
+                            <p id="selectedClientInfo"></p>
                         </div>
-                        
-                        <!-- Affichage normal -->
-                        <div id="detailClient" class="section-view">
-                            <!-- Contenu généré dynamiquement -->
-                        </div>
-                        
-                        <!-- Formulaire d'édition (caché par défaut) -->
-                        <div id="editClient" class="section-edit hidden">
-                            <form id="formEditClient">
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label>Prénom *</label>
-                                        <input type="text" id="editClientPrenom" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Nom *</label>
-                                        <input type="text" id="editClientNom" required>
-                                    </div>
-                                </div>
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label>Téléphone</label>
-                                        <input type="tel" id="editClientTelephone">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Email</label>
-                                        <input type="email" id="editClientEmail">
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label>Magasin de référence</label>
-                                    <select id="editClientMagasin">
-                                        <!-- Options chargées dynamiquement -->
-                                    </select>
-                                </div>
-                                <div class="edit-actions">
-                                    <button type="button" class="btn btn-secondary" onclick="cancelEditSection('client')">❌ Annuler</button>
-                                    <button type="submit" class="btn btn-primary">✅ Sauvegarder</button>
-                                </div>
-                            </form>
+                        <button class="btn-link" onclick="changerClient()">Changer de client</button>
+                    </div>
+                    
+                    <div class="divider">OU</div>
+                    
+                    <button class="btn btn-secondary" onclick="ouvrirNouveauClient()">
+                        ➕ Créer un nouveau client
+                    </button>
+                </div>
+                
+                <!-- Étape 2 : Sélection produits -->
+                <div class="step-content hidden" id="stepContent2">
+                    <h3>Sélection des produits</h3>
+                    
+                    <!-- Packs prédéfinis -->
+                    <div class="pack-selector">
+                        <label>Utiliser un pack prédéfini</label>
+                        <select id="packTemplate" onchange="appliquerPack()">
+                            <option value="">-- Commande personnalisée --</option>
+                            <!-- Options chargées dynamiquement -->
+                        </select>
+                    </div>
+                    
+                    <div class="divider">OU</div>
+                    
+                    <!-- Recherche produits -->
+                    <div class="product-search">
+                        <input type="text" id="productSearch" placeholder="Rechercher un produit..." 
+                               oninput="rechercherProduit()">
+                        <div class="search-results" id="productSearchResults"></div>
+                    </div>
+                    
+                    <!-- Panier temporaire -->
+                    <div class="temp-cart">
+                        <h4>Produits sélectionnés</h4>
+                        <div id="tempCartItems"></div>
+                    </div>
+                </div>
+                
+                <!-- Étape 3 : Infos livraison -->
+                <div class="step-content hidden" id="stepContent3">
+                    <h3>Informations de livraison</h3>
+                    
+                    <div class="form-group">
+                        <label>Type de préparation</label>
+                        <select id="typePreparation" required>
+                            <option value="livraison_premiere_paire">Livraison première paire</option>
+                            <option value="livraison_deuxieme_paire">Livraison deuxième paire</option>
+                            <option value="livraison_accessoire">Livraison accessoire</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Niveau d'urgence</label>
+                        <div class="urgence-selector">
+                            <label class="urgence-option">
+                                <input type="radio" name="urgence" value="normal" checked>
+                                <span class="urgence-badge normal">Normal (3-5 jours)</span>
+                            </label>
+                            <label class="urgence-option">
+                                <input type="radio" name="urgence" value="urgent">
+                                <span class="urgence-badge urgent">🟡 Urgent (48h)</span>
+                            </label>
+                            <label class="urgence-option">
+                                <input type="radio" name="urgence" value="tres_urgent">
+                                <span class="urgence-badge tres-urgent">🔴 Très urgent (24h)</span>
+                            </label>
                         </div>
                     </div>
                     
-                    <!-- SECTION LIVRAISON avec bouton édition -->
-                    <div class="detail-section" id="sectionLivraison">
-                        <div class="section-header">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Magasin de livraison</label>
+                            <select id="magasinLivraison" required>
+                                <!-- Options chargées dynamiquement -->
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Date de livraison souhaitée</label>
+                            <input type="date" id="dateLivraison" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Commentaires (optionnel)</label>
+                        <textarea id="commentaires" rows="3" 
+                                  placeholder="Instructions particulières..."></textarea>
+                    </div>
+                </div>
+                
+                <!-- Étape 4 : Validation -->
+                <div class="step-content hidden" id="stepContent4">
+                    <h3>Récapitulatif de la commande</h3>
+                    
+                    <div class="recap-section">
+                        <h4>Client</h4>
+                        <div id="recapClient"></div>
+                    </div>
+                    
+                    <div class="recap-section">
+                        <h4>Produits</h4>
+                        <div id="recapProduits"></div>
+                    </div>
+                    
+                    <div class="recap-section">
+                        <h4>Livraison</h4>
+                        <div id="recapLivraison"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btnPrevStep" onclick="etapePrecedente()" disabled>
+                    ← Précédent
+                </button>
+                <button class="btn btn-primary" id="btnNextStep" onclick="etapeSuivante()">
+                    Suivant →
+                </button>
+                <button class="btn btn-primary hidden" id="btnValiderCommande" onclick="validerCommande()">
+                    ✓ Valider la commande
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Détail Commande -->
+    <div id="modalDetailCommande" class="modal" style="display: none;">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>Détail de la commande <span id="detailNumCommande"></span></h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- ========================================
+                     Timeline du statut
+                     IMPORTANT: Le div timeline sera rempli par le composant Timeline JS
+                     Ne pas ajouter de HTML statique ici
+                     ======================================== -->
+                <div class="timeline-container">
+                    <div class="timeline" id="timeline">
+                        <!-- Timeline générée dynamiquement par createOrderTimeline() -->
+                    </div>
+                </div>
+                
+                <!-- ========================================
+                     MODIFICATION : Nouvelle structure des sections
+                     Client et Livraison dans la colonne de gauche
+                     Produits dans la colonne de droite
+                     ======================================== -->
+                <div class="detail-sections">
+                    <!-- Colonne de gauche : Client + Livraison -->
+                    <div class="detail-column-left">
+                        <div class="detail-section">
+                            <h3>Informations client</h3>
+                            <div id="detailClient"></div>
+                        </div>
+                        
+                        <div class="detail-section">
                             <h3>Informations de livraison</h3>
-                            <button class="btn-edit-section" id="btnEditLivraison" onclick="toggleEditSection('livraison')" title="Modifier les informations de livraison">
-                                ✏️
-                            </button>
+                            <div id="detailLivraison"></div>
                         </div>
-                        
-                        <!-- Affichage normal -->
-                        <div id="detailLivraison" class="section-view">
-                            <!-- Contenu généré dynamiquement -->
-                        </div>
-                        
-                        <!-- Formulaire d'édition (caché par défaut) -->
-                        <div id="editLivraison" class="section-edit hidden">
-                            <form id="formEditLivraison">
-                                <div class="form-group">
-                                    <label>Type de préparation</label>
-                                    <select id="editTypePreparation" required>
-                                        <option value="livraison_premiere_paire">Livraison première paire</option>
-                                        <option value="livraison_deuxieme_paire">Livraison deuxième paire</option>
-                                        <option value="livraison_accessoire">Livraison accessoire</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label>Niveau d'urgence</label>
-                                    <select id="editNiveauUrgence" required>
-                                        <option value="normal">Normal (3-5 jours)</option>
-                                        <option value="urgent">🟡 Urgent (48h)</option>
-                                        <option value="tres_urgent">🔴 Très urgent (24h)</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label>Magasin de livraison</label>
-                                        <select id="editMagasinLivraison" required>
-                                            <!-- Options chargées dynamiquement -->
-                                        </select>
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <label>Date de livraison prévue</label>
-                                        <input type="date" id="editDateLivraison" required>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label>Commentaires</label>
-                                    <textarea id="editCommentaires" rows="3" placeholder="Instructions particulières..."></textarea>
-                                </div>
-                                
-                                <div class="edit-actions">
-                                    <button type="button" class="btn btn-secondary" onclick="cancelEditSection('livraison')">❌ Annuler</button>
-                                    <button type="submit" class="btn btn-primary">✅ Sauvegarder</button>
-                                </div>
-                            </form>
+                    </div>
+                    
+                    <!-- Colonne de droite : Produits -->
+                    <div class="detail-column-right">
+                        <div class="detail-section">
+                            <h3>Produits commandés</h3>
+                            <div id="detailProduits"></div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Colonne de droite : Produits -->
-                <div class="detail-column-right">
-                    <!-- SECTION PRODUITS avec bouton édition -->
-                    <div class="detail-section" id="sectionProduits">
-                        <div class="section-header">
-                            <h3>Produits commandés</h3>
-                            <button class="btn-edit-section" id="btnEditProduits" onclick="toggleEditSection('produits')" title="Modifier les produits">
-                                ✏️
-                            </button>
-                        </div>
-                        
-                        <!-- Affichage normal -->
-                        <div id="detailProduits" class="section-view">
-                            <!-- Contenu généré dynamiquement -->
-                        </div>
-                        
-                        <!-- Formulaire d'édition (caché par défaut) -->
-                        <div id="editProduits" class="section-edit hidden">
-                            <div id="editProduitsList">
-                                <!-- Liste des produits éditables générée dynamiquement -->
-                            </div>
-                            
-                            <div class="add-product-section">
-                                <div class="product-search">
-                                    <input type="text" id="editProductSearch" placeholder="Ajouter un produit..." 
-                                           oninput="rechercherProduitEdit()">
-                                    <div class="search-results" id="editProductSearchResults"></div>
-                                </div>
-                            </div>
-                            
-                            <div class="edit-actions">
-                                <button type="button" class="btn btn-secondary" onclick="cancelEditSection('produits')">❌ Annuler</button>
-                                <button type="button" class="btn btn-primary" onclick="saveEditSection('produits')">✅ Sauvegarder</button>
-                            </div>
-                        </div>
-                    </div>
+                <!-- Section expédition sur toute la largeur -->
+                <div class="detail-section full-width" id="sectionExpedition" style="display: none;">
+                    <h3>Expédition</h3>
+                    <div id="detailExpedition"></div>
                 </div>
-            </div>
-            
-            <!-- Section expédition sur toute la largeur -->
-            <div class="detail-section full-width" id="sectionExpedition" style="display: none;">
-                <h3>Expédition</h3>
-                <div id="detailExpedition"></div>
-            </div>
-            
-            <!-- Actions selon le statut -->
-            <div class="detail-actions" id="detailActions">
-                <!-- Boutons d'action générés selon le statut -->
+                
+                <!-- Actions selon le statut -->
+                <div class="detail-actions" id="detailActions">
+                    <!-- Boutons d'action générés selon le statut -->
+                </div>
             </div>
         </div>
     </div>
-</div>
+
+    <!-- Modal Nouveau Client -->
+    <div id="modalNouveauClient" class="modal" style="display: none;">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>Nouveau Client</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <form id="formNouveauClient">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nom *</label>
+                            <input type="text" id="newClientNom" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Prénom *</label>
+                            <input type="text" id="newClientPrenom" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Téléphone *</label>
+                            <input type="tel" id="newClientTel" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="newClientEmail">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Magasin de référence *</label>
+                        <select id="newClientMagasin" required>
+                            <!-- Options chargées dynamiquement -->
+                        </select>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="fermerModal('modalNouveauClient')">
+                    Annuler
+                </button>
+                <button class="btn btn-primary" onclick="creerNouveauClient()">
+                    Créer le client
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Orixis - © 2025</p>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="../src/js/pages/commandes/commandes.main.js"></script>
+</body>
+</html>
