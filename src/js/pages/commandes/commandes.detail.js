@@ -1508,45 +1508,7 @@ window.sauvegarderLivraison = async function() {
     }
 };
 
-/**
- * Activer l'édition des produits
- */
-window.editerProduits = function() {
-    const section = document.getElementById('detailProduits').parentElement;
-    const readOnlyDiv = document.getElementById('produitsReadOnly');
-    const editForm = document.getElementById('produitsEditForm');
-    const container = document.getElementById('editProduitsExistants');
-    
-    // Générer les champs d'édition pour chaque produit
-    container.innerHTML = commandeActuelle.produits.map((produit, index) => `
-        <div class="edit-produit-item" data-index="${index}">
-            <div class="edit-produit-header">
-                ${produit.designation} ${produit.cote ? `(${produit.cote})` : ''}
-            </div>
-            <div class="edit-produit-fields">
-                <div class="edit-produit-field">
-                    <label>Quantité</label>
-                    <input type="number" id="editProduitQte${index}" value="${produit.quantite}" min="1" max="99">
-                </div>
-                ${(produit.type === 'appareil_auditif' || produit.necessiteCote) ? `
-                    <div class="edit-produit-field serial">
-                        <label>Numéro de série</label>
-                        <input type="text" id="editProduitNS${index}" value="${produit.numeroSerie || ''}" placeholder="Non saisi">
-                    </div>
-                ` : ''}
-            </div>
-        </div>
-    `).join('');
-    
-    // Basculer vers le mode édition
-    section.classList.add('editing');
-    readOnlyDiv.style.display = 'none';
-    editForm.classList.add('active');
-    
-    // Focus sur le premier champ de quantité
-    const firstInput = container.querySelector('input');
-    if (firstInput) firstInput.focus();
-};
+
 
 /**
  * Annuler l'édition des produits
