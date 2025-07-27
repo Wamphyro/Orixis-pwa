@@ -1818,6 +1818,31 @@ body.modal-open {
     text-transform: uppercase;
 }
 
+/* Styles spécifiques pour l'édition des produits */
+.btn-delete-produit {
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.btn-delete-produit:hover {
+    transform: scale(1.1) rotate(-5deg);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+}
+
+.edit-section h4 {
+    color: #667eea;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e9ecef;
+}
+
 /* ========================================
    RESPONSIVE ÉDITION
    ======================================== */

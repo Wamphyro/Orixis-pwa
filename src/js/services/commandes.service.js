@@ -804,6 +804,69 @@ export class CommandesService {
     }
 
     /**
+ * Remplacer tous les produits d'une commande
+ * @param {string} commandeId - ID de la commande
+ * @param {Array} nouveauxProduits - Nouveaux produits
+ * @returns {Promise<boolean>} Succès de la modification
+ */
+static async remplacerProduits(commandeId, nouveauxProduits) {
+    try {
+        const { doc, updateDoc, arrayUnion } = 
+            await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        
+        // Validation
+        if (!nouveauxProduits || nouveauxProduits.length === 0) {
+            throw new Error('Au moins un produit est obligatoire');
+        }
+        
+        // Vérifier que la commande peut être modifiée
+        const commande = await this.getCommande(commandeId);
+        if (!commande) {
+            throw new Error('Commande introuvable');
+        }
+        
+        if (!['nouvelle', 'preparation'].includes(commande.statut)) {
+            throw new Error('Modification impossible : préparation déjà validée');
+        }
+        
+        // Nettoyer les produits (supprimer les prix)
+        const produitsNettoyes = nouveauxProduits.map(p => ({
+            id: p.id,
+            reference: p.reference,
+            designation: p.designation,
+            type: p.type || 'consommable',
+            quantite: p.quantite || 1,
+            cote: p.cote || null,
+            numeroSerie: p.numeroSerie || null,
+            necessiteCote: p.necessiteCote || false
+            // PLUS DE prixUnitaire
+        }));
+        
+        // Préparer les mises à jour
+        const updates = {
+            produits: produitsNettoyes,
+            // PLUS DE prixTotal
+            historique: arrayUnion({
+                date: new Date(),
+                action: 'modification_produits',
+                utilisateur: this.getUtilisateurActuel(),
+                details: 'Liste des produits modifiée',
+                timestamp: Date.now()
+            })
+        };
+        
+        await updateDoc(doc(db, 'commandes', commandeId), updates);
+        
+        console.log('✅ Produits remplacés avec succès');
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Erreur remplacement produits:', error);
+        throw error;
+    }
+}
+
+    /**
      * Obtenir les statistiques des commandes
      * @returns {Promise<Object>} Statistiques
      */

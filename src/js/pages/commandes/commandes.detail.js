@@ -131,49 +131,65 @@ function afficherDetailCommande(commande) {
         </div>
     `;
     
-    // ========================================
-    // PRODUITS COMMANDÉS - NOUVEAU DESIGN + ICÔNE ÉDITION
-    // ========================================
-    const detailProduits = document.getElementById('detailProduits');
-    detailProduits.innerHTML = `
+// ========================================
+// PRODUITS COMMANDÉS - DESIGN ORIGINAL + ICÔNE STYLO
+// ========================================
+const detailProduits = document.getElementById('detailProduits');
+const peutModifierProduits = ['nouvelle', 'preparation'].includes(commande.statut);
+
+detailProduits.innerHTML = `
+    ${peutModifierProduits ? `
         <button class="section-edit-icon" onclick="editerProduits()" title="Modifier les produits">
             ✏️
         </button>
-        <div class="produits-list" id="produitsReadOnly">
-            ${commande.produits.map((p, index) => `
-                <div class="produit-item" data-index="${index}">
-                    <div class="produit-header">
-                        <div class="produit-nom">
-                            ${p.designation}
-                            ${p.cote ? `<span class="produit-cote">(${p.cote})</span>` : ''}
-                        </div>
-                        <div class="produit-quantite">
-                            <span class="qty-label">Qté:</span>
-                            <span class="qty-value">${p.quantite}</span>
-                        </div>
+    ` : ''}
+    <div class="produits-list" id="produitsReadOnly">
+        ${commande.produits.map((p, index) => `
+            <div class="produit-item" data-index="${index}">
+                <div class="produit-header">
+                    <div class="produit-nom">
+                        ${p.designation}
+                        ${p.cote ? `<span class="produit-cote">(${p.cote})</span>` : ''}
                     </div>
-                    ${(p.type === 'appareil_auditif' || p.necessiteCote || p.numeroSerie) ? `
-                        <div class="produit-serial ${p.numeroSerie ? 'serial-ok' : 'serial-missing'}">
-                            <span class="serial-icon">${p.numeroSerie ? '✓' : '⚠️'}</span>
-                            <span class="serial-label">N° Série :</span>
-                            <span class="serial-value">
-                                ${p.numeroSerie ? `<code>${p.numeroSerie}</code>` : 'Non saisi'}
-                            </span>
-                        </div>
-                    ` : ''}
+                    <div class="produit-quantite">
+                        <span class="qty-label">Qté:</span>
+                        <span class="qty-value">${p.quantite}</span>
+                    </div>
                 </div>
-            `).join('')}
-        </div>
-        <div class="edit-form" id="produitsEditForm">
-            <div id="editProduitsContainer">
-                <!-- Sera rempli dynamiquement -->
+                ${(p.type === 'appareil_auditif' || p.necessiteCote || p.numeroSerie) ? `
+                    <div class="produit-serial ${p.numeroSerie ? 'serial-ok' : 'serial-missing'}">
+                        <span class="serial-icon">${p.numeroSerie ? '✓' : '⚠️'}</span>
+                        <span class="serial-label">N° Série :</span>
+                        <span class="serial-value">
+                            ${p.numeroSerie ? `<code>${p.numeroSerie}</code>` : 'Non saisi'}
+                        </span>
+                    </div>
+                ` : ''}
             </div>
-            <div class="edit-actions">
-                <button class="edit-btn edit-btn-cancel" onclick="annulerEditionProduits()">Annuler</button>
-                <button class="edit-btn edit-btn-save" onclick="sauvegarderProduits()">Sauvegarder</button>
+        `).join('')}
+    </div>
+    
+    <!-- FORMULAIRE D'ÉDITION INTÉGRÉ (caché par défaut) -->
+    <div class="edit-form" id="produitsEditForm">
+        <!-- Liste des produits existants avec suppression -->
+        <div id="editProduitsExistants"></div>
+        
+        <!-- Recherche et ajout de nouveaux produits -->
+        <div class="edit-section">
+            <h4>Ajouter un produit</h4>
+            <div class="product-search">
+                <input type="text" id="editProductSearch" placeholder="Rechercher un produit..." 
+                       oninput="rechercherProduitEdit()">
+                <div class="search-results" id="editProductSearchResults"></div>
             </div>
         </div>
-    `;
+        
+        <div class="edit-actions">
+            <button class="edit-btn edit-btn-cancel" onclick="annulerEditionProduits()">Annuler</button>
+            <button class="edit-btn edit-btn-save" onclick="sauvegarderProduits()">Sauvegarder</button>
+        </div>
+    </div>
+`;
     
     // ========================================
     // INFORMATIONS DE LIVRAISON + ICÔNE ÉDITION
@@ -916,6 +932,365 @@ window.supprimerCommande = async function(commandeId) {
     } catch (error) {
         console.error('Erreur suppression commande:', error);
         afficherErreur('Erreur lors de la suppression');
+    }
+};
+
+// ========================================
+// ÉDITION PRODUITS - RÉUTILISE COMMANDES.CREATE.JS
+// ========================================
+
+// Variable pour stocker les produits en cours d'édition
+let produitsEnEdition = [];
+let produitEnCoursSelectionEdit = null;
+
+/**
+ * Activer l'édition des produits (réutilise create.js)
+ */
+window.editerProduits = function() {
+    if (!commandeActuelle || !['nouvelle', 'preparation'].includes(commandeActuelle.statut)) {
+        afficherErreur('Modification impossible : préparation déjà validée');
+        return;
+    }
+    
+    // Copier les produits actuels pour l'édition
+    produitsEnEdition = [...commandeActuelle.produits];
+    
+    const section = document.getElementById('detailProduits').parentElement;
+    const readOnlyDiv = document.getElementById('produitsReadOnly');
+    const editForm = document.getElementById('produitsEditForm');
+    
+    // Basculer vers le mode édition
+    section.classList.add('editing');
+    readOnlyDiv.style.display = 'none';
+    editForm.classList.add('active');
+    
+    // Remplir la liste des produits existants
+    afficherProduitsExistants();
+    
+    // Focus sur la recherche
+    document.getElementById('editProductSearch').focus();
+};
+
+/**
+ * Afficher les produits existants avec options de suppression
+ */
+function afficherProduitsExistants() {
+    const container = document.getElementById('editProduitsExistants');
+    
+    if (produitsEnEdition.length === 0) {
+        container.innerHTML = '<p>Aucun produit dans la commande</p>';
+        return;
+    }
+    
+    container.innerHTML = `
+        <h4>Produits actuels</h4>
+        ${produitsEnEdition.map((produit, index) => `
+            <div class="edit-produit-item">
+                <div class="edit-produit-header">
+                    <span>${produit.designation} ${produit.cote ? `(${produit.cote})` : ''}</span>
+                    <button class="btn-delete-produit" onclick="supprimerProduitEdit(${index})" title="Supprimer ce produit">
+                        🗑️
+                    </button>
+                </div>
+                <div class="edit-produit-fields">
+                    <div class="edit-produit-field">
+                        <label>Quantité</label>
+                        <input type="number" id="editProduitQte${index}" value="${produit.quantite}" min="1" max="99" 
+                               onchange="modifierQuantiteProduitEdit(${index}, this.value)">
+                    </div>
+                    ${(produit.type === 'appareil_auditif' || produit.necessiteCote) ? `
+                        <div class="edit-produit-field serial">
+                            <label>Numéro de série</label>
+                            <input type="text" id="editProduitNS${index}" value="${produit.numeroSerie || ''}" 
+                                   onchange="modifierNSProduitEdit(${index}, this.value)"
+                                   style="font-family: 'Courier New', monospace; text-transform: uppercase;">
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `).join('')}
+    `;
+}
+
+/**
+ * Supprimer un produit de l'édition
+ */
+window.supprimerProduitEdit = function(index) {
+    if (produitsEnEdition.length === 1) {
+        afficherErreur('Impossible de supprimer le dernier produit');
+        return;
+    }
+    
+    const produit = produitsEnEdition[index];
+    const confirme = confirm(`Supprimer "${produit.designation}" ${produit.cote ? `(${produit.cote})` : ''} ?`);
+    
+    if (confirme) {
+        produitsEnEdition.splice(index, 1);
+        afficherProduitsExistants();
+    }
+};
+
+/**
+ * Modifier la quantité d'un produit
+ */
+window.modifierQuantiteProduitEdit = function(index, nouvelleQuantite) {
+    const qte = parseInt(nouvelleQuantite);
+    if (qte >= 1 && qte <= 99) {
+        produitsEnEdition[index].quantite = qte;
+    }
+};
+
+/**
+ * Modifier le numéro de série d'un produit
+ */
+window.modifierNSProduitEdit = function(index, nouveauNS) {
+    produitsEnEdition[index].numeroSerie = nouveauNS.trim().toUpperCase() || null;
+};
+
+/**
+ * Recherche de produits pour ajout (réutilise create.js)
+ */
+window.rechercherProduitEdit = async function() {
+    const recherche = document.getElementById('editProductSearch').value;
+    const resultsDiv = document.getElementById('editProductSearchResults');
+    
+    if (recherche.length < 2) {
+        resultsDiv.classList.remove('active');
+        return;
+    }
+    
+    try {
+        // Réutiliser ProduitsService comme dans create.js
+        const { ProduitsService } = await import('../../services/produits.service.js');
+        const produits = await ProduitsService.rechercherProduits(recherche);
+        
+        if (produits.length > 0) {
+            resultsDiv.innerHTML = produits.map(produit => `
+                <div class="product-card" onclick="ajouterProduitEdit('${produit.id}')">
+                    <div class="product-card-header">
+                        <div>
+                            <div class="product-name">${produit.designation}</div>
+                            <div class="product-reference">${produit.reference}</div>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        ${produit.marque} - ${produit.categorie}
+                    </div>
+                </div>
+            `).join('');
+            resultsDiv.classList.add('active');
+        } else {
+            resultsDiv.innerHTML = '<div class="search-result-item">Aucun produit trouvé</div>';
+            resultsDiv.classList.add('active');
+        }
+    } catch (error) {
+        console.error('Erreur recherche produit:', error);
+    }
+};
+
+/**
+ * Ajouter un produit (réutilise create.js avec sélecteur côté)
+ */
+window.ajouterProduitEdit = async function(produitId) {
+    try {
+        const { ProduitsService } = await import('../../services/produits.service.js');
+        const produit = await ProduitsService.getProduit(produitId);
+        if (!produit) return;
+        
+        if (produit.necessiteCote) {
+            produitEnCoursSelectionEdit = produit;
+            
+            // RÉUTILISER le même sélecteur que create.js
+            const selectorHtml = `
+                <div id="coteSelector" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                     background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); 
+                     z-index: 10000; min-width: 400px;">
+                    <h3 style="margin-bottom: 20px; text-align: center; color: #2c3e50;">
+                        Sélectionner le côté pour<br><strong>${produit.designation}</strong>
+                    </h3>
+                    <div style="display: flex; gap: 15px; justify-content: center; margin-bottom: 20px;">
+                        <button onclick="selectionnerCoteEdit('gauche')" style="background: white; border: 3px solid #2196F3; 
+                                border-radius: 15px; padding: 20px; cursor: pointer; transition: all 0.3s ease;
+                                display: flex; flex-direction: column; align-items: center; gap: 10px;"
+                                onmouseover="this.style.background='#E3F2FD'" onmouseout="this.style.background='white'">
+                            <span style="font-size: 40px;">👂</span>
+                            <span style="color: #2196F3; font-weight: bold;">Gauche</span>
+                        </button>
+                        <button onclick="selectionnerCoteEdit('droit')" style="background: white; border: 3px solid #F44336; 
+                                border-radius: 15px; padding: 20px; cursor: pointer; transition: all 0.3s ease;
+                                display: flex; flex-direction: column; align-items: center; gap: 10px;"
+                                onmouseover="this.style.background='#FFEBEE'" onmouseout="this.style.background='white'">
+                            <span style="font-size: 40px;">👂</span>
+                            <span style="color: #F44336; font-weight: bold;">Droit</span>
+                        </button>
+                        <button onclick="selectionnerCoteEdit('both')" style="background: white; border: 3px solid #9C27B0; 
+                                border-radius: 15px; padding: 20px; cursor: pointer; transition: all 0.3s ease;
+                                display: flex; flex-direction: column; align-items: center; gap: 10px;"
+                                onmouseover="this.style.background='#F3E5F5'" onmouseout="this.style.background='white'">
+                            <span style="font-size: 40px;">👂👂</span>
+                            <span style="color: #9C27B0; font-weight: bold;">Les deux</span>
+                        </button>
+                    </div>
+                    <button onclick="annulerSelectionCoteEdit()" style="background: #f8f9fa; border: 2px solid #e9ecef; 
+                            border-radius: 10px; padding: 10px 20px; cursor: pointer; width: 100%; 
+                            color: #6c757d; font-weight: 500;">
+                        Annuler
+                    </button>
+                </div>
+                <div id="coteSelectorOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                     background: rgba(0,0,0,0.5); z-index: 9999;" onclick="annulerSelectionCoteEdit()"></div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', selectorHtml);
+            
+        } else {
+            // Produit sans côté
+            produitsEnEdition.push({
+                ...produit,
+                quantite: 1
+            });
+            
+            afficherProduitsExistants();
+            
+            // Reset recherche
+            document.getElementById('editProductSearchResults').classList.remove('active');
+            document.getElementById('editProductSearch').value = '';
+        }
+        
+    } catch (error) {
+        console.error('Erreur ajout produit:', error);
+    }
+};
+
+/**
+ * Sélectionner le côté (réutilise create.js)
+ */
+window.selectionnerCoteEdit = function(cote) {
+    if (!produitEnCoursSelectionEdit) return;
+    
+    if (cote === 'both') {
+        produitsEnEdition.push({
+            ...produitEnCoursSelectionEdit,
+            cote: 'droit',
+            quantite: 1
+        });
+        produitsEnEdition.push({
+            ...produitEnCoursSelectionEdit,
+            cote: 'gauche',
+            quantite: 1
+        });
+    } else {
+        produitsEnEdition.push({
+            ...produitEnCoursSelectionEdit,
+            cote: cote,
+            quantite: 1
+        });
+    }
+    
+    // Nettoyer le sélecteur
+    const selector = document.getElementById('coteSelector');
+    const overlay = document.getElementById('coteSelectorOverlay');
+    if (selector) selector.remove();
+    if (overlay) overlay.remove();
+    
+    produitEnCoursSelectionEdit = null;
+    
+    // Rafraîchir l'affichage
+    afficherProduitsExistants();
+    
+    // Reset recherche
+    document.getElementById('editProductSearchResults').classList.remove('active');
+    document.getElementById('editProductSearch').value = '';
+};
+
+/**
+ * Annuler la sélection de côté
+ */
+window.annulerSelectionCoteEdit = function() {
+    const selector = document.getElementById('coteSelector');
+    const overlay = document.getElementById('coteSelectorOverlay');
+    if (selector) selector.remove();
+    if (overlay) overlay.remove();
+    produitEnCoursSelectionEdit = null;
+};
+
+/**
+ * Annuler l'édition des produits
+ */
+window.annulerEditionProduits = function() {
+    const section = document.getElementById('detailProduits').parentElement;
+    const readOnlyDiv = document.getElementById('produitsReadOnly');
+    const editForm = document.getElementById('produitsEditForm');
+    
+    // Revenir au mode lecture
+    section.classList.remove('editing');
+    readOnlyDiv.style.display = 'block';
+    editForm.classList.remove('active');
+    
+    // Reset variables
+    produitsEnEdition = [];
+    produitEnCoursSelectionEdit = null;
+    
+    // Reset recherche
+    document.getElementById('editProductSearch').value = '';
+    document.getElementById('editProductSearchResults').innerHTML = '';
+    document.getElementById('editProductSearchResults').classList.remove('active');
+};
+
+/**
+ * Sauvegarder les modifications des produits
+ */
+window.sauvegarderProduits = async function() {
+    if (produitsEnEdition.length === 0) {
+        afficherErreur('Au moins un produit est obligatoire');
+        return;
+    }
+    
+    try {
+        const editIcon = document.querySelector('#detailProduits .section-edit-icon');
+        const saveBtn = document.querySelector('#produitsEditForm .edit-btn-save');
+        
+        // États visuels
+        if (editIcon) editIcon.classList.add('saving');
+        if (saveBtn) {
+            saveBtn.classList.add('loading');
+            saveBtn.disabled = true;
+        }
+        
+        // Remplacer tous les produits de la commande
+        await CommandesService.remplacerProduits(commandeActuelle.id, produitsEnEdition);
+        
+        // Rafraîchir la commande
+        const commandeMAJ = await CommandesService.getCommande(commandeActuelle.id);
+        if (commandeMAJ) {
+            commandeActuelle = commandeMAJ;
+            afficherDetailCommande(commandeMAJ);
+        }
+        
+        // Recharger la liste
+        await chargerDonnees();
+        
+        // Notification de succès
+        afficherSucces('Produits modifiés avec succès');
+        
+    } catch (error) {
+        console.error('Erreur modification produits:', error);
+        afficherErreur('Erreur lors de la modification : ' + error.message);
+        
+        // Restaurer les états visuels
+        const editIcon = document.querySelector('#detailProduits .section-edit-icon');
+        const saveBtn = document.querySelector('#produitsEditForm .edit-btn-save');
+        
+        if (editIcon) {
+            editIcon.classList.remove('saving');
+            editIcon.classList.add('error');
+            setTimeout(() => editIcon.classList.remove('error'), 3000);
+        }
+        
+        if (saveBtn) {
+            saveBtn.classList.remove('loading');
+            saveBtn.disabled = false;
+        }
     }
 };
 
