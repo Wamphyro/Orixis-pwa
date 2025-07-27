@@ -1,17 +1,18 @@
 // ========================================
-// COMMANDES.SERVICE.JS - Gestion des commandes Firebase
+// COMMANDES.SERVICE.JS - Gestion des commandes Firebase + ÉDITION
 // Chemin: src/js/services/commandes.service.js
 //
 // DESCRIPTION:
-// Service de gestion des commandes avec Firebase
-// Modifié le 27/07/2025 : Correction des serverTimestamp dans arrayUnion + validation NS
+// Service de gestion des commandes avec Firebase + nouvelles méthodes d'édition
+// Modifié le 29/07/2025 : Ajout des méthodes d'édition avec icônes stylo
 //
 // STRUCTURE:
 // 1. Imports et configuration (lignes 15-25)
 // 2. Méthodes CRUD principales (lignes 30-200)
 // 3. Gestion des statuts (lignes 202-450)
 // 4. Méthode de suppression (lignes 452-500)
-// 5. Statistiques et helpers (lignes 502-650)
+// 5. NOUVELLES MÉTHODES D'ÉDITION (lignes 502-800)
+// 6. Statistiques et helpers (lignes 802-950)
 // ========================================
 
 import { db } from './firebase.service.js';
@@ -414,11 +415,6 @@ export class CommandesService {
         }
     }
     
-    // ========================================
-    // NOUVELLE MÉTHODE : SUPPRESSION SÉCURISÉE
-    // Ajoutée le 27/07/2025
-    // ========================================
-    
     /**
      * Supprime une commande (soft delete)
      * Change le statut en "supprime" et enregistre les informations
@@ -561,7 +557,252 @@ export class CommandesService {
             throw error;
         }
     }
-    
+
+    // ========================================
+    // NOUVELLES MÉTHODES D'ÉDITION AVEC ICÔNES STYLO
+    // Ajoutées le 29/07/2025
+    // ========================================
+
+    /**
+     * Modifier les informations client d'une commande
+     * @param {string} commandeId - ID de la commande
+     * @param {Object} donneesClient - Nouvelles données client
+     * @returns {Promise<boolean>} Succès de la modification
+     */
+    static async modifierClient(commandeId, donneesClient) {
+        try {
+            const { doc, updateDoc, arrayUnion } = 
+                await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+            
+            // Valider les données
+            if (!donneesClient.nom || !donneesClient.prenom) {
+                throw new Error('Nom et prénom obligatoires');
+            }
+            
+            if (donneesClient.telephone && !/^[0-9\s\-\+\.]{10,}$/.test(donneesClient.telephone)) {
+                throw new Error('Format de téléphone invalide');
+            }
+            
+            if (donneesClient.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(donneesClient.email)) {
+                throw new Error('Format d\'email invalide');
+            }
+            
+            // Préparer les mises à jour
+            const updates = {
+                'client.nom': donneesClient.nom.trim(),
+                'client.prenom': donneesClient.prenom.trim(),
+                'client.telephone': donneesClient.telephone?.trim() || '',
+                'client.email': donneesClient.email?.trim() || '',
+                historique: arrayUnion({
+                    date: new Date(),
+                    action: 'modification_client',
+                    utilisateur: this.getUtilisateurActuel(),
+                    details: 'Informations client modifiées',
+                    timestamp: Date.now()
+                })
+            };
+            
+            await updateDoc(doc(db, 'commandes', commandeId), updates);
+            
+            console.log('✅ Informations client modifiées');
+            return true;
+            
+        } catch (error) {
+            console.error('❌ Erreur modification client:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Modifier les informations de livraison d'une commande
+     * @param {string} commandeId - ID de la commande
+     * @param {Object} donneesLivraison - Nouvelles données de livraison
+     * @returns {Promise<boolean>} Succès de la modification
+     */
+    static async modifierLivraison(commandeId, donneesLivraison) {
+        try {
+            const { doc, updateDoc, arrayUnion, Timestamp } = 
+                await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+            
+            // Valider les données
+            if (!donneesLivraison.magasinLivraison) {
+                throw new Error('Magasin de livraison obligatoire');
+            }
+            
+            if (!['normal', 'urgent', 'tres_urgent'].includes(donneesLivraison.niveauUrgence)) {
+                throw new Error('Niveau d\'urgence invalide');
+            }
+            
+            // Convertir la date si nécessaire
+            let dateLivraison = donneesLivraison.dateLivraisonPrevue;
+            if (typeof dateLivraison === 'string') {
+                dateLivraison = Timestamp.fromDate(new Date(dateLivraison));
+            }
+            
+            // Préparer les mises à jour
+            const updates = {
+                magasinLivraison: donneesLivraison.magasinLivraison,
+                niveauUrgence: donneesLivraison.niveauUrgence,
+                'dates.livraisonPrevue': dateLivraison,
+                commentaires: donneesLivraison.commentaires?.trim() || '',
+                historique: arrayUnion({
+                    date: new Date(),
+                    action: 'modification_livraison',
+                    utilisateur: this.getUtilisateurActuel(),
+                    details: 'Informations de livraison modifiées',
+                    timestamp: Date.now()
+                })
+            };
+            
+            await updateDoc(doc(db, 'commandes', commandeId), updates);
+            
+            console.log('✅ Informations de livraison modifiées');
+            return true;
+            
+        } catch (error) {
+            console.error('❌ Erreur modification livraison:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Modifier un produit spécifique dans une commande
+     * @param {string} commandeId - ID de la commande
+     * @param {number} produitIndex - Index du produit dans le tableau
+     * @param {Object} donneesProduit - Nouvelles données du produit
+     * @returns {Promise<boolean>} Succès de la modification
+     */
+    static async modifierProduit(commandeId, produitIndex, donneesProduit) {
+        try {
+            const { doc, getDoc, updateDoc, arrayUnion } = 
+                await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+            
+            // Récupérer la commande actuelle
+            const commande = await this.getCommande(commandeId);
+            if (!commande) {
+                throw new Error('Commande introuvable');
+            }
+            
+            // Valider l'index
+            if (produitIndex < 0 || produitIndex >= commande.produits.length) {
+                throw new Error('Index de produit invalide');
+            }
+            
+            // Valider les données
+            if (donneesProduit.quantite && donneesProduit.quantite < 1) {
+                throw new Error('La quantité doit être supérieure à 0');
+            }
+            
+            // Modifier le produit
+            const produitsModifies = [...commande.produits];
+            const produitOriginal = produitsModifies[produitIndex];
+            
+            // Mettre à jour les champs modifiables
+            if (donneesProduit.quantite !== undefined) {
+                produitsModifies[produitIndex].quantite = parseInt(donneesProduit.quantite);
+            }
+            
+            if (donneesProduit.numeroSerie !== undefined) {
+                produitsModifies[produitIndex].numeroSerie = donneesProduit.numeroSerie?.trim() || null;
+            }
+            
+            // Recalculer le prix total si la quantité a changé
+            let nouveauPrixTotal = commande.prixTotal;
+            if (donneesProduit.quantite !== undefined) {
+                const differentQuantite = donneesProduit.quantite - produitOriginal.quantite;
+                nouveauPrixTotal += differentQuantite * (produitOriginal.prixUnitaire || 0);
+            }
+            
+            // Préparer les mises à jour
+            const updates = {
+                produits: produitsModifies,
+                prixTotal: nouveauPrixTotal,
+                historique: arrayUnion({
+                    date: new Date(),
+                    action: 'modification_produit',
+                    utilisateur: this.getUtilisateurActuel(),
+                    details: `Produit modifié: ${produitOriginal.designation}`,
+                    timestamp: Date.now()
+                })
+            };
+            
+            await updateDoc(doc(db, 'commandes', commandeId), updates);
+            
+            console.log('✅ Produit modifié');
+            return true;
+            
+        } catch (error) {
+            console.error('❌ Erreur modification produit:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Modifier les informations d'expédition d'une commande
+     * @param {string} commandeId - ID de la commande
+     * @param {Object} donneesExpedition - Nouvelles données d'expédition
+     * @returns {Promise<boolean>} Succès de la modification
+     */
+    static async modifierExpedition(commandeId, donneesExpedition) {
+        try {
+            const { doc, updateDoc, arrayUnion } = 
+                await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+            
+            // Récupérer la commande pour vérifier l'état
+            const commande = await this.getCommande(commandeId);
+            if (!commande) {
+                throw new Error('Commande introuvable');
+            }
+            
+            // Vérifier que la commande est dans un état modifiable
+            if (!['expediee', 'receptionnee'].includes(commande.statut)) {
+                throw new Error('L\'expédition ne peut être modifiée que pour les commandes expédiées ou réceptionnées');
+            }
+            
+            // Préparer les mises à jour
+            const updates = {
+                historique: arrayUnion({
+                    date: new Date(),
+                    action: 'modification_expedition',
+                    utilisateur: this.getUtilisateurActuel(),
+                    details: 'Informations d\'expédition modifiées',
+                    timestamp: Date.now()
+                })
+            };
+            
+            // Modifier les informations d'envoi si fournies
+            if (donneesExpedition.transporteur) {
+                updates['expedition.envoi.transporteur'] = donneesExpedition.transporteur;
+            }
+            
+            if (donneesExpedition.numeroSuivi) {
+                updates['expedition.envoi.numeroSuivi'] = donneesExpedition.numeroSuivi.trim();
+            }
+            
+            // Modifier les informations de réception si fournies
+            if (donneesExpedition.numeroSuiviRecu) {
+                updates['expedition.reception.numeroSuiviRecu'] = donneesExpedition.numeroSuiviRecu.trim();
+            }
+            
+            if (donneesExpedition.colisConforme !== undefined) {
+                updates['expedition.reception.colisConforme'] = donneesExpedition.colisConforme;
+            }
+            
+            if (donneesExpedition.commentairesReception) {
+                updates['expedition.reception.commentaires'] = donneesExpedition.commentairesReception.trim();
+            }
+            
+            await updateDoc(doc(db, 'commandes', commandeId), updates);
+            
+            console.log('✅ Informations d\'expédition modifiées');
+            return true;
+            
+        } catch (error) {
+            console.error('❌ Erreur modification expédition:', error);
+            throw error;
+        }
+    }
+
     /**
      * Obtenir les statistiques des commandes
      * @returns {Promise<Object>} Statistiques
@@ -697,6 +938,11 @@ export class CommandesService {
    Solution: Vérification dans case 'terminee'
    Impact: Bloque le passage au statut terminé si NS manquants
    
+   [29/07/2025] - Ajout des méthodes d'édition avec icônes stylo
+   Fonctionnalité: Édition inline des informations de commande
+   Solution: 4 nouvelles méthodes spécialisées (client, livraison, produit, expédition)
+   Impact: Permet la modification directe depuis le modal détail
+   
    NOTES POUR REPRISES FUTURES:
    - La suppression est un soft delete (statut "supprime")
    - Les commandes supprimées sont exclues des statistiques
@@ -704,4 +950,6 @@ export class CommandesService {
    - Impossible de supprimer une commande livrée
    - Ne jamais utiliser serverTimestamp() dans arrayUnion()
    - Les NS sont obligatoires pour terminer la préparation
+   - Les méthodes d'édition incluent validation + historique automatique
+   - L'édition d'expédition n'est possible que pour commandes expédiées/réceptionnées
    ======================================== */

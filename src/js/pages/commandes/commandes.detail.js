@@ -1,12 +1,11 @@
 // ========================================
-// COMMANDES.DETAIL.JS - Gestion du détail et des modifications (CORRIGÉ)
+// COMMANDES.DETAIL.JS - Gestion du détail et des modifications + ÉDITION
 // Chemin: src/js/pages/commandes/commandes.detail.js
 //
 // DESCRIPTION:
 // Gère l'affichage détaillé d'une commande et les actions de modification de statut.
 // Utilise le composant Timeline pour afficher la progression visuelle.
-// Modifié le 27/07/2025 : Ajout suppression sécurisée + saisie NS + flux expédition
-// Modifié le 29/07/2025 : Toujours afficher les boutons expédition ET livraison directe
+// Modifié le 29/07/2025 : Ajout complet des fonctions d'édition avec icônes stylo
 //
 // STRUCTURE:
 // 1. Imports et dépendances (lignes 15-30)
@@ -14,10 +13,11 @@
 // 3. Changement de statut (lignes 202-320)
 // 4. Actions spécifiques (lignes 322-500)
 // 5. Fonction de suppression sécurisée (lignes 502-570)
-// 6. Fonctions utilitaires (lignes 572-580)
+// 6. NOUVELLES FONCTIONS D'ÉDITION (lignes 572-1200)
+// 7. Fonctions utilitaires (lignes 1202-1220)
 //
 // DÉPENDANCES:
-// - CommandesService: Accès aux données des commandes
+// - CommandesService: Accès aux données des commandes + nouvelles méthodes d'édition
 // - Timeline component: Pour l'affichage de la progression
 // - Dialog/notify: Pour les interactions utilisateur
 // - commandes.serial: Pour la gestion des numéros de série
@@ -29,6 +29,8 @@ import { Dialog, confirmerAction, createOrderTimeline, notify } from '../../shar
 import { chargerDonnees } from './commandes.list.js';
 import { afficherSucces, afficherErreur } from './commandes.main.js';
 
+// Variable globale pour stocker la commande en cours d'affichage
+let commandeActuelle = null;
 
 // ========================================
 // DÉTAIL COMMANDE
@@ -38,6 +40,9 @@ export async function voirDetailCommande(commandeId) {
     try {
         const commande = await CommandesService.getCommande(commandeId);
         if (!commande) return;
+        
+        // Stocker la commande actuelle pour l'édition
+        commandeActuelle = commande;
         
         // Afficher les informations dans la modal
         afficherDetailCommande(commande);
@@ -72,10 +77,15 @@ function afficherDetailCommande(commande) {
         showLabels: true            // Afficher les labels
     });
     
-    // Informations client - VERSION COMPACTE
+    // ========================================
+    // INFORMATIONS CLIENT - VERSION COMPACTE + ICÔNE ÉDITION
+    // ========================================
     const detailClient = document.getElementById('detailClient');
     detailClient.innerHTML = `
-        <div class="detail-info-compact">
+        <button class="section-edit-icon" onclick="editerClient()" title="Modifier les informations client">
+            ✏️
+        </button>
+        <div class="detail-info-compact" id="clientReadOnly">
             <div class="info-row">
                 <span class="detail-label">Nom :</span>
                 <span class="detail-value">${commande.client.prenom} ${commande.client.nom}</span>
@@ -93,14 +103,45 @@ function afficherDetailCommande(commande) {
                 <span class="detail-value">${commande.magasinReference}</span>
             </div>
         </div>
+        <div class="edit-form" id="clientEditForm">
+            <div class="edit-form-row">
+                <div class="edit-form-group">
+                    <label>Prénom *</label>
+                    <input type="text" id="editClientPrenom" value="${commande.client.prenom}" required>
+                </div>
+                <div class="edit-form-group">
+                    <label>Nom *</label>
+                    <input type="text" id="editClientNom" value="${commande.client.nom}" required>
+                </div>
+            </div>
+            <div class="edit-form-row">
+                <div class="edit-form-group">
+                    <label>Téléphone</label>
+                    <input type="tel" id="editClientTelephone" value="${commande.client.telephone}">
+                </div>
+                <div class="edit-form-group">
+                    <label>Email</label>
+                    <input type="email" id="editClientEmail" value="${commande.client.email}">
+                </div>
+            </div>
+            <div class="edit-actions">
+                <button class="edit-btn edit-btn-cancel" onclick="annulerEditionClient()">Annuler</button>
+                <button class="edit-btn edit-btn-save" onclick="sauvegarderClient()">Sauvegarder</button>
+            </div>
+        </div>
     `;
     
-    // Produits commandés - NOUVEAU DESIGN SANS TABLEAU
+    // ========================================
+    // PRODUITS COMMANDÉS - NOUVEAU DESIGN + ICÔNE ÉDITION
+    // ========================================
     const detailProduits = document.getElementById('detailProduits');
     detailProduits.innerHTML = `
-        <div class="produits-list">
-            ${commande.produits.map(p => `
-                <div class="produit-item">
+        <button class="section-edit-icon" onclick="editerProduits()" title="Modifier les produits">
+            ✏️
+        </button>
+        <div class="produits-list" id="produitsReadOnly">
+            ${commande.produits.map((p, index) => `
+                <div class="produit-item" data-index="${index}">
                     <div class="produit-header">
                         <div class="produit-nom">
                             ${p.designation}
@@ -123,12 +164,26 @@ function afficherDetailCommande(commande) {
                 </div>
             `).join('')}
         </div>
+        <div class="edit-form" id="produitsEditForm">
+            <div id="editProduitsContainer">
+                <!-- Sera rempli dynamiquement -->
+            </div>
+            <div class="edit-actions">
+                <button class="edit-btn edit-btn-cancel" onclick="annulerEditionProduits()">Annuler</button>
+                <button class="edit-btn edit-btn-save" onclick="sauvegarderProduits()">Sauvegarder</button>
+            </div>
+        </div>
     `;
     
-    // Informations de livraison - DANS LA MÊME LIGNE QUE CLIENT
+    // ========================================
+    // INFORMATIONS DE LIVRAISON + ICÔNE ÉDITION
+    // ========================================
     const detailLivraison = document.getElementById('detailLivraison');
     detailLivraison.innerHTML = `
-        <div class="detail-info-compact">
+        <button class="section-edit-icon" onclick="editerLivraison()" title="Modifier la livraison">
+            ✏️
+        </button>
+        <div class="detail-info-compact" id="livraisonReadOnly">
             <div class="info-row">
                 <span class="detail-label">Type :</span>
                 <span class="detail-value">${COMMANDES_CONFIG.TYPES_PREPARATION[commande.typePreparation]?.label}</span>
@@ -152,9 +207,41 @@ function afficherDetailCommande(commande) {
                 </div>
             ` : ''}
         </div>
+        <div class="edit-form" id="livraisonEditForm">
+            <div class="edit-form-group">
+                <label>Magasin de livraison *</label>
+                <select id="editMagasinLivraison" required>
+                    <!-- Options chargées dynamiquement -->
+                </select>
+            </div>
+            <div class="edit-form-row">
+                <div class="edit-form-group">
+                    <label>Niveau d'urgence *</label>
+                    <select id="editNiveauUrgence" required>
+                        <option value="normal" ${commande.niveauUrgence === 'normal' ? 'selected' : ''}>Normal</option>
+                        <option value="urgent" ${commande.niveauUrgence === 'urgent' ? 'selected' : ''}>🟡 Urgent</option>
+                        <option value="tres_urgent" ${commande.niveauUrgence === 'tres_urgent' ? 'selected' : ''}>🔴 Très urgent</option>
+                    </select>
+                </div>
+                <div class="edit-form-group">
+                    <label>Date de livraison prévue *</label>
+                    <input type="date" id="editDateLivraison" value="${formatDateForInput(commande.dates.livraisonPrevue)}" required>
+                </div>
+            </div>
+            <div class="edit-form-group">
+                <label>Commentaires</label>
+                <textarea id="editCommentaires" rows="3">${commande.commentaires || ''}</textarea>
+            </div>
+            <div class="edit-actions">
+                <button class="edit-btn edit-btn-cancel" onclick="annulerEditionLivraison()">Annuler</button>
+                <button class="edit-btn edit-btn-save" onclick="sauvegarderLivraison()">Sauvegarder</button>
+            </div>
+        </div>
     `;
     
-    // Section expédition (MODIFIÉE pour afficher plus d'infos)
+    // ========================================
+    // SECTION EXPÉDITION + ICÔNE ÉDITION (si applicable)
+    // ========================================
     const sectionExpedition = document.getElementById('sectionExpedition');
     if (commande.expedition?.necessiteExpedition || commande.expedition?.envoi?.numeroSuivi) {
         sectionExpedition.style.display = 'block';
@@ -162,33 +249,80 @@ function afficherDetailCommande(commande) {
         
         if (commande.expedition.envoi?.numeroSuivi) {
             detailExpedition.innerHTML = `
-                <div class="detail-info">
-                    <span class="detail-label">Transporteur :</span>
-                    <span class="detail-value">${commande.expedition.envoi.transporteur}</span>
-                </div>
-                <div class="detail-info">
-                    <span class="detail-label">N° suivi envoi :</span>
-                    <span class="detail-value"><strong>${commande.expedition.envoi.numeroSuivi}</strong></span>
-                </div>
-                <div class="detail-info">
-                    <span class="detail-label">Date envoi :</span>
-                    <span class="detail-value">${formatDate(commande.expedition.envoi.dateEnvoi)}</span>
-                </div>
-                ${commande.expedition.reception?.numeroSuiviRecu ? `
-                    <hr style="margin: 15px 0;">
+                <button class="section-edit-icon" onclick="editerExpedition()" title="Modifier l'expédition">
+                    ✏️
+                </button>
+                <div id="expeditionReadOnly">
                     <div class="detail-info">
-                        <span class="detail-label">N° suivi réception :</span>
-                        <span class="detail-value"><strong>${commande.expedition.reception.numeroSuiviRecu}</strong></span>
+                        <span class="detail-label">Transporteur :</span>
+                        <span class="detail-value">${commande.expedition.envoi.transporteur}</span>
                     </div>
                     <div class="detail-info">
-                        <span class="detail-label">Date réception :</span>
-                        <span class="detail-value">${formatDate(commande.expedition.reception.dateReception)}</span>
+                        <span class="detail-label">N° suivi envoi :</span>
+                        <span class="detail-value"><strong>${commande.expedition.envoi.numeroSuivi}</strong></span>
                     </div>
                     <div class="detail-info">
-                        <span class="detail-label">Colis conforme :</span>
-                        <span class="detail-value">${commande.expedition.reception.colisConforme ? '✅ Oui' : '❌ Non'}</span>
+                        <span class="detail-label">Date envoi :</span>
+                        <span class="detail-value">${formatDate(commande.expedition.envoi.dateEnvoi)}</span>
                     </div>
-                ` : ''}
+                    ${commande.expedition.reception?.numeroSuiviRecu ? `
+                        <hr style="margin: 15px 0;">
+                        <div class="detail-info">
+                            <span class="detail-label">N° suivi réception :</span>
+                            <span class="detail-value"><strong>${commande.expedition.reception.numeroSuiviRecu}</strong></span>
+                        </div>
+                        <div class="detail-info">
+                            <span class="detail-label">Date réception :</span>
+                            <span class="detail-value">${formatDate(commande.expedition.reception.dateReception)}</span>
+                        </div>
+                        <div class="detail-info">
+                            <span class="detail-label">Colis conforme :</span>
+                            <span class="detail-value">${commande.expedition.reception.colisConforme ? '✅ Oui' : '❌ Non'}</span>
+                        </div>
+                    ` : ''}
+                </div>
+                <div class="edit-form" id="expeditionEditForm">
+                    <div class="edit-form-row">
+                        <div class="edit-form-group">
+                            <label>Transporteur</label>
+                            <select id="editTransporteur">
+                                <option value="Colissimo" ${commande.expedition.envoi.transporteur === 'Colissimo' ? 'selected' : ''}>Colissimo</option>
+                                <option value="Chronopost" ${commande.expedition.envoi.transporteur === 'Chronopost' ? 'selected' : ''}>Chronopost</option>
+                                <option value="UPS" ${commande.expedition.envoi.transporteur === 'UPS' ? 'selected' : ''}>UPS</option>
+                                <option value="DHL" ${commande.expedition.envoi.transporteur === 'DHL' ? 'selected' : ''}>DHL</option>
+                                <option value="Fedex" ${commande.expedition.envoi.transporteur === 'Fedex' ? 'selected' : ''}>Fedex</option>
+                                <option value="GLS" ${commande.expedition.envoi.transporteur === 'GLS' ? 'selected' : ''}>GLS</option>
+                            </select>
+                        </div>
+                        <div class="edit-form-group">
+                            <label>Numéro de suivi envoi</label>
+                            <input type="text" id="editNumeroSuivi" value="${commande.expedition.envoi.numeroSuivi}">
+                        </div>
+                    </div>
+                    ${commande.expedition.reception?.numeroSuiviRecu ? `
+                        <div class="edit-form-row">
+                            <div class="edit-form-group">
+                                <label>Numéro de suivi réception</label>
+                                <input type="text" id="editNumeroSuiviRecu" value="${commande.expedition.reception.numeroSuiviRecu}">
+                            </div>
+                            <div class="edit-form-group">
+                                <label>Colis conforme</label>
+                                <select id="editColisConforme">
+                                    <option value="true" ${commande.expedition.reception.colisConforme ? 'selected' : ''}>✅ Oui</option>
+                                    <option value="false" ${!commande.expedition.reception.colisConforme ? 'selected' : ''}>❌ Non</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="edit-form-group">
+                            <label>Commentaires réception</label>
+                            <textarea id="editCommentairesReception" rows="2">${commande.expedition.reception.commentaires || ''}</textarea>
+                        </div>
+                    ` : ''}
+                    <div class="edit-actions">
+                        <button class="edit-btn edit-btn-cancel" onclick="annulerEditionExpedition()">Annuler</button>
+                        <button class="edit-btn edit-btn-save" onclick="sauvegarderExpedition()">Sauvegarder</button>
+                    </div>
+                </div>
             `;
         } else {
             detailExpedition.innerHTML = '<p>En attente d\'expédition</p>';
@@ -341,6 +475,7 @@ window.changerStatutDetail = async function(commandeId, nouveauStatut) {
             // Recharger et rafraîchir la modal avec les nouvelles données
             const commandeMAJ = await CommandesService.getCommande(commandeId);
             if (commandeMAJ) {
+                commandeActuelle = commandeMAJ;
                 afficherDetailCommande(commandeMAJ);
             }
             
@@ -407,11 +542,6 @@ window.terminerPreparation = async function(commandeId) {
         afficherErreur('Erreur lors de la finalisation de la préparation');
     }
 };
-
-// ========================================
-// FONCTION SAISIR EXPÉDITION - RETOUR AU SYSTÈME ORIGINAL CORRIGÉ
-// À remplacer dans commandes.detail.js
-// ========================================
 
 // MODIFIÉ : Saisir expédition avec transporteur et numéro (SYSTÈME ORIGINAL)
 window.saisirExpedition = async function(commandeId) {
@@ -790,6 +920,450 @@ window.supprimerCommande = async function(commandeId) {
 };
 
 // ========================================
+// NOUVELLES FONCTIONS D'ÉDITION AVEC ICÔNES STYLO
+// Ajoutées le 29/07/2025
+// ========================================
+
+/**
+ * Activer l'édition des informations client
+ */
+window.editerClient = function() {
+    const section = document.getElementById('detailClient').parentElement;
+    const readOnlyDiv = document.getElementById('clientReadOnly');
+    const editForm = document.getElementById('clientEditForm');
+    
+    // Basculer vers le mode édition
+    section.classList.add('editing');
+    readOnlyDiv.style.display = 'none';
+    editForm.classList.add('active');
+    
+    // Focus sur le premier champ
+    document.getElementById('editClientPrenom').focus();
+};
+
+/**
+ * Annuler l'édition du client
+ */
+window.annulerEditionClient = function() {
+    const section = document.getElementById('detailClient').parentElement;
+    const readOnlyDiv = document.getElementById('clientReadOnly');
+    const editForm = document.getElementById('clientEditForm');
+    
+    // Revenir au mode lecture
+    section.classList.remove('editing');
+    readOnlyDiv.style.display = 'block';
+    editForm.classList.remove('active');
+    
+    // Restaurer les valeurs originales
+    if (commandeActuelle) {
+        document.getElementById('editClientPrenom').value = commandeActuelle.client.prenom;
+        document.getElementById('editClientNom').value = commandeActuelle.client.nom;
+        document.getElementById('editClientTelephone').value = commandeActuelle.client.telephone;
+        document.getElementById('editClientEmail').value = commandeActuelle.client.email;
+    }
+};
+
+/**
+ * Sauvegarder les modifications client
+ */
+window.sauvegarderClient = async function() {
+    try {
+        const editIcon = document.querySelector('#detailClient .section-edit-icon');
+        const saveBtn = document.querySelector('#clientEditForm .edit-btn-save');
+        
+        // Récupérer les valeurs
+        const donnees = {
+            prenom: document.getElementById('editClientPrenom').value.trim(),
+            nom: document.getElementById('editClientNom').value.trim(),
+            telephone: document.getElementById('editClientTelephone').value.trim(),
+            email: document.getElementById('editClientEmail').value.trim()
+        };
+        
+        // Validation basique
+        if (!donnees.prenom || !donnees.nom) {
+            afficherErreur('Le prénom et le nom sont obligatoires');
+            return;
+        }
+        
+        // États visuels
+        editIcon.classList.add('saving');
+        saveBtn.classList.add('loading');
+        saveBtn.disabled = true;
+        
+        // Appeler le service
+        await CommandesService.modifierClient(commandeActuelle.id, donnees);
+        
+        // Rafraîchir la commande
+        const commandeMAJ = await CommandesService.getCommande(commandeActuelle.id);
+        if (commandeMAJ) {
+            commandeActuelle = commandeMAJ;
+            afficherDetailCommande(commandeMAJ);
+        }
+        
+        // Recharger la liste
+        await chargerDonnees();
+        
+        // Notification de succès
+        afficherSucces('Informations client modifiées avec succès');
+        
+    } catch (error) {
+        console.error('Erreur modification client:', error);
+        afficherErreur('Erreur lors de la modification : ' + error.message);
+        
+        // Restaurer les états visuels
+        const editIcon = document.querySelector('#detailClient .section-edit-icon');
+        const saveBtn = document.querySelector('#clientEditForm .edit-btn-save');
+        
+        editIcon.classList.remove('saving');
+        editIcon.classList.add('error');
+        saveBtn.classList.remove('loading');
+        saveBtn.disabled = false;
+        
+        setTimeout(() => {
+            editIcon.classList.remove('error');
+        }, 3000);
+    }
+};
+
+/**
+ * Activer l'édition des informations de livraison
+ */
+window.editerLivraison = async function() {
+    const section = document.getElementById('detailLivraison').parentElement;
+    const readOnlyDiv = document.getElementById('livraisonReadOnly');
+    const editForm = document.getElementById('livraisonEditForm');
+    
+    // Charger les magasins disponibles
+    try {
+        // Simuler le chargement des magasins (à adapter selon votre service)
+        const selectMagasin = document.getElementById('editMagasinLivraison');
+        selectMagasin.innerHTML = `
+            <option value="9MAR" ${commandeActuelle.magasinLivraison === '9MAR' ? 'selected' : ''}>Marseille</option>
+            <option value="9AIX" ${commandeActuelle.magasinLivraison === '9AIX' ? 'selected' : ''}>Aix-en-Provence</option>
+            <option value="9TOU" ${commandeActuelle.magasinLivraison === '9TOU' ? 'selected' : ''}>Toulon</option>
+            <option value="9NIC" ${commandeActuelle.magasinLivraison === '9NIC' ? 'selected' : ''}>Nice</option>
+            <option value="9CAN" ${commandeActuelle.magasinLivraison === '9CAN' ? 'selected' : ''}>Cannes</option>
+        `;
+    } catch (error) {
+        console.error('Erreur chargement magasins:', error);
+    }
+    
+    // Basculer vers le mode édition
+    section.classList.add('editing');
+    readOnlyDiv.style.display = 'none';
+    editForm.classList.add('active');
+    
+    // Focus sur le premier champ
+    document.getElementById('editMagasinLivraison').focus();
+};
+
+/**
+ * Annuler l'édition de la livraison
+ */
+window.annulerEditionLivraison = function() {
+    const section = document.getElementById('detailLivraison').parentElement;
+    const readOnlyDiv = document.getElementById('livraisonReadOnly');
+    const editForm = document.getElementById('livraisonEditForm');
+    
+    // Revenir au mode lecture
+    section.classList.remove('editing');
+    readOnlyDiv.style.display = 'block';
+    editForm.classList.remove('active');
+};
+
+/**
+ * Sauvegarder les modifications de livraison
+ */
+window.sauvegarderLivraison = async function() {
+    try {
+        const editIcon = document.querySelector('#detailLivraison .section-edit-icon');
+        const saveBtn = document.querySelector('#livraisonEditForm .edit-btn-save');
+        
+        // Récupérer les valeurs
+        const donnees = {
+            magasinLivraison: document.getElementById('editMagasinLivraison').value,
+            niveauUrgence: document.getElementById('editNiveauUrgence').value,
+            dateLivraisonPrevue: document.getElementById('editDateLivraison').value,
+            commentaires: document.getElementById('editCommentaires').value.trim()
+        };
+        
+        // Validation
+        if (!donnees.magasinLivraison || !donnees.niveauUrgence || !donnees.dateLivraisonPrevue) {
+            afficherErreur('Tous les champs obligatoires doivent être remplis');
+            return;
+        }
+        
+        // États visuels
+        editIcon.classList.add('saving');
+        saveBtn.classList.add('loading');
+        saveBtn.disabled = true;
+        
+        // Appeler le service
+        await CommandesService.modifierLivraison(commandeActuelle.id, donnees);
+        
+        // Rafraîchir la commande
+        const commandeMAJ = await CommandesService.getCommande(commandeActuelle.id);
+        if (commandeMAJ) {
+            commandeActuelle = commandeMAJ;
+            afficherDetailCommande(commandeMAJ);
+        }
+        
+        // Recharger la liste
+        await chargerDonnees();
+        
+        // Notification de succès
+        afficherSucces('Informations de livraison modifiées avec succès');
+        
+    } catch (error) {
+        console.error('Erreur modification livraison:', error);
+        afficherErreur('Erreur lors de la modification : ' + error.message);
+        
+        // Restaurer les états visuels
+        const editIcon = document.querySelector('#detailLivraison .section-edit-icon');
+        const saveBtn = document.querySelector('#livraisonEditForm .edit-btn-save');
+        
+        editIcon.classList.remove('saving');
+        editIcon.classList.add('error');
+        saveBtn.classList.remove('loading');
+        saveBtn.disabled = false;
+        
+        setTimeout(() => {
+            editIcon.classList.remove('error');
+        }, 3000);
+    }
+};
+
+/**
+ * Activer l'édition des produits
+ */
+window.editerProduits = function() {
+    const section = document.getElementById('detailProduits').parentElement;
+    const readOnlyDiv = document.getElementById('produitsReadOnly');
+    const editForm = document.getElementById('produitsEditForm');
+    const container = document.getElementById('editProduitsContainer');
+    
+    // Générer les champs d'édition pour chaque produit
+    container.innerHTML = commandeActuelle.produits.map((produit, index) => `
+        <div class="edit-produit-item" data-index="${index}">
+            <div class="edit-produit-header">
+                ${produit.designation} ${produit.cote ? `(${produit.cote})` : ''}
+            </div>
+            <div class="edit-produit-fields">
+                <div class="edit-produit-field">
+                    <label>Quantité</label>
+                    <input type="number" id="editProduitQte${index}" value="${produit.quantite}" min="1" max="99">
+                </div>
+                ${(produit.type === 'appareil_auditif' || produit.necessiteCote) ? `
+                    <div class="edit-produit-field serial">
+                        <label>Numéro de série</label>
+                        <input type="text" id="editProduitNS${index}" value="${produit.numeroSerie || ''}" placeholder="Non saisi">
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+    `).join('');
+    
+    // Basculer vers le mode édition
+    section.classList.add('editing');
+    readOnlyDiv.style.display = 'none';
+    editForm.classList.add('active');
+    
+    // Focus sur le premier champ de quantité
+    const firstInput = container.querySelector('input');
+    if (firstInput) firstInput.focus();
+};
+
+/**
+ * Annuler l'édition des produits
+ */
+window.annulerEditionProduits = function() {
+    const section = document.getElementById('detailProduits').parentElement;
+    const readOnlyDiv = document.getElementById('produitsReadOnly');
+    const editForm = document.getElementById('produitsEditForm');
+    
+    // Revenir au mode lecture
+    section.classList.remove('editing');
+    readOnlyDiv.style.display = 'block';
+    editForm.classList.remove('active');
+};
+
+/**
+ * Sauvegarder les modifications des produits
+ */
+window.sauvegarderProduits = async function() {
+    try {
+        const editIcon = document.querySelector('#detailProduits .section-edit-icon');
+        const saveBtn = document.querySelector('#produitsEditForm .edit-btn-save');
+        
+        // États visuels
+        editIcon.classList.add('saving');
+        saveBtn.classList.add('loading');
+        saveBtn.disabled = true;
+        
+        // Parcourir chaque produit modifié
+        for (let i = 0; i < commandeActuelle.produits.length; i++) {
+            const qteInput = document.getElementById(`editProduitQte${i}`);
+            const nsInput = document.getElementById(`editProduitNS${i}`);
+            
+            const produitOriginal = commandeActuelle.produits[i];
+            const nouvelleQuantite = parseInt(qteInput.value);
+            const nouveauNS = nsInput ? nsInput.value.trim() : null;
+            
+            // Vérifier s'il y a des changements
+            const qteChangee = nouvelleQuantite !== produitOriginal.quantite;
+            const nsChange = nouveauNS !== (produitOriginal.numeroSerie || '');
+            
+            if (qteChangee || nsChange) {
+                const donneesModif = {};
+                
+                if (qteChangee) {
+                    donneesModif.quantite = nouvelleQuantite;
+                }
+                
+                if (nsChange) {
+                    donneesModif.numeroSerie = nouveauNS || null;
+                }
+                
+                // Appeler le service pour ce produit
+                await CommandesService.modifierProduit(commandeActuelle.id, i, donneesModif);
+            }
+        }
+        
+        // Rafraîchir la commande
+        const commandeMAJ = await CommandesService.getCommande(commandeActuelle.id);
+        if (commandeMAJ) {
+            commandeActuelle = commandeMAJ;
+            afficherDetailCommande(commandeMAJ);
+        }
+        
+        // Recharger la liste
+        await chargerDonnees();
+        
+        // Notification de succès
+        afficherSucces('Produits modifiés avec succès');
+        
+    } catch (error) {
+        console.error('Erreur modification produits:', error);
+        afficherErreur('Erreur lors de la modification : ' + error.message);
+        
+        // Restaurer les états visuels
+        const editIcon = document.querySelector('#detailProduits .section-edit-icon');
+        const saveBtn = document.querySelector('#produitsEditForm .edit-btn-save');
+        
+        editIcon.classList.remove('saving');
+        editIcon.classList.add('error');
+        saveBtn.classList.remove('loading');
+        saveBtn.disabled = false;
+        
+        setTimeout(() => {
+            editIcon.classList.remove('error');
+        }, 3000);
+    }
+};
+
+/**
+ * Activer l'édition de l'expédition
+ */
+window.editerExpedition = function() {
+    const section = document.getElementById('detailExpedition').parentElement;
+    const readOnlyDiv = document.getElementById('expeditionReadOnly');
+    const editForm = document.getElementById('expeditionEditForm');
+    
+    // Basculer vers le mode édition
+    section.classList.add('editing');
+    readOnlyDiv.style.display = 'none';
+    editForm.classList.add('active');
+    
+    // Focus sur le premier champ
+    document.getElementById('editTransporteur').focus();
+};
+
+/**
+ * Annuler l'édition de l'expédition
+ */
+window.annulerEditionExpedition = function() {
+    const section = document.getElementById('detailExpedition').parentElement;
+    const readOnlyDiv = document.getElementById('expeditionReadOnly');
+    const editForm = document.getElementById('expeditionEditForm');
+    
+    // Revenir au mode lecture
+    section.classList.remove('editing');
+    readOnlyDiv.style.display = 'block';
+    editForm.classList.remove('active');
+};
+
+/**
+ * Sauvegarder les modifications d'expédition
+ */
+window.sauvegarderExpedition = async function() {
+    try {
+        const editIcon = document.querySelector('#detailExpedition .section-edit-icon');
+        const saveBtn = document.querySelector('#expeditionEditForm .edit-btn-save');
+        
+        // Récupérer les valeurs
+        const donnees = {
+            transporteur: document.getElementById('editTransporteur').value,
+            numeroSuivi: document.getElementById('editNumeroSuivi').value.trim()
+        };
+        
+        // Ajouter les champs de réception s'ils existent
+        const numeroSuiviRecuInput = document.getElementById('editNumeroSuiviRecu');
+        const colisConformeInput = document.getElementById('editColisConforme');
+        const commentairesInput = document.getElementById('editCommentairesReception');
+        
+        if (numeroSuiviRecuInput) {
+            donnees.numeroSuiviRecu = numeroSuiviRecuInput.value.trim();
+        }
+        
+        if (colisConformeInput) {
+            donnees.colisConforme = colisConformeInput.value === 'true';
+        }
+        
+        if (commentairesInput) {
+            donnees.commentairesReception = commentairesInput.value.trim();
+        }
+        
+        // États visuels
+        editIcon.classList.add('saving');
+        saveBtn.classList.add('loading');
+        saveBtn.disabled = true;
+        
+        // Appeler le service
+        await CommandesService.modifierExpedition(commandeActuelle.id, donnees);
+        
+        // Rafraîchir la commande
+        const commandeMAJ = await CommandesService.getCommande(commandeActuelle.id);
+        if (commandeMAJ) {
+            commandeActuelle = commandeMAJ;
+            afficherDetailCommande(commandeMAJ);
+        }
+        
+        // Recharger la liste
+        await chargerDonnees();
+        
+        // Notification de succès
+        afficherSucces('Informations d\'expédition modifiées avec succès');
+        
+    } catch (error) {
+        console.error('Erreur modification expédition:', error);
+        afficherErreur('Erreur lors de la modification : ' + error.message);
+        
+        // Restaurer les états visuels
+        const editIcon = document.querySelector('#detailExpedition .section-edit-icon');
+        const saveBtn = document.querySelector('#expeditionEditForm .edit-btn-save');
+        
+        editIcon.classList.remove('saving');
+        editIcon.classList.add('error');
+        saveBtn.classList.remove('loading');
+        saveBtn.disabled = false;
+        
+        setTimeout(() => {
+            editIcon.classList.remove('error');
+        }, 3000);
+    }
+};
+
+// ========================================
 // FONCTIONS UTILITAIRES
 // ========================================
 
@@ -798,6 +1372,13 @@ function formatDate(timestamp) {
     
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return date.toLocaleDateString('fr-FR');
+}
+
+function formatDateForInput(timestamp) {
+    if (!timestamp) return '';
+    
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return date.toISOString().split('T')[0];
 }
 
 /* ========================================
@@ -832,13 +1413,22 @@ function formatDate(timestamp) {
    Solution: Toujours afficher les deux options (expédition ET livraison directe)
    Impact: L'utilisateur a toujours le choix entre expédier ou livrer directement
    
+   [29/07/2025] - Ajout complet des fonctions d'édition avec icônes stylo
+   Fonctionnalité: Édition inline de toutes les sections du modal détail
+   Solution: 8 nouvelles fonctions d'édition (editer/annuler/sauvegarder pour chaque section)
+   Impact: Interface moderne avec édition directe et feedback visuel
+   
    NOTES POUR REPRISES FUTURES:
    - Le composant Timeline gère automatiquement l'orientation
-   - Les styles sont dans commandes-modal.css section 4
+   - Les styles sont dans commandes-modal.css section 4 + 7 (édition)
    - Ne pas générer de HTML manuel pour la timeline
    - La modal reste ouverte après changement de statut
    - La suppression nécessite la saisie exacte du numéro de commande
    - Les NS sont obligatoires pour les appareils auditifs
    - L'expédition est optionnelle (bouton livrer directement)
    - Les deux boutons (expédier + livrer) s'affichent toujours pour le statut "terminee"
+   - Variable globale commandeActuelle stocke la commande en cours d'affichage
+   - Chaque section éditable a 3 fonctions : editer, annuler, sauvegarder
+   - États visuels avec classes CSS : .saving, .error sur les icônes
+   - Les formulaires d'édition sont intégrés dans le HTML de chaque section
    ======================================== */

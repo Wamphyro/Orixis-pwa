@@ -15,6 +15,7 @@
     
     <!-- ========================================
          CSS - Chemins mis à jour pour le dossier commandes/
+         MODIFIÉ : Ajout du support pour l'édition avec icônes stylo
          ======================================== -->
     <link rel="stylesheet" href="../src/css/main.css">
     <link rel="stylesheet" href="../src/css/commandes/commandes.css">
@@ -335,7 +336,11 @@
         </div>
     </div>
 
-    <!-- Modal Détail Commande -->
+    <!-- ========================================
+         MODAL DÉTAIL COMMANDE - MODIFIÉ POUR ÉDITION
+         Ajout du support pour l'édition avec icônes stylo
+         Les sections sont maintenant éditables inline
+         ======================================== -->
     <div id="modalDetailCommande" class="modal" style="display: none;">
         <div class="modal-content modal-large">
             <div class="modal-header">
@@ -356,37 +361,52 @@
                 </div>
                 
                 <!-- ========================================
-                     MODIFICATION : Nouvelle structure des sections
+                     SECTIONS DÉTAIL - NOUVELLE STRUCTURE AVEC ÉDITION
                      Client et Livraison dans la colonne de gauche
                      Produits dans la colonne de droite
+                     Chaque section contient maintenant :
+                     - Une icône stylo d'édition (top-right)
+                     - Le contenu en mode lecture
+                     - Un formulaire d'édition masqué
                      ======================================== -->
                 <div class="detail-sections">
                     <!-- Colonne de gauche : Client + Livraison -->
                     <div class="detail-column-left">
+                        <!-- Section Client ÉDITABLE -->
                         <div class="detail-section">
                             <h3>Informations client</h3>
-                            <div id="detailClient"></div>
+                            <div id="detailClient">
+                                <!-- Contenu généré dynamiquement avec icône d'édition -->
+                            </div>
                         </div>
                         
+                        <!-- Section Livraison ÉDITABLE -->
                         <div class="detail-section">
                             <h3>Informations de livraison</h3>
-                            <div id="detailLivraison"></div>
+                            <div id="detailLivraison">
+                                <!-- Contenu généré dynamiquement avec icône d'édition -->
+                            </div>
                         </div>
                     </div>
                     
                     <!-- Colonne de droite : Produits -->
                     <div class="detail-column-right">
+                        <!-- Section Produits ÉDITABLE -->
                         <div class="detail-section">
                             <h3>Produits commandés</h3>
-                            <div id="detailProduits"></div>
+                            <div id="detailProduits">
+                                <!-- Contenu généré dynamiquement avec icône d'édition -->
+                            </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Section expédition sur toute la largeur -->
+                <!-- Section expédition sur toute la largeur ÉDITABLE -->
                 <div class="detail-section full-width" id="sectionExpedition" style="display: none;">
                     <h3>Expédition</h3>
-                    <div id="detailExpedition"></div>
+                    <div id="detailExpedition">
+                        <!-- Contenu généré dynamiquement avec icône d'édition -->
+                    </div>
                 </div>
                 
                 <!-- Actions selon le statut -->
@@ -454,7 +474,10 @@
         <p>Orixis - © 2025</p>
     </div>
 
-    <!-- Scripts -->
+    <!-- ========================================
+         SCRIPTS - Inchangé
+         Le fichier commandes.main.js charge tous les autres modules
+         ======================================== -->
     <script type="module" src="../src/js/pages/commandes/commandes.main.js"></script>
 </body>
 </html>
