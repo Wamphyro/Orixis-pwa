@@ -1,13 +1,11 @@
 /* ========================================
-   COMMANDES-MODAL.CSS - Styles de TOUS les composants UI
+   COMMANDES-MODAL.CSS - Styles de TOUS les composants UI + ÉDITION
    Chemin: src/css/commandes/commandes-modal.css
    
    DESCRIPTION:
    Ce fichier centralise TOUS les styles des composants UI utilisés dans le module commandes.
    Il combine les styles originaux des modales commandes + les styles des composants shared.
-   Modifié le 27/07/2025 : Ajout des styles pour le modal de saisie des NS
-   Modifié le 28/07/2025 : Repositionnement des sections dans le modal détail
-   Modifié le 29/07/2025 : Fix FOUC - Ajout de #modalSaisieNS dans les règles de masquage
+   Modifié le 29/07/2025 : Ajout des styles pour l'édition avec icônes stylo
    
    TABLE DES MATIÈRES:
    1. MODAL BASE STYLES (lignes 30-280) - Styles de base pour toutes les modales
@@ -15,7 +13,8 @@
    3. NOTIFICATION STYLES (lignes 501-700) - Notifications toast
    4. TIMELINE STYLES (lignes 701-1150) - Timeline pour le suivi des statuts
    5. MODALES COMMANDES SPÉCIFIQUES (lignes 1151-1650) - Styles custom pour commandes
-   6. MODAL NUMÉROS DE SÉRIE (lignes 1651+) - Styles pour la saisie des NS
+   6. MODAL NUMÉROS DE SÉRIE (lignes 1651-1750) - Styles pour la saisie des NS
+   7. STYLES ÉDITION AVEC ICÔNES STYLO (lignes 1751+) - NOUVEAU
    
    DÉPENDANCES JS (avec loadStyles() à commenter):
    - src/js/shared/ui/modal.component.js (ligne ~43)
@@ -1243,6 +1242,7 @@ body.modal-open {
     background: #f8f9fa;
     border-radius: 12px;
     padding: 20px;
+    position: relative; /* Ajouté pour positionner l'icône d'édition */
 }
 
 /* Section expédition sur toute la largeur */
@@ -1525,6 +1525,346 @@ body.modal-open {
 }
 
 /* ========================================
+   7. STYLES ÉDITION AVEC ICÔNES STYLO
+   NOUVEAU - Ajouté le 29/07/2025
+   ======================================== */
+
+/* Icône d'édition (stylo) dans les sections */
+.section-edit-icon {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 32px;
+    height: 32px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    opacity: 0.7;
+    z-index: 10;
+}
+
+.section-edit-icon:hover {
+    opacity: 1;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.section-edit-icon:active {
+    transform: scale(0.95);
+}
+
+/* États de l'icône selon l'action */
+.section-edit-icon.saving {
+    background: #ff9800;
+    animation: pulse 1s infinite;
+}
+
+.section-edit-icon.saved {
+    background: #4caf50;
+}
+
+.section-edit-icon.error {
+    background: #f44336;
+}
+
+/* Animation de sauvegarde */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* Formulaire d'édition inline */
+.edit-form {
+    display: none;
+    background: white;
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    animation: slideDown 0.3s ease-out;
+}
+
+.edit-form.active {
+    display: block;
+}
+
+/* Animation d'apparition du formulaire */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Groupes de champs dans le formulaire d'édition */
+.edit-form-group {
+    margin-bottom: 15px;
+}
+
+.edit-form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+}
+
+.edit-form-group input,
+.edit-form-group select,
+.edit-form-group textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.edit-form-group input:focus,
+.edit-form-group select:focus,
+.edit-form-group textarea:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.edit-form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Rangée de champs côte à côte */
+.edit-form-row {
+    display: flex;
+    gap: 15px;
+}
+
+.edit-form-row .edit-form-group {
+    flex: 1;
+}
+
+/* Actions du formulaire d'édition */
+.edit-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #e9ecef;
+}
+
+.edit-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 80px;
+}
+
+.edit-btn-save {
+    background: #4caf50;
+    color: white;
+}
+
+.edit-btn-save:hover {
+    background: #43a047;
+    transform: translateY(-1px);
+}
+
+.edit-btn-save:disabled {
+    background: #c8e6c9;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.edit-btn-cancel {
+    background: #f5f5f5;
+    color: #666;
+}
+
+.edit-btn-cancel:hover {
+    background: #eeeeee;
+}
+
+/* État de chargement pour les boutons */
+.edit-btn.loading {
+    position: relative;
+    color: transparent;
+}
+
+.edit-btn.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 16px;
+    height: 16px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+/* Messages d'erreur dans les formulaires */
+.edit-error {
+    background: #ffebee;
+    border: 1px solid #f44336;
+    color: #c62828;
+    padding: 10px;
+    border-radius: 6px;
+    margin-top: 10px;
+    font-size: 13px;
+}
+
+/* Messages de succès */
+.edit-success {
+    background: #e8f5e9;
+    border: 1px solid #4caf50;
+    color: #2e7d32;
+    padding: 10px;
+    border-radius: 6px;
+    margin-top: 10px;
+    font-size: 13px;
+}
+
+/* Mode édition pour les sections */
+.detail-section.editing {
+    border: 2px solid #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.detail-section.editing .section-edit-icon {
+    background: #ff9800;
+}
+
+/* Cache le contenu en mode édition */
+.detail-section.editing .detail-info-compact,
+.detail-section.editing .produits-list {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+/* Formulaire d'édition des produits */
+.edit-produit-item {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+.edit-produit-header {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 10px;
+    font-size: 15px;
+}
+
+.edit-produit-fields {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+}
+
+.edit-produit-field {
+    flex: 1;
+}
+
+.edit-produit-field label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6c757d;
+}
+
+.edit-produit-field input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+/* Champ spécial pour numéro de série */
+.edit-produit-field.serial input {
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* ========================================
+   RESPONSIVE ÉDITION
+   ======================================== */
+@media (max-width: 768px) {
+    .section-edit-icon {
+        top: 10px;
+        right: 10px;
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+    
+    .edit-form {
+        padding: 15px;
+    }
+    
+    .edit-form-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .edit-actions {
+        flex-direction: column;
+    }
+    
+    .edit-btn {
+        width: 100%;
+    }
+    
+    .edit-produit-fields {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .detail-sections {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .detail-column-left,
+    .detail-column-right {
+        flex: auto;
+        width: 100%;
+    }
+}
+
+/* ========================================
    RESPONSIVE COMMANDES MODALES
    ======================================== */
 @media (max-width: 768px) {
@@ -1548,17 +1888,6 @@ body.modal-open {
     
     .urgence-selector {
         flex-direction: column;
-    }
-    
-    /* Responsive pour le modal détail */
-    .detail-sections {
-        flex-direction: column;
-    }
-    
-    .detail-column-left,
-    .detail-column-right {
-        flex: auto;
-        width: 100%;
     }
     
     .timeline {
@@ -1631,6 +1960,11 @@ body.modal-open {
    Solution: Augmenté les z-index (modal: 1000, dialog: 20000, notifications: 30000)
    Impact: Les dialogs s'affichent maintenant correctement au-dessus des modals
    
+   [29/07/2025] - Ajout complet des styles d'édition avec icônes stylo
+   Fonctionnalité: Édition inline de toutes les sections du modal détail
+   Solution: Nouvelles classes .section-edit-icon, .edit-form, .edit-actions
+   Impact: Interface d'édition moderne avec animations et feedback visuel
+   
    NOTES POUR REPRISES FUTURES:
    - Le bouton suppression a une animation de rotation
    - Le badge status-supprime est barré avec opacity réduite
@@ -1638,4 +1972,7 @@ body.modal-open {
    - La nouvelle structure utilise flexbox pour les colonnes
    - Section expédition reste sur toute la largeur en bas
    - IMPORTANT: Toujours ajouter les nouvelles modales dans les règles FOUC
+   - Les icônes d'édition sont positionnées en absolute dans chaque section
+   - Les formulaires d'édition utilisent slideDown animation
+   - États visuels pour sauvegarde/erreur avec couleurs appropriées
    ======================================== */
