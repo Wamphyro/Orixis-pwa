@@ -4,17 +4,16 @@
    
    DESCRIPTION:
    Ce fichier contient UNIQUEMENT les styles de la page liste des commandes.
-   Modifié le 27/07/2025 : Ajout des styles pour le bouton suppression
+   Modifié le 27/01/2025 : Suppression des styles de boutons (déplacés dans button.css)
    
    STRUCTURE:
    1. En-tête et statistiques
    2. Filtres
    3. Tableau des commandes
    4. Badges statut et urgence
-   5. Styles bouton suppression (NOUVEAU)
-   6. Pagination
-   7. Animations
-   8. Responsive
+   5. Pagination
+   6. Animations
+   7. Responsive
    ======================================== */
 
 /* ========================================
@@ -187,49 +186,6 @@
     gap: 8px;
 }
 
-.btn-action {
-    background: none;
-    border: 2px solid #e9ecef;
-    border-radius: 8px;
-    padding: 6px 12px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.2s ease;
-    color: #495057;
-}
-
-.btn-action:hover {
-    background: #f8f9fa;
-    border-color: #667eea;
-    color: #667eea;
-    transform: scale(1.05);
-}
-
-/* ========================================
-   BOUTON SUPPRESSION (NOUVEAU)
-   Ajouté le 27/07/2025
-   ======================================== */
-
-/* Bouton suppression (corbeille rouge) */
-.btn-action.btn-delete {
-    border-color: #dc3545;
-    color: #dc3545;
-    transition: all 0.3s ease;
-}
-
-.btn-action.btn-delete:hover {
-    background: #dc3545;
-    border-color: #dc3545;
-    color: white;
-    transform: scale(1.1) rotate(-5deg);
-    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
-}
-
-/* Animation au survol du bouton suppression */
-.btn-action.btn-delete:active {
-    transform: scale(0.95);
-}
-
 /* ========================================
    BADGES STATUT ET URGENCE
    ======================================== */
@@ -280,7 +236,7 @@
     color: #721c24;
 }
 
-/* Badge statut supprimé (NOUVEAU) */
+/* Badge statut supprimé */
 .status-supprime {
     background: #dc3545;
     color: white;
@@ -425,13 +381,12 @@
 /* ========================================
    HISTORIQUE DES DIFFICULTÉS
    
-   [27/07/2025] - Ajout styles bouton suppression
-   Ajout: Styles pour .btn-action.btn-delete
-   Design: Corbeille rouge avec rotation au survol
-   Impact: Amélioration visuelle pour l'action de suppression
+   [27/01/2025] - Nettoyage des styles de boutons
+   Suppression: Tous les styles .btn-action déplacés dans button.css
+   Impact: Évite la duplication et centralise les styles de boutons
    
    NOTES POUR REPRISES FUTURES:
-   - Le bouton suppression a une animation de rotation
-   - Le badge status-supprime est barré avec opacity réduite
-   - Les couleurs utilisent le rouge Bootstrap (#dc3545)
+   - Les styles de boutons sont maintenant dans button.css
+   - Ce fichier ne contient que les styles spécifiques à la page liste
+   - Les badges pourraient être extraits dans un badge.css si réutilisés ailleurs
    ======================================== */

@@ -1,6 +1,8 @@
 /* ========================================
    ORIXIS PWA - MAIN.CSS
    Base commune à toutes les pages
+   
+   MODIFIÉ: Suppression des styles de boutons (déplacés dans button.css)
    ======================================== */
 
 /* ========================================
@@ -157,82 +159,6 @@ textarea {
 }
 
 /* ========================================
-   BOUTONS GLOBAUX
-   ======================================== */
-.btn {
-    padding: 15px 40px;
-    border: none;
-    border-radius: 10px;
-    font-size: 18px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    text-decoration: none;
-}
-
-.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-    text-decoration: none;
-}
-
-.btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.btn-primary {
-    background: var(--primary-gradient);
-    color: white;
-}
-
-.btn-primary:hover {
-    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
-}
-
-.btn-secondary {
-    background: #6c757d;
-    color: white;
-}
-
-.btn-secondary:hover {
-    background: #5a6268;
-}
-
-.btn-warning {
-    background: #f39c12;
-    color: white;
-}
-
-.btn-warning:hover {
-    background: #e67e22;
-    box-shadow: 0 5px 20px rgba(243, 156, 18, 0.4);
-}
-
-.btn-logout {
-    background: #e74c3c;
-    color: white;
-    border: none;
-    padding: 8px 20px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.btn-logout:hover {
-    background: #c0392b;
-    transform: scale(1.05);
-}
-
-/* ========================================
    HEADER LAYOUT UNIFORME
    ======================================== */
 .app-header {
@@ -319,26 +245,6 @@ textarea {
 
 .header-user-info span {
     font-weight: bold;
-}
-
-.header-logout-button {
-    background: #e74c3c;
-    color: white;
-    border: none;
-    padding: 8px 20px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.header-logout-button:hover {
-    background: #c0392b;
-    transform: scale(1.05);
 }
 
 /* ========================================
@@ -511,6 +417,17 @@ textarea {
 }
 
 /* ========================================
+   UTILITAIRES
+   ======================================== */
+.hidden {
+    display: none !important;
+}
+
+.no-print {
+    /* Pour les éléments à masquer à l'impression */
+}
+
+/* ========================================
    RESPONSIVE MOBILE FIRST
    ======================================== */
 @media (max-width: 768px) {
@@ -556,11 +473,6 @@ textarea {
     .form-row {
         grid-template-columns: 1fr;
         gap: 15px;
-    }
-    
-    .btn {
-        padding: 12px 20px;
-        font-size: 16px;
     }
 }
 

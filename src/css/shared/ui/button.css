@@ -1,34 +1,50 @@
 /* ========================================
-   BUTTON.CSS - Styles des boutons réutilisables
+   BUTTON.CSS - Styles de TOUS les boutons de l'application
    Chemin: src/css/shared/ui/button.css
    
    DESCRIPTION:
-   Styles de base pour tous les boutons de l'application.
-   Extrait et unifié depuis différents endroits.
+   Centralise tous les styles de boutons pour éviter la duplication.
+   Modifié le 27/01/2025 : Ajout des boutons de main.css et commandes.css
+   
+   STRUCTURE:
+   1. Base button (.btn)
+   2. Variantes principales (primary, secondary, etc.)
+   3. Tailles
+   4. Boutons icône
+   5. Boutons d'action tableau
+   6. Boutons spéciaux (link, reset, logout)
+   7. États (loading, disabled)
+   8. Groupes de boutons
+   9. Responsive
    ======================================== */
 
-/* Base button */
+/* ========================================
+   BASE BUTTON
+   ======================================== */
 .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 12px 24px;
+    gap: 10px;
+    padding: 15px 40px;
     border: none;
     border-radius: 10px;
-    font-size: 16px;
-    font-weight: 500;
+    font-size: 18px;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
     text-decoration: none;
     font-family: inherit;
     position: relative;
     overflow: hidden;
+    background: #6c757d;
+    color: white;
 }
 
 .btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    text-decoration: none;
 }
 
 .btn:active {
@@ -39,9 +55,12 @@
     opacity: 0.6;
     cursor: not-allowed;
     transform: none !important;
+    box-shadow: none !important;
 }
 
-/* Variantes principales */
+/* ========================================
+   VARIANTES PRINCIPALES
+   ======================================== */
 .btn-primary {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
@@ -49,17 +68,16 @@
 
 .btn-primary:hover {
     background: linear-gradient(135deg, #5a73e5 0%, #6b4199 100%);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
 }
 
 .btn-secondary {
-    background: #f8f9fa;
-    color: #6c757d;
-    border: 2px solid #e9ecef;
+    background: #6c757d;
+    color: white;
 }
 
 .btn-secondary:hover {
-    background: #e9ecef;
-    border-color: #dee2e6;
+    background: #5a6268;
 }
 
 .btn-success {
@@ -98,7 +116,9 @@
     background: #138496;
 }
 
-/* Tailles */
+/* ========================================
+   TAILLES
+   ======================================== */
 .btn-sm {
     padding: 8px 16px;
     font-size: 14px;
@@ -109,7 +129,9 @@
     font-size: 18px;
 }
 
-/* Boutons icône uniquement */
+/* ========================================
+   BOUTONS ICÔNE UNIQUEMENT
+   ======================================== */
 .btn-icon {
     padding: 8px;
     width: 40px;
@@ -127,7 +149,9 @@
     height: 48px;
 }
 
-/* Boutons d'action (tableau) */
+/* ========================================
+   BOUTONS D'ACTION (tableau)
+   ======================================== */
 .btn-action {
     background: none;
     border: 2px solid #e9ecef;
@@ -160,6 +184,14 @@
     box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
 }
 
+.btn-action.btn-delete:active {
+    transform: scale(0.95);
+}
+
+/* ========================================
+   BOUTONS SPÉCIAUX
+   ======================================== */
+
 /* Bouton lien */
 .btn-link {
     background: none;
@@ -176,7 +208,54 @@
     box-shadow: none;
 }
 
-/* État loading */
+/* Bouton reset (filtres) */
+.btn-reset {
+    background: #f8f9fa;
+    color: #6c757d;
+    border: 2px solid #e9ecef;
+    padding: 8px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: normal;
+}
+
+.btn-reset:hover {
+    background: #e9ecef;
+    border-color: #dee2e6;
+    transform: scale(1.05);
+}
+
+/* Bouton déconnexion */
+.btn-logout,
+.header-logout-button {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-logout:hover,
+.header-logout-button:hover {
+    background: #c0392b;
+    transform: scale(1.05);
+}
+
+/* ========================================
+   ÉTAT LOADING
+   ======================================== */
 .btn.loading {
     color: transparent;
 }
@@ -196,7 +275,8 @@
     animation: spinner 0.8s linear infinite;
 }
 
-.btn-secondary.loading::after {
+.btn-secondary.loading::after,
+.btn-reset.loading::after {
     border-color: rgba(108, 117, 125, 0.3);
     border-top-color: #6c757d;
 }
@@ -205,7 +285,9 @@
     to { transform: rotate(360deg); }
 }
 
-/* Groupe de boutons */
+/* ========================================
+   GROUPE DE BOUTONS
+   ======================================== */
 .btn-group {
     display: flex;
     gap: 12px;
@@ -222,11 +304,13 @@
     width: 100%;
 }
 
-/* Responsive */
+/* ========================================
+   RESPONSIVE
+   ======================================== */
 @media (max-width: 768px) {
     .btn {
-        padding: 10px 20px;
-        font-size: 14px;
+        padding: 12px 20px;
+        font-size: 16px;
     }
     
     .btn-sm {
@@ -238,4 +322,38 @@
         padding: 14px 28px;
         font-size: 16px;
     }
+    
+    .btn-action {
+        padding: 5px 10px;
+        font-size: 13px;
+    }
 }
+
+@media (max-width: 480px) {
+    .btn {
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .btn-group .btn {
+        width: 100%;
+    }
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [27/01/2025] - Centralisation de tous les boutons
+   Ajout: Boutons de main.css et commandes.css
+   Impact: Évite la duplication entre fichiers CSS
+   
+   NOTES POUR REPRISES FUTURES:
+   - Tous les boutons sont maintenant centralisés ici
+   - Ne pas ajouter de styles de boutons ailleurs
+   - Pour ajouter un nouveau type, l'ajouter ici
+   ======================================== */
