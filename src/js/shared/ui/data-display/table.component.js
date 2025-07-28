@@ -1762,6 +1762,14 @@ function stringToColor(str) {
 
             // Appliquer les styles du thème
             const styleConfig = CONFIG.styles[this.options.style] || CONFIG.styles.glassmorphism;
+            if (!styleConfig || !styleConfig.container) {
+                console.error('Style config manquant pour:', this.options.style, styleConfig);
+                styleConfig.container = {}; // Valeur par défaut
+
+                console.log('Style demandé:', this.options.style);
+                console.log('StyleConfig:', styleConfig);
+                console.log('Container styles:', styleConfig?.container);
+}
             this.applyStyles(this.container, styleConfig.container);
 
             // Toolbar
