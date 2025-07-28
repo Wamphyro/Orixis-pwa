@@ -3705,4 +3705,65 @@ const TableComponent = (() => {
                     tr.style.animation = CONFIG.animations[this.options.animation].row.update.animation;
                 }
             }
-        
+        }
+
+        /**
+         * Obtenir les données filtrées
+         */
+        getFilteredData() {
+            return this.filteredData;
+        }
+
+        /**
+         * Obtenir les données sélectionnées
+         */
+        getSelectedData() {
+            return this.data.filter(row => this.selectedRows.has(row.id));
+        }
+
+        /**
+         * Réinitialiser les filtres
+         */
+        resetFilters() {
+            this.filterConfig = {};
+            this.searchTerm = '';
+            this.applyFilters();
+            this.render();
+        }
+
+        /**
+         * Réinitialiser le tri
+         */
+        resetSort() {
+            this.sortConfig = { key: null, direction: null, multi: [] };
+            this.applyFilters();
+            this.render();
+            this.updateSortIndicators();
+        }
+    }
+
+    // ========================================
+    // FONCTION DE CRÉATION
+    // ========================================
+    
+    /**
+     * Créer une instance de table
+     */
+    function create(options) {
+        return new UITable(options);
+    }
+
+    // ========================================
+    // EXPORT DU MODULE
+    // ========================================
+    
+    return {
+        create,
+        instances: tableInstances,
+        config: CONFIG,
+        version: '1.0.0'
+    };
+})();
+
+// Export pour utilisation
+export default TableComponent;
