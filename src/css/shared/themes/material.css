@@ -1,0 +1,780 @@
+/* ========================================
+   MATERIAL.CSS - Thème Material Design 3 (Material You)
+   Chemin: src/css/shared/themes/material.css
+   
+   DESCRIPTION:
+   Thème global Material Design 3 pour le système UI complet.
+   Implémente les principes Material You avec couleurs dynamiques,
+   elevation, états d'interaction et animations caractéristiques.
+   
+   STRUCTURE:
+   1. Système de couleurs Material (lignes 25-200)
+   2. Typographie et polices (lignes 201-280)
+   3. Elevation et ombres (lignes 281-350)
+   4. Formes et rayons (lignes 351-400)
+   5. États d'interaction (lignes 401-500)
+   6. Animations Material (lignes 501-600)
+   7. Composants spécifiques (lignes 601-900)
+   8. Mode sombre (lignes 901-1000)
+   9. Utilitaires (lignes 1001-1100)
+   
+   DÉPENDANCES:
+   - Appliqué via classe .material-theme sur <body> ou conteneur
+   - Compatible avec tous les composants du système UI
+   - Police Roboto recommandée (non obligatoire)
+   ======================================== */
+
+/* ========================================
+   IMPORTS ET CONFIGURATION
+   ======================================== */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+/* ========================================
+   SYSTÈME DE COULEURS MATERIAL
+   ======================================== */
+.material-theme {
+    /* Couleurs primaires */
+    --md-primary: #1976d2;
+    --md-primary-rgb: 25, 118, 210;
+    --md-on-primary: #ffffff;
+    --md-primary-container: #e3f2fd;
+    --md-on-primary-container: #004ba0;
+    
+    /* Couleurs secondaires */
+    --md-secondary: #039be5;
+    --md-secondary-rgb: 3, 155, 229;
+    --md-on-secondary: #ffffff;
+    --md-secondary-container: #b3e5fc;
+    --md-on-secondary-container: #01579b;
+    
+    /* Couleurs tertiaires */
+    --md-tertiary: #00897b;
+    --md-tertiary-rgb: 0, 137, 123;
+    --md-on-tertiary: #ffffff;
+    --md-tertiary-container: #b2dfdb;
+    --md-on-tertiary-container: #00332c;
+    
+    /* Couleurs d'erreur */
+    --md-error: #d32f2f;
+    --md-error-rgb: 211, 47, 47;
+    --md-on-error: #ffffff;
+    --md-error-container: #ffebee;
+    --md-on-error-container: #b71c1c;
+    
+    /* Couleurs neutres */
+    --md-background: #fafafa;
+    --md-on-background: #1c1b1f;
+    --md-surface: #ffffff;
+    --md-on-surface: #1c1b1f;
+    --md-surface-variant: #f5f5f5;
+    --md-on-surface-variant: #49454f;
+    
+    /* Outline */
+    --md-outline: #79747e;
+    --md-outline-variant: #cac4d0;
+    
+    /* Autres couleurs sémantiques */
+    --md-success: #2e7d32;
+    --md-on-success: #ffffff;
+    --md-warning: #ed6c02;
+    --md-on-warning: #ffffff;
+    --md-info: #0288d1;
+    --md-on-info: #ffffff;
+    
+    /* Opacités standards Material */
+    --md-state-hover-opacity: 0.08;
+    --md-state-focus-opacity: 0.12;
+    --md-state-pressed-opacity: 0.16;
+    --md-state-dragged-opacity: 0.16;
+    --md-disabled-opacity: 0.38;
+    
+    /* Couleurs de surface avec elevation */
+    --md-surface-1: #ffffff;
+    --md-surface-2: #fafafa;
+    --md-surface-3: #f7f7f7;
+    --md-surface-4: #f5f5f5;
+    --md-surface-5: #f2f2f2;
+}
+
+/* Teintes de couleur (pour les variations) */
+.material-theme {
+    /* Primary tints */
+    --md-primary-10: #e3f2fd;
+    --md-primary-20: #bbdefb;
+    --md-primary-30: #90caf9;
+    --md-primary-40: #64b5f6;
+    --md-primary-50: #42a5f5;
+    --md-primary-60: #2196f3;
+    --md-primary-70: #1e88e5;
+    --md-primary-80: #1976d2;
+    --md-primary-90: #1565c0;
+    --md-primary-95: #0d47a1;
+    --md-primary-99: #01579b;
+}
+
+/* ========================================
+   TYPOGRAPHIE MATERIAL
+   ========================================== */
+.material-theme {
+    /* Famille de polices */
+    --md-font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --md-font-family-mono: 'Roboto Mono', monospace;
+    
+    /* Display */
+    --md-display-large-size: 57px;
+    --md-display-large-line-height: 64px;
+    --md-display-large-weight: 400;
+    
+    --md-display-medium-size: 45px;
+    --md-display-medium-line-height: 52px;
+    --md-display-medium-weight: 400;
+    
+    --md-display-small-size: 36px;
+    --md-display-small-line-height: 44px;
+    --md-display-small-weight: 400;
+    
+    /* Headline */
+    --md-headline-large-size: 32px;
+    --md-headline-large-line-height: 40px;
+    --md-headline-large-weight: 400;
+    
+    --md-headline-medium-size: 28px;
+    --md-headline-medium-line-height: 36px;
+    --md-headline-medium-weight: 400;
+    
+    --md-headline-small-size: 24px;
+    --md-headline-small-line-height: 32px;
+    --md-headline-small-weight: 400;
+    
+    /* Title */
+    --md-title-large-size: 22px;
+    --md-title-large-line-height: 28px;
+    --md-title-large-weight: 400;
+    
+    --md-title-medium-size: 16px;
+    --md-title-medium-line-height: 24px;
+    --md-title-medium-weight: 500;
+    
+    --md-title-small-size: 14px;
+    --md-title-small-line-height: 20px;
+    --md-title-small-weight: 500;
+    
+    /* Body */
+    --md-body-large-size: 16px;
+    --md-body-large-line-height: 24px;
+    --md-body-large-weight: 400;
+    
+    --md-body-medium-size: 14px;
+    --md-body-medium-line-height: 20px;
+    --md-body-medium-weight: 400;
+    
+    --md-body-small-size: 12px;
+    --md-body-small-line-height: 16px;
+    --md-body-small-weight: 400;
+    
+    /* Label */
+    --md-label-large-size: 14px;
+    --md-label-large-line-height: 20px;
+    --md-label-large-weight: 500;
+    
+    --md-label-medium-size: 12px;
+    --md-label-medium-line-height: 16px;
+    --md-label-medium-weight: 500;
+    
+    --md-label-small-size: 11px;
+    --md-label-small-line-height: 16px;
+    --md-label-small-weight: 500;
+}
+
+/* ========================================
+   ELEVATION (OMBRES MATERIAL)
+   ======================================== */
+.material-theme {
+    /* Niveaux d'elevation Material Design 3 */
+    --md-elevation-0: none;
+    --md-elevation-1: 
+        0px 1px 2px rgba(0, 0, 0, 0.3),
+        0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+    --md-elevation-2: 
+        0px 1px 2px rgba(0, 0, 0, 0.3),
+        0px 2px 6px 2px rgba(0, 0, 0, 0.15);
+    --md-elevation-3: 
+        0px 4px 8px 3px rgba(0, 0, 0, 0.15),
+        0px 1px 3px rgba(0, 0, 0, 0.3);
+    --md-elevation-4: 
+        0px 6px 10px 4px rgba(0, 0, 0, 0.15),
+        0px 2px 3px rgba(0, 0, 0, 0.3);
+    --md-elevation-5: 
+        0px 8px 12px 6px rgba(0, 0, 0, 0.15),
+        0px 4px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Classes d'elevation */
+.material-theme .elevation-0 { box-shadow: var(--md-elevation-0); }
+.material-theme .elevation-1 { box-shadow: var(--md-elevation-1); }
+.material-theme .elevation-2 { box-shadow: var(--md-elevation-2); }
+.material-theme .elevation-3 { box-shadow: var(--md-elevation-3); }
+.material-theme .elevation-4 { box-shadow: var(--md-elevation-4); }
+.material-theme .elevation-5 { box-shadow: var(--md-elevation-5); }
+
+/* ========================================
+   FORMES ET RAYONS
+   ======================================== */
+.material-theme {
+    /* Rayons de bordure Material */
+    --md-shape-extra-small: 4px;
+    --md-shape-small: 8px;
+    --md-shape-medium: 12px;
+    --md-shape-large: 16px;
+    --md-shape-extra-large: 28px;
+    --md-shape-full: 9999px;
+    
+    /* Formes spécifiques aux composants */
+    --md-shape-corner-full: 50%;
+    --md-shape-corner-large: 16px;
+    --md-shape-corner-medium: 12px;
+    --md-shape-corner-small: 8px;
+    --md-shape-corner-extra-small: 4px;
+}
+
+/* ========================================
+   ÉTATS D'INTERACTION MATERIAL
+   ======================================== */
+.material-theme {
+    /* Durées d'animation */
+    --md-duration-short1: 50ms;
+    --md-duration-short2: 100ms;
+    --md-duration-short3: 150ms;
+    --md-duration-short4: 200ms;
+    --md-duration-medium1: 250ms;
+    --md-duration-medium2: 300ms;
+    --md-duration-medium3: 350ms;
+    --md-duration-medium4: 400ms;
+    --md-duration-long1: 450ms;
+    --md-duration-long2: 500ms;
+    --md-duration-long3: 550ms;
+    --md-duration-long4: 600ms;
+    
+    /* Easing functions */
+    --md-easing-standard: cubic-bezier(0.4, 0.0, 0.2, 1);
+    --md-easing-decelerate: cubic-bezier(0.0, 0.0, 0.2, 1);
+    --md-easing-accelerate: cubic-bezier(0.4, 0.0, 1, 1);
+    --md-easing-sharp: cubic-bezier(0.4, 0.0, 0.6, 1);
+}
+
+/* Ripple effect */
+.material-theme .ripple {
+    position: relative;
+    overflow: hidden;
+}
+
+.material-theme .ripple::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    transition: width var(--md-duration-medium4) var(--md-easing-standard),
+                height var(--md-duration-medium4) var(--md-easing-standard),
+                opacity var(--md-duration-medium4) var(--md-easing-standard);
+}
+
+.material-theme .ripple:active::before {
+    width: 100%;
+    height: 100%;
+    opacity: var(--md-state-pressed-opacity);
+}
+
+/* État hover */
+.material-theme [class*="md-"]:hover {
+    background-color: rgba(var(--md-primary-rgb), var(--md-state-hover-opacity));
+}
+
+/* État focus */
+.material-theme [class*="md-"]:focus-visible {
+    outline: 2px solid var(--md-primary);
+    outline-offset: 2px;
+}
+
+/* État pressed */
+.material-theme [class*="md-"]:active {
+    background-color: rgba(var(--md-primary-rgb), var(--md-state-pressed-opacity));
+}
+
+/* ========================================
+   ANIMATIONS MATERIAL
+   ======================================== */
+
+/* Fade in/out */
+@keyframes md-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes md-fade-out {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+/* Scale */
+@keyframes md-scale-in {
+    from { transform: scale(0); }
+    to { transform: scale(1); }
+}
+
+@keyframes md-scale-out {
+    from { transform: scale(1); }
+    to { transform: scale(0); }
+}
+
+/* Slide */
+@keyframes md-slide-up {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+@keyframes md-slide-down {
+    from { transform: translateY(-100%); }
+    to { transform: translateY(0); }
+}
+
+/* Expand */
+@keyframes md-expand {
+    from { 
+        transform: scale(0);
+        opacity: 0;
+    }
+    to { 
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Classes d'animation */
+.material-theme .md-animate-fade-in {
+    animation: md-fade-in var(--md-duration-medium2) var(--md-easing-standard);
+}
+
+.material-theme .md-animate-scale-in {
+    animation: md-scale-in var(--md-duration-medium2) var(--md-easing-decelerate);
+}
+
+.material-theme .md-animate-slide-up {
+    animation: md-slide-up var(--md-duration-medium3) var(--md-easing-decelerate);
+}
+
+/* ========================================
+   COMPOSANTS MATERIAL
+   ======================================== */
+
+/* Boutons Material */
+.material-theme .md-button {
+    /* Reset */
+    appearance: none;
+    border: none;
+    outline: none;
+    background: transparent;
+    
+    /* Layout */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+    
+    /* Dimensions */
+    height: 40px;
+    padding: 0 24px;
+    min-width: 64px;
+    
+    /* Typographie */
+    font-family: var(--md-font-family);
+    font-size: var(--md-label-large-size);
+    font-weight: var(--md-label-large-weight);
+    line-height: var(--md-label-large-line-height);
+    letter-spacing: 0.1px;
+    text-transform: uppercase;
+    
+    /* Style */
+    border-radius: var(--md-shape-full);
+    cursor: pointer;
+    transition: all var(--md-duration-short4) var(--md-easing-standard);
+}
+
+/* Variantes de boutons */
+.material-theme .md-button-filled {
+    background: var(--md-primary);
+    color: var(--md-on-primary);
+    box-shadow: var(--md-elevation-1);
+}
+
+.material-theme .md-button-filled:hover {
+    box-shadow: var(--md-elevation-2);
+    background: var(--md-primary-80);
+}
+
+.material-theme .md-button-outlined {
+    border: 1px solid var(--md-outline);
+    color: var(--md-primary);
+}
+
+.material-theme .md-button-text {
+    color: var(--md-primary);
+}
+
+/* Cards Material */
+.material-theme .md-card {
+    background: var(--md-surface);
+    border-radius: var(--md-shape-medium);
+    box-shadow: var(--md-elevation-1);
+    overflow: hidden;
+    transition: box-shadow var(--md-duration-short4) var(--md-easing-standard);
+}
+
+.material-theme .md-card:hover {
+    box-shadow: var(--md-elevation-2);
+}
+
+.material-theme .md-card-filled {
+    background: var(--md-surface-variant);
+    box-shadow: none;
+}
+
+.material-theme .md-card-outlined {
+    box-shadow: none;
+    border: 1px solid var(--md-outline-variant);
+}
+
+/* Chips Material */
+.material-theme .md-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 32px;
+    padding: 0 16px;
+    border-radius: var(--md-shape-small);
+    background: var(--md-surface-variant);
+    color: var(--md-on-surface-variant);
+    font-size: var(--md-label-large-size);
+    font-weight: var(--md-label-large-weight);
+    cursor: pointer;
+    transition: all var(--md-duration-short4) var(--md-easing-standard);
+}
+
+.material-theme .md-chip:hover {
+    background: var(--md-primary-10);
+    color: var(--md-primary);
+}
+
+/* FAB (Floating Action Button) */
+.material-theme .md-fab {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    width: 56px;
+    height: 56px;
+    border-radius: var(--md-shape-large);
+    background: var(--md-primary);
+    color: var(--md-on-primary);
+    box-shadow: var(--md-elevation-3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--md-duration-short4) var(--md-easing-standard);
+}
+
+.material-theme .md-fab:hover {
+    box-shadow: var(--md-elevation-4);
+}
+
+.material-theme .md-fab-small {
+    width: 40px;
+    height: 40px;
+}
+
+.material-theme .md-fab-large {
+    width: 96px;
+    height: 96px;
+    border-radius: var(--md-shape-extra-large);
+}
+
+/* Navigation Rail */
+.material-theme .md-navigation-rail {
+    width: 80px;
+    background: var(--md-surface);
+    box-shadow: var(--md-elevation-1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 0;
+    gap: 12px;
+}
+
+/* Dialog/Modal Material */
+.material-theme .md-dialog {
+    background: var(--md-surface);
+    border-radius: var(--md-shape-extra-large);
+    box-shadow: var(--md-elevation-5);
+    max-width: 560px;
+    animation: md-scale-in var(--md-duration-medium2) var(--md-easing-decelerate);
+}
+
+/* Snackbar Material */
+.material-theme .md-snackbar {
+    background: var(--md-inverse-surface, #323232);
+    color: var(--md-inverse-on-surface, #ffffff);
+    border-radius: var(--md-shape-extra-small);
+    padding: 14px 16px;
+    font-size: var(--md-body-medium-size);
+    box-shadow: var(--md-elevation-3);
+    animation: md-slide-up var(--md-duration-medium3) var(--md-easing-decelerate);
+}
+
+/* ========================================
+   APPLICATION AUX COMPOSANTS UI
+   ======================================== */
+
+/* Stats Card en Material */
+.material-theme .stats-card {
+    background: var(--md-surface) !important;
+    border-radius: var(--md-shape-medium) !important;
+    box-shadow: var(--md-elevation-1) !important;
+    border: none !important;
+    backdrop-filter: none !important;
+}
+
+.material-theme .stats-card:hover {
+    box-shadow: var(--md-elevation-2) !important;
+    transform: none !important;
+}
+
+.material-theme .stats-card-title {
+    color: var(--md-on-surface-variant) !important;
+    font-size: var(--md-label-medium-size) !important;
+    font-weight: var(--md-label-medium-weight) !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.material-theme .stats-card-value {
+    color: var(--md-on-surface) !important;
+    font-size: var(--md-headline-large-size) !important;
+    font-weight: var(--md-headline-large-weight) !important;
+}
+
+/* Switch en Material */
+.material-theme .switch-wrapper {
+    --switch-duration: var(--md-duration-short4);
+    --switch-easing: var(--md-easing-standard);
+}
+
+.material-theme .switch-track {
+    background: var(--md-surface-variant) !important;
+    border: 2px solid var(--md-outline) !important;
+    box-shadow: none !important;
+}
+
+.material-theme .switch-input:checked + .switch-track {
+    background: var(--md-primary) !important;
+    border-color: var(--md-primary) !important;
+}
+
+.material-theme .switch-thumb {
+    background: var(--md-outline) !important;
+    box-shadow: var(--md-elevation-1) !important;
+    transform: scale(0.8);
+}
+
+.material-theme .switch-input:checked + .switch-track .switch-thumb {
+    background: var(--md-on-primary) !important;
+    transform: translateX(calc(var(--switch-track-width) - var(--switch-thumb-size) - var(--switch-thumb-offset) * 2)) scale(1);
+}
+
+/* ========================================
+   MODE SOMBRE MATERIAL
+   ======================================== */
+.material-theme.dark,
+.material-theme[data-theme="dark"] {
+    /* Couleurs inversées pour le mode sombre */
+    --md-primary: #90caf9;
+    --md-on-primary: #003258;
+    --md-primary-container: #004a77;
+    --md-on-primary-container: #cfe5ff;
+    
+    --md-secondary: #81d4fa;
+    --md-on-secondary: #003548;
+    --md-secondary-container: #004d66;
+    --md-on-secondary-container: #c5e7ff;
+    
+    --md-background: #1c1b1f;
+    --md-on-background: #e6e1e5;
+    --md-surface: #1c1b1f;
+    --md-on-surface: #e6e1e5;
+    --md-surface-variant: #49454f;
+    --md-on-surface-variant: #cac4d0;
+    
+    --md-outline: #938f99;
+    --md-outline-variant: #49454f;
+    
+    /* Ajustement des ombres pour le mode sombre */
+    --md-elevation-1: 
+        0px 1px 3px 1px rgba(0, 0, 0, 0.7),
+        0px 1px 2px rgba(0, 0, 0, 0.8);
+    --md-elevation-2: 
+        0px 2px 6px 2px rgba(0, 0, 0, 0.7),
+        0px 1px 2px rgba(0, 0, 0, 0.8);
+    --md-elevation-3: 
+        0px 4px 8px 3px rgba(0, 0, 0, 0.7),
+        0px 1px 3px rgba(0, 0, 0, 0.8);
+    --md-elevation-4: 
+        0px 6px 10px 4px rgba(0, 0, 0, 0.7),
+        0px 2px 3px rgba(0, 0, 0, 0.8);
+    --md-elevation-5: 
+        0px 8px 12px 6px rgba(0, 0, 0, 0.7),
+        0px 4px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* ========================================
+   CLASSES UTILITAIRES MATERIAL
+   ======================================== */
+
+/* Typographie */
+.material-theme .md-display-large {
+    font-size: var(--md-display-large-size);
+    line-height: var(--md-display-large-line-height);
+    font-weight: var(--md-display-large-weight);
+}
+
+.material-theme .md-headline-medium {
+    font-size: var(--md-headline-medium-size);
+    line-height: var(--md-headline-medium-line-height);
+    font-weight: var(--md-headline-medium-weight);
+}
+
+.material-theme .md-body-large {
+    font-size: var(--md-body-large-size);
+    line-height: var(--md-body-large-line-height);
+    font-weight: var(--md-body-large-weight);
+}
+
+/* Couleurs */
+.material-theme .md-primary-text { color: var(--md-primary); }
+.material-theme .md-secondary-text { color: var(--md-secondary); }
+.material-theme .md-error-text { color: var(--md-error); }
+.material-theme .md-success-text { color: var(--md-success); }
+
+.material-theme .md-primary-bg { background-color: var(--md-primary); }
+.material-theme .md-surface-bg { background-color: var(--md-surface); }
+.material-theme .md-surface-variant-bg { background-color: var(--md-surface-variant); }
+
+/* Formes */
+.material-theme .md-shape-small { border-radius: var(--md-shape-small); }
+.material-theme .md-shape-medium { border-radius: var(--md-shape-medium); }
+.material-theme .md-shape-large { border-radius: var(--md-shape-large); }
+.material-theme .md-shape-full { border-radius: var(--md-shape-full); }
+
+/* Espacements Material (multiples de 4px) */
+.material-theme .md-p-1 { padding: 4px; }
+.material-theme .md-p-2 { padding: 8px; }
+.material-theme .md-p-3 { padding: 12px; }
+.material-theme .md-p-4 { padding: 16px; }
+.material-theme .md-p-6 { padding: 24px; }
+.material-theme .md-p-8 { padding: 32px; }
+
+.material-theme .md-m-1 { margin: 4px; }
+.material-theme .md-m-2 { margin: 8px; }
+.material-theme .md-m-3 { margin: 12px; }
+.material-theme .md-m-4 { margin: 16px; }
+
+/* ========================================
+   RESPONSIVE MATERIAL
+   ======================================== */
+@media (max-width: 599px) {
+    /* Compact (téléphones) */
+    .material-theme {
+        --md-shape-large: 12px;
+        --md-shape-extra-large: 24px;
+    }
+    
+    .material-theme .md-navigation-rail {
+        display: none;
+    }
+}
+
+@media (min-width: 600px) and (max-width: 839px) {
+    /* Medium (petites tablettes) */
+    .material-theme .md-dialog {
+        margin: 24px;
+    }
+}
+
+@media (min-width: 840px) {
+    /* Expanded (grandes tablettes et desktop) */
+    .material-theme .md-fab {
+        bottom: 24px;
+        right: 24px;
+    }
+}
+
+/* ========================================
+   ACCESSIBILITÉ MATERIAL
+   ======================================== */
+@media (prefers-reduced-motion: reduce) {
+    .material-theme * {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+@media (prefers-contrast: high) {
+    .material-theme {
+        --md-outline: #000000;
+        --md-outline-variant: #424242;
+    }
+    
+    .material-theme.dark {
+        --md-outline: #ffffff;
+        --md-outline-variant: #e0e0e0;
+    }
+}
+
+/* ========================================
+   IMPRESSION MATERIAL
+   ======================================== */
+@media print {
+    .material-theme {
+        --md-primary: #000000;
+        --md-on-primary: #ffffff;
+        --md-background: #ffffff;
+        --md-surface: #ffffff;
+        --md-on-surface: #000000;
+    }
+    
+    .material-theme [class*="elevation"] {
+        box-shadow: none !important;
+        border: 1px solid #e0e0e0;
+    }
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [2025-01-28] - Création du thème Material complet
+   - Implémentation Material Design 3 (Material You)
+   - Système de couleurs dynamiques
+   - Support complet du mode sombre
+   - Intégration avec composants existants
+   
+   NOTES POUR REPRISES FUTURES:
+   - Utiliser la classe .material-theme sur body ou conteneur
+   - Les couleurs peuvent être personnalisées via CSS custom properties
+   - Compatible avec tous les composants du système UI
+   - Police Roboto recommandée mais non obligatoire
+   ======================================== */

@@ -1,0 +1,947 @@
+/* ========================================
+   EMPTY-STATE.COMPONENT.CSS - Styles pour les états vides
+   Chemin: src/css/shared/ui/empty-state.component.css
+   
+   DESCRIPTION:
+   Styles pour le composant d'affichage des états vides (no data, errors, etc).
+   Gère l'apparence glassmorphism, les animations et les différentes variantes.
+   
+   STRUCTURE:
+   1. Variables et configuration (lignes 20-100)
+   2. Container et layout (lignes 101-200)
+   3. Styles de base (lignes 201-350)
+   4. Variantes de styles (lignes 351-500)
+   5. Illustrations et animations (lignes 501-700)
+   6. Éléments internes (lignes 701-900)
+   7. Responsive et thèmes (lignes 901-1100)
+   
+   DÉPENDANCES:
+   - empty-state.component.js (utilise toutes les classes définies ici)
+   - main.css (pour les variables globales si définies)
+   ======================================== */
+
+/* ========================================
+   VARIABLES ET CONFIGURATION
+   ======================================== */
+:root {
+    /* Glassmorphism */
+    --empty-state-glass-bg: rgba(255, 255, 255, 0.08);
+    --empty-state-glass-border: rgba(255, 255, 255, 0.15);
+    --empty-state-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --empty-state-glass-blur: 20px;
+    --empty-state-glass-saturation: 180%;
+    
+    /* Couleurs de texte */
+    --empty-state-title-color: rgba(255, 255, 255, 0.95);
+    --empty-state-description-color: rgba(255, 255, 255, 0.7);
+    --empty-state-text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    
+    /* Couleurs par type */
+    --empty-state-info-color: #6366f1;
+    --empty-state-search-color: #8b5cf6;
+    --empty-state-error-color: #ef4444;
+    --empty-state-offline-color: #f59e0b;
+    --empty-state-maintenance-color: #3b82f6;
+    --empty-state-success-color: #10b981;
+    --empty-state-warning-color: #f97316;
+    --empty-state-locked-color: #ec4899;
+    --empty-state-notification-color: #14b8a6;
+    --empty-state-default-color: #6b7280;
+    
+    /* Dimensions par taille */
+    --empty-state-padding-small: 24px;
+    --empty-state-padding-medium: 48px;
+    --empty-state-padding-large: 64px;
+    --empty-state-padding-fullscreen: 80px;
+    
+    --empty-state-illustration-small: 80px;
+    --empty-state-illustration-medium: 120px;
+    --empty-state-illustration-large: 160px;
+    --empty-state-illustration-fullscreen: 200px;
+    
+    /* Typographie */
+    --empty-state-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --empty-state-title-weight: 600;
+    --empty-state-description-weight: 400;
+    
+    /* Animations */
+    --empty-state-animation-duration: 0.6s;
+    --empty-state-animation-easing: cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Border radius */
+    --empty-state-border-radius: 24px;
+    --empty-state-border-radius-neumorphism: 30px;
+    --empty-state-border-radius-flat: 16px;
+    --empty-state-border-radius-material: 8px;
+}
+
+/* ========================================
+   CONTAINER ET LAYOUT
+   ======================================== */
+.empty-state-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    min-height: 200px;
+    position: relative;
+    overflow: hidden;
+}
+
+.empty-state {
+    display: flex;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+    transition: all 0.3s ease;
+    font-family: var(--empty-state-font-family);
+}
+
+/* Layouts */
+.empty-state.vertical {
+    flex-direction: column;
+    text-align: center;
+}
+
+.empty-state.horizontal {
+    flex-direction: row;
+    text-align: left;
+}
+
+.empty-state.compact {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+}
+
+.empty-state.spacious {
+    flex-direction: column;
+    text-align: center;
+    gap: 48px;
+}
+
+/* Tailles */
+.empty-state.small {
+    padding: var(--empty-state-padding-small);
+    max-width: 300px;
+    gap: 16px;
+}
+
+.empty-state.medium {
+    padding: var(--empty-state-padding-medium);
+    max-width: 400px;
+    gap: 24px;
+}
+
+.empty-state.large {
+    padding: var(--empty-state-padding-large);
+    max-width: 500px;
+    gap: 32px;
+}
+
+.empty-state.fullscreen {
+    padding: var(--empty-state-padding-fullscreen);
+    max-width: 600px;
+    min-height: 100vh;
+    gap: 40px;
+}
+
+/* ========================================
+   STYLES DE BASE - GLASSMORPHISM
+   ======================================== */
+.empty-state.glassmorphism {
+    background: var(--empty-state-glass-bg);
+    backdrop-filter: blur(var(--empty-state-glass-blur)) saturate(var(--empty-state-glass-saturation));
+    -webkit-backdrop-filter: blur(var(--empty-state-glass-blur)) saturate(var(--empty-state-glass-saturation));
+    border: 1px solid var(--empty-state-glass-border);
+    box-shadow: var(--empty-state-glass-shadow), 
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    border-radius: var(--empty-state-border-radius);
+}
+
+/* Effet de brillance subtile */
+.empty-state.glassmorphism::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+        135deg, 
+        rgba(255, 255, 255, 0.1) 0%, 
+        transparent 50%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    pointer-events: none;
+}
+
+/* Hover effect interactif */
+.empty-state.glassmorphism.interactive:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* ========================================
+   VARIANTES DE STYLES
+   ======================================== */
+
+/* Neumorphism */
+.empty-state.neumorphism {
+    background: #e0e5ec;
+    box-shadow: 20px 20px 60px #bec3cb, 
+                -20px -20px 60px #ffffff;
+    border-radius: var(--empty-state-border-radius-neumorphism);
+}
+
+.empty-state.neumorphism .empty-state-title {
+    color: #2d3748;
+}
+
+.empty-state.neumorphism .empty-state-description {
+    color: #4a5568;
+}
+
+/* Flat */
+.empty-state.flat {
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--empty-state-border-radius-flat);
+}
+
+.empty-state.flat .empty-state-title {
+    color: #1a202c;
+}
+
+.empty-state.flat .empty-state-description {
+    color: #718096;
+}
+
+/* Material */
+.empty-state.material {
+    background: #ffffff;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 
+                0 3px 6px rgba(0,0,0,0.23);
+    border-radius: var(--empty-state-border-radius-material);
+}
+
+.empty-state.material .empty-state-title {
+    color: #212121;
+}
+
+.empty-state.material .empty-state-description {
+    color: #757575;
+}
+
+/* Gradient */
+.empty-state.gradient {
+    background: linear-gradient(
+        135deg, 
+        rgba(255,255,255,0.1) 0%, 
+        rgba(255,255,255,0.05) 100%
+    );
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255,255,255,0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    border-radius: 20px;
+}
+
+.empty-state.gradient .empty-state-title {
+    color: #ffffff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.empty-state.gradient .empty-state-description {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Minimal */
+.empty-state.minimal {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.empty-state.minimal .empty-state-title {
+    color: #000000;
+}
+
+.empty-state.minimal .empty-state-description {
+    color: #666666;
+}
+
+/* ========================================
+   ILLUSTRATIONS ET ANIMATIONS
+   ======================================== */
+
+/* Wrapper des illustrations */
+.empty-state-illustration-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* Tailles d'illustrations */
+.empty-state.small .empty-state-illustration-wrapper {
+    width: var(--empty-state-illustration-small);
+    height: var(--empty-state-illustration-small);
+}
+
+.empty-state.medium .empty-state-illustration-wrapper {
+    width: var(--empty-state-illustration-medium);
+    height: var(--empty-state-illustration-medium);
+}
+
+.empty-state.large .empty-state-illustration-wrapper {
+    width: var(--empty-state-illustration-large);
+    height: var(--empty-state-illustration-large);
+}
+
+.empty-state.fullscreen .empty-state-illustration-wrapper {
+    width: var(--empty-state-illustration-fullscreen);
+    height: var(--empty-state-illustration-fullscreen);
+}
+
+/* SVG Illustrations */
+.empty-state-illustration {
+    width: 100%;
+    height: 100%;
+    color: currentColor;
+}
+
+.empty-state.glassmorphism .empty-state-illustration {
+    filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.2));
+    opacity: 0.9;
+}
+
+/* Couleurs par type */
+.empty-state[data-type="no-data"] .empty-state-illustration-wrapper {
+    color: var(--empty-state-info-color);
+}
+
+.empty-state[data-type="no-results"] .empty-state-illustration-wrapper {
+    color: var(--empty-state-search-color);
+}
+
+.empty-state[data-type="error"] .empty-state-illustration-wrapper {
+    color: var(--empty-state-error-color);
+}
+
+.empty-state[data-type="offline"] .empty-state-illustration-wrapper {
+    color: var(--empty-state-offline-color);
+}
+
+.empty-state[data-type="maintenance"] .empty-state-illustration-wrapper {
+    color: var(--empty-state-maintenance-color);
+}
+
+.empty-state[data-type="coming-soon"] .empty-state-illustration-wrapper {
+    color: var(--empty-state-success-color);
+}
+
+.empty-state[data-type="access-denied"] .empty-state-illustration-wrapper {
+    color: var(--empty-state-locked-color);
+}
+
+/* Animations d'entrée */
+.empty-state.fade-animation {
+    animation: emptyStateFadeIn var(--empty-state-animation-duration) var(--empty-state-animation-easing) forwards;
+}
+
+@keyframes emptyStateFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.empty-state.scale-animation {
+    animation: emptyStateScale 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes emptyStateScale {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.empty-state.bounce-animation {
+    animation: emptyStateBounce 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+@keyframes emptyStateBounce {
+    0% {
+        opacity: 0;
+        transform: scale(0.3) translateY(100px);
+    }
+    70% {
+        opacity: 0.9;
+        transform: scale(1.1);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.empty-state.slide-animation {
+    animation: emptyStateSlide 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes emptyStateSlide {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.empty-state.morph-animation {
+    animation: emptyStateMorph 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes emptyStateMorph {
+    0% {
+        opacity: 0;
+        transform: scale(0.8) rotate(-180deg);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(1.1) rotate(-90deg);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+/* Animations continues */
+.empty-state-illustration.floating {
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.empty-state-illustration.pulsing {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.9;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 1;
+    }
+}
+
+/* ========================================
+   ÉLÉMENTS INTERNES
+   ======================================== */
+
+/* Content wrapper */
+.empty-state-content {
+    display: flex;
+    flex-direction: column;
+    align-items: inherit;
+    text-align: inherit;
+    width: 100%;
+}
+
+/* Layout horizontal */
+.empty-state.horizontal .empty-state-content {
+    flex: 1;
+    padding-left: 32px;
+}
+
+/* Text wrapper */
+.empty-state-text {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Title */
+.empty-state-title {
+    font-weight: var(--empty-state-title-weight);
+    line-height: 1.2;
+    margin: 0;
+}
+
+.empty-state.glassmorphism .empty-state-title {
+    color: var(--empty-state-title-color);
+    text-shadow: var(--empty-state-text-shadow);
+}
+
+/* Tailles de titre */
+.empty-state.small .empty-state-title {
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+.empty-state.medium .empty-state-title {
+    font-size: 20px;
+    margin-bottom: 12px;
+}
+
+.empty-state.large .empty-state-title {
+    font-size: 24px;
+    margin-bottom: 16px;
+}
+
+.empty-state.fullscreen .empty-state-title {
+    font-size: 32px;
+    margin-bottom: 20px;
+}
+
+/* Description */
+.empty-state-description {
+    line-height: 1.5;
+    margin: 0;
+    opacity: 0.9;
+}
+
+.empty-state.glassmorphism .empty-state-description {
+    color: var(--empty-state-description-color);
+}
+
+/* Tailles de description */
+.empty-state.small .empty-state-description {
+    font-size: 14px;
+    margin-bottom: 16px;
+}
+
+.empty-state.medium .empty-state-description {
+    font-size: 16px;
+    margin-bottom: 24px;
+}
+
+.empty-state.large .empty-state-description {
+    font-size: 18px;
+    margin-bottom: 32px;
+}
+
+.empty-state.fullscreen .empty-state-description {
+    font-size: 20px;
+    margin-bottom: 40px;
+}
+
+/* Actions */
+.empty-state-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.empty-state-action {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    font-family: inherit;
+    font-size: inherit;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+/* Actions primaires */
+.empty-state-action.primary {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.empty-state-action.primary:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.empty-state-action.primary:active {
+    transform: translateY(0);
+}
+
+/* Actions secondaires */
+.empty-state-action.secondary {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.empty-state-action.secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Badge */
+.empty-state-badge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ef4444;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5);
+    animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.8;
+    }
+}
+
+.empty-state-badge.count {
+    width: auto;
+    height: auto;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+}
+
+.empty-state-badge.text {
+    width: auto;
+    height: auto;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 11px;
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+/* Progress bar */
+.empty-state-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    border-radius: 0 0 var(--empty-state-border-radius) var(--empty-state-border-radius);
+}
+
+.empty-state-progress-bar {
+    height: 100%;
+    background: linear-gradient(
+        90deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.5) 50%, 
+        transparent 100%
+    );
+    animation: progress 2s ease-in-out infinite;
+}
+
+@keyframes progress {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* Background patterns */
+.empty-state-background {
+    position: absolute;
+    inset: 0;
+    opacity: 0.05;
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+.empty-state-background.pattern {
+    background-image: repeating-linear-gradient(
+        45deg, 
+        transparent, 
+        transparent 35px, 
+        rgba(255,255,255,.1) 35px, 
+        rgba(255,255,255,.1) 70px
+    );
+}
+
+.empty-state-background.gradient {
+    background: radial-gradient(
+        circle at center, 
+        rgba(255,255,255,0.2) 0%, 
+        transparent 70%
+    );
+}
+
+.empty-state-background.dots {
+    background-image: radial-gradient(
+        circle, 
+        rgba(255, 255, 255, 0.1) 1px, 
+        transparent 1px
+    );
+    background-size: 20px 20px;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 768px) {
+    /* Force vertical layout sur mobile */
+    .empty-state.horizontal {
+        flex-direction: column !important;
+        text-align: center !important;
+    }
+    
+    .empty-state.horizontal .empty-state-content {
+        padding-left: 0 !important;
+        padding-top: 24px;
+    }
+    
+    /* Ajustements de taille */
+    .empty-state.large {
+        padding: var(--empty-state-padding-medium);
+        max-width: 100%;
+    }
+    
+    .empty-state.fullscreen {
+        padding: var(--empty-state-padding-large);
+        min-height: calc(100vh - 120px);
+    }
+    
+    /* Actions centrées */
+    .empty-state-actions {
+        justify-content: center;
+        width: 100%;
+    }
+    
+    .empty-state-action {
+        flex: 1;
+        min-width: 120px;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Réduction supplémentaire sur très petits écrans */
+    .empty-state.medium {
+        padding: var(--empty-state-padding-small);
+    }
+    
+    .empty-state-title {
+        font-size: 18px !important;
+    }
+    
+    .empty-state-description {
+        font-size: 14px !important;
+    }
+    
+    .empty-state-action {
+        font-size: 14px;
+        padding: 8px 16px;
+    }
+}
+
+/* ========================================
+   DARK MODE
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --empty-state-glass-bg: rgba(255, 255, 255, 0.05);
+        --empty-state-glass-border: rgba(255, 255, 255, 0.1);
+    }
+    
+    .empty-state.flat {
+        background: #1a202c;
+        border-color: #2d3748;
+    }
+    
+    .empty-state.flat .empty-state-title {
+        color: #e2e8f0;
+    }
+    
+    .empty-state.flat .empty-state-description {
+        color: #a0aec0;
+    }
+    
+    .empty-state.material {
+        background: #424242;
+        color: #e0e0e0;
+    }
+    
+    .empty-state.neumorphism {
+        background: #2d3748;
+        box-shadow: 10px 10px 20px #1a202c, 
+                    -10px -10px 20px #4a5568;
+    }
+    
+    .empty-state.neumorphism .empty-state-title {
+        color: #e2e8f0;
+    }
+    
+    .empty-state.neumorphism .empty-state-description {
+        color: #cbd5e0;
+    }
+}
+
+/* ========================================
+   ACCESSIBILITÉ
+   ======================================== */
+
+/* Focus visible */
+.empty-state-action:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+/* Préférence de mouvement réduit */
+@media (prefers-reduced-motion: reduce) {
+    .empty-state,
+    .empty-state-illustration {
+        animation: none !important;
+        transition: none !important;
+    }
+    
+    .empty-state-badge {
+        animation: none !important;
+    }
+    
+    .empty-state-progress-bar {
+        animation: none !important;
+    }
+}
+
+/* Contraste élevé */
+@media (prefers-contrast: high) {
+    .empty-state {
+        border: 2px solid currentColor !important;
+    }
+    
+    .empty-state.glassmorphism {
+        background: rgba(0, 0, 0, 0.9);
+    }
+    
+    .empty-state-action {
+        border: 2px solid currentColor !important;
+    }
+}
+
+/* ========================================
+   PRINT
+   ======================================== */
+@media print {
+    .empty-state {
+        background: white !important;
+        color: black !important;
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+    }
+    
+    .empty-state-title,
+    .empty-state-description {
+        color: black !important;
+        text-shadow: none !important;
+    }
+    
+    .empty-state-illustration {
+        filter: none !important;
+        opacity: 1 !important;
+    }
+    
+    .empty-state-actions {
+        display: none;
+    }
+}
+
+/* ========================================
+   UTILITAIRES
+   ======================================== */
+
+/* Classes d'état */
+.empty-state.loading .empty-state-illustration {
+    animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Debug mode */
+.empty-state.debug {
+    border: 3px dashed red !important;
+}
+
+.empty-state.debug::after {
+    content: 'Empty State Debug';
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: red;
+    color: white;
+    padding: 2px 8px;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [Date création] - Blur performance sur mobile
+   Cause: backdrop-filter ralentit certains appareils
+   Résolution: Réduction du blur sur mobile via media query
+   
+   [Date création] - SVG colors inheritance
+   Cause: Les SVG n'héritaient pas des couleurs
+   Résolution: Utilisation de currentColor dans les SVG
+   
+   [Date création] - Layout horizontal cassé
+   Cause: Flex-direction non respectée sur certains navigateurs
+   Résolution: !important sur les media queries mobile
+   
+   NOTES POUR REPRISES FUTURES:
+   - Toujours tester backdrop-filter sur appareils réels
+   - Les illustrations SVG doivent utiliser currentColor
+   - Prévoir fallback pour les navigateurs sans backdrop-filter
+   - Tester avec prefers-reduced-motion activé
+   ======================================== */

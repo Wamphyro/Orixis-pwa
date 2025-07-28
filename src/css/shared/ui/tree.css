@@ -1,0 +1,1188 @@
+/* ========================================
+   TREE.CSS - Styles pour le composant Tree
+   Chemin: src/css/shared/ui/tree.css
+   
+   DESCRIPTION:
+   Feuille de styles complète pour le composant Tree avec
+   style glassmorphism principal et toutes les variantes.
+   Inclut les animations, états, thèmes et modes d'affichage.
+   
+   STRUCTURE:
+   1. Variables CSS (lignes 20-150)
+   2. Styles de base (lignes 151-400)
+   3. Thèmes visuels (lignes 401-700)
+   4. États interactifs (lignes 701-900)
+   5. Animations (lignes 901-1200)
+   6. Modes d'affichage (lignes 1201-1400)
+   7. Composants UI (lignes 1401-1800)
+   8. Responsive (lignes 1801-1900)
+   9. Accessibilité (lignes 1901-2000)
+   10. Utilitaires (lignes 2001-2100)
+   
+   DÉPENDANCES:
+   - tree.component.js (utilise ces classes)
+   - Variables globales du thème si définies
+   ======================================== */
+
+/* ========================================
+   VARIABLES CSS
+   ======================================== */
+:root {
+    /* Couleurs de base Glassmorphism */
+    --tree-glass-bg: rgba(255, 255, 255, 0.08);
+    --tree-glass-bg-hover: rgba(255, 255, 255, 0.12);
+    --tree-glass-bg-active: rgba(255, 255, 255, 0.15);
+    --tree-glass-border: rgba(255, 255, 255, 0.15);
+    --tree-glass-border-hover: rgba(255, 255, 255, 0.25);
+    --tree-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    --tree-glass-shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.3);
+    --tree-glass-blur: 20px;
+    
+    /* Couleurs sémantiques */
+    --tree-color-primary: #3b82f6;
+    --tree-color-secondary: #6366f1;
+    --tree-color-success: #22c55e;
+    --tree-color-warning: #f59e0b;
+    --tree-color-danger: #ef4444;
+    --tree-color-info: #06b6d4;
+    
+    /* Couleurs de sélection */
+    --tree-selected-bg: rgba(59, 130, 246, 0.2);
+    --tree-selected-border: rgba(59, 130, 246, 0.4);
+    --tree-selected-glow: 0 0 20px rgba(59, 130, 246, 0.3);
+    
+    /* Couleurs de recherche */
+    --tree-search-highlight: rgba(251, 191, 36, 0.3);
+    --tree-search-match-bg: rgba(251, 191, 36, 0.1);
+    
+    /* Espacement et dimensions */
+    --tree-node-height: 40px;
+    --tree-node-padding: 8px 12px;
+    --tree-node-margin: 2px;
+    --tree-indent-size: 24px;
+    --tree-icon-size: 20px;
+    --tree-font-size: 14px;
+    --tree-border-radius: 12px;
+    
+    /* Animations */
+    --tree-transition-speed: 0.3s;
+    --tree-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+    --tree-expand-duration: 300ms;
+    --tree-collapse-duration: 250ms;
+    --tree-stagger-delay: 20ms;
+    
+    /* Z-index */
+    --tree-z-base: 1;
+    --tree-z-hover: 10;
+    --tree-z-selected: 20;
+    --tree-z-dragging: 100;
+    --tree-z-context-menu: 1000;
+}
+
+/* ========================================
+   STYLES DE BASE
+   ======================================== */
+.tree-container {
+    position: relative;
+    width: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-size: var(--tree-font-size);
+    color: #1f2937;
+    user-select: none;
+    -webkit-user-select: none;
+    line-height: 1.5;
+}
+
+/* Conteneur principal avec glassmorphism */
+.tree-container.glassmorphism {
+    background: var(--tree-glass-bg);
+    backdrop-filter: blur(var(--tree-glass-blur)) brightness(1.1);
+    -webkit-backdrop-filter: blur(var(--tree-glass-blur)) brightness(1.1);
+    border: 1px solid var(--tree-glass-border);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: var(--tree-glass-shadow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Effet de brillance subtile */
+.tree-container.glassmorphism::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+    );
+    transition: left 0.5s ease;
+}
+
+.tree-container.glassmorphism:hover::before {
+    left: 100%;
+}
+
+/* Conteneur des nœuds */
+.tree-nodes-container {
+    position: relative;
+    overflow: auto;
+    max-height: 600px;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.tree-nodes-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.tree-nodes-container::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+}
+
+.tree-nodes-container::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+.tree-nodes-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+/* ========================================
+   STYLES DES NŒUDS
+   ======================================== */
+.tree-node {
+    position: relative;
+    margin-bottom: var(--tree-node-margin);
+    animation: tree-node-enter 0.3s ease-out;
+}
+
+@keyframes tree-node-enter {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Contenu du nœud */
+.tree-node-content {
+    display: flex;
+    align-items: center;
+    min-height: var(--tree-node-height);
+    padding: var(--tree-node-padding);
+    margin-left: calc(var(--level, 0) * var(--tree-indent-size));
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--tree-border-radius);
+    transition: all var(--tree-transition-speed) var(--tree-transition-easing);
+    background: var(--tree-glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--tree-glass-border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Effet de profondeur sur le contenu */
+.tree-node-content::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--tree-border-radius);
+    background: linear-gradient(
+        135deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.05) 50%,
+        transparent 100%
+    );
+    opacity: 0;
+    transition: opacity var(--tree-transition-speed);
+    pointer-events: none;
+}
+
+/* ========================================
+   ÉTATS HOVER ET ACTIVE
+   ======================================== */
+.tree-node-content:hover {
+    background: var(--tree-glass-bg-hover);
+    border-color: var(--tree-glass-border-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--tree-glass-shadow-hover);
+    z-index: var(--tree-z-hover);
+}
+
+.tree-node-content:hover::after {
+    opacity: 1;
+}
+
+.tree-node-content:active {
+    transform: translateY(0);
+    background: var(--tree-glass-bg-active);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* État sélectionné */
+.tree-selected .tree-node-content {
+    background: var(--tree-selected-bg) !important;
+    border-color: var(--tree-selected-border) !important;
+    box-shadow: var(--tree-selected-glow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    z-index: var(--tree-z-selected);
+}
+
+.tree-selected .tree-node-content::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: var(--tree-border-radius);
+    padding: 1px;
+    background: linear-gradient(135deg, var(--tree-color-primary), var(--tree-color-secondary));
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: xor;
+    opacity: 0.5;
+}
+
+/* ========================================
+   ICÔNES ET ÉLÉMENTS
+   ======================================== */
+/* Icône expand/collapse */
+.tree-expand-icon {
+    width: var(--tree-icon-size);
+    height: var(--tree-icon-size);
+    margin-right: 4px;
+    cursor: pointer;
+    transition: transform var(--tree-transition-speed) var(--tree-transition-easing);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tree-expanded .tree-expand-icon {
+    transform: rotate(90deg);
+}
+
+.tree-expand-icon svg {
+    width: 100%;
+    height: 100%;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+    opacity: 0.6;
+    transition: opacity var(--tree-transition-speed);
+}
+
+.tree-expand-icon:hover svg {
+    opacity: 1;
+}
+
+/* Icône du nœud */
+.tree-node-icon {
+    width: var(--tree-icon-size);
+    height: var(--tree-icon-size);
+    margin-right: 8px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tree-node-icon svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+    opacity: 0.7;
+    transition: all var(--tree-transition-speed);
+}
+
+/* Animation de l'icône au survol */
+.tree-node-content:hover .tree-node-icon svg {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Label du nœud */
+.tree-node-label {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+    transition: all var(--tree-transition-speed);
+}
+
+.tree-node-content:hover .tree-node-label {
+    color: var(--tree-color-primary);
+}
+
+/* Badge */
+.tree-node-badge {
+    margin-left: auto;
+    padding: 2px 10px;
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--tree-color-primary);
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    transition: all var(--tree-transition-speed);
+}
+
+.tree-node-content:hover .tree-node-badge {
+    background: rgba(59, 130, 246, 0.25);
+    transform: scale(1.05);
+}
+
+/* ========================================
+   BARRE DE RECHERCHE
+   ======================================== */
+.tree-search-bar {
+    position: relative;
+    margin-bottom: 16px;
+    animation: fadeInDown 0.3s ease-out;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.tree-search-input {
+    width: 100%;
+    padding: 10px 40px 10px 16px;
+    background: var(--tree-glass-bg);
+    backdrop-filter: blur(var(--tree-glass-blur));
+    -webkit-backdrop-filter: blur(var(--tree-glass-blur));
+    border: 1px solid var(--tree-glass-border);
+    border-radius: 10px;
+    color: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    outline: none;
+    transition: all var(--tree-transition-speed) var(--tree-transition-easing);
+}
+
+.tree-search-input::placeholder {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+.tree-search-input:focus {
+    background: var(--tree-glass-bg-hover);
+    border-color: var(--tree-color-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1),
+                var(--tree-glass-shadow);
+}
+
+.tree-search-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    opacity: 0.5;
+    pointer-events: none;
+    transition: opacity var(--tree-transition-speed);
+}
+
+.tree-search-input:focus + .tree-search-icon {
+    opacity: 0.8;
+}
+
+/* État de recherche active */
+.tree-searching .tree-search-icon {
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+/* ========================================
+   RÉSULTATS DE RECHERCHE
+   ======================================== */
+.tree-matched .tree-node-content {
+    background: var(--tree-search-match-bg);
+    border-color: rgba(251, 191, 36, 0.3);
+}
+
+.tree-matched .tree-node-label {
+    font-weight: 600;
+}
+
+.tree-highlight {
+    background: var(--tree-search-highlight);
+    padding: 0 3px;
+    border-radius: 3px;
+    font-weight: 700;
+    color: #92400e;
+}
+
+/* ========================================
+   BARRE D'ACTIONS
+   ======================================== */
+.tree-action-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.tree-action-button {
+    padding: 6px 16px;
+    background: var(--tree-glass-bg);
+    backdrop-filter: blur(var(--tree-glass-blur));
+    -webkit-backdrop-filter: blur(var(--tree-glass-blur));
+    border: 1px solid var(--tree-glass-border);
+    border-radius: 8px;
+    color: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all var(--tree-transition-speed) var(--tree-transition-easing);
+    position: relative;
+    overflow: hidden;
+}
+
+.tree-action-button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s;
+}
+
+.tree-action-button:hover {
+    background: var(--tree-glass-bg-hover);
+    border-color: var(--tree-glass-border-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.tree-action-button:hover::before {
+    width: 100px;
+    height: 100px;
+}
+
+.tree-action-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ========================================
+   CONTENEUR DES ENFANTS
+   ======================================== */
+.tree-children {
+    position: relative;
+    overflow: hidden;
+    transform-origin: top;
+}
+
+/* Animation d'expansion */
+.tree-expanding .tree-children {
+    animation: expandDown var(--tree-expand-duration) var(--tree-transition-easing) forwards;
+}
+
+@keyframes expandDown {
+    from {
+        opacity: 0;
+        transform: scaleY(0);
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        transform: scaleY(1);
+        max-height: 2000px;
+    }
+}
+
+/* Animation de collapse */
+.tree-collapsing .tree-children {
+    animation: collapseUp var(--tree-collapse-duration) var(--tree-transition-easing) forwards;
+}
+
+@keyframes collapseUp {
+    from {
+        opacity: 1;
+        transform: scaleY(1);
+        max-height: 2000px;
+    }
+    to {
+        opacity: 0;
+        transform: scaleY(0);
+        max-height: 0;
+    }
+}
+
+/* ========================================
+   MODES D'AFFICHAGE
+   ======================================== */
+/* Mode compact */
+.tree-container.compact {
+    --tree-node-height: 32px;
+    --tree-node-padding: 4px 8px;
+    --tree-font-size: 13px;
+    --tree-icon-size: 16px;
+    --tree-indent-size: 16px;
+}
+
+/* Mode spacieux */
+.tree-container.spacious {
+    --tree-node-height: 48px;
+    --tree-node-padding: 12px 16px;
+    --tree-font-size: 15px;
+    --tree-icon-size: 24px;
+    --tree-indent-size: 32px;
+}
+
+/* Mode avec lignes */
+.tree-container.lines .tree-node::before {
+    content: '';
+    position: absolute;
+    left: calc(var(--level, 0) * var(--tree-indent-size) + 10px);
+    top: 0;
+    bottom: 50%;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.1));
+}
+
+.tree-container.lines .tree-node::after {
+    content: '';
+    position: absolute;
+    left: calc(var(--level, 0) * var(--tree-indent-size) + 10px);
+    top: 50%;
+    width: 12px;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Mode lignes courbes */
+.tree-container.curved .tree-node::before {
+    border-radius: 0 0 0 8px;
+    border-left: 1px solid rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    background: none;
+    width: 12px;
+}
+
+/* ========================================
+   DRAG & DROP
+   ======================================== */
+.tree-draggable {
+    cursor: move;
+}
+
+.tree-dragging {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.tree-dragging .tree-node-content {
+    background: rgba(0, 0, 0, 0.1);
+    border-style: dashed;
+}
+
+.tree-drop-target .tree-node-content {
+    background: rgba(34, 197, 94, 0.1);
+    border: 2px dashed rgba(34, 197, 94, 0.5);
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+}
+
+/* Indicateur de position de drop */
+.tree-drop-indicator {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--tree-color-success);
+    pointer-events: none;
+    z-index: var(--tree-z-dragging);
+}
+
+.tree-drop-indicator::before,
+.tree-drop-indicator::after {
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: var(--tree-color-success);
+    border-radius: 50%;
+    top: -2px;
+}
+
+.tree-drop-indicator::before {
+    left: -3px;
+}
+
+.tree-drop-indicator::after {
+    right: -3px;
+}
+
+/* ========================================
+   ÉTATS DE CHARGEMENT
+   ======================================== */
+.tree-loading .tree-node-icon svg {
+    animation: tree-spin 1s linear infinite;
+}
+
+@keyframes tree-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.tree-loading-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+    z-index: 100;
+}
+
+.tree-container.loading .tree-loading-indicator {
+    display: block;
+}
+
+.tree-loading-indicator svg {
+    width: 40px;
+    height: 40px;
+    animation: tree-spin 1s linear infinite;
+}
+
+/* Skeleton loading */
+.tree-skeleton {
+    animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+    0%, 100% {
+        opacity: 0.4;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* ========================================
+   CHECKBOX
+   ======================================== */
+.tree-checkbox {
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    cursor: pointer;
+    accent-color: var(--tree-color-primary);
+    transition: transform var(--tree-transition-speed);
+}
+
+.tree-checkbox:checked {
+    transform: scale(1.1);
+}
+
+/* Checkbox personnalisé glassmorphism */
+.tree-checkbox-custom {
+    position: relative;
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    background: var(--tree-glass-bg);
+    backdrop-filter: blur(10px);
+    border: 2px solid var(--tree-glass-border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all var(--tree-transition-speed);
+}
+
+.tree-checkbox-custom.checked {
+    background: var(--tree-color-primary);
+    border-color: var(--tree-color-primary);
+}
+
+.tree-checkbox-custom.checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* ========================================
+   EFFETS VISUELS AVANCÉS
+   ======================================== */
+/* Particules pour animation "rich" */
+.tree-particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: radial-gradient(circle, var(--tree-color-primary) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: particle-float 1s ease-out forwards;
+}
+
+@keyframes particle-float {
+    0% {
+        transform: translateY(0) scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-50px) scale(1.5);
+        opacity: 0;
+    }
+}
+
+/* Effet de glow */
+.tree-glow {
+    position: relative;
+}
+
+.tree-glow::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(45deg, 
+        var(--tree-color-primary),
+        var(--tree-color-secondary),
+        var(--tree-color-primary)
+    );
+    border-radius: var(--tree-border-radius);
+    opacity: 0;
+    z-index: -1;
+    transition: opacity var(--tree-transition-speed);
+    filter: blur(10px);
+}
+
+.tree-glow:hover::after {
+    opacity: 0.3;
+}
+
+/* Effet ripple */
+.tree-ripple {
+    position: relative;
+    overflow: hidden;
+}
+
+.tree-ripple-effect {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: scale(0);
+    animation: ripple 0.6s ease-out;
+}
+
+@keyframes ripple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* ========================================
+   THÈMES ALTERNATIFS
+   ======================================== */
+/* Thème Neumorphism */
+.tree-container.neumorphism {
+    background: #e0e5ec;
+    padding: 20px;
+    border-radius: 20px;
+}
+
+.tree-container.neumorphism .tree-node-content {
+    background: #e0e5ec;
+    border: none;
+    box-shadow: 9px 9px 16px #a3b1c6,
+                -9px -9px 16px #ffffff;
+}
+
+.tree-container.neumorphism .tree-node-content:hover {
+    box-shadow: 6px 6px 12px #a3b1c6,
+                -6px -6px 12px #ffffff;
+}
+
+.tree-container.neumorphism .tree-node-content:active {
+    box-shadow: inset 4px 4px 8px #a3b1c6,
+                inset -4px -4px 8px #ffffff;
+}
+
+/* Thème Dark */
+.tree-container.dark {
+    background: rgba(30, 30, 30, 0.9);
+    color: #e5e7eb;
+}
+
+.tree-container.dark .tree-node-content {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.tree-container.dark .tree-node-content:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.tree-container.dark .tree-selected .tree-node-content {
+    background: rgba(59, 130, 246, 0.3);
+    border-color: rgba(59, 130, 246, 0.5);
+}
+
+/* Thème Material */
+.tree-container.material {
+    background: #ffffff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 4px;
+}
+
+.tree-container.material .tree-node-content {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    border-radius: 4px;
+}
+
+.tree-container.material .tree-node-content:hover {
+    background: rgba(0,0,0,0.04);
+}
+
+.tree-container.material .tree-node-content:active {
+    background: rgba(0,0,0,0.08);
+}
+
+/* ========================================
+   ANIMATIONS STAGGER
+   ======================================== */
+.tree-stagger-animation .tree-node {
+    animation: staggerIn 0.3s ease-out backwards;
+}
+
+.tree-stagger-animation .tree-node:nth-child(1) { animation-delay: 0ms; }
+.tree-stagger-animation .tree-node:nth-child(2) { animation-delay: 20ms; }
+.tree-stagger-animation .tree-node:nth-child(3) { animation-delay: 40ms; }
+.tree-stagger-animation .tree-node:nth-child(4) { animation-delay: 60ms; }
+.tree-stagger-animation .tree-node:nth-child(5) { animation-delay: 80ms; }
+.tree-stagger-animation .tree-node:nth-child(6) { animation-delay: 100ms; }
+.tree-stagger-animation .tree-node:nth-child(7) { animation-delay: 120ms; }
+.tree-stagger-animation .tree-node:nth-child(8) { animation-delay: 140ms; }
+.tree-stagger-animation .tree-node:nth-child(9) { animation-delay: 160ms; }
+.tree-stagger-animation .tree-node:nth-child(10) { animation-delay: 180ms; }
+
+@keyframes staggerIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ========================================
+   ÉDITION INLINE
+   ======================================== */
+.tree-edit-input {
+    background: var(--tree-glass-bg);
+    backdrop-filter: blur(10px);
+    border: 2px solid var(--tree-color-primary);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: inherit;
+    font-family: inherit;
+    color: inherit;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* ========================================
+   MENU CONTEXTUEL
+   ======================================== */
+.tree-context-menu {
+    position: fixed;
+    background: var(--tree-glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--tree-glass-border);
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    padding: 4px 0;
+    min-width: 180px;
+    z-index: var(--tree-z-context-menu);
+    animation: contextMenuIn 0.2s ease-out;
+}
+
+@keyframes contextMenuIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.tree-context-menu-item {
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tree-context-menu-item:hover {
+    background: var(--tree-glass-bg-hover);
+}
+
+.tree-context-menu-separator {
+    height: 1px;
+    background: var(--tree-glass-border);
+    margin: 4px 0;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 768px) {
+    .tree-container {
+        --tree-font-size: 13px;
+        --tree-node-height: 36px;
+        --tree-node-padding: 6px 8px;
+        --tree-indent-size: 16px;
+        --tree-icon-size: 16px;
+    }
+    
+    .tree-container.glassmorphism {
+        padding: 12px;
+        border-radius: 12px;
+    }
+    
+    .tree-action-bar {
+        gap: 4px;
+    }
+    
+    .tree-action-button {
+        padding: 4px 12px;
+        font-size: 11px;
+    }
+    
+    .tree-node-badge {
+        padding: 1px 6px;
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .tree-container {
+        --tree-font-size: 12px;
+        --tree-node-height: 32px;
+        --tree-indent-size: 12px;
+    }
+    
+    .tree-search-input {
+        padding: 8px 36px 8px 12px;
+        font-size: 13px;
+    }
+    
+    .tree-node-label {
+        max-width: 200px;
+    }
+}
+
+/* Support tactile */
+@media (hover: none) {
+    .tree-node-content {
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .tree-node-content:active {
+        background: var(--tree-glass-bg-hover);
+        transition-duration: 0.1s;
+    }
+    
+    .tree-expand-icon {
+        width: 24px;
+        height: 24px;
+        margin-right: 8px;
+    }
+}
+
+/* ========================================
+   ACCESSIBILITÉ
+   ======================================== */
+/* Focus visible */
+.tree-node-content:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5),
+                var(--tree-glass-shadow);
+}
+
+.tree-node-content:focus:not(:focus-visible) {
+    box-shadow: var(--tree-glass-shadow);
+}
+
+/* Mode haute contraste */
+@media (prefers-contrast: high) {
+    .tree-node-content {
+        border: 2px solid currentColor;
+    }
+    
+    .tree-selected .tree-node-content {
+        background: currentColor;
+        color: white;
+    }
+    
+    .tree-selected .tree-node-content * {
+        color: white;
+    }
+    
+    .tree-node-content:focus {
+        outline: 3px solid currentColor;
+        outline-offset: 2px;
+    }
+}
+
+/* Mode sombre préféré */
+@media (prefers-color-scheme: dark) {
+    .tree-container {
+        color: #e5e7eb;
+    }
+    
+    .tree-container.glassmorphism {
+        background: rgba(30, 30, 30, 0.8);
+    }
+    
+    .tree-node-content {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .tree-node-content:hover {
+        background: rgba(255, 255, 255, 0.08);
+    }
+}
+
+/* Réduction des mouvements */
+@media (prefers-reduced-motion: reduce) {
+    .tree-container * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .tree-expand-icon {
+        transform: none !important;
+    }
+    
+    .tree-children {
+        animation: none !important;
+    }
+}
+
+/* ========================================
+   UTILITAIRES
+   ======================================== */
+/* États désactivés */
+.tree-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    filter: grayscale(0.5);
+}
+
+/* Masquage d'éléments */
+.tree-hidden {
+    display: none !important;
+}
+
+/* Alignement dans les tableaux */
+td .tree-container,
+th .tree-container {
+    margin: 0;
+}
+
+/* Conteneur scrollable */
+.tree-scrollable {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Mode impression */
+@media print {
+    .tree-container {
+        background: white !important;
+        color: black !important;
+        box-shadow: none !important;
+    }
+    
+    .tree-node-content {
+        background: white !important;
+        border: 1px solid #ccc !important;
+        box-shadow: none !important;
+    }
+    
+    .tree-search-bar,
+    .tree-action-bar {
+        display: none !important;
+    }
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [Date] - Compatibilité backdrop-filter
+   Solution: Fallback pour Safari et navigateurs
+   sans support avec background semi-transparent
+   
+   [Date] - Performance des animations stagger
+   Cause: Trop de nœuds animés simultanément
+   Résolution: Limite à 10 premiers nœuds visibles
+   
+   [Date] - Z-index conflits
+   Solution: Variables CSS pour gérer la hiérarchie
+   et éviter les conflits avec d'autres composants
+   
+   NOTES POUR REPRISES FUTURES:
+   - Les animations riches peuvent impacter les performances
+   - Le backdrop-filter nécessite des préfixes vendor
+   - Les transitions sont désactivées en mode reduced-motion
+   - Les ombres multiples peuvent être lourdes sur mobile
+   ======================================== */

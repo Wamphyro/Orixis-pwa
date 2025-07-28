@@ -1,0 +1,479 @@
+/* ========================================
+   MODAL-GLASSMORPHISM.CSS - Styles glassmorphism pour modales
+   Chemin: src/css/shared/ui/modal-glassmorphism.css
+   
+   DESCRIPTION:
+   Styles spécifiques pour l'effet glassmorphism sur les modales.
+   Comprend les variantes light/dark, les animations fluides,
+   et les micro-interactions.
+   
+   STRUCTURE:
+   1. Variables CSS (lignes 15-50)
+   2. Styles de base glassmorphism (lignes 52-150)
+   3. Variantes de thème (lignes 152-250)
+   4. États et interactions (lignes 252-350)
+   5. Animations avancées (lignes 352-500)
+   6. Responsive (lignes 502-550)
+   
+   DÉPENDANCES:
+   - modal.component.js (utilise ces classes)
+   - Nécessite backdrop-filter support
+   ======================================== */
+
+/* ========================================
+   VARIABLES CSS
+   ======================================== */
+:root {
+    /* Couleurs glassmorphism */
+    --modal-glass-bg: rgba(255, 255, 255, 0.1);
+    --modal-glass-bg-dark: rgba(0, 0, 0, 0.6);
+    --modal-glass-border: rgba(255, 255, 255, 0.2);
+    --modal-glass-border-dark: rgba(255, 255, 255, 0.1);
+    --modal-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --modal-glass-shadow-dark: 0 8px 32px rgba(0, 0, 0, 0.3);
+    
+    /* Blur values */
+    --modal-blur-amount: 20px;
+    --modal-overlay-blur: 5px;
+    
+    /* Animations */
+    --modal-transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --modal-transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    
+    /* Spacing */
+    --modal-radius: 20px;
+    --modal-padding: 24px;
+    --modal-gap: 16px;
+}
+
+/* Dark mode variables */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --modal-glass-bg: var(--modal-glass-bg-dark);
+        --modal-glass-border: var(--modal-glass-border-dark);
+        --modal-glass-shadow: var(--modal-glass-shadow-dark);
+    }
+}
+
+/* ========================================
+   STYLES DE BASE GLASSMORPHISM
+   ======================================== */
+.modal-glassmorphism {
+    /* Effet verre de base */
+    background: var(--modal-glass-bg);
+    backdrop-filter: blur(var(--modal-blur-amount));
+    -webkit-backdrop-filter: blur(var(--modal-blur-amount));
+    border: 1px solid var(--modal-glass-border);
+    border-radius: var(--modal-radius);
+    box-shadow: var(--modal-glass-shadow);
+    
+    /* Amélioration des performances */
+    will-change: transform, opacity;
+    transform: translateZ(0);
+}
+
+/* Overlay glassmorphism */
+.modal-overlay-glassmorphism {
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(var(--modal-overlay-blur));
+    -webkit-backdrop-filter: blur(var(--modal-overlay-blur));
+}
+
+/* Header glassmorphism */
+.modal-glassmorphism .modal-header {
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid var(--modal-glass-border);
+    border-radius: var(--modal-radius) var(--modal-radius) 0 0;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Effet de gradient subtil */
+.modal-glassmorphism .modal-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0.05) 50%,
+        rgba(255, 255, 255, 0.1) 100%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-glassmorphism .modal-header:hover::before {
+    opacity: 1;
+}
+
+/* Body glassmorphism */
+.modal-glassmorphism .modal-body {
+    background: rgba(255, 255, 255, 0.02);
+    position: relative;
+}
+
+/* Footer glassmorphism */
+.modal-glassmorphism .modal-footer {
+    background: rgba(255, 255, 255, 0.03);
+    border-top: 1px solid var(--modal-glass-border);
+    border-radius: 0 0 var(--modal-radius) var(--modal-radius);
+}
+
+/* Boutons glassmorphism */
+.modal-glassmorphism button {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 10px 20px;
+    color: inherit;
+    font-weight: 500;
+    transition: var(--modal-transition-smooth);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.modal-glassmorphism button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.modal-glassmorphism button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* ========================================
+   VARIANTES DE THÈME
+   ======================================== */
+
+/* Glassmorphism coloré */
+.modal-glassmorphism-blue {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.modal-glassmorphism-purple {
+    background: rgba(147, 51, 234, 0.1);
+    border-color: rgba(147, 51, 234, 0.3);
+}
+
+.modal-glassmorphism-gradient {
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    position: relative;
+}
+
+.modal-glassmorphism-gradient::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: var(--modal-radius);
+    padding: 1px;
+    background: linear-gradient(
+        135deg,
+        rgba(59, 130, 246, 0.5),
+        rgba(147, 51, 234, 0.5),
+        rgba(236, 72, 153, 0.5)
+    );
+    -webkit-mask: 
+        linear-gradient(#fff 0 0) content-box, 
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+}
+
+/* Glassmorphism sombre */
+.modal-glassmorphism-dark {
+    background: rgba(0, 0, 0, 0.6);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+.modal-glassmorphism-dark .modal-header {
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.modal-glassmorphism-dark button {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.modal-glassmorphism-dark button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* ========================================
+   ÉTATS ET INTERACTIONS
+   ======================================== */
+
+/* Effet de brillance au survol */
+.modal-glassmorphism::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(
+        circle,
+        rgba(255, 255, 255, 0.3) 0%,
+        transparent 70%
+    );
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.modal-glassmorphism:hover::after {
+    opacity: 0.3;
+}
+
+/* Effet de particules (animation riche) */
+@keyframes particle-float {
+    0% {
+        transform: translateY(0) translateX(0) scale(0);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    100% {
+        transform: translateY(-100px) translateX(50px) scale(0.5);
+        opacity: 0;
+    }
+}
+
+.modal-glassmorphism-particles {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.modal-glassmorphism-particles::before,
+.modal-glassmorphism-particles::after {
+    content: '';
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    animation: particle-float 3s ease-in-out infinite;
+}
+
+.modal-glassmorphism-particles::after {
+    animation-delay: 1.5s;
+    left: 80%;
+}
+
+/* Effet de reflet */
+.modal-glassmorphism-reflect {
+    position: relative;
+}
+
+.modal-glassmorphism-reflect::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.2) 0%,
+        transparent 100%
+    );
+    border-radius: var(--modal-radius) var(--modal-radius) 0 0;
+    pointer-events: none;
+}
+
+/* ========================================
+   ANIMATIONS AVANCÉES
+   ======================================== */
+
+/* Entrée avec effet de verre */
+@keyframes glass-modal-in {
+    0% {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+        backdrop-filter: blur(0);
+    }
+    50% {
+        backdrop-filter: blur(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+        backdrop-filter: blur(var(--modal-blur-amount));
+    }
+}
+
+/* Sortie avec effet de verre */
+@keyframes glass-modal-out {
+    0% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+        backdrop-filter: blur(var(--modal-blur-amount));
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+        backdrop-filter: blur(0);
+    }
+}
+
+/* Animation de pulsation pour le loading */
+@keyframes glass-pulse {
+    0%, 100% {
+        box-shadow: 
+            var(--modal-glass-shadow),
+            0 0 0 0 rgba(255, 255, 255, 0.4);
+    }
+    50% {
+        box-shadow: 
+            var(--modal-glass-shadow),
+            0 0 0 20px rgba(255, 255, 255, 0);
+    }
+}
+
+.modal-glassmorphism-loading {
+    animation: glass-pulse 2s ease-in-out infinite;
+}
+
+/* Animation de rotation 3D */
+@keyframes glass-rotate-3d {
+    0% {
+        transform: perspective(1000px) rotateY(-180deg) scale(0.5);
+        opacity: 0;
+    }
+    100% {
+        transform: perspective(1000px) rotateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+/* Effet de morphing */
+@keyframes glass-morph {
+    0%, 100% {
+        border-radius: var(--modal-radius);
+    }
+    25% {
+        border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+    }
+    50% {
+        border-radius: 70% 30% 30% 70% / 70% 70% 30% 30%;
+    }
+    75% {
+        border-radius: 30% 70% 70% 30% / 70% 70% 30% 30%;
+    }
+}
+
+.modal-glassmorphism-morph {
+    animation: glass-morph 8s ease-in-out infinite;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 768px) {
+    :root {
+        --modal-radius: 16px;
+        --modal-padding: 16px;
+        --modal-blur-amount: 15px;
+    }
+    
+    .modal-glassmorphism {
+        margin: 10px;
+        max-height: calc(100vh - 20px);
+    }
+    
+    /* Simplifier les effets sur mobile pour les performances */
+    .modal-glassmorphism::after,
+    .modal-glassmorphism-particles {
+        display: none;
+    }
+}
+
+/* Support pour les navigateurs sans backdrop-filter */
+@supports not (backdrop-filter: blur(1px)) {
+    .modal-glassmorphism {
+        background: rgba(255, 255, 255, 0.95);
+    }
+    
+    .modal-glassmorphism-dark {
+        background: rgba(0, 0, 0, 0.95);
+    }
+    
+    .modal-overlay-glassmorphism {
+        background: rgba(0, 0, 0, 0.7);
+    }
+}
+
+/* Mode haute performance */
+@media (prefers-reduced-motion: reduce) {
+    .modal-glassmorphism,
+    .modal-glassmorphism * {
+        animation: none !important;
+        transition: opacity 0.2s ease !important;
+    }
+}
+
+/* ========================================
+   CLASSES UTILITAIRES
+   ======================================== */
+.modal-glass-frosted {
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+}
+
+.modal-glass-subtle {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.modal-glass-heavy {
+    backdrop-filter: blur(80px);
+    -webkit-backdrop-filter: blur(80px);
+}
+
+.modal-glass-colorful {
+    background: linear-gradient(
+        135deg,
+        rgba(255, 0, 150, 0.1),
+        rgba(0, 150, 255, 0.1)
+    );
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [2024-XX-XX] - Performance avec backdrop-filter
+   Solution: Utilisation de will-change et transform3d
+   
+   [2024-XX-XX] - Compatibilité Safari
+   Solution: Préfixe -webkit-backdrop-filter
+   
+   [2024-XX-XX] - Fallback pour navigateurs sans support
+   Solution: @supports avec couleurs opaques
+   
+   NOTES POUR REPRISES FUTURES:
+   - backdrop-filter peut impacter les performances
+   - Limiter les animations sur mobile
+   - Tester sur Safari pour le support du blur
+   - Les gradients animés consomment beaucoup
+   ======================================== */

@@ -1,0 +1,1045 @@
+/* ========================================
+   FILTER-PANEL.COMPONENT.CSS - Styles pour panneau de filtres
+   Chemin: src/css/shared/ui/filter-panel.component.css
+   
+   DESCRIPTION:
+   Styles CSS pour le composant de panneau de filtres avec effet glassmorphism.
+   Supporte tous les types de filtres et layouts.
+   
+   STRUCTURE:
+   1. Variables et configuration (lignes 20-100)
+   2. Container et layout (lignes 101-250)
+   3. Contrôles de base (lignes 251-500)
+   4. Types de filtres spécifiques (lignes 501-1200)
+   5. États et interactions (lignes 1201-1400)
+   6. Animations (lignes 1401-1500)
+   7. Thèmes et responsive (lignes 1501-1700)
+   
+   DÉPENDANCES:
+   - filter-panel.component.js (utilise ces classes)
+   - themes/glassmorphism.css (thème parent)
+   ======================================== */
+
+/* ========================================
+   VARIABLES ET CONFIGURATION
+   ======================================== */
+:root {
+    /* Couleurs glassmorphism */
+    --filter-panel-bg: rgba(255, 255, 255, 0.08);
+    --filter-panel-border: rgba(255, 255, 255, 0.15);
+    --filter-panel-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    
+    /* Contrôles */
+    --filter-input-bg: rgba(255, 255, 255, 0.05);
+    --filter-input-bg-hover: rgba(255, 255, 255, 0.08);
+    --filter-input-bg-focus: rgba(255, 255, 255, 0.1);
+    --filter-input-border: rgba(255, 255, 255, 0.1);
+    --filter-input-border-hover: rgba(255, 255, 255, 0.15);
+    --filter-input-border-focus: rgba(255, 255, 255, 0.2);
+    --filter-input-text: rgba(255, 255, 255, 0.9);
+    --filter-input-placeholder: rgba(255, 255, 255, 0.4);
+    
+    /* Boutons */
+    --filter-btn-bg: rgba(255, 255, 255, 0.1);
+    --filter-btn-bg-hover: rgba(255, 255, 255, 0.15);
+    --filter-btn-bg-active: rgba(255, 255, 255, 0.08);
+    --filter-btn-primary-bg: rgba(59, 130, 246, 0.2);
+    --filter-btn-primary-bg-hover: rgba(59, 130, 246, 0.3);
+    --filter-btn-primary-border: rgba(59, 130, 246, 0.3);
+    
+    /* Tags et badges */
+    --filter-tag-bg: rgba(255, 255, 255, 0.1);
+    --filter-tag-border: rgba(255, 255, 255, 0.2);
+    --filter-tag-hover: rgba(255, 255, 255, 0.15);
+    
+    /* Espacements */
+    --filter-panel-padding: 20px;
+    --filter-gap: 12px;
+    --filter-input-padding: 10px 14px;
+    --filter-border-radius: 10px;
+    --filter-panel-radius: 16px;
+    
+    /* Tailles */
+    --filter-input-height: 40px;
+    --filter-label-size: 13px;
+    --filter-icon-size: 18px;
+    
+    /* Animations */
+    --filter-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --filter-transition-fast: all 0.2s ease;
+    
+    /* Z-index */
+    --filter-z-dropdown: 100;
+    --filter-z-tooltip: 200;
+    --filter-z-modal: 300;
+}
+
+/* ========================================
+   CONTAINER ET STRUCTURE
+   ======================================== */
+.filter-panel {
+    position: relative;
+    width: 100%;
+    background: var(--filter-panel-bg);
+    backdrop-filter: blur(20px) brightness(1.1);
+    -webkit-backdrop-filter: blur(20px) brightness(1.1);
+    border: 1px solid var(--filter-panel-border);
+    border-radius: var(--filter-panel-radius);
+    box-shadow: var(--filter-panel-shadow);
+    padding: var(--filter-panel-padding);
+    transition: var(--filter-transition);
+}
+
+/* Effet de brillance */
+.filter-panel::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: var(--filter-panel-radius);
+    padding: 1px;
+    background: linear-gradient(135deg, 
+        rgba(255,255,255,0.3) 0%, 
+        rgba(255,255,255,0.1) 50%, 
+        rgba(255,255,255,0) 100%);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: xor;
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+/* Header */
+.filter-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.filter-panel-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.filter-header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* Body */
+.filter-panel-body {
+    display: flex;
+    gap: var(--filter-gap);
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+/* Layout vertical */
+.filter-panel-body.vertical {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+/* Layout grid */
+.filter-panel-body.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+/* Footer */
+.filter-panel-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ========================================
+   ITEM DE FILTRE
+   ======================================== */
+.filter-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+}
+
+.filter-label {
+    font-size: var(--filter-label-size);
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 2px;
+}
+
+.filter-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    position: relative;
+}
+
+/* ========================================
+   CONTRÔLES DE BASE
+   ======================================== */
+/* Input de base */
+.filter-input {
+    width: 100%;
+    height: var(--filter-input-height);
+    padding: var(--filter-input-padding);
+    background: var(--filter-input-bg);
+    border: 1px solid var(--filter-input-border);
+    border-radius: var(--filter-border-radius);
+    color: var(--filter-input-text);
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: var(--filter-transition);
+}
+
+.filter-input::placeholder {
+    color: var(--filter-input-placeholder);
+}
+
+.filter-input:hover {
+    background: var(--filter-input-bg-hover);
+    border-color: var(--filter-input-border-hover);
+}
+
+.filter-input:focus {
+    background: var(--filter-input-bg-focus);
+    border-color: var(--filter-input-border-focus);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Input wrapper avec icône */
+.filter-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.filter-input-wrapper.focused {
+    z-index: 1;
+}
+
+.filter-icon {
+    position: absolute;
+    left: 12px;
+    font-size: var(--filter-icon-size);
+    opacity: 0.5;
+    pointer-events: none;
+    transition: var(--filter-transition-fast);
+}
+
+.filter-input-wrapper.focused .filter-icon {
+    opacity: 0.7;
+}
+
+.filter-input-wrapper .filter-input {
+    padding-left: 38px;
+}
+
+/* Select */
+.filter-select {
+    appearance: none;
+    width: 100%;
+    height: var(--filter-input-height);
+    padding: var(--filter-input-padding);
+    padding-right: 32px;
+    background: var(--filter-input-bg);
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='rgba(255,255,255,0.5)' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    border: 1px solid var(--filter-input-border);
+    border-radius: var(--filter-border-radius);
+    color: var(--filter-input-text);
+    font-size: 14px;
+    cursor: pointer;
+    outline: none;
+    transition: var(--filter-transition);
+}
+
+.filter-select:hover {
+    background-color: var(--filter-input-bg-hover);
+    border-color: var(--filter-input-border-hover);
+}
+
+.filter-select:focus {
+    background-color: var(--filter-input-bg-focus);
+    border-color: var(--filter-input-border-focus);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Operator select */
+.filter-operator {
+    min-width: 120px;
+}
+
+/* Clear button */
+.filter-clear-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: var(--filter-transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.filter-clear-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.7);
+    transform: scale(1.05);
+}
+
+/* ========================================
+   BOUTONS
+   ======================================== */
+.filter-button {
+    padding: 10px 20px;
+    background: var(--filter-btn-bg);
+    border: 1px solid var(--filter-input-border);
+    border-radius: var(--filter-border-radius);
+    color: var(--filter-input-text);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--filter-transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-button:hover {
+    background: var(--filter-btn-bg-hover);
+    border-color: var(--filter-input-border-hover);
+    transform: translateY(-1px);
+}
+
+.filter-button:active {
+    transform: translateY(0);
+}
+
+.filter-button.primary {
+    background: var(--filter-btn-primary-bg);
+    border-color: var(--filter-btn-primary-border);
+    color: #60a5fa;
+}
+
+.filter-button.primary:hover {
+    background: var(--filter-btn-primary-bg-hover);
+    border-color: rgba(59, 130, 246, 0.4);
+}
+
+.filter-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Clear all button */
+.filter-clear-all {
+    font-size: 13px;
+    padding: 6px 12px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.filter-clear-all:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* ========================================
+   MULTISELECT
+   ======================================== */
+.filter-multiselect {
+    position: relative;
+    width: 100%;
+}
+
+.filter-multiselect-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+    min-height: 0;
+}
+
+.filter-multiselect-input {
+    width: 100%;
+}
+
+.filter-multiselect-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--filter-border-radius);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: var(--filter-z-dropdown);
+}
+
+.filter-multiselect-option {
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: var(--filter-transition-fast);
+    color: rgba(0, 0, 0, 0.87);
+}
+
+.filter-multiselect-option:hover {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.filter-multiselect-option.selected {
+    background: rgba(59, 130, 246, 0.15);
+    color: #2563eb;
+}
+
+.filter-multiselect-option input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+}
+
+/* ========================================
+   TAGS
+   ======================================== */
+.filter-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: var(--filter-tag-bg);
+    border: 1px solid var(--filter-tag-border);
+    border-radius: 16px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.9);
+    transition: var(--filter-transition-fast);
+}
+
+.filter-tag:hover {
+    background: var(--filter-tag-hover);
+}
+
+.filter-tag-remove {
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--filter-transition-fast);
+}
+
+.filter-tag-remove:hover {
+    color: rgba(255, 255, 255, 0.8);
+    transform: scale(1.1);
+}
+
+/* ========================================
+   DATE RANGE
+   ======================================== */
+.filter-daterange {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.filter-daterange > div:first-child {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-daterange-separator {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+}
+
+.filter-date-from,
+.filter-date-to {
+    flex: 1;
+}
+
+.filter-daterange-presets {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.filter-preset-btn {
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    cursor: pointer;
+    transition: var(--filter-transition-fast);
+}
+
+.filter-preset-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* ========================================
+   BOOLEAN FILTER
+   ======================================== */
+.filter-boolean {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.filter-boolean-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    transition: var(--filter-transition-fast);
+}
+
+.filter-boolean-option:hover {
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.filter-boolean-option input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: #3b82f6;
+}
+
+/* ========================================
+   RANGE SLIDER
+   ======================================== */
+.filter-range {
+    width: 100%;
+}
+
+.filter-range-value {
+    text-align: center;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 500;
+}
+
+.filter-range-slider {
+    position: relative;
+    height: 6px;
+    margin: 20px 0;
+}
+
+/* Single slider */
+.filter-range-single {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    outline: none;
+}
+
+.filter-range-single::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #3b82f6;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: var(--filter-transition-fast);
+}
+
+.filter-range-single::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.1);
+}
+
+/* Dual sliders */
+.filter-range-min,
+.filter-range-max {
+    position: absolute;
+    width: 100%;
+    height: 6px;
+    background: transparent;
+    pointer-events: none;
+}
+
+.filter-range-min::-webkit-slider-thumb,
+.filter-range-max::-webkit-slider-thumb {
+    pointer-events: auto;
+}
+
+.filter-range-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* ========================================
+   RATING FILTER
+   ======================================== */
+.filter-rating {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.filter-rating-stars {
+    display: flex;
+    gap: 4px;
+}
+
+.filter-rating-star {
+    font-size: 20px;
+    color: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: var(--filter-transition-fast);
+    user-select: none;
+}
+
+.filter-rating-star:hover,
+.filter-rating-star.hover {
+    color: #fbbf24;
+    transform: scale(1.1);
+}
+
+.filter-rating-star.filled {
+    color: #fbbf24;
+}
+
+.filter-rating-value {
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.7);
+    min-width: 20px;
+}
+
+.filter-rating-clear {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: var(--filter-transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.filter-rating-clear:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* ========================================
+   TAGS FILTER
+   ======================================== */
+.filter-tags {
+    position: relative;
+    width: 100%;
+}
+
+.filter-tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.filter-tags-input {
+    width: 100%;
+}
+
+.filter-tags-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 4px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--filter-border-radius);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: var(--filter-z-dropdown);
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.filter-tags-suggestion {
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: var(--filter-transition-fast);
+    color: rgba(0, 0, 0, 0.87);
+}
+
+.filter-tags-suggestion:hover {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+/* ========================================
+   STATES
+   ======================================== */
+/* Loading */
+.filter-panel.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.filter-panel.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 24px;
+    height: 24px;
+    margin: -12px 0 0 -12px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-top-color: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    animation: filter-spin 0.8s linear infinite;
+}
+
+/* Invalid */
+.filter-item.invalid .filter-input,
+.filter-item.invalid .filter-select {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.filter-item.invalid .filter-label {
+    color: #ef4444;
+}
+
+/* Active filter indicator */
+.filter-item.active .filter-label {
+    color: #60a5fa;
+}
+
+.filter-item.active .filter-input,
+.filter-item.active .filter-select {
+    border-color: rgba(59, 130, 246, 0.3);
+    background: rgba(59, 130, 246, 0.05);
+}
+
+/* Disabled */
+.filter-item.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+@keyframes filter-spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes filter-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes filter-fade-out {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+
+.filter-item.entering {
+    animation: filter-fade-in 0.3s ease forwards;
+}
+
+.filter-item.exiting {
+    animation: filter-fade-out 0.3s ease forwards;
+}
+
+/* ========================================
+   LAYOUTS SPÉCIFIQUES
+   ======================================== */
+/* Compact layout */
+.filter-panel.compact {
+    padding: 12px 16px;
+}
+
+.filter-panel.compact .filter-panel-body {
+    gap: 8px;
+}
+
+.filter-panel.compact .filter-item {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-panel.compact .filter-label {
+    margin-bottom: 0;
+    min-width: 80px;
+}
+
+/* Sidebar layout */
+.filter-panel.sidebar {
+    position: sticky;
+    top: 20px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+}
+
+.filter-panel.sidebar .filter-panel-body {
+    flex-direction: column;
+}
+
+/* Advanced layout */
+.filter-panel.advanced .filter-item {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ========================================
+   THÈMES ALTERNATIFS
+   ======================================== */
+/* Dark theme */
+.dark-theme .filter-panel {
+    background: rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark-theme .filter-input,
+.dark-theme .filter-select {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Neumorphism */
+.filter-panel.neumorphism {
+    background: #e0e5ec;
+    box-shadow: 9px 9px 16px #a3b1c6, -9px -9px 16px #ffffff;
+    backdrop-filter: none;
+    border: none;
+}
+
+.filter-panel.neumorphism .filter-input,
+.filter-panel.neumorphism .filter-select {
+    background: #e0e5ec;
+    box-shadow: inset 4px 4px 8px #a3b1c6, inset -4px -4px 8px #ffffff;
+    border: none;
+}
+
+/* Material */
+.filter-panel.material {
+    background: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    backdrop-filter: none;
+    border: none;
+    border-radius: 4px;
+}
+
+.filter-panel.material .filter-input,
+.filter-panel.material .filter-select {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #e0e0e0;
+    border-radius: 0;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.filter-panel.material .filter-input:focus,
+.filter-panel.material .filter-select:focus {
+    border-bottom: 2px solid #1976d2;
+    box-shadow: none;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 768px) {
+    :root {
+        --filter-panel-padding: 16px;
+        --filter-gap: 8px;
+        --filter-input-height: 36px;
+    }
+    
+    .filter-panel-body {
+        flex-direction: column;
+    }
+    
+    .filter-item {
+        width: 100%;
+    }
+    
+    .filter-panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .filter-header-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .filter-daterange > div:first-child {
+        flex-direction: column;
+    }
+    
+    .filter-daterange-separator {
+        display: none;
+    }
+    
+    /* Mobile drawer mode */
+    .filter-panel.mobile-drawer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        border-radius: 16px 16px 0 0;
+        max-height: 80vh;
+        overflow-y: auto;
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+        z-index: var(--filter-z-modal);
+    }
+    
+    .filter-panel.mobile-drawer.open {
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 480px) {
+    .filter-panel {
+        border-radius: 12px;
+    }
+    
+    .filter-multiselect-dropdown,
+    .filter-tags-suggestions {
+        position: fixed;
+        left: 10px;
+        right: 10px;
+        width: auto;
+    }
+    
+    .filter-button {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .filter-panel-footer {
+        flex-direction: column-reverse;
+        gap: 8px;
+    }
+}
+
+/* ========================================
+   UTILITAIRES
+   ======================================== */
+/* Scrollbar personnalisée */
+.filter-multiselect-dropdown::-webkit-scrollbar,
+.filter-panel.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.filter-multiselect-dropdown::-webkit-scrollbar-track,
+.filter-panel.sidebar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.filter-multiselect-dropdown::-webkit-scrollbar-thumb,
+.filter-panel.sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+/* Accessibilité */
+.filter-input:focus-visible,
+.filter-select:focus-visible,
+.filter-button:focus-visible {
+    outline: 2px solid #60a5fa;
+    outline-offset: 2px;
+}
+
+/* Print */
+@media print {
+    .filter-panel {
+        display: none;
+    }
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [Date création] - Z-index dropdowns
+   Solution: Variables CSS pour hiérarchie
+   
+   [Date création] - Alignement multi-layout
+   Solution: Classes modificatrices par layout
+   
+   [Date création] - Performance animations
+   Solution: Transform only, pas de layout shift
+   
+   NOTES POUR REPRISES FUTURES:
+   - Les dropdowns utilisent position fixed sur mobile
+   - Le blur peut impacter les perfs sur certains devices
+   - Les customs properties permettent theming facile
+   ======================================== */
