@@ -1,15 +1,10 @@
 // ========================================
-// DIALOG.COMPONENT.JS - Dialogues modernes et élégants (VERSION PROPRE)
+// DIALOG.COMPONENT.JS - Dialogues modernes et élégants
 // ========================================
 // Chemin: src/js/shared/ui/dialog.component.js
 //
-// NETTOYAGE le 26/07/2025 : Suppression des styles intégrés
-// Les styles sont maintenant dans src/css/commandes/commandes-modal.css
-// Section 2: DIALOG STYLES (lignes 281-500)
-//
-// DÉPENDANCES:
-// - Styles CSS dans commandes-modal.css (obligatoire)
-// - Utilisé par les fonctions prompt/alert dans commandes.detail.js
+// Version mise à jour : loadStyles() réactivé
+// Charge maintenant : src/css/shared/ui/dialog.css
 // ========================================
 
 export class Dialog {
@@ -38,12 +33,26 @@ export class Dialog {
             this.container = document.getElementById('dialog-container');
         }
         
-        // ========================================
-        // STYLES EXTERNES UNIQUEMENT
-        // Les styles sont dans commandes-modal.css
-        // Section 2: DIALOG STYLES (lignes 281-500)
-        // ========================================
-        console.log('✅ Dialog initialisé - Styles CSS externes');
+        // Charger les styles
+        this.loadStyles();
+        
+        console.log('✅ Dialog initialisé avec styles autonomes');
+    }
+    
+    loadStyles() {
+        // Vérifier si les styles sont déjà chargés
+        if (document.getElementById('dialog-styles')) {
+            return;
+        }
+        
+        // Créer le lien vers le fichier CSS
+        const link = document.createElement('link');
+        link.id = 'dialog-styles';
+        link.rel = 'stylesheet';
+        link.href = '/src/css/shared/ui/dialog.css';
+        document.head.appendChild(link);
+        
+        console.log('✅ Dialog styles chargés : /src/css/shared/ui/dialog.css');
     }
     
     show(options) {
@@ -292,23 +301,3 @@ export default {
         return dialog.show(options);
     }
 };
-
-/* ========================================
-   HISTORIQUE DES DIFFICULTÉS
-   
-   [26/07/2025] - Nettoyage des styles intégrés
-   Avant: injectStyles() créait des styles CSS dans le JS
-   Maintenant: Utilise uniquement commandes-modal.css
-   Impact: Code plus propre, styles centralisés
-   
-   [26/07/2025] - Largeur fixe harmonisée
-   Problème: Taille variable des dialogs selon le contenu
-   Solution: Largeur fixe 480px dans le CSS (responsive)
-   Impact: Cohérence visuelle pour tous les dialogs
-   
-   NOTES POUR REPRISES FUTURES:
-   - OBLIGATOIRE: commandes-modal.css doit être chargé
-   - La largeur fixe est dans .dialog-box (480px)
-   - Responsive avec max-width: 90%
-   - Aucun CSS intégré dans ce composant
-   ======================================== */

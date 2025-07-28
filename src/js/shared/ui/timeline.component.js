@@ -3,12 +3,8 @@
 // ========================================
 // Chemin: src/js/shared/ui/timeline.component.js
 //
-// IMPORTANT: Les styles CSS ont été centralisés dans:
-// src/css/commandes/commandes-modal.css (Section 4: TIMELINE STYLES, lignes 701-1150)
-// 
-// Historique:
-// - Avant: Chargeait ./styles/timeline.css via loadStyles()
-// - Maintenant: Utilise les styles centralisés pour éviter les conflits
+// Version mise à jour : loadStyles() réactivé
+// Charge maintenant : src/css/shared/ui/timeline.css
 // ========================================
 
 export class Timeline {
@@ -47,8 +43,8 @@ export class Timeline {
             return;
         }
         
-        // IMPORTANT: loadStyles() désactivé - Styles dans src/css/commandes/commandes-modal.css
-        // this.loadStyles(); // DÉSACTIVÉ le 2024-XX-XX
+        // Charger les styles
+        this.loadStyles();
         
         // Configurer le conteneur
         this.setupContainer();
@@ -57,22 +53,7 @@ export class Timeline {
         this.render();
     }
     
-    /**
-     * FONCTION DÉSACTIVÉE - Conservée pour référence historique
-     * Les styles sont maintenant dans src/css/commandes/commandes-modal.css
-     * Section: TIMELINE STYLES (lignes 701-1150)
-     */
     loadStyles() {
-        // ========================================
-        // DÉSACTIVÉ - NE PAS RÉACTIVER
-        // Raison: Éviter les conflits CSS avec les styles centralisés
-        // Les styles sont maintenant gérés dans:
-        // src/css/commandes/commandes-modal.css
-        // Section 4: TIMELINE STYLES (lignes 701-1150)
-        // ========================================
-        return; // Early return pour s'assurer que rien ne se charge
-        
-        /* Code original conservé pour documentation:
         // Vérifier si les styles sont déjà chargés
         if (document.getElementById('timeline-styles')) {
             return;
@@ -82,9 +63,10 @@ export class Timeline {
         const link = document.createElement('link');
         link.id = 'timeline-styles';
         link.rel = 'stylesheet';
-        link.href = new URL('./styles/timeline.css', import.meta.url).href;
+        link.href = '/src/css/shared/ui/timeline.css';
         document.head.appendChild(link);
-        */
+        
+        console.log('✅ Timeline styles chargés : /src/css/shared/ui/timeline.css');
     }
     
     setupContainer() {

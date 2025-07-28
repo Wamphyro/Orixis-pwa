@@ -3,12 +3,8 @@
 // ========================================
 // Chemin: src/js/shared/ui/notification.component.js
 //
-// IMPORTANT: Les styles CSS ont été centralisés dans:
-// src/css/commandes/commandes-modal.css (Section 3: NOTIFICATION STYLES, lignes 501-700)
-// 
-// Historique:
-// - Avant: Chargeait ./styles/notification.css via loadStyles()
-// - Maintenant: Utilise les styles centralisés pour éviter les conflits
+// Version mise à jour : loadStyles() réactivé
+// Charge maintenant : src/css/shared/ui/notification.css
 // ========================================
 
 export class NotificationManager {
@@ -35,26 +31,13 @@ export class NotificationManager {
             this.container = document.getElementById('notification-container');
         }
         
-        // IMPORTANT: loadStyles() désactivé - Styles dans src/css/commandes/commandes-modal.css
-        // this.loadStyles(); // DÉSACTIVÉ le 2024-XX-XX
+        // Charger les styles
+        this.loadStyles();
+        
+        console.log('✅ NotificationManager initialisé avec styles autonomes');
     }
     
-    /**
-     * FONCTION DÉSACTIVÉE - Conservée pour référence historique
-     * Les styles sont maintenant dans src/css/commandes/commandes-modal.css
-     * Section: NOTIFICATION STYLES (lignes 501-700)
-     */
     loadStyles() {
-        // ========================================
-        // DÉSACTIVÉ - NE PAS RÉACTIVER
-        // Raison: Éviter les conflits CSS avec les styles centralisés
-        // Les styles sont maintenant gérés dans:
-        // src/css/commandes/commandes-modal.css
-        // Section 3: NOTIFICATION STYLES (lignes 501-700)
-        // ========================================
-        return; // Early return pour s'assurer que rien ne se charge
-        
-        /* Code original conservé pour documentation:
         // Vérifier si les styles sont déjà chargés
         if (document.getElementById('notification-styles')) {
             return;
@@ -64,9 +47,10 @@ export class NotificationManager {
         const link = document.createElement('link');
         link.id = 'notification-styles';
         link.rel = 'stylesheet';
-        link.href = new URL('./styles/notification.css', import.meta.url).href;
+        link.href = '/src/css/shared/ui/notification.css';
         document.head.appendChild(link);
-        */
+        
+        console.log('✅ Notification styles chargés : /src/css/shared/ui/notification.css');
     }
     
     show(options) {
