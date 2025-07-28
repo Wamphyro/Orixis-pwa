@@ -531,9 +531,8 @@ export const UI = {
 export { Modal } from './feedback/modal.component.js';
 export { Dialog } from './feedback/dialog.component.js';
 export { Timeline } from './data-display/timeline.component.js';
-export { FrostedIcons } from './elements/frosted-icons.component.js';
+export { FrostedIcons } from './elements/icons.component.js';
 export { StatusBadge } from './elements/status-badge.component.js';
-export { GlassFormFields } from './data-entry/glass-form-fields.js';
 
 // Export par défaut
 export default UI;
