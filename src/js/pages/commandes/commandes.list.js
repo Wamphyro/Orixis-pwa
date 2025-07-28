@@ -20,7 +20,7 @@ import { CommandesService } from '../../services/commandes.service.js';
 import { COMMANDES_CONFIG } from '../../data/commandes.data.js';
 import { formatDate as formatDateUtil, formatMoney } from '../../shared/index.js';
 import { state } from './commandes.main.js';
-import { UI } from '../../shared/index.js';
+import { UI } from '../../shared/ui/index.js';
 
 
 // ========================================
@@ -384,17 +384,17 @@ function renderUrgenceBadge(urgence) {
     // Version HTML simple sans StatusBadgeComponent
     return `
         <span class="urgence-badge glassmorphism ${urgence}" 
-              style="display: inline-flex;
-                     align-items: center;
-                     gap: 6px;
-                     padding: 4px 12px;
-                     border-radius: 20px;
-                     font-size: 12px;
-                     font-weight: 500;
-                     color: white;
-                     background: ${config.color};
-                     backdrop-filter: blur(10px);
-                     border: 1px solid rgba(255, 255, 255, 0.2);">
+            style="display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 4px 12px;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    font-weight: 500;
+                    color: white;
+                    background: ${config.color};
+                    backdrop-filter: blur(10px);
+                    border: 1px solid rgba(255, 255, 255, 0.2);">
             <span class="badge-icon">${config.icon || ''}</span>
             <span class="badge-text">${config.label}</span>
         </span>
