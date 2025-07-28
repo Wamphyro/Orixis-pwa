@@ -79,8 +79,8 @@
             <div class="filters-row">
                 <div class="filter-group">
                     <label>Rechercher</label>
-                    <input type="text" id="searchInput" placeholder="Client, produit, n° commande..." 
-                           oninput="filtrerCommandes()">
+                    <input type="text" id="searchInput" placeholder="Client, produit, n° commande...">
+
                 </div>
                 
                 <div class="filter-group">
@@ -129,41 +129,10 @@
              TABLEAU DES COMMANDES - MODIFIÉ
              Colonnes supprimées : Produits, Livraison
              ======================================== -->
-        <div class="commandes-table-container section">
-            <table class="commandes-table">
-                <thead>
-                    <tr>
-                        <th>N° Commande</th>
-                        <th>Date</th>
-                        <th>Client</th>
-                        <th>Type</th>
-                        <th>Urgence</th>
-                        <th>Statut</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="commandesTableBody">
-                    <!-- Lignes générées dynamiquement -->
-                    <tr class="no-data">
-                        <td colspan="7">Aucune commande pour le moment</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Pagination -->
-        <div class="pagination">
-            <button class="pagination-btn" onclick="pagePrecedente()" id="btnPrev" disabled>
-                ← Précédent
-            </button>
-            <span class="pagination-info">
-                Page <span id="pageActuelle">1</span> sur <span id="pageTotal">1</span>
-            </span>
-            <button class="pagination-btn" onclick="pageSuivante()" id="btnNext" disabled>
-                Suivant →
-            </button>
-        </div>
-    </div>
+<!-- NOUVEAU -->
+<div id="commandesTableContainer" class="section">
+    <!-- TableComponent sera injecté ici -->
+</div>
 
     <!-- Modal Nouvelle Commande -->
     <div id="modalNouvelleCommande" class="modal" style="display: none;">

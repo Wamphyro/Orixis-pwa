@@ -21,9 +21,8 @@ import { COMMANDES_CONFIG } from '../../data/commandes.data.js';
 import { formatDate as formatDateUtil, formatMoney } from '../../shared/index.js';
 import { state } from './commandes.main.js';
 import { StatusBadgeComponent } from '../../shared/ui/elements/status-badge.component.js';
+import { UI } from '../../shared/index.js';
 
-// Import du nouveau TableComponent
-import TableComponent from '../../shared/ui/data-display/table.component.js';
 
 // ========================================
 // CONFIGURATION DES BADGES
