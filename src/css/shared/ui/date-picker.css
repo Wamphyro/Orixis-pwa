@@ -1,0 +1,834 @@
+/* ========================================
+   DATE-PICKER.CSS - Styles pour le composant Date Picker
+   Chemin: src/css/shared/ui/date-picker.css
+   
+   DESCRIPTION:
+   Styles complets pour le date picker avec effet glassmorphism.
+   Inclut calendrier, navigation, animations et tous les modes.
+   
+   STRUCTURE:
+   1. Variables et configuration (lignes 20-100)
+   2. Conteneur et structure (lignes 102-250)
+   3. Header et navigation (lignes 252-400)
+   4. Calendrier et jours (lignes 402-700)
+   5. Presets et sélection rapide (lignes 702-850)
+   6. Time picker (lignes 852-950)
+   7. Footer et actions (lignes 952-1050)
+   8. Animations et transitions (lignes 1052-1200)
+   9. Responsive et thèmes (lignes 1202-1350)
+   
+   DÉPENDANCES:
+   - date-picker.component.js (utilise toutes ces classes)
+   - ui.config.js (variables globales)
+   ======================================== */
+
+/* ========================================
+   VARIABLES ET CONFIGURATION
+   ======================================== */
+:root {
+    /* Couleurs glassmorphism */
+    --date-picker-glass-bg: rgba(255, 255, 255, 0.1);
+    --date-picker-glass-bg-hover: rgba(255, 255, 255, 0.15);
+    --date-picker-glass-border: rgba(255, 255, 255, 0.2);
+    --date-picker-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --date-picker-backdrop-blur: 20px;
+    
+    /* Couleurs sémantiques */
+    --date-picker-primary: #3b82f6;
+    --date-picker-primary-hover: #2563eb;
+    --date-picker-text: #1f2937;
+    --date-picker-text-muted: #6b7280;
+    --date-picker-border: #e5e7eb;
+    --date-picker-selected-bg: var(--date-picker-primary);
+    --date-picker-selected-text: #ffffff;
+    --date-picker-today-border: var(--date-picker-primary);
+    --date-picker-range-bg: rgba(59, 130, 246, 0.1);
+    --date-picker-disabled: #d1d5db;
+    
+    /* Dimensions */
+    --date-picker-width: 320px;
+    --date-picker-dual-width: 660px;
+    --date-picker-day-size: 40px;
+    --date-picker-day-margin: 2px;
+    --date-picker-border-radius: 16px;
+    
+    /* Espacement */
+    --date-picker-padding: 20px;
+    --date-picker-gap: 16px;
+    
+    /* Transitions */
+    --date-picker-transition-speed: 0.3s;
+    --date-picker-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Z-index */
+    --date-picker-z-index: 9999;
+}
+
+/* Mode sombre */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --date-picker-glass-bg: rgba(255, 255, 255, 0.05);
+        --date-picker-glass-bg-hover: rgba(255, 255, 255, 0.08);
+        --date-picker-glass-border: rgba(255, 255, 255, 0.1);
+        --date-picker-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        --date-picker-text: #f9fafb;
+        --date-picker-text-muted: #9ca3af;
+        --date-picker-border: #374151;
+        --date-picker-range-bg: rgba(59, 130, 246, 0.2);
+        --date-picker-disabled: #4b5563;
+    }
+}
+
+/* ========================================
+   CONTENEUR ET STRUCTURE
+   ======================================== */
+
+/* Input */
+.date-picker-input {
+    position: relative;
+    width: 100%;
+    padding: 12px 40px 12px 16px;
+    background: var(--date-picker-glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--date-picker-glass-border);
+    border-radius: 12px;
+    color: var(--date-picker-text);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all var(--date-picker-transition-speed) var(--date-picker-transition-easing);
+}
+
+.date-picker-input:hover {
+    background: var(--date-picker-glass-bg-hover);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.date-picker-input:focus {
+    outline: none;
+    border-color: var(--date-picker-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1),
+                var(--date-picker-glass-shadow);
+}
+
+/* Icône calendrier dans l'input */
+.date-picker-input::after {
+    content: '';
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='16' y1='2' x2='16' y2='6'%3E%3C/line%3E%3Cline x1='8' y1='2' x2='8' y2='6'%3E%3C/line%3E%3Cline x1='3' y1='10' x2='21' y2='10'%3E%3C/line%3E%3C/svg%3E");
+    background-size: contain;
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Dropdown */
+.date-picker-dropdown {
+    position: fixed;
+    z-index: var(--date-picker-z-index);
+    min-width: var(--date-picker-width);
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+    pointer-events: none;
+    transition: all var(--date-picker-transition-speed) var(--date-picker-transition-easing);
+}
+
+.date-picker-dropdown.open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+/* Style Glassmorphism */
+.date-picker-dropdown.glassmorphism {
+    background: var(--date-picker-glass-bg);
+    backdrop-filter: blur(var(--date-picker-backdrop-blur)) brightness(1.1);
+    -webkit-backdrop-filter: blur(var(--date-picker-backdrop-blur)) brightness(1.1);
+    border: 1px solid var(--date-picker-glass-border);
+    border-radius: var(--date-picker-border-radius);
+    box-shadow: var(--date-picker-glass-shadow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* Effet de brillance */
+.date-picker-dropdown.glassmorphism::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0) 40%,
+        rgba(255, 255, 255, 0) 60%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    pointer-events: none;
+}
+
+/* Autres styles */
+.date-picker-dropdown.flat {
+    background: #ffffff;
+    border: 1px solid var(--date-picker-border);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.date-picker-dropdown.minimal {
+    background: #ffffff;
+    border: none;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ========================================
+   HEADER ET NAVIGATION
+   ======================================== */
+
+.date-picker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--date-picker-padding) var(--date-picker-padding) 0;
+    margin-bottom: var(--date-picker-gap);
+}
+
+/* Boutons de navigation */
+.date-picker-nav-prev,
+.date-picker-nav-next {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    color: var(--date-picker-text);
+    cursor: pointer;
+    transition: all var(--date-picker-transition-speed) var(--date-picker-transition-easing);
+}
+
+.date-picker-nav-prev:hover,
+.date-picker-nav-next:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.date-picker-nav-prev:active,
+.date-picker-nav-next:active {
+    transform: scale(0.95);
+}
+
+.date-picker-nav-prev svg,
+.date-picker-nav-next svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Sélecteurs mois/année */
+.date-picker-month-year {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.date-picker-month-select,
+.date-picker-year-select {
+    padding: 6px 32px 6px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: var(--date-picker-text);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    transition: all var(--date-picker-transition-speed) var(--date-picker-transition-easing);
+}
+
+.date-picker-month-select:hover,
+.date-picker-year-select:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.date-picker-month-select:focus,
+.date-picker-year-select:focus {
+    outline: none;
+    border-color: var(--date-picker-primary);
+}
+
+/* ========================================
+   CALENDRIER ET JOURS
+   ======================================== */
+
+/* Conteneur des calendriers */
+.date-picker-calendars {
+    display: flex;
+    gap: var(--date-picker-gap);
+    padding: 0 var(--date-picker-padding);
+}
+
+/* Calendrier individuel */
+.date-picker-calendar {
+    flex: 1;
+    position: relative;
+}
+
+/* Jours de la semaine */
+.date-picker-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: var(--date-picker-day-margin);
+    margin-bottom: 8px;
+}
+
+.date-picker-weekday {
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--date-picker-text-muted);
+    text-transform: uppercase;
+}
+
+/* Numéro de semaine */
+.date-picker-week-number {
+    width: var(--date-picker-day-size);
+    height: var(--date-picker-day-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--date-picker-text-muted);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+}
+
+/* Grille des jours */
+.date-picker-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: var(--date-picker-day-margin);
+}
+
+/* Jour individuel */
+.date-picker-day {
+    width: var(--date-picker-day-size);
+    height: var(--date-picker-day-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    color: var(--date-picker-text);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    position: relative;
+    transition: all var(--date-picker-transition-speed) var(--date-picker-transition-easing);
+}
+
+/* États des jours */
+.date-picker-day:hover:not(.disabled) {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.date-picker-day:active:not(.disabled) {
+    transform: scale(0.95);
+}
+
+.date-picker-day.other-month {
+    color: var(--date-picker-text-muted);
+    opacity: 0.5;
+}
+
+.date-picker-day.today {
+    border-color: var(--date-picker-today-border);
+    font-weight: 700;
+}
+
+.date-picker-day.today::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    background: var(--date-picker-primary);
+    border-radius: 50%;
+}
+
+.date-picker-day.selected {
+    background: var(--date-picker-selected-bg);
+    color: var(--date-picker-selected-text);
+    border-color: var(--date-picker-selected-bg);
+}
+
+.date-picker-day.selected:hover {
+    background: var(--date-picker-primary-hover);
+    border-color: var(--date-picker-primary-hover);
+}
+
+.date-picker-day.disabled {
+    color: var(--date-picker-disabled);
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+.date-picker-day.disabled:hover {
+    background: transparent;
+    border-color: transparent;
+    transform: none;
+}
+
+/* Range selection */
+.date-picker-day.in-range {
+    background: var(--date-picker-range-bg);
+    border-color: transparent;
+    border-radius: 0;
+}
+
+.date-picker-day.range-start {
+    background: var(--date-picker-selected-bg);
+    color: var(--date-picker-selected-text);
+    border-color: var(--date-picker-selected-bg);
+    border-radius: 10px 0 0 10px;
+}
+
+.date-picker-day.range-end {
+    background: var(--date-picker-selected-bg);
+    color: var(--date-picker-selected-text);
+    border-color: var(--date-picker-selected-bg);
+    border-radius: 0 10px 10px 0;
+}
+
+.date-picker-day.range-start.range-end {
+    border-radius: 10px;
+}
+
+/* ========================================
+   PRESETS ET SÉLECTION RAPIDE
+   ======================================== */
+
+.date-picker-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0 var(--date-picker-padding) var(--date-picker-gap);
+    border-bottom: 1px solid var(--date-picker-glass-border);
+}
+
+.date-picker-preset {
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: var(--date-picker-text);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--date-picker-transition-speed) var(--date-picker-transition-easing);
+}
+
+.date-picker-preset:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.date-picker-preset.active {
+    background: var(--date-picker-primary);
+    color: var(--date-picker-selected-text);
+    border-color: var(--date-picker-primary);
+}
+
+/* ========================================
+   TIME PICKER
+   ======================================== */
+
+.date-picker-time {
+    display: flex;
+    gap: var(--date-picker-gap);
+    padding: var(--date-picker-gap) var(--date-picker-padding);
+    border-top: 1px solid var(--date-picker-glass-border);
+}
+
+.time-picker-column {
+    flex: 1;
+}
+
+.time-picker-column label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--date-picker-text-muted);
+    text-transform: uppercase;
+}
+
+.time-picker-input {
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: var(--date-picker-text);
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    transition: all var(--date-picker-transition-speed) var(--date-picker-transition-easing);
+}
+
+.time-picker-input:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.time-picker-input:focus {
+    outline: none;
+    border-color: var(--date-picker-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* ========================================
+   FOOTER ET ACTIONS
+   ======================================== */
+
+.date-picker-footer {
+    display: flex;
+    gap: 8px;
+    padding: var(--date-picker-padding);
+    border-top: 1px solid var(--date-picker-glass-border);
+}
+
+.date-picker-button {
+    flex: 1;
+    padding: 10px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    color: var(--date-picker-text);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--date-picker-transition-speed) var(--date-picker-transition-easing);
+}
+
+.date-picker-button:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.date-picker-button:active {
+    transform: translateY(0);
+}
+
+.date-picker-apply {
+    background: var(--date-picker-primary);
+    color: var(--date-picker-selected-text);
+    border-color: var(--date-picker-primary);
+}
+
+.date-picker-apply:hover {
+    background: var(--date-picker-primary-hover);
+    border-color: var(--date-picker-primary-hover);
+}
+
+.date-picker-clear {
+    flex: 0 0 auto;
+}
+
+/* ========================================
+   ANIMATIONS ET TRANSITIONS
+   ======================================== */
+
+/* Animation d'ouverture */
+@keyframes datePickerSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Animation de changement de mois */
+@keyframes datePickerMonthSlide {
+    0% {
+        opacity: 0.5;
+        transform: translateX(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Animation ripple pour les clics */
+.date-picker-ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: scale(0);
+    animation: datePickerRipple 0.6s ease-out;
+    pointer-events: none;
+}
+
+@keyframes datePickerRipple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* Transitions pour les changements de mois */
+.date-picker-calendar {
+    transition: opacity var(--date-picker-transition-speed) var(--date-picker-transition-easing),
+                transform var(--date-picker-transition-speed) var(--date-picker-transition-easing);
+}
+
+/* Animation de sélection */
+.date-picker-day.selected {
+    animation: datePickerSelect 0.3s ease-out;
+}
+
+@keyframes datePickerSelect {
+    0% {
+        transform: scale(0.8);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+    :root {
+        --date-picker-width: 280px;
+        --date-picker-day-size: 36px;
+        --date-picker-padding: 16px;
+    }
+    
+    .date-picker-dropdown {
+        max-width: calc(100vw - 32px);
+    }
+    
+    /* Forcer un seul calendrier sur mobile */
+    .date-picker-calendars {
+        flex-direction: column;
+    }
+    
+    .date-picker-header {
+        padding: 16px 16px 0;
+    }
+    
+    .date-picker-nav-prev,
+    .date-picker-nav-next {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .date-picker-month-select,
+    .date-picker-year-select {
+        padding: 4px 28px 4px 8px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --date-picker-day-size: 32px;
+        --date-picker-day-margin: 1px;
+    }
+    
+    .date-picker-dropdown {
+        border-radius: 12px;
+    }
+    
+    .date-picker-day {
+        font-size: 13px;
+    }
+    
+    .date-picker-weekday {
+        font-size: 11px;
+    }
+}
+
+/* ========================================
+   ACCESSIBILITÉ
+   ======================================== */
+
+/* Focus visible */
+.date-picker-day:focus-visible,
+.date-picker-nav-prev:focus-visible,
+.date-picker-nav-next:focus-visible,
+.date-picker-button:focus-visible {
+    outline: 2px solid var(--date-picker-primary);
+    outline-offset: 2px;
+}
+
+/* Support clavier */
+.date-picker-day:focus {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--date-picker-primary);
+}
+
+/* Mode contraste élevé */
+@media (prefers-contrast: high) {
+    .date-picker-dropdown {
+        border-width: 2px;
+    }
+    
+    .date-picker-day {
+        border-width: 2px;
+    }
+    
+    .date-picker-day.selected {
+        border-width: 3px;
+    }
+}
+
+/* Préférences de mouvement réduit */
+@media (prefers-reduced-motion: reduce) {
+    .date-picker-dropdown,
+    .date-picker-day,
+    .date-picker-button,
+    .date-picker-nav-prev,
+    .date-picker-nav-next {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+    }
+}
+
+/* ========================================
+   THÈMES
+   ======================================== */
+
+/* Thème sombre */
+.dark .date-picker-dropdown.glassmorphism,
+[data-theme="dark"] .date-picker-dropdown.glassmorphism {
+    background: rgba(0, 0, 0, 0.7);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .date-picker-input,
+[data-theme="dark"] .date-picker-input {
+    background: rgba(0, 0, 0, 0.5);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f9fafb;
+}
+
+/* ========================================
+   UTILITAIRES
+   ======================================== */
+
+/* Calendrier double */
+.date-picker-dropdown.multiple-months .date-picker-calendars {
+    min-width: var(--date-picker-dual-width);
+}
+
+/* Mode compact */
+.date-picker-dropdown.compact {
+    --date-picker-padding: 12px;
+    --date-picker-day-size: 32px;
+}
+
+/* État de chargement */
+.date-picker-dropdown.loading::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ========================================
+   SUPPORT NAVIGATEURS
+   ======================================== */
+
+/* Fallback pour navigateurs sans backdrop-filter */
+@supports not (backdrop-filter: blur(20px)) {
+    .date-picker-dropdown.glassmorphism {
+        background: rgba(248, 248, 248, 0.95);
+    }
+    
+    .dark .date-picker-dropdown.glassmorphism {
+        background: rgba(20, 20, 20, 0.95);
+    }
+    
+    .date-picker-input {
+        background: rgba(248, 248, 248, 0.9);
+    }
+}
+
+/* ========================================
+   MODES SPÉCIAUX
+   ======================================== */
+
+/* Mode année */
+.date-picker-dropdown.year-mode .date-picker-days {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.date-picker-dropdown.year-mode .date-picker-day {
+    width: auto;
+    height: 48px;
+    font-size: 14px;
+}
+
+/* Mode semaine */
+.date-picker-dropdown.week-mode .date-picker-weekdays {
+    grid-template-columns: 40px repeat(7, 1fr);
+}
+
+.date-picker-dropdown.week-mode .date-picker-days {
+    grid-template-columns: 40px repeat(7, 1fr);
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [2024-01-15] - Backdrop-filter sur mobile
+   Solution: Réduction du blur sur petits écrans
+   
+   [2024-01-15] - Performance animations multiples
+   Cause: Trop d'animations simultanées
+   Résolution: Limiter à une animation par interaction
+   
+   NOTES POUR REPRISES FUTURES:
+   - Le positionnement fixed nécessite un calcul précis
+   - Les animations peuvent impacter les performances mobiles
+   - Prévoir des fallbacks pour backdrop-filter
+   ======================================== */

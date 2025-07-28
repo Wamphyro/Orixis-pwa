@@ -1,0 +1,1000 @@
+/* ========================================
+   RATING.CSS - Styles pour le composant Rating
+   Chemin: src/css/shared/ui/rating.css
+   
+   DESCRIPTION:
+   Styles complets pour le système de notation avec effet glassmorphism.
+   Supporte tous les types d'icônes, tailles, orientations et animations.
+   
+   STRUCTURE:
+   1. Variables et configuration (lignes 20-120)
+   2. Conteneur principal (lignes 122-250)
+   3. Styles glassmorphism (lignes 252-400)
+   4. Styles des icônes (lignes 402-650)
+   5. Variantes de styles (lignes 652-850)
+   6. Tailles (lignes 852-1050)
+   7. Animations (lignes 1052-1350)
+   8. Couleurs et thèmes (lignes 1352-1550)
+   9. Responsive (lignes 1552-1650)
+   10. Accessibilité (lignes 1652-1750)
+   
+   DÉPENDANCES:
+   - rating.component.js (utilise toutes ces classes)
+   ======================================== */
+
+/* ========================================
+   VARIABLES ET CONFIGURATION
+   ======================================== */
+:root {
+    /* Couleurs glassmorphism */
+    --rating-glass-bg: rgba(255, 255, 255, 0.1);
+    --rating-glass-bg-hover: rgba(255, 255, 255, 0.15);
+    --rating-glass-bg-active: rgba(255, 255, 255, 0.2);
+    --rating-glass-border: rgba(255, 255, 255, 0.2);
+    --rating-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --rating-backdrop-blur: 20px;
+    
+    /* Couleurs des icônes */
+    --rating-color-empty: #e2e8f0;
+    --rating-color-filled: #fbbf24;
+    --rating-color-hover: #f59e0b;
+    --rating-color-active: #d97706;
+    --rating-color-disabled: #94a3b8;
+    
+    /* Couleurs par schéma */
+    --rating-gold-empty: #fef3c7;
+    --rating-gold-filled: #fbbf24;
+    --rating-gold-hover: #f59e0b;
+    
+    --rating-red-empty: #fee2e2;
+    --rating-red-filled: #ef4444;
+    --rating-red-hover: #dc2626;
+    
+    --rating-green-empty: #d1fae5;
+    --rating-green-filled: #10b981;
+    --rating-green-hover: #059669;
+    
+    --rating-blue-empty: #dbeafe;
+    --rating-blue-filled: #3b82f6;
+    --rating-blue-hover: #2563eb;
+    
+    --rating-purple-empty: #e9d5ff;
+    --rating-purple-filled: #8b5cf6;
+    --rating-purple-hover: #7c3aed;
+    
+    /* Espacement */
+    --rating-gap-small: 2px;
+    --rating-gap-medium: 6px;
+    --rating-gap-large: 8px;
+    --rating-gap-compact: 1px;
+    
+    /* Tailles d'icônes */
+    --rating-icon-small: 16px;
+    --rating-icon-medium: 24px;
+    --rating-icon-large: 32px;
+    --rating-icon-compact: 20px;
+    
+    /* Transitions */
+    --rating-transition-speed: 0.3s;
+    --rating-transition-subtle: 0.2s ease;
+    --rating-transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --rating-transition-rich: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    
+    /* Z-index */
+    --rating-z-index-base: 1;
+    --rating-z-index-hover: 10;
+    --rating-z-index-particle: 1000;
+}
+
+/* Mode sombre */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --rating-glass-bg: rgba(255, 255, 255, 0.05);
+        --rating-glass-bg-hover: rgba(255, 255, 255, 0.08);
+        --rating-glass-bg-active: rgba(255, 255, 255, 0.1);
+        --rating-glass-border: rgba(255, 255, 255, 0.1);
+        --rating-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        
+        --rating-color-empty: #334155;
+        --rating-color-filled: #fbbf24;
+        --rating-color-hover: #fcd34d;
+    }
+}
+
+/* ========================================
+   CONTENEUR PRINCIPAL
+   ======================================== */
+.rating {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--rating-gap-medium);
+    position: relative;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: all var(--rating-transition-smooth);
+}
+
+.rating:focus-visible {
+    outline: 2px solid var(--rating-color-filled);
+    outline-offset: 4px;
+    border-radius: 8px;
+}
+
+/* Orientation verticale */
+.rating-vertical {
+    flex-direction: column;
+}
+
+.rating-vertical .rating-icons {
+    flex-direction: column;
+}
+
+/* Direction RTL */
+.rating-rtl {
+    direction: rtl;
+}
+
+.rating-rtl .rating-icons {
+    flex-direction: row-reverse;
+}
+
+/* État désactivé */
+.rating[data-disabled="true"] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.rating[data-disabled="true"] .rating-icon {
+    cursor: not-allowed;
+}
+
+/* Conteneur des icônes */
+.rating-icons {
+    display: flex;
+    align-items: center;
+    gap: inherit;
+    position: relative;
+}
+
+/* Labels */
+.rating-label {
+    font-size: 14px;
+    color: #64748b;
+    transition: color var(--rating-transition-smooth);
+}
+
+.rating-label-before {
+    margin-right: 8px;
+}
+
+.rating-label-after {
+    margin-left: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.rating-value {
+    font-weight: 600;
+    color: var(--rating-color-filled);
+    font-feature-settings: "tnum";
+}
+
+.rating-text {
+    color: #475569;
+}
+
+/* ========================================
+   STYLE GLASSMORPHISM
+   ======================================== */
+.rating-glassmorphism {
+    background: var(--rating-glass-bg);
+    backdrop-filter: blur(var(--rating-backdrop-blur)) saturate(1.8);
+    -webkit-backdrop-filter: blur(var(--rating-backdrop-blur)) saturate(1.8);
+    border: 1px solid var(--rating-glass-border);
+    border-radius: 16px;
+    padding: 12px 16px;
+    box-shadow: var(--rating-glass-shadow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Effet de brillance glassmorphism */
+.rating-glassmorphism::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.15) 0%,
+        rgba(255, 255, 255, 0) 40%,
+        rgba(255, 255, 255, 0) 60%,
+        rgba(255, 255, 255, 0.1) 100%
+    );
+    pointer-events: none;
+}
+
+/* Reflet glassmorphism */
+.rating-glassmorphism::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.2) 0%,
+        transparent 50%
+    );
+    mask-image: linear-gradient(
+        180deg,
+        black 0%,
+        transparent 100%
+    );
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+/* Icônes glassmorphism */
+.rating-glassmorphism .rating-icon {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.rating-glassmorphism .rating-icon:hover {
+    background: var(--rating-glass-bg-hover);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1),
+                0 0 0 1px rgba(255, 255, 255, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* ========================================
+   STYLES DES ICÔNES
+   ======================================== */
+.rating-icon {
+    position: relative;
+    width: var(--rating-icon-medium);
+    height: var(--rating-icon-medium);
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--rating-transition-smooth);
+    color: var(--rating-color-empty);
+}
+
+.rating-icon svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    transition: inherit;
+}
+
+/* États des icônes */
+.rating-icon-empty,
+.rating-icon-filled,
+.rating-icon-half {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--rating-transition-smooth);
+}
+
+.rating-icon-filled,
+.rating-icon-half {
+    opacity: 0;
+    transform: scale(0.8);
+}
+
+/* Icône remplie */
+.rating-icon.filled .rating-icon-filled {
+    opacity: 1;
+    transform: scale(1);
+    color: var(--rating-color-filled);
+}
+
+.rating-icon.filled .rating-icon-empty {
+    opacity: 0;
+}
+
+/* Demi-icône */
+.rating-icon.half .rating-icon-half {
+    opacity: 1;
+    transform: scale(1);
+    color: var(--rating-color-filled);
+}
+
+.rating-icon.half .rating-icon-empty {
+    opacity: 1;
+}
+
+/* Preview au hover */
+.rating-icon.preview {
+    animation: pulse 0.5s ease-in-out;
+}
+
+/* Bouton clear */
+.rating-clear {
+    position: absolute;
+    right: -32px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    padding: 4px;
+    border: none;
+    background: var(--rating-glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--rating-glass-border);
+    border-radius: 6px;
+    cursor: pointer;
+    color: #94a3b8;
+    opacity: 0;
+    transition: all var(--rating-transition-smooth);
+}
+
+.rating:hover .rating-clear {
+    opacity: 0.6;
+}
+
+.rating-clear:hover {
+    opacity: 1;
+    color: var(--rating-color-hover);
+    background: var(--rating-glass-bg-hover);
+}
+
+.rating-clear svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* ========================================
+   VARIANTES DE STYLES
+   ======================================== */
+
+/* Style Neumorphism */
+.rating-neumorphism {
+    background: #e0e5ec;
+    border-radius: 20px;
+    padding: 16px 24px;
+    box-shadow: 9px 9px 16px #a3b1c6,
+                -9px -9px 16px #ffffff;
+}
+
+.rating-neumorphism .rating-icon {
+    background: #e0e5ec;
+    border-radius: 50%;
+    box-shadow: 5px 5px 10px #a3b1c6,
+                -5px -5px 10px #ffffff;
+}
+
+.rating-neumorphism .rating-icon:active {
+    box-shadow: inset 5px 5px 10px #a3b1c6,
+                inset -5px -5px 10px #ffffff;
+}
+
+/* Style Flat */
+.rating-flat {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px 12px;
+}
+
+.rating-flat .rating-icon {
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.rating-flat .rating-icon:hover {
+    background: #f1f5f9;
+}
+
+/* Style Minimal */
+.rating-minimal {
+    padding: 0;
+    background: transparent;
+    border: none;
+}
+
+.rating-minimal .rating-icon {
+    opacity: 0.8;
+}
+
+.rating-minimal .rating-icon:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Style Material */
+.rating-material {
+    background: #ffffff;
+    border-radius: 4px;
+    padding: 8px;
+    box-shadow: 0 2px 4px -1px rgba(0,0,0,.2),
+                0 4px 5px 0 rgba(0,0,0,.14),
+                0 1px 10px 0 rgba(0,0,0,.12);
+}
+
+.rating-material .rating-icon {
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
+}
+
+.rating-material .rating-icon::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: currentColor;
+    opacity: 0;
+    border-radius: 50%;
+    transform: scale(0);
+    transition: all 0.3s ease;
+}
+
+.rating-material .rating-icon:active::after {
+    opacity: 0.2;
+    transform: scale(2);
+}
+
+/* ========================================
+   TAILLES
+   ======================================== */
+
+/* Small */
+.rating-small {
+    gap: var(--rating-gap-small);
+    font-size: 12px;
+}
+
+.rating-small .rating-icon {
+    width: var(--rating-icon-small);
+    height: var(--rating-icon-small);
+}
+
+.rating-small.rating-glassmorphism {
+    padding: 8px 12px;
+    border-radius: 12px;
+}
+
+.rating-small .rating-label {
+    font-size: 12px;
+}
+
+.rating-small .rating-clear {
+    width: 20px;
+    height: 20px;
+    right: -24px;
+}
+
+/* Large */
+.rating-large {
+    gap: var(--rating-gap-large);
+    font-size: 16px;
+}
+
+.rating-large .rating-icon {
+    width: var(--rating-icon-large);
+    height: var(--rating-icon-large);
+}
+
+.rating-large.rating-glassmorphism {
+    padding: 16px 24px;
+    border-radius: 20px;
+}
+
+.rating-large.rating-glassmorphism .rating-icon {
+    border-radius: 12px;
+    padding: 6px;
+}
+
+.rating-large .rating-label {
+    font-size: 16px;
+}
+
+.rating-large .rating-clear {
+    width: 32px;
+    height: 32px;
+    right: -40px;
+}
+
+/* Compact */
+.rating-compact {
+    gap: var(--rating-gap-compact);
+}
+
+.rating-compact .rating-icon {
+    width: var(--rating-icon-compact);
+    height: var(--rating-icon-compact);
+}
+
+.rating-compact.rating-glassmorphism {
+    padding: 6px 10px;
+    border-radius: 10px;
+}
+
+.rating-compact .rating-label {
+    font-size: 13px;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+/* Animation: None */
+.rating[data-animation="none"] .rating-icon {
+    transition: none;
+}
+
+/* Animation: Subtle */
+.rating[data-animation="subtle"] .rating-icon {
+    transition: all var(--rating-transition-subtle);
+}
+
+.rating[data-animation="subtle"] .rating-icon:hover {
+    transform: scale(1.1);
+}
+
+/* Animation: Smooth */
+.rating[data-animation="smooth"] .rating-icon {
+    transition: all var(--rating-transition-smooth);
+}
+
+.rating[data-animation="smooth"] .rating-icon:hover {
+    transform: scale(1.2) translateY(-2px);
+}
+
+.rating[data-animation="smooth"] .rating-icon.filled {
+    animation: smoothFill 0.3s ease forwards;
+}
+
+@keyframes smoothFill {
+    0% {
+        transform: scale(0.8) rotate(0deg);
+    }
+    50% {
+        transform: scale(1.1) rotate(5deg);
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+/* Animation: Rich */
+.rating[data-animation="rich"] .rating-icon {
+    transition: all var(--rating-transition-rich);
+}
+
+.rating[data-animation="rich"] .rating-icon:hover {
+    transform: scale(1.3) translateY(-4px) rotate(5deg);
+    filter: drop-shadow(0 4px 8px rgba(251, 191, 36, 0.3));
+}
+
+.rating[data-animation="rich"] .rating-icon.filled {
+    animation: richFill 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+@keyframes richFill {
+    0% {
+        transform: scale(0.5) rotate(-180deg);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2) rotate(10deg);
+    }
+    70% {
+        transform: scale(0.9) rotate(-5deg);
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+/* Animation de clic */
+.rating-icon.clicked {
+    animation: iconClick 0.6s ease;
+}
+
+@keyframes iconClick {
+    0% {
+        transform: scale(1);
+    }
+    20% {
+        transform: scale(0.8);
+    }
+    40% {
+        transform: scale(1.4);
+    }
+    60% {
+        transform: scale(0.95);
+    }
+    80% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Animation de pulse */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Animation d'onde */
+.rating[data-animation="rich"] .rating-icon::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: inherit;
+    background: radial-gradient(circle, currentColor, transparent);
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.4s ease;
+}
+
+.rating[data-animation="rich"] .rating-icon:hover::before {
+    opacity: 0.2;
+    transform: scale(1.2);
+}
+
+/* Particules */
+.rating-particle {
+    position: fixed;
+    width: 4px;
+    height: 4px;
+    background: var(--rating-color-filled);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: var(--rating-z-index-particle);
+    animation: particleFly 1s ease-out forwards;
+}
+
+@keyframes particleFly {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--x), var(--y)) scale(0) rotate(var(--rotation));
+        opacity: 0;
+    }
+}
+
+/* ========================================
+   COULEURS ET THÈMES
+   ======================================== */
+
+/* Schéma Gold (par défaut) */
+.rating-gold .rating-icon.filled .rating-icon-filled,
+.rating-gold .rating-icon.half .rating-icon-half {
+    color: var(--rating-gold-filled);
+}
+
+.rating-gold .rating-icon:hover {
+    color: var(--rating-gold-hover);
+}
+
+.rating-gold .rating-value {
+    color: var(--rating-gold-filled);
+}
+
+/* Schéma Red */
+.rating-red {
+    --rating-color-empty: var(--rating-red-empty);
+    --rating-color-filled: var(--rating-red-filled);
+    --rating-color-hover: var(--rating-red-hover);
+}
+
+.rating-red .rating-icon.filled .rating-icon-filled,
+.rating-red .rating-icon.half .rating-icon-half {
+    color: var(--rating-red-filled);
+}
+
+.rating-red .rating-value {
+    color: var(--rating-red-filled);
+}
+
+/* Schéma Green */
+.rating-green {
+    --rating-color-empty: var(--rating-green-empty);
+    --rating-color-filled: var(--rating-green-filled);
+    --rating-color-hover: var(--rating-green-hover);
+}
+
+.rating-green .rating-icon.filled .rating-icon-filled,
+.rating-green .rating-icon.half .rating-icon-half {
+    color: var(--rating-green-filled);
+}
+
+.rating-green .rating-value {
+    color: var(--rating-green-filled);
+}
+
+/* Schéma Blue */
+.rating-blue {
+    --rating-color-empty: var(--rating-blue-empty);
+    --rating-color-filled: var(--rating-blue-filled);
+    --rating-color-hover: var(--rating-blue-hover);
+}
+
+.rating-blue .rating-icon.filled .rating-icon-filled,
+.rating-blue .rating-icon.half .rating-icon-half {
+    color: var(--rating-blue-filled);
+}
+
+.rating-blue .rating-value {
+    color: var(--rating-blue-filled);
+}
+
+/* Schéma Purple */
+.rating-purple {
+    --rating-color-empty: var(--rating-purple-empty);
+    --rating-color-filled: var(--rating-purple-filled);
+    --rating-color-hover: var(--rating-purple-hover);
+}
+
+.rating-purple .rating-icon.filled .rating-icon-filled,
+.rating-purple .rating-icon.half .rating-icon-half {
+    color: var(--rating-purple-filled);
+}
+
+.rating-purple .rating-value {
+    color: var(--rating-purple-filled);
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 640px) {
+    .rating-glassmorphism {
+        padding: 8px 12px;
+        border-radius: 12px;
+    }
+    
+    .rating-large.rating-glassmorphism {
+        padding: 12px 16px;
+    }
+    
+    .rating-clear {
+        position: static;
+        transform: none;
+        margin-left: 8px;
+        opacity: 0.6;
+    }
+    
+    .rating-vertical .rating-clear {
+        margin-left: 0;
+        margin-top: 8px;
+    }
+    
+    /* Réduire les gaps sur mobile */
+    .rating {
+        gap: 4px;
+    }
+    
+    .rating-large {
+        gap: 6px;
+    }
+}
+
+/* Support tactile */
+@media (hover: none) {
+    .rating-icon:active {
+        transform: scale(0.95);
+    }
+    
+    .rating-glassmorphism .rating-icon:active {
+        background: var(--rating-glass-bg-active);
+    }
+    
+    /* Désactiver les animations riches sur mobile */
+    .rating[data-animation="rich"] .rating-icon {
+        transition: all var(--rating-transition-smooth);
+    }
+    
+    .rating[data-animation="rich"] .rating-icon:hover {
+        transform: scale(1.1);
+    }
+}
+
+/* ========================================
+   ACCESSIBILITÉ
+   ======================================== */
+
+/* Focus visible */
+.rating-icon:focus-visible {
+    outline: 2px solid var(--rating-color-filled);
+    outline-offset: 2px;
+}
+
+.rating-clear:focus-visible {
+    outline: 2px solid var(--rating-color-filled);
+    outline-offset: 2px;
+}
+
+/* Mode contraste élevé */
+@media (prefers-contrast: high) {
+    .rating {
+        border: 2px solid currentColor;
+    }
+    
+    .rating-icon {
+        border: 1px solid currentColor;
+    }
+    
+    .rating-glassmorphism {
+        background: rgba(255, 255, 255, 0.9);
+        border-width: 2px;
+    }
+    
+    .dark .rating-glassmorphism {
+        background: rgba(0, 0, 0, 0.9);
+    }
+}
+
+/* Préférences de mouvement réduit */
+@media (prefers-reduced-motion: reduce) {
+    .rating,
+    .rating * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .rating-particle {
+        display: none;
+    }
+}
+
+/* ========================================
+   THÈMES
+   ======================================== */
+
+/* Thème sombre */
+.dark .rating-glassmorphism,
+[data-theme="dark"] .rating-glassmorphism {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.dark .rating-icon,
+[data-theme="dark"] .rating-icon {
+    color: #475569;
+}
+
+.dark .rating-glassmorphism .rating-icon,
+[data-theme="dark"] .rating-glassmorphism .rating-icon {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark .rating-label,
+[data-theme="dark"] .rating-label {
+    color: #94a3b8;
+}
+
+.dark .rating-text,
+[data-theme="dark"] .rating-text {
+    color: #cbd5e1;
+}
+
+/* ========================================
+   UTILITAIRES
+   ======================================== */
+
+/* État en lecture seule */
+.rating[data-readonly="true"] .rating-icon {
+    cursor: default;
+}
+
+.rating[data-readonly="true"] .rating-icon:hover {
+    transform: none;
+}
+
+.rating[data-readonly="true"] .rating-clear {
+    display: none;
+}
+
+/* État de chargement */
+.rating.loading .rating-icons {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.rating.loading::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.3) 50%,
+        transparent 100%
+    );
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* ========================================
+   SUPPORT NAVIGATEURS
+   ======================================== */
+
+/* Fallback pour navigateurs sans backdrop-filter */
+@supports not (backdrop-filter: blur(20px)) {
+    .rating-glassmorphism {
+        background: rgba(255, 255, 255, 0.95);
+    }
+    
+    .dark .rating-glassmorphism {
+        background: rgba(30, 30, 30, 0.95);
+    }
+    
+    .rating-glassmorphism .rating-icon {
+        background: rgba(255, 255, 255, 0.9);
+    }
+    
+    .dark .rating-glassmorphism .rating-icon {
+        background: rgba(30, 30, 30, 0.9);
+    }
+}
+
+/* Support pour gradients SVG */
+@supports not (fill: url(#gradient)) {
+    .rating-icon-half {
+        clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);
+    }
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [2024-01-15] - Problème avec backdrop-filter sur Safari
+   Solution: Ajout du préfixe -webkit-backdrop-filter
+   
+   [2024-01-16] - Z-index des particules
+   Cause: Particules passaient sous d'autres éléments
+   Résolution: Z-index élevé et position fixed
+   
+   [2024-01-17] - Performance avec beaucoup d'animations
+   Solution: Utilisation de transform et opacity uniquement
+   
+   NOTES POUR REPRISES FUTURES:
+   - Les animations riches peuvent ralentir sur mobile
+   - Le blur glassmorphism est gourmand en ressources
+   - Prévoir des fallbacks pour les vieux navigateurs
+   ======================================== */

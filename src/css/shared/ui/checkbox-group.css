@@ -1,0 +1,899 @@
+/* ========================================
+   CHECKBOX-GROUP.CSS - Styles pour le composant Checkbox Group
+   Chemin: src/css/shared/ui/checkbox-group.css
+   
+   DESCRIPTION:
+   Styles complets pour le système de groupes de checkboxes avec
+   support de tous les styles visuels, layouts, animations et états.
+   
+   STRUCTURE:
+   1. Variables et configuration (lignes 20-120)
+   2. Styles de base (lignes 122-300)
+   3. Styles visuels (lignes 302-600)
+   4. Layouts (lignes 602-800)
+   5. Composants internes (lignes 802-1100)
+   6. États et interactions (lignes 1102-1300)
+   7. Animations (lignes 1302-1500)
+   8. Responsive et accessibilité (lignes 1502-1700)
+   
+   DÉPENDANCES:
+   - checkbox-group.component.js (utilise toutes ces classes)
+   - glassmorphism.css (pour les effets de verre)
+   - dark-mode.css (adaptations mode sombre)
+   ======================================== */
+
+/* ========================================
+   VARIABLES ET CONFIGURATION
+   ======================================== */
+:root {
+    /* Couleurs de base */
+    --checkbox-primary: #3b82f6;
+    --checkbox-primary-hover: #2563eb;
+    --checkbox-primary-active: #1d4ed8;
+    --checkbox-primary-light: rgba(59, 130, 246, 0.1);
+    
+    /* Glassmorphism */
+    --checkbox-glass-bg: rgba(255, 255, 255, 0.08);
+    --checkbox-glass-bg-hover: rgba(255, 255, 255, 0.12);
+    --checkbox-glass-border: rgba(255, 255, 255, 0.15);
+    --checkbox-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --checkbox-backdrop-blur: 20px;
+    
+    /* Espacement */
+    --checkbox-gap-xs: 4px;
+    --checkbox-gap-sm: 8px;
+    --checkbox-gap-md: 12px;
+    --checkbox-gap-lg: 16px;
+    --checkbox-gap-xl: 20px;
+    
+    /* Tailles des checkboxes */
+    --checkbox-size-xs: 14px;
+    --checkbox-size-sm: 16px;
+    --checkbox-size-md: 20px;
+    --checkbox-size-lg: 24px;
+    --checkbox-size-xl: 28px;
+    
+    /* Polices */
+    --checkbox-font-xs: 12px;
+    --checkbox-font-sm: 13px;
+    --checkbox-font-md: 14px;
+    --checkbox-font-lg: 16px;
+    --checkbox-font-xl: 18px;
+    
+    /* Transitions */
+    --checkbox-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --checkbox-transition-fast: all 0.15s ease;
+    
+    /* Border radius */
+    --checkbox-radius-sm: 4px;
+    --checkbox-radius-md: 6px;
+    --checkbox-radius-lg: 8px;
+    --checkbox-radius-full: 9999px;
+}
+
+/* Mode sombre - variables */
+.dark,
+[data-theme="dark"] {
+    --checkbox-glass-bg: rgba(255, 255, 255, 0.04);
+    --checkbox-glass-bg-hover: rgba(255, 255, 255, 0.06);
+    --checkbox-glass-border: rgba(255, 255, 255, 0.08);
+    --checkbox-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* ========================================
+   STYLES DE BASE
+   ======================================== */
+.checkbox-group {
+    position: relative;
+    width: 100%;
+}
+
+.checkbox-group-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+/* Wrapper individuel */
+.checkbox-wrapper {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    cursor: pointer;
+    user-select: none;
+    transition: var(--checkbox-transition);
+}
+
+/* Input checkbox de base */
+.checkbox-input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+/* Checkbox visuel */
+.checkbox-input + .checkbox-label::before {
+    content: '';
+    display: inline-block;
+    width: var(--checkbox-size-md);
+    height: var(--checkbox-size-md);
+    border: 2px solid #d1d5db;
+    border-radius: var(--checkbox-radius-sm);
+    background: white;
+    transition: var(--checkbox-transition);
+    flex-shrink: 0;
+    position: relative;
+}
+
+/* Checkmark */
+.checkbox-input:checked + .checkbox-label::after {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 3px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    opacity: 0;
+    transition: var(--checkbox-transition);
+}
+
+/* État coché */
+.checkbox-input:checked + .checkbox-label::before {
+    background: var(--checkbox-primary);
+    border-color: var(--checkbox-primary);
+}
+
+.checkbox-input:checked + .checkbox-label::after {
+    opacity: 1;
+}
+
+/* Label */
+.checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--checkbox-gap-md);
+    padding: var(--checkbox-gap-sm);
+    font-size: var(--checkbox-font-md);
+    line-height: 1.5;
+    color: inherit;
+    position: relative;
+    flex: 1;
+    min-width: 0;
+}
+
+/* Texte du label */
+.checkbox-text {
+    flex: 1;
+    word-break: break-word;
+}
+
+/* Description */
+.checkbox-description {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.875em;
+    line-height: 1.4;
+    color: #6b7280;
+    opacity: 0.8;
+}
+
+/* ========================================
+   STYLES VISUELS - GLASSMORPHISM
+   ======================================== */
+.checkbox-group-glassmorphism {
+    background: var(--checkbox-glass-bg);
+    backdrop-filter: blur(var(--checkbox-backdrop-blur));
+    -webkit-backdrop-filter: blur(var(--checkbox-backdrop-blur));
+    border: 1px solid var(--checkbox-glass-border);
+    border-radius: 16px;
+    padding: var(--checkbox-gap-lg);
+    box-shadow: var(--checkbox-glass-shadow);
+}
+
+/* Checkbox glassmorphism */
+.checkbox-group-glassmorphism .checkbox-wrapper {
+    background: transparent;
+    border-radius: 12px;
+    padding: var(--checkbox-gap-md);
+    transition: var(--checkbox-transition);
+}
+
+.checkbox-group-glassmorphism .checkbox-wrapper:hover {
+    background: var(--checkbox-glass-bg-hover);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
+
+.checkbox-group-glassmorphism .checkbox-input + .checkbox-label::before {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--checkbox-glass-border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.checkbox-group-glassmorphism .checkbox-input:checked + .checkbox-label::before {
+    background: var(--checkbox-primary);
+    border-color: var(--checkbox-primary);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* ========================================
+   STYLES VISUELS - NEUMORPHISM
+   ======================================== */
+.checkbox-group-neumorphism {
+    background: #e0e5ec;
+    border-radius: 20px;
+    padding: var(--checkbox-gap-xl);
+    box-shadow: 9px 9px 16px #a3b1c6, -9px -9px 16px #ffffff;
+}
+
+.checkbox-group-neumorphism .checkbox-wrapper {
+    padding: var(--checkbox-gap-md);
+    border-radius: 15px;
+}
+
+.checkbox-group-neumorphism .checkbox-input + .checkbox-label::before {
+    background: #e0e5ec;
+    border: none;
+    box-shadow: inset 2px 2px 5px #b8b9be, inset -3px -3px 7px #fff;
+}
+
+.checkbox-group-neumorphism .checkbox-input:checked + .checkbox-label::before {
+    background: var(--checkbox-primary);
+    box-shadow: 0 0 0 3px #e0e5ec, 0 0 0 6px var(--checkbox-primary);
+}
+
+/* ========================================
+   STYLES VISUELS - MATERIAL
+   ======================================== */
+.checkbox-group-material {
+    background: #ffffff;
+    border-radius: 4px;
+    padding: var(--checkbox-gap-md);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1), 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.checkbox-group-material .checkbox-wrapper {
+    padding: var(--checkbox-gap-md);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Ripple effect */
+.checkbox-group-material .checkbox-ripple {
+    position: absolute;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    background: rgba(59, 130, 246, 0.3);
+    transform: translate(-50%, -50%) scale(0);
+    animation: material-ripple 0.6s ease-out;
+    pointer-events: none;
+}
+
+/* ========================================
+   STYLES VISUELS - AUTRES
+   ======================================== */
+
+/* Flat */
+.checkbox-group-flat {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: var(--checkbox-gap-md);
+}
+
+/* Minimal */
+.checkbox-group-minimal {
+    padding: var(--checkbox-gap-sm);
+}
+
+.checkbox-group-minimal .checkbox-wrapper {
+    padding: var(--checkbox-gap-sm) 0;
+}
+
+/* Outlined */
+.checkbox-group-outlined {
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: var(--checkbox-gap-lg);
+}
+
+/* Rounded */
+.checkbox-group-rounded .checkbox-input + .checkbox-label::before {
+    border-radius: var(--checkbox-radius-full);
+}
+
+/* Gradient */
+.checkbox-group-gradient .checkbox-input:checked + .checkbox-label::before {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+}
+
+/* ========================================
+   LAYOUTS
+   ======================================== */
+
+/* Vertical */
+.layout-vertical .checkbox-group-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--checkbox-gap-md);
+}
+
+/* Horizontal */
+.layout-horizontal .checkbox-group-wrapper {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--checkbox-gap-lg);
+}
+
+/* Grid */
+.layout-grid .checkbox-group-wrapper {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--checkbox-gap-lg);
+}
+
+/* Masonry */
+.layout-masonry .checkbox-group-wrapper {
+    column-count: 3;
+    column-gap: var(--checkbox-gap-lg);
+}
+
+.layout-masonry .checkbox-wrapper {
+    break-inside: avoid;
+    margin-bottom: var(--checkbox-gap-md);
+}
+
+/* Compact */
+.layout-compact .checkbox-group-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--checkbox-gap-sm);
+}
+
+.layout-compact .checkbox-wrapper {
+    padding: var(--checkbox-gap-xs) var(--checkbox-gap-sm);
+}
+
+/* Cards */
+.layout-cards .checkbox-wrapper {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: var(--checkbox-gap-lg);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.layout-cards .checkbox-wrapper:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+/* List */
+.layout-list .checkbox-wrapper {
+    padding: var(--checkbox-gap-md) 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.layout-list .checkbox-wrapper:last-child {
+    border-bottom: none;
+}
+
+/* Tree */
+.layout-tree .checkbox-subgroup {
+    margin-left: var(--checkbox-gap-xl);
+}
+
+.layout-tree .group-header {
+    display: flex;
+    align-items: center;
+    gap: var(--checkbox-gap-sm);
+    padding: var(--checkbox-gap-sm) 0;
+    cursor: pointer;
+}
+
+.layout-tree .group-chevron {
+    transition: transform 0.3s ease;
+}
+
+.layout-tree .is-collapsed .group-chevron {
+    transform: rotate(-90deg);
+}
+
+/* ========================================
+   COMPOSANTS INTERNES
+   ======================================== */
+
+/* Contrôles */
+.checkbox-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--checkbox-gap-md);
+    margin-bottom: var(--checkbox-gap-lg);
+    align-items: center;
+}
+
+/* Recherche */
+.checkbox-search-wrapper {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+}
+
+.checkbox-search {
+    width: 100%;
+    padding: 8px 12px 8px 36px;
+    font-size: var(--checkbox-font-md);
+    border: 1px solid #d1d5db;
+    border-radius: var(--checkbox-radius-md);
+    background: white;
+    transition: var(--checkbox-transition-fast);
+}
+
+.checkbox-search:focus {
+    outline: none;
+    border-color: var(--checkbox-primary);
+    box-shadow: 0 0 0 3px var(--checkbox-primary-light);
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    pointer-events: none;
+}
+
+/* Boutons de sélection */
+.select-buttons {
+    display: flex;
+    gap: var(--checkbox-gap-sm);
+}
+
+.select-buttons button {
+    padding: 6px 12px;
+    font-size: var(--checkbox-font-sm);
+    border: 1px solid #d1d5db;
+    border-radius: var(--checkbox-radius-md);
+    background: white;
+    color: #374151;
+    cursor: pointer;
+    transition: var(--checkbox-transition-fast);
+}
+
+.select-buttons button:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.select-buttons button:active {
+    transform: scale(0.95);
+}
+
+/* Compteur */
+.checkbox-counter {
+    padding: 6px 12px;
+    font-size: var(--checkbox-font-sm);
+    background: var(--checkbox-primary-light);
+    color: var(--checkbox-primary);
+    border-radius: var(--checkbox-radius-full);
+    font-weight: 500;
+}
+
+/* Groupes */
+.checkbox-subgroup {
+    margin-top: var(--checkbox-gap-lg);
+}
+
+.group-header {
+    display: flex;
+    align-items: center;
+    gap: var(--checkbox-gap-sm);
+    padding: var(--checkbox-gap-sm) 0;
+    font-weight: 600;
+    color: #374151;
+}
+
+.group-chevron {
+    width: 20px;
+    height: 20px;
+    color: #6b7280;
+}
+
+.group-title {
+    flex: 1;
+}
+
+.group-count {
+    font-size: var(--checkbox-font-sm);
+    font-weight: normal;
+    color: #6b7280;
+}
+
+.group-content {
+    transition: var(--checkbox-transition);
+}
+
+/* Badges */
+.checkbox-badge {
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: var(--checkbox-radius-full);
+    background: #e5e7eb;
+    color: #374151;
+    margin-left: auto;
+}
+
+/* Images */
+.checkbox-image {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: var(--checkbox-radius-md);
+}
+
+/* Icônes */
+.checkbox-icon {
+    width: 20px;
+    height: 20px;
+    color: #6b7280;
+}
+
+/* Message vide */
+.checkbox-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--checkbox-gap-xl) * 2;
+    text-align: center;
+    color: #6b7280;
+}
+
+.checkbox-empty svg {
+    margin-bottom: var(--checkbox-gap-md);
+    opacity: 0.3;
+}
+
+.checkbox-empty p {
+    margin: 0;
+    font-size: var(--checkbox-font-md);
+}
+
+/* Zone d'erreur */
+.checkbox-error-zone {
+    margin-top: var(--checkbox-gap-sm);
+    padding: 8px 12px;
+    font-size: var(--checkbox-font-sm);
+    color: #ef4444;
+    background: #fee2e2;
+    border-radius: var(--checkbox-radius-md);
+    display: none;
+}
+
+.checkbox-group.is-invalid .checkbox-error-zone {
+    display: block;
+}
+
+/* ========================================
+   ÉTATS ET INTERACTIONS
+   ======================================== */
+
+/* Focus */
+.checkbox-input:focus + .checkbox-label::before {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--checkbox-primary-light);
+}
+
+.checkbox-wrapper.is-focused {
+    background: var(--checkbox-primary-light);
+}
+
+/* Hover */
+.checkbox-wrapper:hover .checkbox-input:not(:checked):not(:disabled) + .checkbox-label::before {
+    border-color: var(--checkbox-primary);
+}
+
+/* Disabled */
+.checkbox-wrapper.is-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.checkbox-wrapper.is-disabled .checkbox-label {
+    cursor: not-allowed;
+}
+
+.checkbox-input:disabled + .checkbox-label::before {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+}
+
+/* Indeterminate */
+.checkbox-input:indeterminate + .checkbox-label::before {
+    background: var(--checkbox-primary);
+    border-color: var(--checkbox-primary);
+}
+
+.checkbox-input:indeterminate + .checkbox-label::after {
+    content: '';
+    left: 5px;
+    top: 8px;
+    width: 10px;
+    height: 2px;
+    border: none;
+    background: white;
+    transform: none;
+    opacity: 1;
+}
+
+/* Invalid */
+.checkbox-group.is-invalid .checkbox-wrapper {
+    border-color: #ef4444;
+}
+
+.checkbox-group.is-invalid .checkbox-input + .checkbox-label::before {
+    border-color: #ef4444;
+}
+
+/* ========================================
+   TAILLES
+   ======================================== */
+
+/* XS */
+.checkbox-group[data-size="xs"] {
+    --checkbox-size-md: var(--checkbox-size-xs);
+    --checkbox-font-md: var(--checkbox-font-xs);
+    --checkbox-gap-md: var(--checkbox-gap-xs);
+}
+
+/* SM */
+.checkbox-group[data-size="sm"] {
+    --checkbox-size-md: var(--checkbox-size-sm);
+    --checkbox-font-md: var(--checkbox-font-sm);
+    --checkbox-gap-md: var(--checkbox-gap-sm);
+}
+
+/* LG */
+.checkbox-group[data-size="lg"] {
+    --checkbox-size-md: var(--checkbox-size-lg);
+    --checkbox-font-md: var(--checkbox-font-lg);
+    --checkbox-gap-md: var(--checkbox-gap-lg);
+}
+
+/* XL */
+.checkbox-group[data-size="xl"] {
+    --checkbox-size-md: var(--checkbox-size-xl);
+    --checkbox-font-md: var(--checkbox-font-xl);
+    --checkbox-gap-md: var(--checkbox-gap-xl);
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+/* Bounce */
+@keyframes checkbox-bounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+/* Ripple Material */
+@keyframes material-ripple {
+    to {
+        transform: translate(-50%, -50%) scale(4);
+        opacity: 0;
+    }
+}
+
+/* Fade in */
+@keyframes checkbox-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Particules */
+.checkbox-particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--checkbox-primary);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: particle-fly 0.8s ease-out forwards;
+}
+
+@keyframes particle-fly {
+    to {
+        transform: translate(var(--dx), var(--dy));
+        opacity: 0;
+    }
+}
+
+/* Classes d'animation */
+.animate-subtle .checkbox-wrapper {
+    animation: checkbox-fade-in 0.2s ease;
+}
+
+.animate-smooth .checkbox-wrapper {
+    animation: checkbox-fade-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-bounce .checkbox-input:checked + .checkbox-label::before {
+    animation: checkbox-bounce 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 768px) {
+    /* Ajuster le layout grid */
+    .layout-grid .checkbox-group-wrapper {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+    
+    /* Masonry en 2 colonnes */
+    .layout-masonry .checkbox-group-wrapper {
+        column-count: 2;
+    }
+    
+    /* Contrôles empilés */
+    .checkbox-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .select-buttons {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Une seule colonne */
+    .layout-grid .checkbox-group-wrapper,
+    .layout-horizontal .checkbox-group-wrapper {
+        flex-direction: column;
+    }
+    
+    .layout-masonry .checkbox-group-wrapper {
+        column-count: 1;
+    }
+    
+    /* Réduire le padding */
+    .checkbox-group-glassmorphism {
+        padding: var(--checkbox-gap-md);
+    }
+    
+    /* Boutons full width */
+    .select-buttons {
+        flex-direction: column;
+    }
+    
+    .select-buttons button {
+        width: 100%;
+    }
+}
+
+/* ========================================
+   SUPPORT TACTILE
+   ======================================== */
+@media (hover: none) {
+    .checkbox-wrapper {
+        /* Zones de tap plus grandes */
+        min-height: 44px;
+    }
+    
+    .checkbox-input + .checkbox-label::before {
+        /* Checkboxes plus grandes sur mobile */
+        width: 24px;
+        height: 24px;
+    }
+}
+
+/* ========================================
+   ACCESSIBILITÉ
+   ======================================== */
+
+/* Focus visible */
+.checkbox-input:focus-visible + .checkbox-label::before {
+    outline: 2px solid var(--checkbox-primary);
+    outline-offset: 2px;
+}
+
+/* Haut contraste */
+@media (prefers-contrast: high) {
+    .checkbox-input + .checkbox-label::before {
+        border-width: 3px;
+    }
+    
+    .checkbox-input:checked + .checkbox-label::after {
+        border-width: 3px;
+    }
+}
+
+/* Mouvement réduit */
+@media (prefers-reduced-motion: reduce) {
+    .checkbox-wrapper,
+    .checkbox-input + .checkbox-label::before,
+    .checkbox-input + .checkbox-label::after {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* ========================================
+   SUPPORT NAVIGATEURS
+   ======================================== */
+
+/* Fallback pour navigateurs sans backdrop-filter */
+@supports not (backdrop-filter: blur(20px)) {
+    .checkbox-group-glassmorphism {
+        background: rgba(255, 255, 255, 0.95);
+    }
+    
+    .dark .checkbox-group-glassmorphism {
+        background: rgba(30, 30, 30, 0.95);
+    }
+}
+
+/* ========================================
+   MODE SOMBRE SPÉCIFIQUE
+   ======================================== */
+.dark .checkbox-group,
+[data-theme="dark"] .checkbox-group {
+    color: #e5e7eb;
+}
+
+.dark .checkbox-search,
+[data-theme="dark"] .checkbox-search {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #e5e7eb;
+}
+
+.dark .select-buttons button,
+[data-theme="dark"] .select-buttons button {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #e5e7eb;
+}
+
+.dark .checkbox-description,
+[data-theme="dark"] .checkbox-description {
+    color: #9ca3af;
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [DATE] - Alignement des checkboxes avec texte long
+   Solution: Utilisation de flex avec align-items: flex-start
+   
+   [DATE] - Performance avec beaucoup de checkboxes
+   Cause: Trop d'animations simultanées
+   Résolution: Stagger des animations et virtualisation
+   
+   [DATE] - Checkmark mal positionné
+   Solution: Position absolue avec coordonnées fixes
+   
+   NOTES POUR REPRISES FUTURES:
+   - Les animations riches peuvent impacter les performances
+   - La virtualisation nécessite des ajustements de hauteur
+   - Tester sur différents navigateurs pour backdrop-filter
+   ======================================== */

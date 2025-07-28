@@ -1,0 +1,803 @@
+/* ========================================
+   TIME-PICKER.CSS - Styles pour le composant Time Picker
+   Chemin: src/css/shared/ui/time-picker.css
+   
+   DESCRIPTION:
+   Styles complets pour le sélecteur d'heure avec effet glassmorphism.
+   Supporte tous les styles, tailles, animations et thèmes.
+   
+   STRUCTURE:
+   1. Variables et configuration (lignes 20-100)
+   2. Conteneur et structure (lignes 102-250)
+   3. Styles glassmorphism (lignes 252-400)
+   4. Autres styles (lignes 402-600)
+   5. Dropdown et colonnes (lignes 602-900)
+   6. Animations (lignes 902-1100)
+   7. Responsive et thèmes (lignes 1102-1300)
+   
+   DÉPENDANCES:
+   - time-picker.component.js (utilise toutes ces classes)
+   ======================================== */
+
+/* ========================================
+   VARIABLES ET CONFIGURATION
+   ======================================== */
+:root {
+    /* Couleurs glassmorphism */
+    --tp-glass-bg: rgba(255, 255, 255, 0.08);
+    --tp-glass-bg-hover: rgba(255, 255, 255, 0.12);
+    --tp-glass-border: rgba(255, 255, 255, 0.15);
+    --tp-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    --tp-backdrop-blur: 20px;
+    
+    /* Couleurs système */
+    --tp-primary: #3b82f6;
+    --tp-primary-hover: #2563eb;
+    --tp-text: #1f2937;
+    --tp-text-secondary: #6b7280;
+    --tp-border: #e5e7eb;
+    --tp-bg: #ffffff;
+    --tp-bg-hover: #f9fafb;
+    
+    /* Espacement */
+    --tp-spacing-xs: 4px;
+    --tp-spacing-sm: 8px;
+    --tp-spacing-md: 12px;
+    --tp-spacing-lg: 16px;
+    --tp-spacing-xl: 20px;
+    
+    /* Dimensions */
+    --tp-input-height-sm: 36px;
+    --tp-input-height-md: 44px;
+    --tp-input-height-lg: 52px;
+    --tp-dropdown-width: 320px;
+    
+    /* Transitions */
+    --tp-transition-speed: 0.3s;
+    --tp-transition-smooth: 0.4s;
+    --tp-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Z-index */
+    --tp-z-dropdown: 1000;
+}
+
+/* Mode sombre */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --tp-glass-bg: rgba(255, 255, 255, 0.05);
+        --tp-glass-bg-hover: rgba(255, 255, 255, 0.08);
+        --tp-glass-border: rgba(255, 255, 255, 0.1);
+        --tp-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        --tp-text: #f3f4f6;
+        --tp-text-secondary: #9ca3af;
+        --tp-border: #374151;
+        --tp-bg: #1f2937;
+        --tp-bg-hover: #111827;
+    }
+}
+
+/* ========================================
+   CONTENEUR ET STRUCTURE DE BASE
+   ======================================== */
+.time-picker-container {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Wrapper de l'input */
+.time-picker-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+/* Input de base */
+.time-picker-input {
+    width: 100%;
+    padding: 0 var(--tp-spacing-xl) 0 var(--tp-spacing-md);
+    font-size: inherit;
+    font-family: inherit;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--tp-text);
+    transition: all var(--tp-transition-speed) var(--tp-transition-easing);
+}
+
+.time-picker-input::placeholder {
+    color: var(--tp-text-secondary);
+    opacity: 0.6;
+}
+
+/* Icône */
+.time-picker-icon {
+    position: absolute;
+    right: var(--tp-spacing-sm);
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--tp-text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--tp-transition-speed) var(--tp-transition-easing);
+}
+
+.time-picker-icon:hover:not(:disabled) {
+    color: var(--tp-primary);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.time-picker-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* ========================================
+   STYLE GLASSMORPHISM
+   ======================================== */
+.time-picker-container.glassmorphism .time-picker-input-wrapper {
+    background: var(--tp-glass-bg);
+    backdrop-filter: blur(var(--tp-backdrop-blur)) brightness(1.1);
+    -webkit-backdrop-filter: blur(var(--tp-backdrop-blur)) brightness(1.1);
+    border: 1px solid var(--tp-glass-border);
+    border-radius: 16px;
+    box-shadow: var(--tp-glass-shadow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Effet de brillance glassmorphism */
+.time-picker-container.glassmorphism .time-picker-input-wrapper::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0) 40%,
+        rgba(255, 255, 255, 0) 60%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    pointer-events: none;
+}
+
+.time-picker-container.glassmorphism .time-picker-input-wrapper:hover {
+    background: var(--tp-glass-bg-hover);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: var(--tp-glass-shadow),
+                0 0 20px rgba(59, 130, 246, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.time-picker-container.glassmorphism .time-picker-input-wrapper:focus-within {
+    background: var(--tp-glass-bg-hover);
+    border-color: var(--tp-primary);
+    box-shadow: var(--tp-glass-shadow),
+                0 0 0 3px rgba(59, 130, 246, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Icône glassmorphism */
+.time-picker-container.glassmorphism .time-picker-icon {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    width: 36px;
+    height: 36px;
+}
+
+.time-picker-container.glassmorphism .time-picker-icon:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ========================================
+   STYLE NEUMORPHISM
+   ======================================== */
+.time-picker-container.neumorphism .time-picker-input-wrapper {
+    background: #e0e5ec;
+    border-radius: 20px;
+    box-shadow: 9px 9px 16px #a3b1c6, -9px -9px 16px #ffffff;
+    border: none;
+}
+
+.time-picker-container.neumorphism .time-picker-input-wrapper:focus-within {
+    box-shadow: inset 4px 4px 8px #a3b1c6, inset -4px -4px 8px #ffffff;
+}
+
+/* ========================================
+   STYLE FLAT
+   ======================================== */
+.time-picker-container.flat .time-picker-input-wrapper {
+    background: var(--tp-bg);
+    border: 1px solid var(--tp-border);
+    border-radius: 8px;
+}
+
+.time-picker-container.flat .time-picker-input-wrapper:hover {
+    border-color: var(--tp-primary);
+}
+
+.time-picker-container.flat .time-picker-input-wrapper:focus-within {
+    border-color: var(--tp-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* ========================================
+   STYLE MINIMAL
+   ======================================== */
+.time-picker-container.minimal .time-picker-input-wrapper {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid var(--tp-border);
+    border-radius: 0;
+}
+
+.time-picker-container.minimal .time-picker-input-wrapper:hover {
+    border-bottom-color: var(--tp-text-secondary);
+}
+
+.time-picker-container.minimal .time-picker-input-wrapper:focus-within {
+    border-bottom-color: var(--tp-primary);
+}
+
+/* ========================================
+   STYLE MATERIAL
+   ======================================== */
+.time-picker-container.material .time-picker-input-wrapper {
+    background: var(--tp-bg);
+    border-radius: 4px;
+    box-shadow: 0 3px 5px -1px rgba(0,0,0,.2), 
+                0 6px 10px 0 rgba(0,0,0,.14),
+                0 1px 18px 0 rgba(0,0,0,.12);
+    border: none;
+}
+
+.time-picker-container.material .time-picker-input-wrapper:hover {
+    box-shadow: 0 5px 5px -3px rgba(0,0,0,.2),
+                0 8px 10px 1px rgba(0,0,0,.14),
+                0 3px 14px 2px rgba(0,0,0,.12);
+}
+
+/* ========================================
+   DROPDOWN
+   ======================================== */
+.time-picker-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    min-width: var(--tp-dropdown-width);
+    z-index: var(--tp-z-dropdown);
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+    pointer-events: none;
+    transition: all var(--tp-transition-speed) var(--tp-transition-easing);
+}
+
+.time-picker-dropdown.open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+/* Dropdown glassmorphism */
+.glassmorphism .time-picker-dropdown {
+    background: var(--tp-glass-bg);
+    backdrop-filter: blur(var(--tp-backdrop-blur)) brightness(1.1);
+    -webkit-backdrop-filter: blur(var(--tp-backdrop-blur)) brightness(1.1);
+    border: 1px solid var(--tp-glass-border);
+    border-radius: 16px;
+    box-shadow: var(--tp-glass-shadow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+}
+
+/* Header */
+.time-picker-header {
+    padding: var(--tp-spacing-lg);
+    border-bottom: 1px solid var(--tp-glass-border);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.time-picker-display {
+    font-size: 32px;
+    font-weight: 300;
+    text-align: center;
+    color: var(--tp-text);
+    letter-spacing: 2px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ========================================
+   SÉLECTEURS ET COLONNES
+   ======================================== */
+.time-picker-selectors {
+    display: flex;
+    justify-content: center;
+    gap: var(--tp-spacing-lg);
+    padding: var(--tp-spacing-lg);
+}
+
+.time-picker-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--tp-spacing-sm);
+    min-width: 60px;
+}
+
+.column-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--tp-text-secondary);
+    letter-spacing: 0.5px;
+    margin-bottom: var(--tp-spacing-xs);
+}
+
+/* Boutons des colonnes */
+.column-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: var(--tp-text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--tp-transition-speed) var(--tp-transition-easing);
+}
+
+.column-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.column-btn:active {
+    transform: scale(0.95);
+}
+
+.column-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Valeur de colonne */
+.column-value {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--tp-text);
+    min-height: 40px;
+    min-width: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: var(--tp-spacing-xs) var(--tp-spacing-sm);
+    border-radius: 8px;
+    transition: all var(--tp-transition-speed) var(--tp-transition-easing);
+    font-variant-numeric: tabular-nums;
+    position: relative;
+}
+
+.column-value:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.column-value.value-changed {
+    animation: valueChange 0.3s ease-out;
+}
+
+/* Input d'édition directe */
+.column-input {
+    position: absolute;
+    font-size: 28px;
+    font-weight: 600;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 2px solid var(--tp-primary);
+    border-radius: 8px;
+    color: var(--tp-text);
+    padding: var(--tp-spacing-xs);
+    width: 60px;
+    outline: none;
+}
+
+/* Colonne période (AM/PM) */
+.period-column .column-value {
+    font-size: 20px;
+    min-width: 60px;
+}
+
+/* ========================================
+   ACTIONS
+   ======================================== */
+.time-picker-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--tp-spacing-sm);
+    padding: var(--tp-spacing-md) var(--tp-spacing-lg);
+    border-top: 1px solid var(--tp-glass-border);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.time-picker-btn {
+    padding: var(--tp-spacing-sm) var(--tp-spacing-lg);
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all var(--tp-transition-speed) var(--tp-transition-easing);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--tp-text);
+}
+
+.time-picker-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.time-picker-btn:active {
+    transform: translateY(0);
+}
+
+.time-picker-btn.primary {
+    background: var(--tp-primary);
+    color: white;
+    border: none;
+}
+
+.time-picker-btn.primary:hover:not(:disabled) {
+    background: var(--tp-primary-hover);
+}
+
+.clear-btn {
+    width: 36px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.clear-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* ========================================
+   TAILLES
+   ======================================== */
+
+/* Small */
+.time-picker-container.small .time-picker-input-wrapper {
+    height: var(--tp-input-height-sm);
+    font-size: 14px;
+}
+
+.time-picker-container.small .time-picker-input {
+    padding: 0 var(--tp-spacing-lg) 0 var(--tp-spacing-sm);
+}
+
+.time-picker-container.small .time-picker-icon {
+    width: 28px;
+    height: 28px;
+}
+
+.time-picker-container.small .time-picker-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.time-picker-container.small .time-picker-display {
+    font-size: 24px;
+}
+
+.time-picker-container.small .column-value {
+    font-size: 22px;
+    min-height: 32px;
+}
+
+/* Large */
+.time-picker-container.large .time-picker-input-wrapper {
+    height: var(--tp-input-height-lg);
+    font-size: 18px;
+}
+
+.time-picker-container.large .time-picker-input {
+    padding: 0 var(--tp-spacing-xl) 0 var(--tp-spacing-lg);
+}
+
+.time-picker-container.large .time-picker-icon {
+    width: 40px;
+    height: 40px;
+}
+
+.time-picker-container.large .time-picker-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.time-picker-container.large .time-picker-display {
+    font-size: 40px;
+}
+
+.time-picker-container.large .column-value {
+    font-size: 36px;
+    min-height: 48px;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+/* Animation d'ouverture */
+@keyframes dropdownOpen {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Animation de changement de valeur */
+@keyframes valueChange {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.2);
+        color: var(--tp-primary);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Animation de rotation pour l'icône */
+@keyframes iconRotate {
+    from {
+        transform: translateY(-50%) rotate(0deg);
+    }
+    to {
+        transform: translateY(-50%) rotate(180deg);
+    }
+}
+
+/* Classes d'animation */
+.time-picker-dropdown.subtle {
+    transition-duration: 0.3s;
+}
+
+.time-picker-dropdown.smooth {
+    transition-duration: 0.4s;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.time-picker-dropdown.rich {
+    transition-duration: 0.6s;
+    transition-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.time-picker-dropdown.opening {
+    animation: dropdownOpen var(--tp-transition-smooth) var(--tp-transition-easing);
+}
+
+/* Animation de fermeture */
+.time-picker-dropdown.closing {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+}
+
+/* ========================================
+   ÉTATS
+   ======================================== */
+
+/* Désactivé */
+.time-picker-container.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.time-picker-container.disabled .time-picker-input-wrapper {
+    cursor: not-allowed;
+}
+
+/* Readonly */
+.time-picker-container.readonly .time-picker-input {
+    cursor: default;
+}
+
+/* Erreur */
+.time-picker-container.error .time-picker-input-wrapper {
+    border-color: #ef4444;
+}
+
+.time-picker-container.error.glassmorphism .time-picker-input-wrapper {
+    border-color: #ef4444;
+    box-shadow: var(--tp-glass-shadow),
+                0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 640px) {
+    .time-picker-dropdown {
+        min-width: unset;
+        left: -16px;
+        right: -16px;
+        border-radius: 0;
+    }
+    
+    .glassmorphism .time-picker-dropdown {
+        border-radius: 16px 16px 0 0;
+    }
+    
+    .time-picker-selectors {
+        gap: var(--tp-spacing-md);
+    }
+    
+    .time-picker-display {
+        font-size: 28px;
+    }
+    
+    .column-value {
+        font-size: 24px;
+    }
+}
+
+/* Support tactile */
+@media (hover: none) {
+    .column-btn:active {
+        background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .time-picker-btn:active {
+        background: rgba(255, 255, 255, 0.2);
+    }
+}
+
+/* ========================================
+   THÈME SOMBRE
+   ======================================== */
+.dark .time-picker-container,
+[data-theme="dark"] .time-picker-container {
+    --tp-glass-bg: rgba(255, 255, 255, 0.05);
+    --tp-glass-bg-hover: rgba(255, 255, 255, 0.08);
+    --tp-glass-border: rgba(255, 255, 255, 0.1);
+    --tp-text: #f3f4f6;
+    --tp-text-secondary: #9ca3af;
+    --tp-bg: #1f2937;
+    --tp-bg-hover: #111827;
+    --tp-border: #374151;
+}
+
+/* ========================================
+   ACCESSIBILITÉ
+   ======================================== */
+
+/* Focus visible */
+.time-picker-icon:focus-visible,
+.column-btn:focus-visible,
+.time-picker-btn:focus-visible {
+    outline: 2px solid var(--tp-primary);
+    outline-offset: 2px;
+}
+
+.column-value:focus-visible {
+    outline: 2px solid var(--tp-primary);
+    outline-offset: -2px;
+}
+
+/* Préférences de mouvement réduit */
+@media (prefers-reduced-motion: reduce) {
+    .time-picker-dropdown,
+    .time-picker-dropdown *,
+    .time-picker-icon,
+    .column-btn,
+    .time-picker-btn {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Mode contraste élevé */
+@media (prefers-contrast: high) {
+    .time-picker-container .time-picker-input-wrapper {
+        border-width: 2px;
+    }
+    
+    .glassmorphism .time-picker-dropdown {
+        background: rgba(255, 255, 255, 0.95);
+        color: #000;
+    }
+    
+    .dark .glassmorphism .time-picker-dropdown {
+        background: rgba(0, 0, 0, 0.95);
+        color: #fff;
+    }
+}
+
+/* ========================================
+   SUPPORT NAVIGATEURS
+   ======================================== */
+
+/* Fallback pour navigateurs sans backdrop-filter */
+@supports not (backdrop-filter: blur(20px)) {
+    .glassmorphism .time-picker-input-wrapper,
+    .glassmorphism .time-picker-dropdown {
+        background: rgba(255, 255, 255, 0.95);
+    }
+    
+    .dark .glassmorphism .time-picker-input-wrapper,
+    .dark .glassmorphism .time-picker-dropdown {
+        background: rgba(30, 30, 30, 0.95);
+    }
+}
+
+/* ========================================
+   UTILITAIRES
+   ======================================== */
+
+/* Inline */
+.time-picker-container.inline .time-picker-dropdown {
+    position: static;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    margin-top: var(--tp-spacing-md);
+    box-shadow: none;
+}
+
+/* Position au-dessus */
+.time-picker-container.dropup .time-picker-dropdown {
+    top: auto;
+    bottom: calc(100% + 8px);
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [2024-12] - Effet glassmorphism sur Safari
+   Solution: Utiliser -webkit-backdrop-filter
+   
+   [2024-12] - Dropdown qui dépasse l'écran
+   Cause: Position fixe sur mobile
+   Résolution: Adapter la largeur en responsive
+   
+   [2024-12] - Animation saccadée
+   Solution: Utiliser transform au lieu de top/left
+   
+   NOTES POUR REPRISES FUTURES:
+   - Le backdrop-filter nécessite un fallback
+   - Les animations sont désactivables
+   - Le mode sombre est automatique
+   - Support complet du clavier
+   ======================================== */

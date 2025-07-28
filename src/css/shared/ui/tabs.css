@@ -1,0 +1,1002 @@
+/* ========================================
+   TABS.CSS - Styles pour le composant Tabs
+   Chemin: src/css/shared/ui/tabs.css
+   
+   DESCRIPTION:
+   Styles complets pour le système d'onglets avec effet glassmorphism.
+   Supporte navigation horizontale/verticale, animations, drag & drop.
+   
+   STRUCTURE:
+   1. Variables et configuration (lignes 20-120)
+   2. Conteneur principal (lignes 122-250)
+   3. Navigation et liste (lignes 252-500)
+   4. Onglets individuels (lignes 502-800)
+   5. Indicateurs (lignes 802-950)
+   6. Contenu des panneaux (lignes 952-1100)
+   7. Animations (lignes 1102-1300)
+   8. Layouts spécifiques (lignes 1302-1600)
+   9. Responsive (lignes 1602-1800)
+   
+   DÉPENDANCES:
+   - tabs.component.js (utilise toutes ces classes)
+   - glassmorphism.css (thème principal)
+   ======================================== */
+
+/* ========================================
+   VARIABLES ET CONFIGURATION
+   ======================================== */
+:root {
+    /* Couleurs glassmorphism pour tabs */
+    --tabs-glass-bg: rgba(255, 255, 255, 0.08);
+    --tabs-glass-bg-hover: rgba(255, 255, 255, 0.12);
+    --tabs-glass-border: rgba(255, 255, 255, 0.15);
+    --tabs-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    --tabs-backdrop-blur: 20px;
+    
+    /* Couleurs d'état */
+    --tabs-active-color: #3b82f6;
+    --tabs-inactive-color: rgba(255, 255, 255, 0.6);
+    --tabs-disabled-color: rgba(255, 255, 255, 0.3);
+    --tabs-hover-color: rgba(255, 255, 255, 0.8);
+    
+    /* Navigation */
+    --tabs-nav-height: 48px;
+    --tabs-nav-padding: 4px;
+    --tabs-border-radius: 12px;
+    --tabs-item-radius: 8px;
+    
+    /* Indicateur */
+    --tabs-indicator-height: 3px;
+    --tabs-indicator-color: var(--tabs-active-color);
+    --tabs-indicator-radius: 2px;
+    
+    /* Espacement */
+    --tabs-item-padding-x: 20px;
+    --tabs-item-padding-y: 12px;
+    --tabs-item-gap: 4px;
+    --tabs-icon-gap: 8px;
+    
+    /* Transitions */
+    --tabs-transition-speed: 0.3s;
+    --tabs-transition-smooth: 0.4s;
+    --tabs-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Badges */
+    --tabs-badge-size: 20px;
+    --tabs-badge-bg: rgba(239, 68, 68, 0.9);
+    --tabs-badge-color: white;
+    
+    /* Z-index */
+    --tabs-z-index-nav: 10;
+    --tabs-z-index-indicator: 5;
+    --tabs-z-index-content: 1;
+}
+
+/* Mode sombre */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --tabs-glass-bg: rgba(255, 255, 255, 0.05);
+        --tabs-glass-bg-hover: rgba(255, 255, 255, 0.08);
+        --tabs-glass-border: rgba(255, 255, 255, 0.1);
+        --tabs-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+}
+
+/* ========================================
+   CONTENEUR PRINCIPAL
+   ======================================== */
+.tabs {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Style Glassmorphism (par défaut) */
+.tabs.glassmorphism {
+    background: var(--tabs-glass-bg);
+    backdrop-filter: blur(var(--tabs-backdrop-blur)) brightness(1.1);
+    -webkit-backdrop-filter: blur(var(--tabs-backdrop-blur)) brightness(1.1);
+    border: 1px solid var(--tabs-glass-border);
+    border-radius: 16px;
+    box-shadow: var(--tabs-glass-shadow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* Effet de brillance glassmorphism */
+.tabs.glassmorphism::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--tabs-nav-height);
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.15) 0%,
+        rgba(255, 255, 255, 0) 40%,
+        rgba(255, 255, 255, 0) 60%,
+        rgba(255, 255, 255, 0.1) 100%
+    );
+    pointer-events: none;
+    z-index: var(--tabs-z-index-nav);
+}
+
+/* Style Neumorphism */
+.tabs.neumorphism {
+    background: #e0e5ec;
+    border-radius: 20px;
+    box-shadow: 9px 9px 16px #a3b1c6, -9px -9px 16px #ffffff;
+}
+
+/* Style Flat */
+.tabs.flat {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+}
+
+/* Style Minimal */
+.tabs.minimal {
+    background: transparent;
+}
+
+.tabs.minimal .tabs-nav {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+/* Style Material */
+.tabs.material {
+    background: #ffffff;
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+
+/* Style Underline */
+.tabs.underline {
+    background: transparent;
+}
+
+.tabs.underline .tabs-nav {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+/* Style Pills */
+.tabs.pills {
+    background: transparent;
+}
+
+.tabs.pills .tabs-nav {
+    padding: 8px;
+    gap: 8px;
+}
+
+/* Style Segmented */
+.tabs.segmented .tabs-nav {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 4px;
+    border-radius: 12px;
+}
+
+/* Style Gradient */
+.tabs.gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+}
+
+.tabs.gradient .tabs-nav {
+    color: white;
+}
+
+/* ========================================
+   NAVIGATION ET LISTE
+   ======================================== */
+.tabs-nav {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: var(--tabs-nav-height);
+    z-index: var(--tabs-z-index-nav);
+}
+
+.tabs-list {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1;
+    margin: 0;
+    padding: var(--tabs-nav-padding);
+    list-style: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.tabs-list::-webkit-scrollbar {
+    display: none;
+}
+
+/* Indicateur */
+.tabs-indicator {
+    position: absolute;
+    bottom: 0;
+    height: var(--tabs-indicator-height);
+    background: var(--tabs-indicator-color);
+    border-radius: var(--tabs-indicator-radius);
+    transition: all var(--tabs-transition-smooth) var(--tabs-transition-easing);
+    z-index: var(--tabs-z-index-indicator);
+}
+
+/* Style underline pour l'indicateur */
+.tabs.underline .tabs-indicator {
+    bottom: 0;
+}
+
+/* Style background pour l'indicateur */
+.tabs-indicator.background {
+    height: calc(100% - 2 * var(--tabs-nav-padding));
+    top: var(--tabs-nav-padding);
+    bottom: var(--tabs-nav-padding);
+    background: var(--tabs-glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--tabs-glass-border);
+    border-radius: var(--tabs-item-radius);
+}
+
+/* Contrôles de défilement */
+.tabs-scroll {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--tabs-glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--tabs-glass-border);
+    border-radius: 8px;
+    cursor: pointer;
+    opacity: 0;
+    transition: all var(--tabs-transition-speed) var(--tabs-transition-easing);
+    z-index: calc(var(--tabs-z-index-nav) + 1);
+}
+
+.tabs-scroll:hover {
+    background: var(--tabs-glass-bg-hover);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.tabs-scroll svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+}
+
+.tabs-scroll-left {
+    left: 8px;
+}
+
+.tabs-scroll-right {
+    right: 8px;
+}
+
+/* Afficher les contrôles quand nécessaire */
+.tabs-nav.has-scroll .tabs-scroll {
+    opacity: 0.6;
+}
+
+.tabs-nav.has-scroll .tabs-scroll:hover {
+    opacity: 1;
+}
+
+.tabs-nav.can-scroll-left .tabs-scroll-left {
+    opacity: 1;
+}
+
+.tabs-nav.can-scroll-right .tabs-scroll-right {
+    opacity: 1;
+}
+
+/* Bouton d'ajout */
+.tabs-add {
+    margin-left: auto;
+    margin-right: 8px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--tabs-glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--tabs-glass-border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all var(--tabs-transition-speed) var(--tabs-transition-easing);
+}
+
+.tabs-add:hover {
+    background: var(--tabs-glass-bg-hover);
+    transform: scale(1.1);
+}
+
+.tabs-add svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Menu overflow */
+.tabs-menu {
+    margin-left: 8px;
+    margin-right: 8px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--tabs-glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--tabs-glass-border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all var(--tabs-transition-speed) var(--tabs-transition-easing);
+}
+
+/* ========================================
+   ONGLETS INDIVIDUELS
+   ======================================== */
+.tabs-item {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.tabs-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--tabs-icon-gap);
+    padding: var(--tabs-item-padding-y) var(--tabs-item-padding-x);
+    color: var(--tabs-inactive-color);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all var(--tabs-transition-speed) var(--tabs-transition-easing);
+    user-select: none;
+    border-radius: var(--tabs-item-radius);
+}
+
+/* Hover */
+.tabs-link:hover:not(.disabled) {
+    color: var(--tabs-hover-color);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Active */
+.tabs-link.active {
+    color: var(--tabs-active-color);
+}
+
+/* Disabled */
+.tabs-link.disabled {
+    color: var(--tabs-disabled-color);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* Focus visible */
+.tabs-link:focus-visible {
+    outline: 2px solid var(--tabs-active-color);
+    outline-offset: 2px;
+}
+
+/* Icône */
+.tab-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.tab-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* Label */
+.tab-label {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Badge */
+.tab-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--tabs-badge-size);
+    height: var(--tabs-badge-size);
+    padding: 0 6px;
+    background: var(--tabs-badge-bg);
+    color: var(--tabs-badge-color);
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 10px;
+    margin-left: 8px;
+}
+
+/* Bouton de fermeture */
+.tab-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    margin-left: 8px;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0;
+    transition: all var(--tabs-transition-speed) var(--tabs-transition-easing);
+}
+
+.tabs-link:hover .tab-close,
+.tabs-link.active .tab-close {
+    opacity: 0.6;
+}
+
+.tab-close:hover {
+    opacity: 1;
+    background: rgba(239, 68, 68, 0.2);
+}
+
+.tab-close svg {
+    width: 12px;
+    height: 12px;
+}
+
+/* Dragging */
+.tabs-item.dragging {
+    opacity: 0.5;
+}
+
+.tabs-item.dragging .tabs-link {
+    cursor: grabbing;
+}
+
+/* ========================================
+   STYLES SPÉCIFIQUES PAR TYPE
+   ======================================== */
+
+/* Style Pills */
+.tabs.pills .tabs-link {
+    background: transparent;
+    border-radius: 20px;
+    padding: 8px 16px;
+}
+
+.tabs.pills .tabs-link:hover:not(.disabled) {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.tabs.pills .tabs-link.active {
+    background: var(--tabs-active-color);
+    color: white;
+}
+
+.tabs.pills .tabs-indicator {
+    display: none;
+}
+
+/* Style Segmented */
+.tabs.segmented .tabs-link {
+    background: transparent;
+}
+
+.tabs.segmented .tabs-link.active {
+    background: var(--tabs-glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--tabs-glass-border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tabs.segmented .tabs-indicator {
+    display: none;
+}
+
+/* Style Minimal */
+.tabs.minimal .tabs-link {
+    border-radius: 0;
+    border-bottom: 2px solid transparent;
+}
+
+.tabs.minimal .tabs-link.active {
+    border-bottom-color: var(--tabs-active-color);
+}
+
+.tabs.minimal .tabs-indicator {
+    display: none;
+}
+
+/* ========================================
+   CONTENU DES PANNEAUX
+   ======================================== */
+.tabs-content {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
+}
+
+.tabs-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 24px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all var(--tabs-transition-speed) var(--tabs-transition-easing);
+}
+
+.tabs-panel[hidden] {
+    display: block !important;
+}
+
+.tabs-panel.active {
+    position: relative;
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* Transitions du contenu */
+.tabs-content.transition-fade .tabs-panel {
+    transition: opacity var(--tabs-transition-speed) ease;
+}
+
+.tabs-content.transition-slide .tabs-panel {
+    transform: translateX(20px);
+}
+
+.tabs-content.transition-slide .tabs-panel.active {
+    transform: translateX(0);
+}
+
+.tabs-content.transition-zoom .tabs-panel {
+    transform: scale(0.95);
+}
+
+.tabs-content.transition-zoom .tabs-panel.active {
+    transform: scale(1);
+}
+
+/* Loading state */
+.tab-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    color: var(--tabs-inactive-color);
+}
+
+.tab-loading::before {
+    content: '';
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+/* Error state */
+.tab-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    color: #ef4444;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+/* Animation subtile */
+.tabs.animate-subtle * {
+    transition-duration: var(--tabs-transition-speed);
+}
+
+/* Animation smooth */
+.tabs.animate-smooth * {
+    transition-duration: var(--tabs-transition-smooth);
+}
+
+/* Animation riche */
+.tabs.animate-rich .tabs-link {
+    transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.tabs.animate-rich .tabs-link:hover {
+    transform: translateY(-2px);
+}
+
+.tabs.animate-rich .tabs-link.active {
+    transform: scale(1.05);
+}
+
+/* Animation bounce */
+@keyframes tabBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+
+.tabs.animate-bounce .tabs-link.active {
+    animation: tabBounce 0.5s ease-in-out;
+}
+
+/* Animation de l'indicateur */
+@keyframes indicatorSlide {
+    from {
+        opacity: 0;
+        transform: scaleX(0.5);
+    }
+    to {
+        opacity: 1;
+        transform: scaleX(1);
+    }
+}
+
+.tabs-indicator {
+    animation: indicatorSlide 0.3s ease-out;
+}
+
+/* Ripple effect */
+@keyframes ripple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+.tabs.animate-rich .tabs-link::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.tabs.animate-rich .tabs-link:active::after {
+    width: 100%;
+    height: 100%;
+    animation: ripple 0.6s ease-out;
+}
+
+/* Glow effect */
+@keyframes tabGlow {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 20px 5px rgba(59, 130, 246, 0.2);
+    }
+}
+
+.tabs.animate-rich .tabs-link.active {
+    animation: tabGlow 2s ease-in-out infinite;
+}
+
+/* Spin animation */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* ========================================
+   LAYOUTS SPÉCIFIQUES
+   ======================================== */
+
+/* Layout vertical */
+.tabs.layout-vertical {
+    flex-direction: row;
+}
+
+.tabs.layout-vertical .tabs-nav {
+    flex-direction: column;
+    width: 200px;
+    height: auto;
+    min-height: 100%;
+    border-right: 1px solid var(--tabs-glass-border);
+    border-bottom: none;
+}
+
+.tabs.layout-vertical .tabs-list {
+    flex-direction: column;
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.tabs.layout-vertical .tabs-item {
+    width: 100%;
+}
+
+.tabs.layout-vertical .tabs-link {
+    width: 100%;
+    justify-content: flex-start;
+}
+
+.tabs.layout-vertical .tabs-indicator {
+    left: 0;
+    right: auto;
+    width: var(--tabs-indicator-height);
+    height: auto;
+    bottom: auto;
+}
+
+/* Layout centered */
+.tabs.layout-centered .tabs-list {
+    justify-content: center;
+}
+
+/* Layout fullWidth */
+.tabs.layout-fullWidth .tabs-item {
+    flex: 1;
+}
+
+.tabs.layout-fullWidth .tabs-link {
+    justify-content: center;
+    width: 100%;
+}
+
+/* Layout bottom */
+.tabs.layout-bottom {
+    flex-direction: column-reverse;
+}
+
+.tabs.layout-bottom .tabs-nav {
+    border-top: 1px solid var(--tabs-glass-border);
+    border-bottom: none;
+}
+
+.tabs.layout-bottom .tabs-indicator {
+    top: 0;
+    bottom: auto;
+}
+
+/* Layout card */
+.tabs.layout-card .tabs-nav {
+    background: var(--tabs-glass-bg);
+    margin: 16px 16px 0;
+    border-radius: 12px 12px 0 0;
+    border-bottom: 1px solid var(--tabs-glass-border);
+}
+
+.tabs.layout-card .tabs-content {
+    background: var(--tabs-glass-bg);
+    margin: 0 16px 16px;
+    border-radius: 0 0 12px 12px;
+}
+
+/* Layout wizard */
+.tabs.layout-wizard .tabs-link::before {
+    content: attr(data-step);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--tabs-glass-border);
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.tabs.layout-wizard .tabs-link.active::before {
+    background: var(--tabs-active-color);
+    border-color: var(--tabs-active-color);
+    color: white;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 768px) {
+    :root {
+        --tabs-nav-height: 44px;
+        --tabs-item-padding-x: 16px;
+        --tabs-item-padding-y: 10px;
+    }
+    
+    .tabs-link {
+        font-size: 13px;
+    }
+    
+    .tab-icon {
+        width: 14px;
+        height: 14px;
+    }
+    
+    /* Stack layout sur mobile */
+    .tabs.responsive .tabs-list {
+        flex-wrap: wrap;
+    }
+    
+    .tabs.responsive.layout-vertical {
+        flex-direction: column;
+    }
+    
+    .tabs.responsive.layout-vertical .tabs-nav {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--tabs-glass-border);
+    }
+    
+    .tabs.responsive.layout-vertical .tabs-list {
+        flex-direction: row;
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+}
+
+@media (max-width: 480px) {
+    .tabs-nav {
+        padding-left: 40px;
+        padding-right: 40px;
+    }
+    
+    .tabs-scroll {
+        opacity: 1 !important;
+    }
+    
+    .tab-label {
+        display: none;
+    }
+    
+    .tabs-link {
+        padding: var(--tabs-item-padding-y) 12px;
+    }
+    
+    .tab-close {
+        opacity: 1;
+    }
+}
+
+/* Support tactile */
+@media (hover: none) {
+    .tab-close {
+        opacity: 0.6;
+    }
+    
+    .tabs-link:active:not(.disabled) {
+        transform: scale(0.98);
+    }
+}
+
+/* ========================================
+   THÈMES
+   ======================================== */
+
+/* Thème sombre */
+.dark .tabs.glassmorphism,
+[data-theme="dark"] .tabs.glassmorphism {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark .tabs-link,
+[data-theme="dark"] .tabs-link {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.dark .tabs-link.active,
+[data-theme="dark"] .tabs-link.active {
+    color: #60a5fa;
+}
+
+/* ========================================
+   ACCESSIBILITÉ
+   ======================================== */
+
+/* Focus visible amélioré */
+.tabs-link:focus-visible {
+    outline: 2px solid var(--tabs-active-color);
+    outline-offset: 2px;
+    border-radius: var(--tabs-item-radius);
+}
+
+.tabs-add:focus-visible,
+.tabs-menu:focus-visible,
+.tabs-scroll:focus-visible {
+    outline: 2px solid var(--tabs-active-color);
+    outline-offset: 2px;
+}
+
+/* Mode contraste élevé */
+@media (prefers-contrast: high) {
+    .tabs {
+        border-width: 2px;
+    }
+    
+    .tabs-link.active {
+        font-weight: 700;
+        text-decoration: underline;
+    }
+    
+    .tabs-indicator {
+        height: 4px;
+    }
+}
+
+/* Préférences de mouvement réduit */
+@media (prefers-reduced-motion: reduce) {
+    .tabs *,
+    .tabs *::before,
+    .tabs *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .tabs-list {
+        scroll-behavior: auto;
+    }
+}
+
+/* ========================================
+   SUPPORT NAVIGATEURS
+   ======================================== */
+
+/* Fallback pour navigateurs sans backdrop-filter */
+@supports not (backdrop-filter: blur(20px)) {
+    .tabs.glassmorphism {
+        background: rgba(255, 255, 255, 0.95);
+    }
+    
+    .dark .tabs.glassmorphism {
+        background: rgba(30, 30, 30, 0.95);
+    }
+    
+    .tabs-indicator.background {
+        background: rgba(59, 130, 246, 0.1);
+    }
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [2024-01-15] - Indicateur ne suit pas correctement
+   Solution: Calculs en JS avec getBoundingClientRect
+   
+   [2024-01-16] - Scroll horizontal sur mobile
+   Cause: Overflow visible sur les badges
+   Résolution: Ajuster l'overflow et les marges
+   
+   [2024-01-17] - Performance avec animations riches
+   Solution: Utiliser will-change et GPU acceleration
+   
+   NOTES POUR REPRISES FUTURES:
+   - L'indicateur doit être dans la liste pour le positionnement relatif
+   - Toujours tester le scroll sur différentes tailles d'écran
+   - Les animations complexes peuvent ralentir sur mobile
+   ======================================== */

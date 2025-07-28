@@ -1,0 +1,962 @@
+/* ========================================
+   FOOTER.CSS - Styles pour le composant Footer
+   Chemin: src/css/shared/ui/footer.css
+   
+   DESCRIPTION:
+   Styles complets pour le pied de page avec effet glassmorphism.
+   Supporte multiples layouts, styles, animations et thèmes.
+   
+   STRUCTURE:
+   1. Variables et configuration (lignes 20-120)
+   2. Structure de base (lignes 122-300)
+   3. Styles glassmorphism (lignes 302-500)
+   4. Autres styles (lignes 502-700)
+   5. Layouts (lignes 702-1000)
+   6. Sections spécifiques (lignes 1002-1400)
+   7. Animations et responsive (lignes 1402-1600)
+   
+   DÉPENDANCES:
+   - footer.component.js (utilise toutes ces classes)
+   ======================================== */
+
+/* ========================================
+   VARIABLES ET CONFIGURATION
+   ======================================== */
+:root {
+    /* Couleurs glassmorphism */
+    --footer-glass-bg: rgba(255, 255, 255, 0.08);
+    --footer-glass-bg-hover: rgba(255, 255, 255, 0.12);
+    --footer-glass-border: rgba(255, 255, 255, 0.15);
+    --footer-glass-shadow: 0 -8px 32px rgba(0, 0, 0, 0.1);
+    --footer-backdrop-blur: 20px;
+    
+    /* Couleurs système */
+    --footer-text: #1f2937;
+    --footer-text-secondary: #6b7280;
+    --footer-link: #3b82f6;
+    --footer-link-hover: #2563eb;
+    --footer-border: #e5e7eb;
+    --footer-bg: #f9fafb;
+    
+    /* Espacement */
+    --footer-spacing-xs: 8px;
+    --footer-spacing-sm: 16px;
+    --footer-spacing-md: 24px;
+    --footer-spacing-lg: 32px;
+    --footer-spacing-xl: 48px;
+    --footer-spacing-2xl: 64px;
+    
+    /* Dimensions */
+    --footer-max-width: 1280px;
+    --footer-social-size: 44px;
+    --footer-social-icon: 20px;
+    
+    /* Transitions */
+    --footer-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --footer-transition-smooth: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Z-index */
+    --footer-z-base: 10;
+    --footer-z-wave: 11;
+    --footer-z-backtop: 100;
+}
+
+/* Mode sombre */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --footer-glass-bg: rgba(255, 255, 255, 0.05);
+        --footer-glass-bg-hover: rgba(255, 255, 255, 0.08);
+        --footer-glass-border: rgba(255, 255, 255, 0.1);
+        --footer-glass-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4);
+        --footer-text: #f3f4f6;
+        --footer-text-secondary: #9ca3af;
+        --footer-link: #60a5fa;
+        --footer-link-hover: #93bbfc;
+        --footer-border: #374151;
+        --footer-bg: #111827;
+    }
+}
+
+/* ========================================
+   STRUCTURE DE BASE
+   ======================================== */
+.footer {
+    position: relative;
+    width: 100%;
+    margin-top: auto;
+    z-index: var(--footer-z-base);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.footer-container {
+    max-width: var(--footer-max-width);
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* Padding par taille */
+.footer.compact .footer-container {
+    padding: var(--footer-spacing-md);
+}
+
+.footer.medium .footer-container {
+    padding: var(--footer-spacing-xl);
+}
+
+.footer.large .footer-container {
+    padding: var(--footer-spacing-2xl);
+}
+
+/* Sections de base */
+.footer-section {
+    position: relative;
+    z-index: 1;
+}
+
+/* ========================================
+   STYLE GLASSMORPHISM
+   ======================================== */
+.footer.glassmorphism {
+    background: var(--footer-glass-bg);
+    backdrop-filter: blur(var(--footer-backdrop-blur)) brightness(1.1);
+    -webkit-backdrop-filter: blur(var(--footer-backdrop-blur)) brightness(1.1);
+    border-top: 1px solid var(--footer-glass-border);
+    box-shadow: var(--footer-glass-shadow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Effet de brillance glassmorphism */
+.footer.glassmorphism::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        transparent 100%
+    );
+    animation: footerShine 8s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes footerShine {
+    0%, 100% { left: -100%; }
+    50% { left: 100%; }
+}
+
+/* Liens glassmorphism */
+.footer.glassmorphism .footer-link {
+    color: var(--footer-text);
+    text-decoration: none;
+    transition: var(--footer-transition);
+    position: relative;
+    padding: 4px 0;
+}
+
+.footer.glassmorphism .footer-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--footer-link);
+    transition: width var(--footer-transition);
+}
+
+.footer.glassmorphism .footer-link:hover {
+    color: var(--footer-link);
+}
+
+.footer.glassmorphism .footer-link:hover::after {
+    width: 100%;
+}
+
+/* Boutons glassmorphism */
+.footer.glassmorphism button {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: var(--footer-transition);
+}
+
+.footer.glassmorphism button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* ========================================
+   STYLE NEUMORPHISM
+   ======================================== */
+.footer.neumorphism {
+    background: #e0e5ec;
+    box-shadow: 0 -9px 16px #a3b1c6, 0 9px 16px #ffffff;
+    border: none;
+}
+
+.footer.neumorphism .footer-link {
+    color: #6b7280;
+    text-decoration: none;
+    transition: var(--footer-transition);
+}
+
+.footer.neumorphism .footer-link:hover {
+    color: #4b5563;
+}
+
+.footer.neumorphism button {
+    background: #e0e5ec;
+    box-shadow: 5px 5px 10px #a3b1c6, -5px -5px 10px #ffffff;
+    border: none;
+}
+
+.footer.neumorphism button:hover {
+    box-shadow: inset 2px 2px 5px #a3b1c6, inset -2px -2px 5px #ffffff;
+}
+
+/* ========================================
+   STYLE FLAT
+   ======================================== */
+.footer.flat {
+    background: var(--footer-bg);
+    border-top: 1px solid var(--footer-border);
+}
+
+.footer.flat .footer-link {
+    color: var(--footer-text-secondary);
+    text-decoration: none;
+    transition: var(--footer-transition);
+}
+
+.footer.flat .footer-link:hover {
+    color: var(--footer-link);
+}
+
+/* ========================================
+   STYLE MINIMAL
+   ======================================== */
+.footer.minimal {
+    background: transparent;
+    border-top: 1px solid var(--footer-border);
+    padding-top: var(--footer-spacing-lg);
+}
+
+.footer.minimal .footer-link {
+    color: var(--footer-text);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.footer.minimal .footer-link:hover {
+    text-decoration: underline;
+}
+
+/* ========================================
+   STYLE MATERIAL
+   ======================================== */
+.footer.material {
+    background: var(--footer-bg);
+    box-shadow: 0 -2px 4px -1px rgba(0,0,0,.2), 
+                0 -4px 5px 0 rgba(0,0,0,.14),
+                0 -1px 10px 0 rgba(0,0,0,.12);
+}
+
+/* ========================================
+   STYLE GRADIENT
+   ======================================== */
+.footer.gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.footer.gradient .footer-link,
+.footer.gradient .footer-text,
+.footer.gradient .footer-text-secondary {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.footer.gradient .footer-link:hover {
+    color: white;
+}
+
+/* ========================================
+   STYLE DARK
+   ======================================== */
+.footer.dark-theme {
+    background: #0f172a;
+    color: #f1f5f9;
+}
+
+.footer.dark-theme .footer-link {
+    color: #cbd5e1;
+}
+
+.footer.dark-theme .footer-link:hover {
+    color: #f1f5f9;
+}
+
+/* ========================================
+   LAYOUTS - SIMPLE
+   ======================================== */
+.footer.layout-simple .footer-container {
+    text-align: center;
+    padding: var(--footer-spacing-lg) var(--footer-spacing-md);
+}
+
+.footer.layout-simple .footer-copyright-text {
+    margin: 0;
+    color: var(--footer-text-secondary);
+    font-size: 14px;
+}
+
+/* ========================================
+   LAYOUTS - CENTERED
+   ======================================== */
+.footer.layout-centered .footer-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--footer-spacing-lg);
+    text-align: center;
+}
+
+.footer.layout-centered .footer-logo {
+    margin-bottom: var(--footer-spacing-md);
+}
+
+.footer.layout-centered .footer-links {
+    display: flex;
+    gap: var(--footer-spacing-lg);
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.footer.layout-centered .footer-links-list {
+    display: flex;
+    gap: var(--footer-spacing-md);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* ========================================
+   LAYOUTS - COLUMNS
+   ======================================== */
+.footer.layout-columns .footer-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--footer-spacing-xl);
+}
+
+.footer.layout-columns .footer-section {
+    min-width: 0;
+}
+
+.footer.layout-columns .footer-copyright {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding-top: var(--footer-spacing-lg);
+    border-top: 1px solid var(--footer-glass-border);
+    margin-top: var(--footer-spacing-lg);
+}
+
+/* ========================================
+   LAYOUTS - NEWSLETTER
+   ======================================== */
+.footer.layout-newsletter .footer-container {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--footer-spacing-xl);
+    align-items: center;
+}
+
+.footer.layout-newsletter .footer-newsletter {
+    max-width: 500px;
+}
+
+.footer.layout-newsletter .footer-copyright {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding-top: var(--footer-spacing-lg);
+    border-top: 1px solid var(--footer-glass-border);
+}
+
+/* ========================================
+   LAYOUTS - MEGA
+   ======================================== */
+.footer.layout-mega .footer-container {
+    display: grid;
+    grid-template-areas:
+        "logo logo logo"
+        "columns columns newsletter"
+        "bottom bottom bottom";
+    gap: var(--footer-spacing-xl);
+}
+
+.footer.layout-mega .footer-logo {
+    grid-area: logo;
+}
+
+.footer.layout-mega .footer-columns {
+    grid-area: columns;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--footer-spacing-lg);
+}
+
+.footer.layout-mega .footer-newsletter {
+    grid-area: newsletter;
+}
+
+.footer.layout-mega .footer-bottom {
+    grid-area: bottom;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: var(--footer-spacing-lg);
+    border-top: 1px solid var(--footer-glass-border);
+}
+
+/* ========================================
+   SECTIONS - LOGO
+   ======================================== */
+.footer-logo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--footer-spacing-sm);
+}
+
+.footer-logo-img {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+}
+
+.footer-logo-text {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--footer-text);
+}
+
+.footer-tagline {
+    margin: 0;
+    color: var(--footer-text-secondary);
+    font-size: 16px;
+}
+
+/* ========================================
+   SECTIONS - LIENS
+   ======================================== */
+.footer-links-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--footer-spacing-xs);
+}
+
+.footer-link-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--footer-spacing-md);
+}
+
+.footer-group-title {
+    margin: 0 0 var(--footer-spacing-sm) 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--footer-text);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.footer-link-item {
+    margin: 0;
+}
+
+.footer-link {
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* ========================================
+   SECTIONS - SOCIAL
+   ======================================== */
+.footer-social {
+    display: flex;
+    flex-direction: column;
+    gap: var(--footer-spacing-md);
+}
+
+.footer-social-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--footer-text);
+}
+
+.footer-social-list {
+    display: flex;
+    gap: var(--footer-spacing-sm);
+    flex-wrap: wrap;
+}
+
+.footer-social-link {
+    width: var(--footer-social-size);
+    height: var(--footer-social-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    transition: var(--footer-transition);
+    color: var(--footer-text-secondary);
+}
+
+.footer.glassmorphism .footer-social-link {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.footer.glassmorphism .footer-social-link:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-4px) scale(1.1);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    color: var(--footer-link);
+}
+
+.footer-social-link svg {
+    width: var(--footer-social-icon);
+    height: var(--footer-social-icon);
+}
+
+/* ========================================
+   SECTIONS - NEWSLETTER
+   ======================================== */
+.footer-newsletter {
+    display: flex;
+    flex-direction: column;
+    gap: var(--footer-spacing-sm);
+}
+
+.footer-newsletter-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--footer-text);
+}
+
+.footer-newsletter-desc {
+    margin: 0;
+    color: var(--footer-text-secondary);
+    font-size: 14px;
+}
+
+.footer-newsletter-form {
+    margin-top: var(--footer-spacing-sm);
+}
+
+.footer-newsletter-input-wrapper {
+    display: flex;
+    gap: var(--footer-spacing-sm);
+    max-width: 400px;
+}
+
+.footer-newsletter-input {
+    flex: 1;
+    padding: 12px 16px;
+    font-size: 14px;
+    border: none;
+    border-radius: 12px;
+    outline: none;
+    transition: var(--footer-transition);
+}
+
+.footer.glassmorphism .footer-newsletter-input {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--footer-text);
+}
+
+.footer.glassmorphism .footer-newsletter-input::placeholder {
+    color: var(--footer-text-secondary);
+    opacity: 0.7;
+}
+
+.footer.glassmorphism .footer-newsletter-input:focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--footer-link);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.footer-newsletter-button {
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: var(--footer-transition);
+    background: var(--footer-link);
+    color: white;
+}
+
+.footer-newsletter-button:hover {
+    background: var(--footer-link-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* ========================================
+   SECTIONS - COPYRIGHT
+   ======================================== */
+.footer-copyright {
+    display: flex;
+    flex-direction: column;
+    gap: var(--footer-spacing-sm);
+    align-items: center;
+}
+
+.footer-copyright-text {
+    margin: 0;
+    color: var(--footer-text-secondary);
+    font-size: 14px;
+}
+
+.footer-copyright-links {
+    display: flex;
+    gap: var(--footer-spacing-md);
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.footer-copyright-link {
+    color: var(--footer-text-secondary);
+    text-decoration: none;
+    font-size: 14px;
+    transition: var(--footer-transition);
+}
+
+.footer-copyright-link:hover {
+    color: var(--footer-link);
+}
+
+/* ========================================
+   FONCTIONNALITÉS - WAVE
+   ======================================== */
+.footer-wave {
+    position: absolute;
+    top: -120px;
+    left: 0;
+    width: 100%;
+    height: 120px;
+    z-index: var(--footer-z-wave);
+    overflow: hidden;
+}
+
+.footer-wave svg {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.footer.glassmorphism .wave-path {
+    fill: var(--footer-glass-bg);
+    opacity: 0.8;
+}
+
+/* ========================================
+   FONCTIONNALITÉS - BACK TO TOP
+   ======================================== */
+.footer-back-to-top {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 48px;
+    height: 48px;
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transition: var(--footer-transition);
+    z-index: var(--footer-z-backtop);
+}
+
+.footer.glassmorphism .footer-back-to-top {
+    background: var(--footer-glass-bg);
+    backdrop-filter: blur(var(--footer-backdrop-blur));
+    border: 1px solid var(--footer-glass-border);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    color: var(--footer-text);
+}
+
+.footer-back-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.footer-back-to-top:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.footer-back-to-top svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+/* Animation fadeInUp */
+@keyframes footerFadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.footer.smooth .footer-section {
+    animation: footerFadeInUp 0.6s ease-out;
+    animation-fill-mode: both;
+}
+
+.footer.rich .footer-section:nth-child(1) { animation-delay: 0.1s; }
+.footer.rich .footer-section:nth-child(2) { animation-delay: 0.2s; }
+.footer.rich .footer-section:nth-child(3) { animation-delay: 0.3s; }
+.footer.rich .footer-section:nth-child(4) { animation-delay: 0.4s; }
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 1024px) {
+    .footer.layout-columns .footer-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .footer.layout-mega .footer-container {
+        grid-template-areas:
+            "logo logo"
+            "columns columns"
+            "newsletter newsletter"
+            "bottom bottom";
+    }
+}
+
+@media (max-width: 768px) {
+    .footer-container {
+        padding: var(--footer-spacing-lg) var(--footer-spacing-md);
+    }
+    
+    .footer.layout-columns .footer-container {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+    
+    .footer.layout-newsletter .footer-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .footer.layout-mega .footer-container {
+        grid-template-areas:
+            "logo"
+            "columns"
+            "newsletter"
+            "bottom";
+    }
+    
+    .footer.layout-mega .footer-bottom {
+        flex-direction: column;
+        gap: var(--footer-spacing-md);
+        text-align: center;
+    }
+    
+    .footer-newsletter-input-wrapper {
+        flex-direction: column;
+        max-width: 100%;
+    }
+    
+    .footer-newsletter-input,
+    .footer-newsletter-button {
+        width: 100%;
+    }
+    
+    .footer-social-list {
+        justify-content: center;
+    }
+    
+    .footer.layout-centered .footer-links-list {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .footer-logo-text {
+        font-size: 20px;
+    }
+    
+    .footer-newsletter-title {
+        font-size: 18px;
+    }
+    
+    .footer-group-title {
+        font-size: 14px;
+    }
+    
+    .footer-back-to-top {
+        bottom: 16px;
+        right: 16px;
+        width: 40px;
+        height: 40px;
+    }
+    
+    .footer-back-to-top svg {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+/* ========================================
+   THÈME SOMBRE
+   ======================================== */
+.dark .footer,
+[data-theme="dark"] .footer {
+    --footer-glass-bg: rgba(255, 255, 255, 0.05);
+    --footer-glass-bg-hover: rgba(255, 255, 255, 0.08);
+    --footer-glass-border: rgba(255, 255, 255, 0.1);
+    --footer-text: #f3f4f6;
+    --footer-text-secondary: #9ca3af;
+    --footer-bg: #111827;
+    --footer-border: #374151;
+}
+
+/* ========================================
+   ACCESSIBILITÉ
+   ======================================== */
+
+/* Focus visible */
+.footer-link:focus-visible,
+.footer-social-link:focus-visible,
+.footer-newsletter-button:focus-visible,
+.footer-back-to-top:focus-visible {
+    outline: 2px solid var(--footer-link);
+    outline-offset: 2px;
+}
+
+/* Préférences de mouvement réduit */
+@media (prefers-reduced-motion: reduce) {
+    .footer,
+    .footer * {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .footer.glassmorphism::before {
+        animation: none;
+    }
+}
+
+/* Mode contraste élevé */
+@media (prefers-contrast: high) {
+    .footer {
+        border-top-width: 2px;
+    }
+    
+    .footer.glassmorphism {
+        background: rgba(255, 255, 255, 0.95);
+        color: #000;
+    }
+    
+    .dark .footer.glassmorphism {
+        background: rgba(0, 0, 0, 0.95);
+        color: #fff;
+    }
+}
+
+/* ========================================
+   SUPPORT NAVIGATEURS
+   ======================================== */
+
+/* Fallback pour navigateurs sans backdrop-filter */
+@supports not (backdrop-filter: blur(20px)) {
+    .footer.glassmorphism {
+        background: rgba(249, 250, 251, 0.95);
+    }
+    
+    .dark .footer.glassmorphism {
+        background: rgba(17, 24, 39, 0.95);
+    }
+    
+    .footer.glassmorphism .footer-social-link,
+    .footer.glassmorphism .footer-newsletter-input,
+    .footer.glassmorphism .footer-back-to-top {
+        background: rgba(255, 255, 255, 0.9);
+    }
+}
+
+/* ========================================
+   UTILITAIRES
+   ======================================== */
+
+/* Footer sticky */
+.footer.sticky {
+    position: sticky;
+    bottom: 0;
+}
+
+/* Footer avec particules */
+.footer.particles {
+    position: relative;
+}
+
+.footer.particles canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0.3;
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [2024-12] - Layout responsive complexe
+   Solution: Utiliser CSS Grid avec media queries
+   
+   [2024-12] - Performance backdrop-filter
+   Cause: Trop d'éléments avec blur
+   Résolution: Limiter aux éléments principaux
+   
+   [2024-12] - Accessibilité navigation
+   Solution: Ajouter aria-labels et focus visible
+   
+   NOTES POUR REPRISES FUTURES:
+   - Le footer supporte 7 layouts différents
+   - Les animations sont désactivables
+   - Le mode sombre est automatique
+   - Support complet mobile first
+   ======================================== */

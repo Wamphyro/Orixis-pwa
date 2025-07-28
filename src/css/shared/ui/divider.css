@@ -1,0 +1,867 @@
+/* ========================================
+   DIVIDER.CSS - Styles pour le composant Divider
+   Chemin: src/css/shared/ui/divider.css
+   
+   DESCRIPTION:
+   Styles complets pour le système de dividers avec effet glassmorphism.
+   Supporte tous les styles, orientations, animations et contenus.
+   
+   STRUCTURE:
+   1. Variables et configuration (lignes 20-100)
+   2. Conteneur et base (lignes 102-200)
+   3. Styles de lignes (lignes 202-500)
+   4. Orientations (lignes 502-600)
+   5. Contenus (lignes 602-800)
+   6. Tailles et espacements (lignes 802-900)
+   7. Animations (lignes 902-1100)
+   8. Responsive (lignes 1102-1200)
+   9. Thèmes (lignes 1202-1300)
+   10. Utilitaires (lignes 1302-1400)
+   
+   DÉPENDANCES:
+   - divider.component.js (utilise toutes ces classes)
+   - Variables CSS globales du thème
+   ======================================== */
+
+/* ========================================
+   VARIABLES ET CONFIGURATION
+   ======================================== */
+:root {
+    /* Couleurs glassmorphism */
+    --divider-glass-bg: rgba(255, 255, 255, 0.1);
+    --divider-glass-border: rgba(255, 255, 255, 0.3);
+    --divider-glass-shine: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.4) 50%, 
+        transparent 100%);
+    --divider-glass-blur: 10px;
+    
+    /* Couleurs par défaut */
+    --divider-color: rgba(0, 0, 0, 0.12);
+    --divider-text-color: rgba(0, 0, 0, 0.6);
+    --divider-bg-color: transparent;
+    
+    /* Dimensions */
+    --divider-thickness-thin: 1px;
+    --divider-thickness-medium: 2px;
+    --divider-thickness-thick: 4px;
+    --divider-thickness-bold: 8px;
+    
+    /* Espacements */
+    --divider-spacing-none: 0;
+    --divider-spacing-small: 16px;
+    --divider-spacing-medium: 24px;
+    --divider-spacing-large: 32px;
+    --divider-spacing-xlarge: 48px;
+    
+    /* Animations */
+    --divider-transition-speed: 0.3s;
+    --divider-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Z-index */
+    --divider-z-index: 1;
+}
+
+/* Mode sombre */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --divider-glass-bg: rgba(255, 255, 255, 0.05);
+        --divider-glass-border: rgba(255, 255, 255, 0.2);
+        --divider-color: rgba(255, 255, 255, 0.12);
+        --divider-text-color: rgba(255, 255, 255, 0.6);
+    }
+}
+
+/* ========================================
+   CONTENEUR ET BASE
+   ======================================== */
+.divider-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+
+/* Orientation horizontale (par défaut) */
+.divider-horizontal {
+    flex-direction: row;
+}
+
+.divider-horizontal .divider-line {
+    height: var(--divider-thickness-medium);
+    width: 100%;
+    flex: 1;
+}
+
+/* Orientation verticale */
+.divider-vertical {
+    flex-direction: column;
+    height: 100%;
+    width: auto;
+}
+
+.divider-vertical .divider-line {
+    width: var(--divider-thickness-medium);
+    height: 100%;
+    flex: 1;
+}
+
+/* Full width */
+.divider-full-width {
+    width: 100%;
+}
+
+/* Ligne de base */
+.divider-line {
+    position: relative;
+    background: var(--divider-color);
+    transition: all var(--divider-transition-speed) var(--divider-transition-easing);
+}
+
+/* ========================================
+   STYLE GLASSMORPHISM
+   ======================================== */
+.divider-line.glassmorphism {
+    background: var(--divider-glass-bg);
+    backdrop-filter: blur(var(--divider-glass-blur));
+    -webkit-backdrop-filter: blur(var(--divider-glass-blur));
+    border: 1px solid var(--divider-glass-border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+/* Effet de brillance glassmorphism */
+.divider-line.glassmorphism .divider-shine {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: var(--divider-glass-shine);
+    animation: dividerShine 3s ease-in-out infinite;
+}
+
+@keyframes dividerShine {
+    0% { left: -100%; }
+    50%, 100% { left: 100%; }
+}
+
+/* Particules glassmorphism */
+.divider-line.glassmorphism .divider-particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    animation: dividerParticle 3s ease-in-out infinite;
+}
+
+@keyframes dividerParticle {
+    0% {
+        transform: translateX(-100px) translateY(0);
+        opacity: 0;
+    }
+    20% {
+        opacity: 1;
+    }
+    80% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(calc(100% + 100px)) translateY(0);
+        opacity: 0;
+    }
+}
+
+/* ========================================
+   STYLE SOLID
+   ======================================== */
+.divider-line.solid {
+    background: currentColor;
+    opacity: 0.2;
+}
+
+/* ========================================
+   STYLE DASHED
+   ======================================== */
+.divider-line.dashed {
+    background: none;
+    border-top: var(--divider-thickness-medium) dashed currentColor;
+    height: 0 !important;
+    opacity: 0.4;
+}
+
+.divider-vertical .divider-line.dashed {
+    border-top: none;
+    border-left: var(--divider-thickness-medium) dashed currentColor;
+    width: 0 !important;
+}
+
+/* ========================================
+   STYLE DOTTED
+   ======================================== */
+.divider-line.dotted {
+    background: none;
+    border-top: var(--divider-thickness-thick) dotted currentColor;
+    height: 0 !important;
+    opacity: 0.4;
+}
+
+.divider-vertical .divider-line.dotted {
+    border-top: none;
+    border-left: var(--divider-thickness-thick) dotted currentColor;
+    width: 0 !important;
+}
+
+/* ========================================
+   STYLE DOUBLE
+   ======================================== */
+.divider-line.double {
+    background: none;
+    border-top: 3px double currentColor;
+    height: 0 !important;
+    opacity: 0.3;
+}
+
+.divider-vertical .divider-line.double {
+    border-top: none;
+    border-left: 3px double currentColor;
+    width: 0 !important;
+}
+
+/* ========================================
+   STYLE GRADIENT
+   ======================================== */
+.divider-line.gradient {
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        currentColor 50%,
+        transparent 100%
+    );
+    opacity: 0.3;
+}
+
+.divider-vertical .divider-line.gradient {
+    background: linear-gradient(
+        180deg,
+        transparent 0%,
+        currentColor 50%,
+        transparent 100%
+    );
+}
+
+/* ========================================
+   STYLE WAVE
+   ======================================== */
+.divider-line.wave {
+    background: none;
+    height: 20px !important;
+}
+
+.divider-line.wave .divider-pattern {
+    width: 100%;
+    height: 100%;
+    opacity: 0.3;
+}
+
+/* ========================================
+   STYLE ZIGZAG
+   ======================================== */
+.divider-line.zigzag {
+    background: none;
+    height: 8px !important;
+}
+
+.divider-line.zigzag .divider-pattern {
+    width: 100%;
+    height: 100%;
+    opacity: 0.3;
+}
+
+/* ========================================
+   STYLE FADE
+   ======================================== */
+.divider-line.fade {
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        currentColor 20%,
+        currentColor 80%,
+        transparent 100%
+    );
+    opacity: 0.2;
+}
+
+/* ========================================
+   STYLE GLOW
+   ======================================== */
+.divider-line.glow {
+    background: currentColor;
+    box-shadow: 0 0 10px currentColor,
+                0 0 20px currentColor,
+                0 0 30px currentColor;
+    opacity: 0.6;
+}
+
+/* ========================================
+   STYLE RAINBOW
+   ======================================== */
+.divider-line.rainbow {
+    background: linear-gradient(
+        90deg,
+        #ff0000 0%,
+        #ff7f00 14%,
+        #ffff00 28%,
+        #00ff00 42%,
+        #0000ff 56%,
+        #4b0082 70%,
+        #9400d3 84%,
+        #ff0000 100%
+    );
+    background-size: 200% 100%;
+    animation: dividerRainbowShift 5s linear infinite;
+}
+
+@keyframes dividerRainbowShift {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+}
+
+/* ========================================
+   STYLE MINIMAL
+   ======================================== */
+.divider-line.minimal {
+    background: currentColor;
+    opacity: 0.1;
+    height: 1px !important;
+}
+
+/* ========================================
+   STYLE ORNAMENTAL
+   ======================================== */
+.divider-line.ornamental {
+    background: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: auto !important;
+}
+
+.divider-line.ornamental::before,
+.divider-line.ornamental::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.2;
+}
+
+.divider-ornament {
+    padding: 0 16px;
+    font-size: 24px;
+    color: currentColor;
+    opacity: 0.4;
+}
+
+/* ========================================
+   STYLE NEON
+   ======================================== */
+.divider-line.neon {
+    background: var(--divider-neon-color, #00ff00);
+    box-shadow: 0 0 5px var(--divider-neon-color, #00ff00),
+                0 0 10px var(--divider-neon-color, #00ff00),
+                0 0 15px var(--divider-neon-color, #00ff00),
+                0 0 20px var(--divider-neon-color, #00ff00);
+    animation: dividerNeonPulse 2s ease-in-out infinite;
+}
+
+@keyframes dividerNeonPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* ========================================
+   STYLE ASCII
+   ======================================== */
+.divider-line.ascii {
+    background: none;
+    height: auto !important;
+    font-family: monospace;
+    font-size: 14px;
+    line-height: 1;
+    opacity: 0.3;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.divider-line.ascii::before {
+    content: attr(data-char);
+    display: block;
+    word-spacing: -0.2em;
+}
+
+/* ========================================
+   DIVIDER AVEC CONTENU
+   ======================================== */
+.divider-with-content {
+    gap: 16px;
+}
+
+.divider-with-content .line-before,
+.divider-with-content .line-after {
+    flex: 1;
+}
+
+/* Position du contenu */
+.divider-with-content.content-start .line-before {
+    flex: 0;
+    min-width: 24px;
+}
+
+.divider-with-content.content-end .line-after {
+    flex: 0;
+    min-width: 24px;
+}
+
+/* Contenu */
+.divider-content {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--divider-text-color);
+    background: var(--divider-bg-color);
+    position: relative;
+    z-index: 1;
+}
+
+/* Contenu glassmorphism */
+.divider-content.glassmorphism {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 4px 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Types de contenu */
+.divider-text {
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.divider-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.divider-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.divider-badge {
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    background: currentColor;
+    color: white;
+    border-radius: 12px;
+    white-space: nowrap;
+}
+
+.divider-chip {
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    background: rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all var(--divider-transition-speed) ease;
+    white-space: nowrap;
+}
+
+.divider-chip:hover {
+    background: rgba(0, 0, 0, 0.12);
+    transform: translateY(-1px);
+}
+
+.divider-button {
+    padding: 8px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    background: transparent;
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all var(--divider-transition-speed) ease;
+    color: currentColor;
+    white-space: nowrap;
+}
+
+.divider-button:hover {
+    background: currentColor;
+    color: white;
+}
+
+/* ========================================
+   TAILLES
+   ======================================== */
+
+/* Thin */
+.divider-thin .divider-line {
+    height: var(--divider-thickness-thin);
+}
+
+.divider-vertical.divider-thin .divider-line {
+    width: var(--divider-thickness-thin);
+    height: 100%;
+}
+
+/* Medium (par défaut) */
+.divider-medium .divider-line {
+    height: var(--divider-thickness-medium);
+}
+
+.divider-vertical.divider-medium .divider-line {
+    width: var(--divider-thickness-medium);
+    height: 100%;
+}
+
+/* Thick */
+.divider-thick .divider-line {
+    height: var(--divider-thickness-thick);
+}
+
+.divider-vertical.divider-thick .divider-line {
+    width: var(--divider-thickness-thick);
+    height: 100%;
+}
+
+/* Bold */
+.divider-bold .divider-line {
+    height: var(--divider-thickness-bold);
+}
+
+.divider-vertical.divider-bold .divider-line {
+    width: var(--divider-thickness-bold);
+    height: 100%;
+}
+
+/* ========================================
+   ESPACEMENTS
+   ======================================== */
+.divider-spacing-none {
+    margin: var(--divider-spacing-none) 0;
+}
+
+.divider-spacing-small {
+    margin: var(--divider-spacing-small) 0;
+}
+
+.divider-spacing-medium {
+    margin: var(--divider-spacing-medium) 0;
+}
+
+.divider-spacing-large {
+    margin: var(--divider-spacing-large) 0;
+}
+
+.divider-spacing-xlarge {
+    margin: var(--divider-spacing-xlarge) 0;
+}
+
+/* Espacement vertical */
+.divider-vertical.divider-spacing-none {
+    margin: 0 var(--divider-spacing-none);
+}
+
+.divider-vertical.divider-spacing-small {
+    margin: 0 var(--divider-spacing-small);
+}
+
+.divider-vertical.divider-spacing-medium {
+    margin: 0 var(--divider-spacing-medium);
+}
+
+.divider-vertical.divider-spacing-large {
+    margin: 0 var(--divider-spacing-large);
+}
+
+.divider-vertical.divider-spacing-xlarge {
+    margin: 0 var(--divider-spacing-xlarge);
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+/* Pulse */
+@keyframes dividerPulse {
+    0%, 100% {
+        opacity: 0.3;
+        transform: scaleX(1);
+    }
+    50% {
+        opacity: 0.6;
+        transform: scaleX(1.05);
+    }
+}
+
+.animation-pulse {
+    animation: dividerPulse 2s ease-in-out infinite;
+}
+
+/* Slide */
+@keyframes dividerSlide {
+    0% {
+        background-position: 0% 50%;
+    }
+    100% {
+        background-position: 100% 50%;
+    }
+}
+
+.animation-slide {
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        currentColor 10%,
+        currentColor 30%,
+        transparent 40%,
+        transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: dividerSlide 3s linear infinite;
+}
+
+/* Glow Pulse */
+@keyframes dividerGlowPulse {
+    0%, 100% {
+        box-shadow: 0 0 5px currentColor;
+    }
+    50% {
+        box-shadow: 0 0 20px currentColor,
+                    0 0 40px currentColor;
+    }
+}
+
+.animation-glow-pulse {
+    animation: dividerGlowPulse 2.5s ease-in-out infinite;
+}
+
+/* Wave Motion */
+@keyframes dividerWaveMotion {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    25% {
+        transform: translateY(-2px);
+    }
+    75% {
+        transform: translateY(2px);
+    }
+}
+
+.animation-wave-motion .divider-pattern {
+    animation: dividerWaveMotion 4s ease-in-out infinite;
+}
+
+/* Dash March */
+@keyframes dividerDashMarch {
+    0% {
+        stroke-dashoffset: 0;
+    }
+    100% {
+        stroke-dashoffset: 20;
+    }
+}
+
+.animation-dash-march {
+    stroke-dasharray: 10 10;
+    animation: dividerDashMarch 1s linear infinite;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 640px) {
+    /* Ajustements mobiles */
+    .divider-responsive-mobile.divider-with-content {
+        gap: 8px;
+    }
+    
+    .divider-responsive-mobile .divider-text {
+        font-size: 12px;
+    }
+    
+    .divider-responsive-mobile .divider-icon {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .divider-responsive-mobile .divider-content {
+        padding: 2px 12px;
+    }
+    
+    /* Réduction des espacements */
+    .divider-responsive-mobile.divider-spacing-large {
+        margin: var(--divider-spacing-medium) 0;
+    }
+    
+    .divider-responsive-mobile.divider-spacing-xlarge {
+        margin: var(--divider-spacing-large) 0;
+    }
+}
+
+/* Support tactile */
+@media (hover: none) {
+    .divider-chip:active {
+        background: rgba(0, 0, 0, 0.16);
+    }
+    
+    .divider-button:active {
+        background: currentColor;
+        color: white;
+    }
+}
+
+/* ========================================
+   THÈMES
+   ======================================== */
+
+/* Thème sombre */
+.dark .divider-line,
+[data-theme="dark"] .divider-line {
+    --divider-color: rgba(255, 255, 255, 0.12);
+    --divider-text-color: rgba(255, 255, 255, 0.6);
+}
+
+.dark .divider-content.glassmorphism,
+[data-theme="dark"] .divider-content.glassmorphism {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .divider-chip,
+[data-theme="dark"] .divider-chip {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.dark .divider-chip:hover,
+[data-theme="dark"] .divider-chip:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* ========================================
+   UTILITAIRES
+   ======================================== */
+
+/* Groupe de dividers */
+.divider-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.divider-group > .divider-container:not(:last-child) {
+    margin-bottom: var(--divider-spacing-small);
+}
+
+/* Divider dans une card */
+.card .divider-container {
+    margin-left: calc(var(--card-padding, 16px) * -1);
+    margin-right: calc(var(--card-padding, 16px) * -1);
+    width: calc(100% + var(--card-padding, 16px) * 2);
+}
+
+/* Divider dans une liste */
+.list-item:not(:last-child)::after {
+    content: '';
+    display: block;
+    height: 1px;
+    background: var(--divider-color);
+    margin: 8px 0;
+}
+
+/* ========================================
+   ACCESSIBILITÉ
+   ======================================== */
+
+/* Focus visible pour éléments interactifs */
+.divider-chip:focus-visible,
+.divider-button:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+/* Réduction de mouvement */
+@media (prefers-reduced-motion: reduce) {
+    .divider-line,
+    .divider-line * {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* Contraste élevé */
+@media (prefers-contrast: high) {
+    .divider-line {
+        opacity: 1 !important;
+    }
+    
+    .divider-line.glassmorphism {
+        background: currentColor;
+        border: none;
+    }
+}
+
+/* ========================================
+   SUPPORT NAVIGATEURS
+   ======================================== */
+
+/* Fallback pour navigateurs sans backdrop-filter */
+@supports not (backdrop-filter: blur(10px)) {
+    .divider-line.glassmorphism {
+        background: rgba(0, 0, 0, 0.1);
+    }
+    
+    .divider-content.glassmorphism {
+        background: rgba(255, 255, 255, 0.95);
+    }
+    
+    .dark .divider-content.glassmorphism {
+        background: rgba(30, 30, 30, 0.95);
+    }
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [2024-01] - Alignement vertical
+   Solution: height: 100% avec flex pour vertical
+   
+   [2024-01] - Patterns SVG responsive
+   Cause: viewBox fixe
+   Résolution: preserveAspectRatio="none"
+   
+   [2024-01] - Performance animations
+   Solution: Transform et GPU acceleration
+   
+   NOTES POUR REPRISES FUTURES:
+   - Les dividers verticaux nécessitent un conteneur avec hauteur définie
+   - Les animations peuvent impacter les performances sur mobile
+   - Les patterns SVG doivent être optimisés
+   - Attention aux marges négatives dans les cards
+   ======================================== */

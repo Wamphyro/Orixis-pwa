@@ -1,0 +1,826 @@
+/* ========================================
+   NOTIFICATION.CSS - Styles pour le système de notifications
+   Chemin: src/css/shared/ui/notification.css
+   
+   DESCRIPTION:
+   Styles complets pour le système de notifications avec effet glassmorphism.
+   Supporte toutes les positions, types, animations et interactions.
+   
+   STRUCTURE:
+   1. Variables et configuration (lignes 20-100)
+   2. Conteneurs et positions (lignes 102-250)
+   3. Styles de base (lignes 252-450)
+   4. Variantes par style (lignes 452-700)
+   5. Types de notifications (lignes 702-850)
+   6. Animations (lignes 852-1100)
+   7. Composants internes (lignes 1102-1300)
+   8. Responsive et accessibilité (lignes 1302-1400)
+   
+   DÉPENDANCES:
+   - notification.component.js (utilise toutes ces classes)
+   ======================================== */
+
+/* ========================================
+   VARIABLES ET CONFIGURATION
+   ======================================== */
+:root {
+    /* Couleurs par type */
+    --notification-info-color: #3b82f6;
+    --notification-success-color: #22c55e;
+    --notification-warning-color: #f59e0b;
+    --notification-error-color: #ef4444;
+    --notification-loading-color: #6366f1;
+    
+    /* Glassmorphism */
+    --notification-glass-bg: rgba(255, 255, 255, 0.1);
+    --notification-glass-bg-hover: rgba(255, 255, 255, 0.15);
+    --notification-glass-border: rgba(255, 255, 255, 0.2);
+    --notification-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --notification-backdrop-blur: 20px;
+    
+    /* Espacement */
+    --notification-spacing-xs: 4px;
+    --notification-spacing-sm: 8px;
+    --notification-spacing-md: 16px;
+    --notification-spacing-lg: 20px;
+    --notification-spacing-xl: 24px;
+    
+    /* Dimensions */
+    --notification-min-height: 60px;
+    --notification-border-radius: 16px;
+    --notification-icon-size: 20px;
+    --notification-close-size: 32px;
+    
+    /* Transitions */
+    --notification-transition-speed: 0.3s;
+    --notification-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Z-index */
+    --notification-z-index: 9999;
+}
+
+/* Mode sombre */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --notification-glass-bg: rgba(255, 255, 255, 0.05);
+        --notification-glass-bg-hover: rgba(255, 255, 255, 0.08);
+        --notification-glass-border: rgba(255, 255, 255, 0.1);
+        --notification-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+}
+
+/* ========================================
+   CONTENEURS ET POSITIONS
+   ======================================== */
+.notification-container {
+    position: fixed;
+    z-index: var(--notification-z-index);
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--notification-spacing-sm);
+    max-width: 420px;
+    width: 100%;
+    padding: var(--notification-spacing-lg);
+}
+
+.notification-container > * {
+    pointer-events: auto;
+}
+
+/* Position: Top */
+.notification-container-top {
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    align-items: center;
+}
+
+.notification-container-top-left {
+    top: 0;
+    left: 0;
+    align-items: flex-start;
+}
+
+.notification-container-top-right {
+    top: 0;
+    right: 0;
+    align-items: flex-end;
+}
+
+/* Position: Bottom */
+.notification-container-bottom {
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    align-items: center;
+    flex-direction: column-reverse;
+}
+
+.notification-container-bottom-left {
+    bottom: 0;
+    left: 0;
+    align-items: flex-start;
+    flex-direction: column-reverse;
+}
+
+.notification-container-bottom-right {
+    bottom: 0;
+    right: 0;
+    align-items: flex-end;
+    flex-direction: column-reverse;
+}
+
+/* Position: Center */
+.notification-container-center {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    align-items: center;
+    justify-content: center;
+    max-width: 480px;
+}
+
+/* ========================================
+   STYLES DE BASE
+   ======================================== */
+.notification {
+    position: relative;
+    width: 100%;
+    min-height: var(--notification-min-height);
+    border-radius: var(--notification-border-radius);
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+    transition: all var(--notification-transition-speed) var(--notification-transition-easing);
+    cursor: default;
+}
+
+.notification.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.notification-content {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--notification-spacing-md);
+    padding: var(--notification-spacing-md) var(--notification-spacing-lg);
+    min-height: inherit;
+}
+
+/* Icône */
+.notification-icon {
+    flex-shrink: 0;
+    width: var(--notification-icon-size);
+    height: var(--notification-icon-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: currentColor;
+}
+
+.notification-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* Avatar */
+.notification-avatar {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notification-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Corps */
+.notification-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-title {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-bottom: var(--notification-spacing-xs);
+    color: inherit;
+}
+
+.notification-message {
+    font-size: 14px;
+    line-height: 1.5;
+    color: inherit;
+    opacity: 0.9;
+    word-wrap: break-word;
+}
+
+.notification-timestamp {
+    font-size: 12px;
+    opacity: 0.6;
+    margin-top: var(--notification-spacing-xs);
+}
+
+/* Actions */
+.notification-actions {
+    display: flex;
+    gap: var(--notification-spacing-sm);
+    margin-top: var(--notification-spacing-sm);
+}
+
+.notification-action {
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all var(--notification-transition-speed) var(--notification-transition-easing);
+    background: rgba(255, 255, 255, 0.1);
+    color: inherit;
+    backdrop-filter: blur(10px);
+}
+
+.notification-action:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.notification-action:active {
+    transform: translateY(0);
+}
+
+/* Bouton de fermeture */
+.notification-close {
+    position: absolute;
+    top: var(--notification-spacing-sm);
+    right: var(--notification-spacing-sm);
+    width: var(--notification-close-size);
+    height: var(--notification-close-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all var(--notification-transition-speed) var(--notification-transition-easing);
+    color: inherit;
+    opacity: 0.6;
+}
+
+.notification-close:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.notification-close svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Barre de progression */
+.notification-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+}
+
+.notification-progress-bar {
+    height: 100%;
+    background: currentColor;
+    width: 100%;
+    transform-origin: left;
+    animation: progress-countdown linear forwards;
+}
+
+@keyframes progress-countdown {
+    from {
+        transform: scaleX(1);
+    }
+    to {
+        transform: scaleX(0);
+    }
+}
+
+/* ========================================
+   STYLE GLASSMORPHISM
+   ======================================== */
+.notification-glassmorphism {
+    background: var(--notification-glass-bg);
+    backdrop-filter: blur(var(--notification-backdrop-blur)) brightness(1.1);
+    -webkit-backdrop-filter: blur(var(--notification-backdrop-blur)) brightness(1.1);
+    border: 1px solid var(--notification-glass-border);
+    box-shadow: var(--notification-glass-shadow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.notification-glassmorphism::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0) 40%,
+        rgba(255, 255, 255, 0) 60%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    pointer-events: none;
+}
+
+.notification-glassmorphism:hover {
+    background: var(--notification-glass-bg-hover);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: var(--notification-glass-shadow),
+                0 12px 40px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Icône glassmorphism */
+.notification-glassmorphism .notification-icon {
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Effet de brillance */
+.notification-glow {
+    position: absolute;
+    inset: -50%;
+    background: radial-gradient(
+        circle at center,
+        rgba(255, 255, 255, 0.1) 0%,
+        transparent 70%
+    );
+    opacity: 0;
+    transition: opacity var(--notification-transition-speed) var(--notification-transition-easing);
+    pointer-events: none;
+}
+
+.notification:hover .notification-glow {
+    opacity: 1;
+}
+
+/* ========================================
+   STYLE NEUMORPHISM
+   ======================================== */
+.notification-neumorphism {
+    background: #e0e5ec;
+    box-shadow: 20px 20px 60px #bebebe,
+                -20px -20px 60px #ffffff;
+}
+
+.notification-neumorphism .notification-close {
+    background: #e0e5ec;
+    box-shadow: 5px 5px 10px #bebebe,
+                -5px -5px 10px #ffffff;
+}
+
+.notification-neumorphism .notification-close:active {
+    box-shadow: inset 2px 2px 5px #bebebe,
+                inset -2px -2px 5px #ffffff;
+}
+
+/* ========================================
+   STYLE FLAT
+   ======================================== */
+.notification-flat {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.notification-flat .notification-close {
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+}
+
+/* ========================================
+   STYLE MINIMAL
+   ======================================== */
+.notification-minimal {
+    background: rgba(255, 255, 255, 0.95);
+    border-left: 4px solid currentColor;
+    border-radius: 4px;
+    padding-left: var(--notification-spacing-md);
+}
+
+.notification-minimal .notification-icon {
+    color: inherit;
+}
+
+/* ========================================
+   STYLE MATERIAL
+   ======================================== */
+.notification-material {
+    background: #ffffff;
+    border-radius: 4px;
+    box-shadow: 0 3px 5px -1px rgba(0,0,0,.2),
+                0 6px 10px 0 rgba(0,0,0,.14),
+                0 1px 18px 0 rgba(0,0,0,.12);
+}
+
+/* ========================================
+   TYPES DE NOTIFICATIONS
+   ======================================== */
+.notification-info {
+    color: var(--notification-info-color);
+}
+
+.notification-success {
+    color: var(--notification-success-color);
+}
+
+.notification-warning {
+    color: var(--notification-warning-color);
+}
+
+.notification-error {
+    color: var(--notification-error-color);
+}
+
+.notification-loading {
+    color: var(--notification-loading-color);
+}
+
+.notification-loading .notification-icon svg {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Adaptations pour les types */
+.notification-minimal.notification-info {
+    background: linear-gradient(to right, var(--notification-info-color) 4px, rgba(59, 130, 246, 0.05) 4px);
+}
+
+.notification-minimal.notification-success {
+    background: linear-gradient(to right, var(--notification-success-color) 4px, rgba(34, 197, 94, 0.05) 4px);
+}
+
+.notification-minimal.notification-warning {
+    background: linear-gradient(to right, var(--notification-warning-color) 4px, rgba(245, 158, 11, 0.05) 4px);
+}
+
+.notification-minimal.notification-error {
+    background: linear-gradient(to right, var(--notification-error-color) 4px, rgba(239, 68, 68, 0.05) 4px);
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+/* Animation slide */
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideLeft {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideRight {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes zoomIn {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Classes d'animation */
+.notification.animation-subtle {
+    animation-duration: 0.3s;
+}
+
+.notification.animation-smooth {
+    animation-duration: 0.4s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.notification.animation-rich {
+    animation-duration: 0.6s;
+    animation-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Animation de sortie */
+.notification.dismiss {
+    opacity: 0;
+    transform: scale(0.95);
+}
+
+.notification.dismiss-left {
+    transform: translateX(-100%);
+}
+
+.notification.dismiss-right {
+    transform: translateX(100%);
+}
+
+.notification.dismiss-stack {
+    transform: translateY(-10px) scale(0.9);
+}
+
+/* Effets d'entrée riches */
+.notification-ripple {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle, currentColor 0%, transparent 70%);
+    opacity: 0.3;
+    animation: ripple-expand 1s ease-out;
+    pointer-events: none;
+}
+
+@keyframes ripple-expand {
+    from {
+        transform: scale(0);
+        opacity: 0.5;
+    }
+    to {
+        transform: scale(1);
+        opacity: 0;
+    }
+}
+
+/* Particules */
+.notification-particles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.notification-particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: currentColor;
+    border-radius: 50%;
+    opacity: 0.5;
+    top: 50%;
+    left: 50%;
+    animation: particle-float 2s ease-out forwards;
+    animation-delay: var(--delay);
+}
+
+@keyframes particle-float {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg) translateX(0);
+        opacity: 0.5;
+    }
+    100% {
+        transform: translate(-50%, -50%) rotate(var(--angle)) translateX(100px);
+        opacity: 0;
+    }
+}
+
+/* ========================================
+   TAILLES
+   ======================================== */
+
+/* Compact */
+.notification-compact {
+    --notification-spacing-md: 12px;
+    --notification-spacing-lg: 16px;
+    --notification-icon-size: 16px;
+    --notification-close-size: 28px;
+    font-size: 13px;
+}
+
+.notification-compact .notification-title {
+    font-size: 14px;
+}
+
+/* Normal (par défaut) */
+.notification-normal {
+    /* Utilise les valeurs par défaut */
+}
+
+/* Large */
+.notification-large {
+    --notification-spacing-md: 20px;
+    --notification-spacing-lg: 24px;
+    --notification-icon-size: 24px;
+    --notification-close-size: 36px;
+    font-size: 16px;
+}
+
+.notification-large .notification-title {
+    font-size: 18px;
+}
+
+/* Full width */
+.notification-full {
+    max-width: 100%;
+    --notification-spacing-md: 24px;
+    --notification-spacing-lg: 32px;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 640px) {
+    .notification-container {
+        max-width: calc(100vw - 32px);
+        padding: var(--notification-spacing-md);
+    }
+    
+    .notification-container-center {
+        max-width: calc(100vw - 32px);
+    }
+    
+    .notification {
+        font-size: 14px;
+    }
+    
+    .notification-title {
+        font-size: 15px;
+    }
+    
+    .notification-actions {
+        flex-wrap: wrap;
+    }
+    
+    .notification-action {
+        flex: 1;
+        min-width: 80px;
+    }
+}
+
+/* Support tactile */
+@media (hover: none) {
+    .notification {
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .notification-close {
+        opacity: 1;
+        --notification-close-size: 36px;
+    }
+    
+    .notification-action {
+        padding: 8px 16px;
+    }
+}
+
+/* ========================================
+   ACCESSIBILITÉ
+   ======================================== */
+
+/* Focus visible */
+.notification:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+.notification-close:focus-visible,
+.notification-action:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+/* Mode contraste élevé */
+@media (prefers-contrast: high) {
+    .notification {
+        border: 2px solid currentColor;
+    }
+    
+    .notification-glassmorphism {
+        background: rgba(255, 255, 255, 0.9);
+        color: #000;
+    }
+    
+    .dark .notification-glassmorphism {
+        background: rgba(0, 0, 0, 0.9);
+        color: #fff;
+    }
+}
+
+/* Préférences de mouvement réduit */
+@media (prefers-reduced-motion: reduce) {
+    .notification,
+    .notification * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .notification-progress-bar {
+        animation: none !important;
+        transition: transform 0.01ms !important;
+    }
+}
+
+/* ========================================
+   THÈME SOMBRE
+   ======================================== */
+.dark .notification,
+[data-theme="dark"] .notification {
+    --notification-glass-bg: rgba(255, 255, 255, 0.05);
+    --notification-glass-border: rgba(255, 255, 255, 0.1);
+}
+
+.dark .notification-flat,
+[data-theme="dark"] .notification-flat {
+    background: #1f2937;
+    border-color: #374151;
+    color: #f3f4f6;
+}
+
+/* ========================================
+   UTILITAIRES
+   ======================================== */
+
+/* Stack spacing */
+.notification + .notification {
+    margin-top: var(--notification-spacing-sm);
+}
+
+/* Print styles */
+@media print {
+    .notification-container {
+        display: none;
+    }
+}
+
+/* ========================================
+   SUPPORT NAVIGATEURS
+   ======================================== */
+
+/* Fallback pour navigateurs sans backdrop-filter */
+@supports not (backdrop-filter: blur(20px)) {
+    .notification-glassmorphism {
+        background: rgba(255, 255, 255, 0.95);
+    }
+    
+    .dark .notification-glassmorphism {
+        background: rgba(30, 30, 30, 0.95);
+    }
+}

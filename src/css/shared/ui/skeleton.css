@@ -1,0 +1,570 @@
+/* ========================================
+   SKELETON.CSS - Styles pour le composant Skeleton
+   Chemin: src/css/shared/ui/skeleton.css
+   
+   DESCRIPTION:
+   Styles complets pour le système de skeleton avec effet glassmorphism.
+   Inclut tous les types, animations et variantes de skeleton.
+   
+   STRUCTURE:
+   1. Variables et configuration (lignes 20-80)
+   2. Styles de base (lignes 82-200)
+   3. Styles par type (lignes 202-400)
+   4. Animations (lignes 402-600)
+   5. Variantes de style (lignes 602-750)
+   6. Tailles (lignes 752-850)
+   7. Responsive et accessibilité (lignes 852-950)
+   
+   DÉPENDANCES:
+   - skeleton.component.js (utilise toutes ces classes)
+   - ui.config.js (variables globales)
+   ======================================== */
+
+/* ========================================
+   VARIABLES ET CONFIGURATION
+   ======================================== */
+:root {
+    /* Couleurs glassmorphism */
+    --skeleton-glass-bg: rgba(255, 255, 255, 0.05);
+    --skeleton-glass-bg-hover: rgba(255, 255, 255, 0.08);
+    --skeleton-glass-border: rgba(255, 255, 255, 0.1);
+    --skeleton-glass-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    --skeleton-backdrop-blur: 10px;
+    
+    /* Couleurs pour autres styles */
+    --skeleton-flat-bg: #e5e7eb;
+    --skeleton-minimal-bg: currentColor;
+    --skeleton-neumorphism-bg: #e0e5ec;
+    
+    /* Animation shimmer */
+    --skeleton-shimmer-gradient: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.2) 20%,
+        rgba(255, 255, 255, 0.5) 50%,
+        rgba(255, 255, 255, 0.2) 80%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    
+    /* Espacement */
+    --skeleton-gap-xs: 4px;
+    --skeleton-gap-sm: 8px;
+    --skeleton-gap-md: 16px;
+    --skeleton-gap-lg: 24px;
+    
+    /* Transitions */
+    --skeleton-transition-speed: 0.3s;
+    --skeleton-transition-easing: ease-in-out;
+}
+
+/* Mode sombre */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --skeleton-glass-bg: rgba(255, 255, 255, 0.03);
+        --skeleton-glass-bg-hover: rgba(255, 255, 255, 0.05);
+        --skeleton-glass-border: rgba(255, 255, 255, 0.08);
+        --skeleton-glass-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        --skeleton-flat-bg: #374151;
+        --skeleton-neumorphism-bg: #2d3748;
+    }
+}
+
+/* ========================================
+   STYLES DE BASE
+   ======================================== */
+
+/* Conteneur de skeleton */
+.skeleton-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--skeleton-gap-md);
+}
+
+/* Élément skeleton de base */
+.skeleton {
+    position: relative;
+    overflow: hidden;
+    display: block;
+    background: var(--skeleton-glass-bg);
+    transition: all var(--skeleton-transition-speed) var(--skeleton-transition-easing);
+}
+
+/* Pas de contenu dans les skeletons */
+.skeleton::before,
+.skeleton::after {
+    content: '';
+}
+
+/* Désactiver les interactions */
+.skeleton * {
+    visibility: hidden !important;
+}
+
+/* Style Glassmorphism (par défaut) */
+.skeleton-glassmorphism,
+.skeleton:not([class*="skeleton-flat"]):not([class*="skeleton-minimal"]):not([class*="skeleton-neumorphism"]) {
+    background: var(--skeleton-glass-bg);
+    backdrop-filter: blur(var(--skeleton-backdrop-blur));
+    -webkit-backdrop-filter: blur(var(--skeleton-backdrop-blur));
+    border: 1px solid var(--skeleton-glass-border);
+    box-shadow: var(--skeleton-glass-shadow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Effet de brillance glassmorphism */
+.skeleton-glassmorphism::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0) 40%,
+        rgba(255, 255, 255, 0) 60%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    pointer-events: none;
+}
+
+/* Bordures arrondies */
+.skeleton-rounded {
+    border-radius: 8px;
+}
+
+.skeleton-rounded-full {
+    border-radius: 9999px;
+}
+
+/* ========================================
+   STYLES PAR TYPE
+   ======================================== */
+
+/* Carte skeleton */
+.skeleton-card {
+    background: var(--skeleton-glass-bg);
+    backdrop-filter: blur(var(--skeleton-backdrop-blur));
+    -webkit-backdrop-filter: blur(var(--skeleton-backdrop-blur));
+    border: 1px solid var(--skeleton-glass-border);
+    border-radius: 16px;
+    box-shadow: var(--skeleton-glass-shadow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+}
+
+/* Liste skeleton */
+.skeleton-list-item {
+    background: var(--skeleton-glass-bg);
+    backdrop-filter: blur(var(--skeleton-backdrop-blur));
+    -webkit-backdrop-filter: blur(var(--skeleton-backdrop-blur));
+    border: 1px solid var(--skeleton-glass-border);
+    border-radius: 12px;
+    box-shadow: var(--skeleton-glass-shadow);
+    transition: all var(--skeleton-transition-speed) var(--skeleton-transition-easing);
+}
+
+.skeleton-list-item:hover {
+    background: var(--skeleton-glass-bg-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--skeleton-glass-shadow),
+                0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* Graphique skeleton */
+.skeleton-chart {
+    background: var(--skeleton-glass-bg);
+    backdrop-filter: blur(var(--skeleton-backdrop-blur));
+    -webkit-backdrop-filter: blur(var(--skeleton-backdrop-blur));
+    border: 1px solid var(--skeleton-glass-border);
+    border-radius: 16px;
+    box-shadow: var(--skeleton-glass-shadow);
+    padding: 20px;
+}
+
+.skeleton-chart-axis-x,
+.skeleton-chart-axis-y {
+    background: var(--skeleton-glass-border) !important;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+/* Animation Pulse */
+@keyframes skeletonPulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.4;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.skeleton-animate-pulse {
+    animation: skeletonPulse 1.5s ease-in-out infinite;
+}
+
+/* Animation Wave */
+@keyframes skeletonWave {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.skeleton-animate-wave {
+    position: relative;
+    overflow: hidden;
+}
+
+.skeleton-animate-wave::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--skeleton-shimmer-gradient);
+    animation: skeletonWave 1.8s linear infinite;
+}
+
+/* Animation Shimmer (plus subtile) */
+@keyframes skeletonShimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.skeleton-animate-shimmer {
+    background-image: linear-gradient(
+        90deg,
+        var(--skeleton-glass-bg) 0%,
+        rgba(255, 255, 255, 0.1) 20%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0.1) 80%,
+        var(--skeleton-glass-bg) 100%
+    );
+    background-size: 200% 100%;
+    animation: skeletonShimmer 2s linear infinite;
+}
+
+/* Animation Glow */
+@keyframes skeletonGlow {
+    0%, 100% {
+        box-shadow: var(--skeleton-glass-shadow),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+    50% {
+        box-shadow: var(--skeleton-glass-shadow),
+                    0 0 20px rgba(255, 255, 255, 0.2),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+}
+
+.skeleton-animate-glow {
+    animation: skeletonGlow 2s ease-in-out infinite;
+}
+
+/* ========================================
+   VARIANTES DE STYLE
+   ======================================== */
+
+/* Style Flat */
+.skeleton-flat {
+    background: var(--skeleton-flat-bg);
+    border: none;
+    box-shadow: none;
+}
+
+.skeleton-flat.skeleton-animate-shimmer {
+    background-image: linear-gradient(
+        90deg,
+        var(--skeleton-flat-bg) 0%,
+        rgba(255, 255, 255, 0.5) 50%,
+        var(--skeleton-flat-bg) 100%
+    );
+    background-size: 200% 100%;
+}
+
+/* Style Minimal */
+.skeleton-minimal {
+    background: var(--skeleton-minimal-bg);
+    opacity: 0.1;
+    border: none;
+    box-shadow: none;
+}
+
+/* Style Neumorphism */
+.skeleton-neumorphism {
+    background: var(--skeleton-neumorphism-bg);
+    border-radius: 20px;
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.2),
+                inset -3px -3px 7px rgba(255, 255, 255, 0.05);
+    border: none;
+}
+
+/* ========================================
+   TAILLES
+   ======================================== */
+
+/* Ajustements pour les petites tailles */
+.skeleton-xs {
+    transform: scale(0.75);
+    transform-origin: top left;
+}
+
+.skeleton-sm {
+    transform: scale(0.875);
+    transform-origin: top left;
+}
+
+/* Ajustements pour les grandes tailles */
+.skeleton-lg {
+    transform: scale(1.125);
+    transform-origin: top left;
+}
+
+.skeleton-xl {
+    transform: scale(1.25);
+    transform-origin: top left;
+}
+
+/* ========================================
+   EFFETS SPÉCIAUX
+   ======================================== */
+
+/* Effet de particules pour glassmorphism */
+.skeleton-glassmorphism.skeleton-particles::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(
+        circle at 20% 80%,
+        rgba(255, 255, 255, 0.1) 0%,
+        transparent 50%
+    ),
+    radial-gradient(
+        circle at 80% 20%,
+        rgba(255, 255, 255, 0.08) 0%,
+        transparent 50%
+    ),
+    radial-gradient(
+        circle at 40% 40%,
+        rgba(255, 255, 255, 0.05) 0%,
+        transparent 50%
+    );
+    pointer-events: none;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+    :root {
+        --skeleton-gap-md: 12px;
+        --skeleton-gap-lg: 16px;
+    }
+    
+    .skeleton-card {
+        border-radius: 12px;
+        padding: 16px;
+    }
+    
+    .skeleton-list-item {
+        border-radius: 8px;
+        padding: 12px;
+    }
+    
+    /* Ajuster les animations pour mobile */
+    .skeleton-animate-shimmer {
+        animation-duration: 2.5s;
+    }
+}
+
+@media (max-width: 480px) {
+    .skeleton-container {
+        gap: var(--skeleton-gap-sm);
+    }
+    
+    /* Simplifier sur petits écrans */
+    .skeleton-glassmorphism {
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+    }
+}
+
+/* ========================================
+   ACCESSIBILITÉ
+   ======================================== */
+
+/* Réduire les animations si demandé */
+@media (prefers-reduced-motion: reduce) {
+    .skeleton,
+    .skeleton * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .skeleton-animate-wave::after,
+    .skeleton-animate-shimmer {
+        animation: none !important;
+        background-image: none !important;
+    }
+}
+
+/* Mode contraste élevé */
+@media (prefers-contrast: high) {
+    .skeleton {
+        border: 2px solid currentColor;
+        opacity: 0.3;
+    }
+    
+    .skeleton-glassmorphism {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        background: rgba(128, 128, 128, 0.3);
+    }
+}
+
+/* ========================================
+   UTILITAIRES
+   ======================================== */
+
+/* Groupe de skeletons */
+.skeleton-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--skeleton-gap-md);
+}
+
+/* Skeleton en ligne */
+.skeleton-inline {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Skeleton flexible */
+.skeleton-flex {
+    display: flex;
+    align-items: center;
+    gap: var(--skeleton-gap-sm);
+}
+
+/* ========================================
+   SUPPORT NAVIGATEURS
+   ======================================== */
+
+/* Fallback pour navigateurs sans backdrop-filter */
+@supports not (backdrop-filter: blur(10px)) {
+    .skeleton-glassmorphism {
+        background: rgba(220, 220, 220, 0.9);
+    }
+    
+    @media (prefers-color-scheme: dark) {
+        .skeleton-glassmorphism {
+            background: rgba(60, 60, 60, 0.9);
+        }
+    }
+}
+
+/* ========================================
+   THÈMES
+   ======================================== */
+
+/* Thème sombre forcé */
+.dark .skeleton-glassmorphism,
+[data-theme="dark"] .skeleton-glassmorphism {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark .skeleton-flat,
+[data-theme="dark"] .skeleton-flat {
+    background: #374151;
+}
+
+/* ========================================
+   PATTERNS COMPLEXES
+   ======================================== */
+
+/* Pattern de tableau complet */
+.skeleton-table {
+    width: 100%;
+}
+
+.skeleton-table .skeleton-table-header {
+    display: flex;
+    gap: var(--skeleton-gap-md);
+    padding: 16px;
+    border-bottom: 1px solid var(--skeleton-glass-border);
+}
+
+.skeleton-table .skeleton-table-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.skeleton-table .skeleton-table-row {
+    display: flex;
+    gap: var(--skeleton-gap-md);
+    padding: 16px;
+    border-bottom: 1px solid var(--skeleton-glass-border);
+}
+
+/* Pattern de grille */
+.skeleton-grid {
+    display: grid;
+    gap: var(--skeleton-gap-md);
+}
+
+.skeleton-grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.skeleton-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.skeleton-grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+@media (max-width: 768px) {
+    .skeleton-grid-3,
+    .skeleton-grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .skeleton-grid-2,
+    .skeleton-grid-3,
+    .skeleton-grid-4 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [2024-01-15] - Performance animation shimmer
+   Solution: Utiliser background-position au lieu de transform
+   
+   [2024-01-15] - Compatibilité backdrop-filter
+   Cause: Non supporté sur certains navigateurs
+   Résolution: Fallback avec background opaque
+   
+   NOTES POUR REPRISES FUTURES:
+   - Les animations peuvent impacter les performances
+   - Prévoir des fallbacks pour backdrop-filter
+   - Tester sur appareils mobiles bas de gamme
+   ======================================== */

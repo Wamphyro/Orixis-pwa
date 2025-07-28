@@ -1,0 +1,962 @@
+/* ========================================
+   MINIMAL.CSS - Thème minimal pour le système UI
+   Chemin: src/css/shared/themes/minimal.css
+   
+   DESCRIPTION:
+   Thème minimal privilégiant la simplicité et la fonctionnalité.
+   Design épuré avec des bordures fines, peu d'ombres et des couleurs neutres.
+   Optimisé pour la lisibilité et les performances.
+   
+   STRUCTURE:
+   1. Variables globales du thème (lignes 20-150)
+   2. Reset et base (lignes 152-200)
+   3. Typography (lignes 202-280)
+   4. Composants Core (lignes 282-500)
+   5. Composants Feedback (lignes 502-700)
+   6. Composants Data Display (lignes 702-900)
+   7. Composants Data Entry (lignes 902-1100)
+   8. Composants Navigation (lignes 1102-1250)
+   9. Composants Layout (lignes 1252-1400)
+   10. Utilitaires et helpers (lignes 1402-1500)
+   11. Mode sombre (lignes 1502-1700)
+   12. Responsive (lignes 1702-1800)
+   13. Accessibilité (lignes 1802-1900)
+   
+   DÉPENDANCES:
+   - Utilisé par tous les composants UI via la classe .minimal
+   - ui.config.js (charge ce thème)
+   ======================================== */
+
+/* ========================================
+   VARIABLES GLOBALES DU THÈME
+   ======================================== */
+.minimal,
+[data-theme="minimal"] {
+    /* Couleurs de base */
+    --minimal-bg-primary: #ffffff;
+    --minimal-bg-secondary: #f9fafb;
+    --minimal-bg-tertiary: #f3f4f6;
+    --minimal-bg-elevated: #ffffff;
+    
+    /* Couleurs de texte */
+    --minimal-text-primary: #111827;
+    --minimal-text-secondary: #6b7280;
+    --minimal-text-tertiary: #9ca3af;
+    --minimal-text-inverse: #ffffff;
+    
+    /* Couleurs d'accentuation */
+    --minimal-accent-primary: #3b82f6;
+    --minimal-accent-secondary: #6366f1;
+    --minimal-accent-hover: #2563eb;
+    --minimal-accent-active: #1d4ed8;
+    
+    /* Couleurs sémantiques */
+    --minimal-color-success: #10b981;
+    --minimal-color-warning: #f59e0b;
+    --minimal-color-error: #ef4444;
+    --minimal-color-info: #3b82f6;
+    
+    /* Bordures */
+    --minimal-border-color: #e5e7eb;
+    --minimal-border-width: 1px;
+    --minimal-border-radius-sm: 4px;
+    --minimal-border-radius-md: 6px;
+    --minimal-border-radius-lg: 8px;
+    --minimal-border-radius-xl: 12px;
+    --minimal-border-radius-full: 9999px;
+    
+    /* Ombres (très subtiles) */
+    --minimal-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --minimal-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+    --minimal-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --minimal-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+    --minimal-shadow-none: none;
+    
+    /* Espacement */
+    --minimal-spacing-xs: 4px;
+    --minimal-spacing-sm: 8px;
+    --minimal-spacing-md: 16px;
+    --minimal-spacing-lg: 24px;
+    --minimal-spacing-xl: 32px;
+    --minimal-spacing-2xl: 48px;
+    
+    /* Typographie */
+    --minimal-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --minimal-font-size-xs: 12px;
+    --minimal-font-size-sm: 14px;
+    --minimal-font-size-base: 16px;
+    --minimal-font-size-lg: 18px;
+    --minimal-font-size-xl: 20px;
+    --minimal-font-size-2xl: 24px;
+    --minimal-font-size-3xl: 30px;
+    --minimal-line-height-tight: 1.25;
+    --minimal-line-height-normal: 1.5;
+    --minimal-line-height-relaxed: 1.75;
+    
+    /* Transitions */
+    --minimal-transition-fast: 150ms ease;
+    --minimal-transition-normal: 250ms ease;
+    --minimal-transition-slow: 350ms ease;
+    
+    /* Z-index */
+    --minimal-z-dropdown: 1000;
+    --minimal-z-sticky: 1020;
+    --minimal-z-fixed: 1030;
+    --minimal-z-modal-backdrop: 1040;
+    --minimal-z-modal: 1050;
+    --minimal-z-popover: 1060;
+    --minimal-z-tooltip: 1070;
+}
+
+/* ========================================
+   RESET ET BASE
+   ======================================== */
+.minimal *,
+.minimal *::before,
+.minimal *::after {
+    box-sizing: border-box;
+}
+
+.minimal {
+    font-family: var(--minimal-font-family);
+    font-size: var(--minimal-font-size-base);
+    line-height: var(--minimal-line-height-normal);
+    color: var(--minimal-text-primary);
+    background-color: var(--minimal-bg-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ========================================
+   TYPOGRAPHY
+   ======================================== */
+.minimal h1,
+.minimal h2,
+.minimal h3,
+.minimal h4,
+.minimal h5,
+.minimal h6 {
+    margin: 0;
+    font-weight: 600;
+    line-height: var(--minimal-line-height-tight);
+    color: var(--minimal-text-primary);
+}
+
+.minimal h1 { font-size: var(--minimal-font-size-3xl); }
+.minimal h2 { font-size: var(--minimal-font-size-2xl); }
+.minimal h3 { font-size: var(--minimal-font-size-xl); }
+.minimal h4 { font-size: var(--minimal-font-size-lg); }
+.minimal h5 { font-size: var(--minimal-font-size-base); }
+.minimal h6 { font-size: var(--minimal-font-size-sm); }
+
+.minimal p {
+    margin: 0;
+    line-height: var(--minimal-line-height-relaxed);
+}
+
+.minimal a {
+    color: var(--minimal-accent-primary);
+    text-decoration: none;
+    transition: color var(--minimal-transition-fast);
+}
+
+.minimal a:hover {
+    color: var(--minimal-accent-hover);
+    text-decoration: underline;
+}
+
+/* ========================================
+   COMPOSANTS CORE
+   ======================================== */
+
+/* Button */
+.minimal .button,
+.minimal button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--minimal-spacing-sm) var(--minimal-spacing-md);
+    font-size: var(--minimal-font-size-sm);
+    font-weight: 500;
+    line-height: 1;
+    color: var(--minimal-text-primary);
+    background-color: var(--minimal-bg-primary);
+    border: var(--minimal-border-width) solid var(--minimal-border-color);
+    border-radius: var(--minimal-border-radius-md);
+    cursor: pointer;
+    transition: all var(--minimal-transition-fast);
+    white-space: nowrap;
+    user-select: none;
+}
+
+.minimal .button:hover,
+.minimal button:hover {
+    background-color: var(--minimal-bg-secondary);
+    border-color: var(--minimal-text-tertiary);
+}
+
+.minimal .button:active,
+.minimal button:active {
+    background-color: var(--minimal-bg-tertiary);
+    transform: translateY(1px);
+}
+
+.minimal .button:focus-visible,
+.minimal button:focus-visible {
+    outline: 2px solid var(--minimal-accent-primary);
+    outline-offset: 2px;
+}
+
+.minimal .button.primary {
+    color: var(--minimal-text-inverse);
+    background-color: var(--minimal-accent-primary);
+    border-color: var(--minimal-accent-primary);
+}
+
+.minimal .button.primary:hover {
+    background-color: var(--minimal-accent-hover);
+    border-color: var(--minimal-accent-hover);
+}
+
+/* Card */
+.minimal .card {
+    background-color: var(--minimal-bg-elevated);
+    border: var(--minimal-border-width) solid var(--minimal-border-color);
+    border-radius: var(--minimal-border-radius-lg);
+    padding: var(--minimal-spacing-lg);
+    transition: box-shadow var(--minimal-transition-normal);
+}
+
+.minimal .card:hover {
+    box-shadow: var(--minimal-shadow-md);
+}
+
+.minimal .card-header {
+    margin-bottom: var(--minimal-spacing-md);
+    padding-bottom: var(--minimal-spacing-md);
+    border-bottom: var(--minimal-border-width) solid var(--minimal-border-color);
+}
+
+.minimal .card-title {
+    font-size: var(--minimal-font-size-lg);
+    font-weight: 600;
+    color: var(--minimal-text-primary);
+}
+
+.minimal .card-content {
+    color: var(--minimal-text-secondary);
+}
+
+/* ========================================
+   COMPOSANTS FEEDBACK
+   ======================================== */
+
+/* Alert */
+.minimal .alert {
+    position: relative;
+    padding: var(--minimal-spacing-md);
+    background-color: var(--minimal-bg-secondary);
+    border: var(--minimal-border-width) solid var(--minimal-border-color);
+    border-radius: var(--minimal-border-radius-md);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--minimal-spacing-sm);
+}
+
+.minimal .alert.info {
+    border-left: 4px solid var(--minimal-color-info);
+}
+
+.minimal .alert.success {
+    border-left: 4px solid var(--minimal-color-success);
+}
+
+.minimal .alert.warning {
+    border-left: 4px solid var(--minimal-color-warning);
+}
+
+.minimal .alert.error {
+    border-left: 4px solid var(--minimal-color-error);
+}
+
+/* Modal */
+.minimal .modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.minimal .modal {
+    background-color: var(--minimal-bg-elevated);
+    border-radius: var(--minimal-border-radius-lg);
+    box-shadow: var(--minimal-shadow-lg);
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+.minimal .modal-header {
+    padding: var(--minimal-spacing-lg);
+    border-bottom: var(--minimal-border-width) solid var(--minimal-border-color);
+}
+
+.minimal .modal-body {
+    padding: var(--minimal-spacing-lg);
+    overflow-y: auto;
+}
+
+.minimal .modal-footer {
+    padding: var(--minimal-spacing-lg);
+    border-top: var(--minimal-border-width) solid var(--minimal-border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--minimal-spacing-sm);
+}
+
+/* Notification */
+.minimal .notification {
+    padding: var(--minimal-spacing-md);
+    background-color: var(--minimal-bg-elevated);
+    border: var(--minimal-border-width) solid var(--minimal-border-color);
+    border-radius: var(--minimal-border-radius-md);
+    box-shadow: var(--minimal-shadow-md);
+}
+
+/* Progress */
+.minimal .progress {
+    height: 4px;
+    background-color: var(--minimal-bg-tertiary);
+    border-radius: var(--minimal-border-radius-full);
+    overflow: hidden;
+}
+
+.minimal .progress-bar {
+    height: 100%;
+    background-color: var(--minimal-accent-primary);
+    transition: width var(--minimal-transition-normal);
+}
+
+/* ========================================
+   COMPOSANTS DATA DISPLAY
+   ======================================== */
+
+/* Table */
+.minimal .table {
+    width: 100%;
+    background-color: var(--minimal-bg-elevated);
+    border: var(--minimal-border-width) solid var(--minimal-border-color);
+    border-radius: var(--minimal-border-radius-lg);
+    overflow: hidden;
+}
+
+.minimal .table thead {
+    background-color: var(--minimal-bg-secondary);
+}
+
+.minimal .table th {
+    padding: var(--minimal-spacing-md);
+    font-weight: 600;
+    text-align: left;
+    color: var(--minimal-text-primary);
+    border-bottom: var(--minimal-border-width) solid var(--minimal-border-color);
+}
+
+.minimal .table td {
+    padding: var(--minimal-spacing-md);
+    color: var(--minimal-text-secondary);
+    border-bottom: var(--minimal-border-width) solid var(--minimal-border-color);
+}
+
+.minimal .table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.minimal .table tbody tr:hover {
+    background-color: var(--minimal-bg-secondary);
+}
+
+/* List */
+.minimal .list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.minimal .list-item {
+    padding: var(--minimal-spacing-md);
+    border-bottom: var(--minimal-border-width) solid var(--minimal-border-color);
+    transition: background-color var(--minimal-transition-fast);
+}
+
+.minimal .list-item:last-child {
+    border-bottom: none;
+}
+
+.minimal .list-item:hover {
+    background-color: var(--minimal-bg-secondary);
+}
+
+/* Status Badge */
+.minimal .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--minimal-spacing-xs) var(--minimal-spacing-sm);
+    font-size: var(--minimal-font-size-xs);
+    font-weight: 500;
+    border-radius: var(--minimal-border-radius-full);
+    background-color: var(--minimal-bg-tertiary);
+    color: var(--minimal-text-secondary);
+    border: var(--minimal-border-width) solid var(--minimal-border-color);
+}
+
+.minimal .badge.success {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--minimal-color-success);
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+.minimal .badge.warning {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--minimal-color-warning);
+    border-color: rgba(245, 158, 11, 0.2);
+}
+
+.minimal .badge.error {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--minimal-color-error);
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+/* ========================================
+   COMPOSANTS DATA ENTRY
+   ======================================== */
+
+/* Input Field */
+.minimal .input,
+.minimal input[type="text"],
+.minimal input[type="email"],
+.minimal input[type="password"],
+.minimal input[type="number"],
+.minimal input[type="tel"],
+.minimal input[type="url"],
+.minimal input[type="search"],
+.minimal input[type="date"],
+.minimal input[type="time"],
+.minimal input[type="datetime-local"] {
+    width: 100%;
+    padding: var(--minimal-spacing-sm) var(--minimal-spacing-md);
+    font-size: var(--minimal-font-size-sm);
+    color: var(--minimal-text-primary);
+    background-color: var(--minimal-bg-primary);
+    border: var(--minimal-border-width) solid var(--minimal-border-color);
+    border-radius: var(--minimal-border-radius-md);
+    transition: border-color var(--minimal-transition-fast);
+}
+
+.minimal .input:hover,
+.minimal input:hover {
+    border-color: var(--minimal-text-tertiary);
+}
+
+.minimal .input:focus,
+.minimal input:focus {
+    outline: none;
+    border-color: var(--minimal-accent-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Textarea */
+.minimal .textarea,
+.minimal textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: var(--minimal-spacing-sm) var(--minimal-spacing-md);
+    font-size: var(--minimal-font-size-sm);
+    color: var(--minimal-text-primary);
+    background-color: var(--minimal-bg-primary);
+    border: var(--minimal-border-width) solid var(--minimal-border-color);
+    border-radius: var(--minimal-border-radius-md);
+    resize: vertical;
+    transition: border-color var(--minimal-transition-fast);
+}
+
+/* Select */
+.minimal .select,
+.minimal select {
+    width: 100%;
+    padding: var(--minimal-spacing-sm) var(--minimal-spacing-md);
+    font-size: var(--minimal-font-size-sm);
+    color: var(--minimal-text-primary);
+    background-color: var(--minimal-bg-primary);
+    border: var(--minimal-border-width) solid var(--minimal-border-color);
+    border-radius: var(--minimal-border-radius-md);
+    cursor: pointer;
+    transition: border-color var(--minimal-transition-fast);
+}
+
+/* Checkbox & Radio */
+.minimal .checkbox,
+.minimal .radio,
+.minimal input[type="checkbox"],
+.minimal input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: var(--minimal-accent-primary);
+}
+
+.minimal .checkbox-label,
+.minimal .radio-label {
+    display: flex;
+    align-items: center;
+    gap: var(--minimal-spacing-sm);
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Switch/Toggle */
+.minimal .switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+
+.minimal .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.minimal .switch-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--minimal-bg-tertiary);
+    border: var(--minimal-border-width) solid var(--minimal-border-color);
+    border-radius: var(--minimal-border-radius-full);
+    transition: all var(--minimal-transition-fast);
+}
+
+.minimal .switch-slider::before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 2px;
+    bottom: 2px;
+    background-color: var(--minimal-bg-primary);
+    border-radius: 50%;
+    transition: transform var(--minimal-transition-fast);
+}
+
+.minimal .switch input:checked + .switch-slider {
+    background-color: var(--minimal-accent-primary);
+    border-color: var(--minimal-accent-primary);
+}
+
+.minimal .switch input:checked + .switch-slider::before {
+    transform: translateX(20px);
+}
+
+/* ========================================
+   COMPOSANTS NAVIGATION
+   ======================================== */
+
+/* Tabs */
+.minimal .tabs {
+    display: flex;
+    border-bottom: var(--minimal-border-width) solid var(--minimal-border-color);
+}
+
+.minimal .tab {
+    padding: var(--minimal-spacing-sm) var(--minimal-spacing-md);
+    font-size: var(--minimal-font-size-sm);
+    font-weight: 500;
+    color: var(--minimal-text-secondary);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all var(--minimal-transition-fast);
+}
+
+.minimal .tab:hover {
+    color: var(--minimal-text-primary);
+}
+
+.minimal .tab.active {
+    color: var(--minimal-accent-primary);
+    border-bottom-color: var(--minimal-accent-primary);
+}
+
+/* Breadcrumb */
+.minimal .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: var(--minimal-spacing-sm);
+    font-size: var(--minimal-font-size-sm);
+}
+
+.minimal .breadcrumb-item {
+    color: var(--minimal-text-secondary);
+}
+
+.minimal .breadcrumb-item:last-child {
+    color: var(--minimal-text-primary);
+    font-weight: 500;
+}
+
+.minimal .breadcrumb-separator {
+    color: var(--minimal-text-tertiary);
+}
+
+/* Pagination */
+.minimal .pagination {
+    display: flex;
+    align-items: center;
+    gap: var(--minimal-spacing-xs);
+}
+
+.minimal .pagination-item {
+    min-width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--minimal-font-size-sm);
+    color: var(--minimal-text-secondary);
+    background-color: var(--minimal-bg-primary);
+    border: var(--minimal-border-width) solid var(--minimal-border-color);
+    border-radius: var(--minimal-border-radius-md);
+    cursor: pointer;
+    transition: all var(--minimal-transition-fast);
+}
+
+.minimal .pagination-item:hover {
+    background-color: var(--minimal-bg-secondary);
+    border-color: var(--minimal-text-tertiary);
+}
+
+.minimal .pagination-item.active {
+    color: var(--minimal-text-inverse);
+    background-color: var(--minimal-accent-primary);
+    border-color: var(--minimal-accent-primary);
+}
+
+/* ========================================
+   COMPOSANTS LAYOUT
+   ======================================== */
+
+/* Container */
+.minimal .container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--minimal-spacing-lg);
+}
+
+/* Grid */
+.minimal .grid {
+    display: grid;
+    gap: var(--minimal-spacing-lg);
+}
+
+.minimal .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+.minimal .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+.minimal .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+/* Flex */
+.minimal .flex {
+    display: flex;
+}
+
+.minimal .flex-row { flex-direction: row; }
+.minimal .flex-col { flex-direction: column; }
+.minimal .flex-wrap { flex-wrap: wrap; }
+.minimal .items-center { align-items: center; }
+.minimal .items-start { align-items: flex-start; }
+.minimal .items-end { align-items: flex-end; }
+.minimal .justify-center { justify-content: center; }
+.minimal .justify-between { justify-content: space-between; }
+.minimal .justify-end { justify-content: flex-end; }
+
+/* Divider */
+.minimal .divider {
+    height: var(--minimal-border-width);
+    background-color: var(--minimal-border-color);
+    margin: var(--minimal-spacing-lg) 0;
+}
+
+.minimal .divider.vertical {
+    width: var(--minimal-border-width);
+    height: auto;
+    margin: 0 var(--minimal-spacing-lg);
+}
+
+/* ========================================
+   UTILITAIRES ET HELPERS
+   ======================================== */
+
+/* Spacing */
+.minimal .m-0 { margin: 0; }
+.minimal .m-1 { margin: var(--minimal-spacing-xs); }
+.minimal .m-2 { margin: var(--minimal-spacing-sm); }
+.minimal .m-3 { margin: var(--minimal-spacing-md); }
+.minimal .m-4 { margin: var(--minimal-spacing-lg); }
+.minimal .m-5 { margin: var(--minimal-spacing-xl); }
+
+.minimal .p-0 { padding: 0; }
+.minimal .p-1 { padding: var(--minimal-spacing-xs); }
+.minimal .p-2 { padding: var(--minimal-spacing-sm); }
+.minimal .p-3 { padding: var(--minimal-spacing-md); }
+.minimal .p-4 { padding: var(--minimal-spacing-lg); }
+.minimal .p-5 { padding: var(--minimal-spacing-xl); }
+
+/* Text */
+.minimal .text-xs { font-size: var(--minimal-font-size-xs); }
+.minimal .text-sm { font-size: var(--minimal-font-size-sm); }
+.minimal .text-base { font-size: var(--minimal-font-size-base); }
+.minimal .text-lg { font-size: var(--minimal-font-size-lg); }
+.minimal .text-xl { font-size: var(--minimal-font-size-xl); }
+
+.minimal .text-left { text-align: left; }
+.minimal .text-center { text-align: center; }
+.minimal .text-right { text-align: right; }
+
+.minimal .font-normal { font-weight: 400; }
+.minimal .font-medium { font-weight: 500; }
+.minimal .font-semibold { font-weight: 600; }
+.minimal .font-bold { font-weight: 700; }
+
+/* Colors */
+.minimal .text-primary { color: var(--minimal-text-primary); }
+.minimal .text-secondary { color: var(--minimal-text-secondary); }
+.minimal .text-tertiary { color: var(--minimal-text-tertiary); }
+.minimal .text-success { color: var(--minimal-color-success); }
+.minimal .text-warning { color: var(--minimal-color-warning); }
+.minimal .text-error { color: var(--minimal-color-error); }
+
+/* Display */
+.minimal .hidden { display: none; }
+.minimal .block { display: block; }
+.minimal .inline { display: inline; }
+.minimal .inline-block { display: inline-block; }
+.minimal .flex { display: flex; }
+.minimal .grid { display: grid; }
+
+/* ========================================
+   MODE SOMBRE
+   ======================================== */
+.minimal.dark,
+.minimal[data-mode="dark"],
+@media (prefers-color-scheme: dark) {
+    .minimal:not([data-mode="light"]) {
+        /* Couleurs de base */
+        --minimal-bg-primary: #111827;
+        --minimal-bg-secondary: #1f2937;
+        --minimal-bg-tertiary: #374151;
+        --minimal-bg-elevated: #1f2937;
+        
+        /* Couleurs de texte */
+        --minimal-text-primary: #f9fafb;
+        --minimal-text-secondary: #d1d5db;
+        --minimal-text-tertiary: #9ca3af;
+        --minimal-text-inverse: #111827;
+        
+        /* Bordures */
+        --minimal-border-color: #374151;
+        
+        /* Ombres (encore plus subtiles en mode sombre) */
+        --minimal-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.1);
+        --minimal-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+        --minimal-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --minimal-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 640px) {
+    .minimal {
+        font-size: var(--minimal-font-size-sm);
+    }
+    
+    .minimal .container {
+        padding: 0 var(--minimal-spacing-md);
+    }
+    
+    .minimal .grid-cols-2,
+    .minimal .grid-cols-3,
+    .minimal .grid-cols-4 {
+        grid-template-columns: 1fr;
+    }
+    
+    .minimal .modal {
+        max-width: 95vw;
+        max-height: 95vh;
+    }
+    
+    .minimal .table {
+        font-size: var(--minimal-font-size-xs);
+    }
+    
+    .minimal .table th,
+    .minimal .table td {
+        padding: var(--minimal-spacing-sm);
+    }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+    .minimal .grid-cols-3,
+    .minimal .grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ========================================
+   ACCESSIBILITÉ
+   ======================================== */
+
+/* Focus visible pour tous les éléments interactifs */
+.minimal *:focus-visible {
+    outline: 2px solid var(--minimal-accent-primary);
+    outline-offset: 2px;
+}
+
+/* Préférences de mouvement réduit */
+@media (prefers-reduced-motion: reduce) {
+    .minimal *,
+    .minimal *::before,
+    .minimal *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Mode contraste élevé */
+@media (prefers-contrast: high) {
+    .minimal {
+        --minimal-border-width: 2px;
+    }
+    
+    .minimal .button,
+    .minimal .card,
+    .minimal .input,
+    .minimal .select {
+        border-width: 2px;
+    }
+    
+    .minimal .text-secondary {
+        color: var(--minimal-text-primary);
+        opacity: 0.8;
+    }
+    
+    .minimal .text-tertiary {
+        color: var(--minimal-text-primary);
+        opacity: 0.6;
+    }
+}
+
+/* Skip links */
+.minimal .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--minimal-accent-primary);
+    color: var(--minimal-text-inverse);
+    padding: var(--minimal-spacing-sm) var(--minimal-spacing-md);
+    border-radius: var(--minimal-border-radius-md);
+    text-decoration: none;
+    z-index: var(--minimal-z-tooltip);
+}
+
+.minimal .skip-link:focus {
+    top: var(--minimal-spacing-sm);
+}
+
+/* ========================================
+   ÉTATS
+   ======================================== */
+
+/* Disabled */
+.minimal .disabled,
+.minimal :disabled,
+.minimal [aria-disabled="true"] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Loading */
+.minimal .loading {
+    position: relative;
+    color: transparent;
+}
+
+.minimal .loading::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid var(--minimal-border-color);
+    border-radius: 50%;
+    border-top-color: var(--minimal-accent-primary);
+    animation: minimal-spin 0.6s linear infinite;
+}
+
+@keyframes minimal-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ========================================
+   PRINT
+   ======================================== */
+@media print {
+    .minimal {
+        background: white;
+        color: black;
+    }
+    
+    .minimal .no-print {
+        display: none !important;
+    }
+    
+    .minimal .button,
+    .minimal .modal-backdrop,
+    .minimal .notification {
+        display: none !important;
+    }
+    
+    .minimal a {
+        color: black;
+        text-decoration: underline;
+    }
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [2024-01] - Contraste insuffisant en mode sombre
+   Solution: Ajustement des couleurs de texte secondaire
+   
+   [2024-02] - Focus non visible sur certains éléments
+   Solution: Ajout du focus-visible systématique
+   
+   [2024-03] - Performance sur mobile avec les ombres
+   Solution: Réduction des ombres et simplification
+   
+   NOTES POUR REPRISES FUTURES:
+   - Le thème minimal privilégie la performance
+   - Éviter d'ajouter des animations complexes
+   - Maintenir la cohérence des bordures fines
+   - Tester systématiquement l'accessibilité
+   ======================================== */

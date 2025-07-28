@@ -1,0 +1,869 @@
+/* ========================================
+   STATUS-BADGE.CSS - Styles pour le composant Status Badge
+   Chemin: src/css/shared/ui/status-badge.css
+   
+   DESCRIPTION:
+   Styles complets pour le système de badges de statut avec effet glassmorphism.
+   Supporte tous les styles, tailles, formes, animations et états.
+   
+   STRUCTURE:
+   1. Variables et configuration (lignes 20-120)
+   2. Conteneur et structure (lignes 122-250)
+   3. Style Glassmorphism (lignes 252-400)
+   4. Autres styles (lignes 402-600)
+   5. Tailles (lignes 602-750)
+   6. Formes (lignes 752-900)
+   7. Animations et effets (lignes 902-1200)
+   8. États et positions (lignes 1202-1400)
+   9. Responsive et accessibilité (lignes 1402-1500)
+   
+   DÉPENDANCES:
+   - status-badge.component.js (utilise toutes ces classes)
+   ======================================== */
+
+/* ========================================
+   VARIABLES ET CONFIGURATION
+   ======================================== */
+:root {
+    /* Couleurs glassmorphism */
+    --badge-glass-bg: rgba(255, 255, 255, 0.1);
+    --badge-glass-bg-hover: rgba(255, 255, 255, 0.15);
+    --badge-glass-border: rgba(255, 255, 255, 0.2);
+    --badge-glass-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    --badge-backdrop-blur: 20px;
+    
+    /* Couleurs de statut par défaut */
+    --status-active: #22c55e;
+    --status-inactive: #6b7280;
+    --status-pending: #f59e0b;
+    --status-processing: #3b82f6;
+    --status-completed: #22c55e;
+    --status-failed: #ef4444;
+    --status-warning: #f59e0b;
+    --status-error: #ef4444;
+    --status-success: #22c55e;
+    --status-info: #0ea5e9;
+    
+    /* Couleur dynamique */
+    --status-color: var(--status-active);
+    --status-color-rgb: 34, 197, 94;
+    
+    /* Tailles */
+    --badge-size-xs: 6px;
+    --badge-size-sm: 8px;
+    --badge-size-md: 10px;
+    --badge-size-lg: 12px;
+    --badge-size-xl: 16px;
+    
+    /* Espacement */
+    --badge-spacing-xs: 4px;
+    --badge-spacing-sm: 6px;
+    --badge-spacing-md: 8px;
+    --badge-spacing-lg: 12px;
+    
+    /* Transitions */
+    --badge-transition-speed: 0.3s;
+    --badge-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Z-index */
+    --badge-z-index: 10;
+}
+
+/* Mode sombre */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --badge-glass-bg: rgba(255, 255, 255, 0.05);
+        --badge-glass-bg-hover: rgba(255, 255, 255, 0.08);
+        --badge-glass-border: rgba(255, 255, 255, 0.1);
+        --badge-glass-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+}
+
+/* ========================================
+   CONTENEUR ET STRUCTURE
+   ======================================== */
+.status-badge-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--badge-spacing-sm);
+    z-index: var(--badge-z-index);
+    transition: all var(--badge-transition-speed) var(--badge-transition-easing);
+}
+
+/* Badge principal */
+.status-badge {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--badge-size-md);
+    height: var(--badge-size-md);
+    border-radius: 50%;
+    transition: all var(--badge-transition-speed) var(--badge-transition-easing);
+    color: var(--status-color);
+}
+
+/* Pulse ring */
+.status-badge-pulse {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--status-color);
+    opacity: 0.4;
+    animation: badgePulse 2s ease-out infinite;
+    pointer-events: none;
+}
+
+/* Icône interne */
+.status-badge-icon {
+    width: 70%;
+    height: 70%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.status-badge-icon svg {
+    width: 100%;
+    height: 100%;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+}
+
+/* Texte du badge */
+.status-badge-text {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--status-color);
+    white-space: nowrap;
+    transition: all var(--badge-transition-speed) var(--badge-transition-easing);
+}
+
+/* ========================================
+   STYLE GLASSMORPHISM (Par défaut)
+   ======================================== */
+.status-badge-container.glassmorphism .status-badge {
+    background: var(--badge-glass-bg);
+    backdrop-filter: blur(var(--badge-backdrop-blur)) brightness(1.1);
+    -webkit-backdrop-filter: blur(var(--badge-backdrop-blur)) brightness(1.1);
+    border: 1px solid var(--badge-glass-border);
+    box-shadow: var(--badge-glass-shadow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                0 0 0 0 rgba(var(--status-color-rgb), 0.2);
+    color: var(--status-color);
+}
+
+/* Effet de brillance glassmorphism */
+.status-badge-container.glassmorphism .status-badge::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.3) 0%,
+        rgba(255, 255, 255, 0) 40%,
+        rgba(255, 255, 255, 0) 60%,
+        rgba(255, 255, 255, 0.1) 100%
+    );
+    pointer-events: none;
+    opacity: 0.6;
+    transition: opacity var(--badge-transition-speed);
+}
+
+/* Glow effect glassmorphism */
+.status-badge-container.glassmorphism .status-badge::after {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border-radius: inherit;
+    background: radial-gradient(
+        circle at center,
+        rgba(var(--status-color-rgb), 0.3) 0%,
+        transparent 70%
+    );
+    opacity: 0;
+    transition: opacity var(--badge-transition-speed);
+    pointer-events: none;
+}
+
+/* Hover glassmorphism */
+.status-badge-container.glassmorphism.clickable:hover .status-badge {
+    background: var(--badge-glass-bg-hover);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+    box-shadow: var(--badge-glass-shadow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                0 0 20px rgba(var(--status-color-rgb), 0.4);
+}
+
+.status-badge-container.glassmorphism.clickable:hover .status-badge::after {
+    opacity: 1;
+}
+
+/* ========================================
+   STYLE NEUMORPHISM
+   ======================================== */
+.status-badge-container.neumorphism .status-badge {
+    background: #e0e5ec;
+    box-shadow: 4px 4px 8px #a3b1c6,
+                -4px -4px 8px #ffffff;
+    border: none;
+}
+
+.status-badge-container.neumorphism:hover .status-badge {
+    box-shadow: 6px 6px 12px #a3b1c6,
+                -6px -6px 12px #ffffff;
+}
+
+.status-badge-container.neumorphism:active .status-badge {
+    box-shadow: inset 2px 2px 4px #a3b1c6,
+                inset -2px -2px 4px #ffffff;
+}
+
+/* ========================================
+   STYLE FLAT
+   ======================================== */
+.status-badge-container.flat .status-badge {
+    background: var(--status-color);
+    border: none;
+    color: white;
+}
+
+.status-badge-container.flat .status-badge-text {
+    color: var(--status-color);
+}
+
+/* ========================================
+   STYLE MATERIAL
+   ======================================== */
+.status-badge-container.material .status-badge {
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1),
+                0 1px 2px rgba(0,0,0,0.06);
+    border: none;
+    color: var(--status-color);
+    overflow: hidden;
+}
+
+.status-badge-container.material:hover .status-badge {
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1),
+                0 2px 4px rgba(0,0,0,0.06);
+}
+
+/* Ripple pour Material */
+.status-badge-container.material .status-badge::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle, currentColor 0%, transparent 70%);
+    transform: scale(0);
+    opacity: 0.3;
+}
+
+.status-badge-container.material:active .status-badge::after {
+    transform: scale(2);
+    transition: transform 0.5s;
+}
+
+/* ========================================
+   STYLE MINIMAL
+   ======================================== */
+.status-badge-container.minimal .status-badge {
+    background: transparent;
+    border: 2px solid var(--status-color);
+}
+
+/* ========================================
+   STYLE OUTLINE
+   ======================================== */
+.status-badge-container.outline .status-badge {
+    background: transparent;
+    border: 2px solid var(--status-color);
+    box-shadow: none;
+}
+
+.status-badge-container.outline:hover .status-badge {
+    background: var(--status-color);
+    color: white;
+}
+
+/* ========================================
+   STYLE GRADIENT
+   ======================================== */
+.status-badge-container.gradient .status-badge {
+    background: linear-gradient(
+        135deg,
+        var(--status-color) 0%,
+        color-mix(in srgb, var(--status-color) 70%, black) 100%
+    );
+    border: none;
+    color: white;
+    box-shadow: 0 4px 15px rgba(var(--status-color-rgb), 0.4);
+}
+
+/* ========================================
+   STYLE NEON
+   ======================================== */
+.status-badge-container.neon .status-badge {
+    background: transparent;
+    border: 2px solid var(--status-color);
+    box-shadow: 0 0 10px var(--status-color),
+                inset 0 0 10px var(--status-color),
+                0 0 20px rgba(var(--status-color-rgb), 0.5);
+    animation: neonGlow 2s ease-in-out infinite alternate;
+}
+
+/* ========================================
+   TAILLES
+   ======================================== */
+
+/* Extra Small */
+.status-badge-container.xs .status-badge {
+    width: var(--badge-size-xs);
+    height: var(--badge-size-xs);
+}
+
+.status-badge-container.xs .status-badge-text {
+    font-size: 10px;
+}
+
+.status-badge-container.xs .status-badge-icon svg {
+    stroke-width: 3;
+}
+
+/* Small */
+.status-badge-container.small .status-badge {
+    width: var(--badge-size-sm);
+    height: var(--badge-size-sm);
+}
+
+.status-badge-container.small .status-badge-text {
+    font-size: 11px;
+}
+
+/* Medium (défaut) */
+.status-badge-container.medium .status-badge {
+    width: var(--badge-size-md);
+    height: var(--badge-size-md);
+}
+
+/* Large */
+.status-badge-container.large .status-badge {
+    width: var(--badge-size-lg);
+    height: var(--badge-size-lg);
+}
+
+.status-badge-container.large .status-badge-text {
+    font-size: 14px;
+}
+
+/* Extra Large */
+.status-badge-container.xl .status-badge {
+    width: var(--badge-size-xl);
+    height: var(--badge-size-xl);
+}
+
+.status-badge-container.xl .status-badge-text {
+    font-size: 16px;
+}
+
+.status-badge-container.xl .status-badge-icon svg {
+    stroke-width: 2;
+}
+
+/* ========================================
+   FORMES
+   ======================================== */
+
+/* Circle (défaut) */
+.status-badge-container.circle .status-badge {
+    border-radius: 50%;
+}
+
+/* Square */
+.status-badge-container.square .status-badge {
+    border-radius: 2px;
+}
+
+/* Rounded */
+.status-badge-container.rounded .status-badge {
+    border-radius: 4px;
+}
+
+/* Hexagon */
+.status-badge-container.hexagon .status-badge {
+    clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
+    border-radius: 0;
+}
+
+/* Diamond */
+.status-badge-container.diamond .status-badge {
+    transform: rotate(45deg);
+    border-radius: 2px;
+}
+
+.status-badge-container.diamond .status-badge-icon {
+    transform: rotate(-45deg);
+}
+
+/* Triangle */
+.status-badge-container.triangle .status-badge {
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    border-radius: 0;
+}
+
+/* ========================================
+   POSITIONS DU TEXTE
+   ======================================== */
+
+/* Texte à droite (défaut) */
+.status-badge-container.text-right {
+    flex-direction: row;
+}
+
+/* Texte à gauche */
+.status-badge-container.text-left {
+    flex-direction: row-reverse;
+}
+
+/* Texte en haut */
+.status-badge-container.text-top {
+    flex-direction: column-reverse;
+    text-align: center;
+}
+
+/* Texte en bas */
+.status-badge-container.text-bottom {
+    flex-direction: column;
+    text-align: center;
+}
+
+/* Sans texte */
+.status-badge-container.text-none .status-badge-text {
+    display: none;
+}
+
+/* ========================================
+   ANIMATIONS PRINCIPALES
+   ======================================== */
+
+/* Pulse */
+@keyframes badgePulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.4;
+    }
+    50% {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+}
+
+/* Rotation continue */
+@keyframes badgeSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Rotation alternée */
+@keyframes badgeRotate {
+    0%, 100% { transform: rotate(-10deg); }
+    50% { transform: rotate(10deg); }
+}
+
+/* Shake */
+@keyframes badgeShake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+    20%, 40%, 60%, 80% { transform: translateX(2px); }
+}
+
+/* Highlight */
+@keyframes badgeHighlight {
+    0%, 100% {
+        box-shadow: var(--badge-glass-shadow);
+    }
+    50% {
+        box-shadow: var(--badge-glass-shadow),
+                    0 0 20px var(--status-color),
+                    0 0 40px var(--status-color);
+    }
+}
+
+/* Morph */
+@keyframes badgeMorph {
+    0% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(0.8) rotate(180deg); }
+    100% { transform: scale(1) rotate(360deg); }
+}
+
+/* Float */
+@keyframes badgeFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+
+/* Neon Glow */
+@keyframes neonGlow {
+    from {
+        box-shadow: 0 0 10px var(--status-color),
+                    inset 0 0 10px var(--status-color),
+                    0 0 20px rgba(var(--status-color-rgb), 0.5);
+    }
+    to {
+        box-shadow: 0 0 20px var(--status-color),
+                    inset 0 0 20px var(--status-color),
+                    0 0 40px rgba(var(--status-color-rgb), 0.8);
+    }
+}
+
+/* Breathe */
+@keyframes badgeBreathe {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.9; }
+}
+
+/* Entrée */
+@keyframes badgeIn {
+    from {
+        opacity: 0;
+        transform: scale(0);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Sortie */
+@keyframes badgeOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0);
+    }
+}
+
+/* Pulse Out */
+@keyframes pulseOut {
+    from {
+        opacity: 0.4;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(3);
+    }
+}
+
+/* ========================================
+   ANIMATIONS SPÉCIFIQUES
+   ======================================== */
+
+/* Animation pour le statut "processing" */
+.status-badge-container .status-badge[data-status="processing"] .status-badge-icon,
+.status-badge-container .animate-spin {
+    animation: badgeSpin 1s linear infinite;
+}
+
+/* Animation pour le statut "pending" */
+.status-badge-container .animate-rotate {
+    animation: badgeRotate 2s ease-in-out infinite;
+}
+
+/* Animation float */
+.status-badge-container.float-animation .status-badge {
+    animation: badgeFloat 3s ease-in-out infinite;
+}
+
+/* Animation breathe */
+.status-badge-container.animate-smooth .status-badge {
+    animation: badgeBreathe 3s ease-in-out infinite;
+}
+
+/* ========================================
+   EFFETS SPÉCIAUX
+   ======================================== */
+
+/* Effet de brillance (shine) */
+.status-badge.shine-effect::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.5) 50%,
+        transparent 70%
+    );
+    transform: rotate(45deg) translateX(-100%);
+    animation: shine 3s ease-in-out infinite;
+}
+
+@keyframes shine {
+    0% { transform: rotate(45deg) translateX(-100%); }
+    100% { transform: rotate(45deg) translateX(100%); }
+}
+
+/* Particules */
+.status-badge-particles {
+    position: absolute;
+    inset: -20px;
+    pointer-events: none;
+}
+
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--status-color);
+    border-radius: 50%;
+    opacity: 0;
+}
+
+.status-badge-container.animate-rich .particle {
+    animation: particleFloat 3s ease-out infinite;
+}
+
+@keyframes particleFloat {
+    0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(0);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(var(--x, 20px), var(--y, -20px)) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(calc(var(--x, 20px) * 2), calc(var(--y, -20px) * 2)) scale(0);
+    }
+}
+
+/* Position des particules */
+.particle-0 { top: 50%; left: 50%; --x: -20px; --y: -20px; animation-delay: 0s; }
+.particle-1 { top: 50%; left: 50%; --x: 20px; --y: -20px; animation-delay: 0.5s; }
+.particle-2 { top: 50%; left: 50%; --x: 20px; --y: 20px; animation-delay: 1s; }
+.particle-3 { top: 50%; left: 50%; --x: -20px; --y: 20px; animation-delay: 1.5s; }
+.particle-4 { top: 50%; left: 50%; --x: 0; --y: -30px; animation-delay: 2s; }
+.particle-5 { top: 50%; left: 50%; --x: 0; --y: 30px; animation-delay: 2.5s; }
+
+/* Effet flamme */
+.flame-particles {
+    position: absolute;
+    inset: 0;
+    overflow: visible;
+}
+
+.flame {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 4px;
+    height: 8px;
+    background: linear-gradient(to top, #ff6b35, #f7931e, transparent);
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    transform: translateX(-50%);
+    opacity: 0;
+}
+
+.status-badge-container .animate-flame .flame {
+    animation: flameRise 1.5s ease-out infinite;
+}
+
+@keyframes flameRise {
+    0% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: translateX(calc(-50% + var(--wobble, 3px))) translateY(-10px) scale(0.8);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(calc(-50% + var(--wobble, 3px))) translateY(-20px) scale(0.4);
+    }
+}
+
+.flame-0 { --wobble: -3px; animation-delay: 0s; }
+.flame-1 { --wobble: 3px; animation-delay: 0.3s; }
+.flame-2 { --wobble: -2px; animation-delay: 0.6s; }
+.flame-3 { --wobble: 2px; animation-delay: 0.9s; }
+.flame-4 { --wobble: 0px; animation-delay: 1.2s; }
+
+/* ========================================
+   ÉTATS
+   ======================================== */
+
+/* Clickable */
+.status-badge-container.clickable {
+    cursor: pointer;
+}
+
+.status-badge-container.clickable:active .status-badge {
+    transform: scale(0.95);
+}
+
+/* Disabled */
+.status-badge-container.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Pulsing */
+.status-badge-container.pulsing .status-badge-pulse {
+    display: block;
+}
+
+/* ========================================
+   GROUPES DE BADGES
+   ======================================== */
+.status-badge-group {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 640px) {
+    .status-badge-container {
+        gap: var(--badge-spacing-xs);
+    }
+    
+    .status-badge-text {
+        font-size: 11px;
+    }
+}
+
+/* Support tactile */
+@media (hover: none) {
+    .status-badge-container.clickable:active .status-badge {
+        transform: scale(0.9);
+    }
+}
+
+/* ========================================
+   ACCESSIBILITÉ
+   ======================================== */
+
+/* Focus visible */
+.status-badge-container:focus-visible {
+    outline: 2px solid var(--status-color);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* Préférences de mouvement réduit */
+@media (prefers-reduced-motion: reduce) {
+    .status-badge-container,
+    .status-badge-container * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .status-badge-pulse {
+        display: none;
+    }
+}
+
+/* Mode contraste élevé */
+@media (prefers-contrast: high) {
+    .status-badge {
+        border-width: 2px !important;
+    }
+    
+    .status-badge-container.glassmorphism .status-badge {
+        background: var(--status-color);
+        color: white;
+    }
+}
+
+/* ========================================
+   THÈMES
+   ======================================== */
+
+/* Thème sombre */
+.dark .status-badge-container.glassmorphism .status-badge,
+[data-theme="dark"] .status-badge-container.glassmorphism .status-badge {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .status-badge-container.material .status-badge,
+[data-theme="dark"] .status-badge-container.material .status-badge {
+    background: #1f2937;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* ========================================
+   SUPPORT NAVIGATEURS
+   ======================================== */
+
+/* Fallback pour navigateurs sans backdrop-filter */
+@supports not (backdrop-filter: blur(20px)) {
+    .status-badge-container.glassmorphism .status-badge {
+        background: rgba(var(--status-color-rgb), 0.2);
+    }
+}
+
+/* Fallback pour clip-path */
+@supports not (clip-path: polygon(0 0)) {
+    .status-badge-container.hexagon .status-badge,
+    .status-badge-container.triangle .status-badge {
+        border-radius: 50%;
+    }
+}
+
+/* ========================================
+   UTILITAIRES
+   ======================================== */
+
+/* Badge dans un élément flex */
+.flex-item > .status-badge-container {
+    align-self: center;
+}
+
+/* Badge comme overlay */
+.status-badge-overlay {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    z-index: calc(var(--badge-z-index) + 1);
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [2024-01] - Performance des animations multiples
+   Solution: Utilisation de transform et opacity uniquement
+   
+   [2024-01] - Lisibilité sur fonds variés
+   Solution: Backdrop-filter et bordures adaptatives
+   
+   [2024-01] - Support des formes complexes
+   Solution: Clip-path avec fallback circle
+   
+   NOTES POUR REPRISES FUTURES:
+   - Les animations peuvent être cumulées
+   - Le système de couleurs utilise des variables CSS
+   - Les effets spéciaux sont optionnels (performance)
+   - Les particules nécessitent animation: rich
+   ======================================== */

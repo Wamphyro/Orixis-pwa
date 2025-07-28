@@ -1,0 +1,746 @@
+/* ========================================
+   DARK-MODE.CSS - Thème sombre pour le système UI
+   Chemin: src/css/shared/themes/dark-mode.css
+   
+   DESCRIPTION:
+   Définit toutes les adaptations nécessaires pour le mode sombre
+   du système UI. Surcharge les variables CSS et adapte les composants
+   pour une expérience optimale en environnement sombre.
+   
+   STRUCTURE:
+   1. Variables globales du mode sombre (lignes 25-150)
+   2. Adaptations glassmorphism (lignes 152-250)
+   3. Composants core (lignes 252-400)
+   4. Composants feedback (lignes 402-550)
+   5. Composants data-display (lignes 552-700)
+   6. Composants data-entry (lignes 702-850)
+   7. Éléments et navigation (lignes 852-1000)
+   8. Utilitaires et responsive (lignes 1002-1100)
+   
+   DÉPENDANCES:
+   - Tous les composants du système UI
+   - glassmorphism.css (surcharge certaines variables)
+   - ui.config.js (utilise les sélecteurs définis)
+   ======================================== */
+
+/* ========================================
+   ACTIVATION DU MODE SOMBRE
+   ======================================== */
+/* Détection automatique des préférences système */
+@media (prefers-color-scheme: dark) {
+    :root {
+        color-scheme: dark;
+    }
+}
+
+/* Classes pour forcer le mode sombre */
+.dark,
+[data-theme="dark"],
+html.dark-mode {
+    color-scheme: dark;
+}
+
+/* ========================================
+   VARIABLES GLOBALES DU MODE SOMBRE
+   ======================================== */
+.dark,
+[data-theme="dark"],
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* Couleurs de base */
+        --color-background: #0a0a0b;
+        --color-surface: #141418;
+        --color-surface-elevated: #1a1a1f;
+        --color-text-primary: #e8e8e9;
+        --color-text-secondary: #a8a8b0;
+        --color-text-tertiary: #68687a;
+        --color-text-inverse: #0a0a0b;
+        
+        /* Bordures et séparateurs */
+        --color-border: rgba(255, 255, 255, 0.08);
+        --color-border-hover: rgba(255, 255, 255, 0.12);
+        --color-border-focus: rgba(255, 255, 255, 0.16);
+        --color-divider: rgba(255, 255, 255, 0.06);
+        
+        /* Glassmorphism adapté au mode sombre */
+        --glass-bg: rgba(255, 255, 255, 0.04);
+        --glass-bg-hover: rgba(255, 255, 255, 0.06);
+        --glass-bg-active: rgba(255, 255, 255, 0.08);
+        --glass-border: rgba(255, 255, 255, 0.08);
+        --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+        --glass-blur: 20px;
+        --glass-brightness: 0.9;
+        
+        /* Ombres */
+        --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+        --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.5);
+        --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.6);
+        --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.7);
+        --shadow-xl: 0 16px 32px rgba(0, 0, 0, 0.8);
+        --shadow-2xl: 0 24px 48px rgba(0, 0, 0, 0.9);
+        --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+        
+        /* Couleurs sémantiques ajustées */
+        --color-primary: #4a9eff;
+        --color-primary-hover: #5fa8ff;
+        --color-primary-active: #3690ff;
+        --color-primary-subtle: rgba(74, 158, 255, 0.15);
+        
+        --color-success: #34d399;
+        --color-success-hover: #4ade80;
+        --color-success-active: #22c55e;
+        --color-success-subtle: rgba(52, 211, 153, 0.15);
+        
+        --color-warning: #fbbf24;
+        --color-warning-hover: #fcd34d;
+        --color-warning-active: #f59e0b;
+        --color-warning-subtle: rgba(251, 191, 36, 0.15);
+        
+        --color-error: #f87171;
+        --color-error-hover: #fca5a5;
+        --color-error-active: #ef4444;
+        --color-error-subtle: rgba(248, 113, 113, 0.15);
+        
+        --color-info: #60a5fa;
+        --color-info-hover: #93bbfd;
+        --color-info-active: #3b82f6;
+        --color-info-subtle: rgba(96, 165, 250, 0.15);
+        
+        /* Overlays */
+        --overlay-backdrop: rgba(0, 0, 0, 0.8);
+        --overlay-scrim: rgba(0, 0, 0, 0.6);
+        
+        /* Animations */
+        --glow-color: rgba(74, 158, 255, 0.4);
+        --pulse-color: rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* ========================================
+   ADAPTATIONS GLASSMORPHISM
+   ======================================== */
+.dark .glassmorphism,
+[data-theme="dark"] .glassmorphism {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur)) brightness(var(--glass-brightness));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) brightness(var(--glass-brightness));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* Effet de brillance adapté */
+.dark .glassmorphism::before,
+[data-theme="dark"] .glassmorphism::before {
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.06) 0%,
+        rgba(255, 255, 255, 0) 40%,
+        rgba(255, 255, 255, 0) 60%,
+        rgba(255, 255, 255, 0.03) 100%
+    );
+}
+
+/* États interactifs glassmorphism */
+.dark .glassmorphism:hover,
+[data-theme="dark"] .glassmorphism:hover {
+    background: var(--glass-bg-hover);
+    border-color: var(--color-border-hover);
+    box-shadow: var(--glass-shadow),
+                0 0 20px rgba(255, 255, 255, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.dark .glassmorphism:active,
+[data-theme="dark"] .glassmorphism:active {
+    background: var(--glass-bg-active);
+    box-shadow: var(--shadow-md),
+                inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Glassmorphism coloré */
+.dark .glassmorphism.primary,
+[data-theme="dark"] .glassmorphism.primary {
+    background: rgba(74, 158, 255, 0.1);
+    border-color: rgba(74, 158, 255, 0.2);
+}
+
+.dark .glassmorphism.success,
+[data-theme="dark"] .glassmorphism.success {
+    background: rgba(52, 211, 153, 0.1);
+    border-color: rgba(52, 211, 153, 0.2);
+}
+
+.dark .glassmorphism.warning,
+[data-theme="dark"] .glassmorphism.warning {
+    background: rgba(251, 191, 36, 0.1);
+    border-color: rgba(251, 191, 36, 0.2);
+}
+
+.dark .glassmorphism.error,
+[data-theme="dark"] .glassmorphism.error {
+    background: rgba(248, 113, 113, 0.1);
+    border-color: rgba(248, 113, 113, 0.2);
+}
+
+/* ========================================
+   COMPOSANTS CORE
+   ======================================== */
+
+/* Buttons */
+.dark .button,
+[data-theme="dark"] .button {
+    color: var(--color-text-primary);
+}
+
+.dark .button.glassmorphism,
+[data-theme="dark"] .button.glassmorphism {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .button.glassmorphism:hover,
+[data-theme="dark"] .button.glassmorphism:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Cards */
+.dark .card,
+[data-theme="dark"] .card {
+    background: var(--color-surface);
+    border-color: var(--color-border);
+    color: var(--color-text-primary);
+}
+
+.dark .card.glassmorphism,
+[data-theme="dark"] .card.glassmorphism {
+    background: var(--glass-bg);
+}
+
+.dark .card-header,
+[data-theme="dark"] .card-header {
+    border-bottom-color: var(--color-border);
+}
+
+.dark .card-footer,
+[data-theme="dark"] .card-footer {
+    border-top-color: var(--color-border);
+}
+
+/* ========================================
+   COMPOSANTS FEEDBACK
+   ======================================== */
+
+/* Alerts */
+.dark .alert,
+[data-theme="dark"] .alert {
+    color: var(--color-text-primary);
+}
+
+.dark .alert.glassmorphism,
+[data-theme="dark"] .alert.glassmorphism {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .alert-close,
+[data-theme="dark"] .alert-close {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Modals */
+.dark .modal-backdrop,
+[data-theme="dark"] .modal-backdrop {
+    background: var(--overlay-backdrop);
+}
+
+.dark .modal-content,
+[data-theme="dark"] .modal-content {
+    background: var(--color-surface-elevated);
+    color: var(--color-text-primary);
+}
+
+.dark .modal-content.glassmorphism,
+[data-theme="dark"] .modal-content.glassmorphism {
+    background: rgba(20, 20, 24, 0.8);
+    backdrop-filter: blur(24px) brightness(0.9);
+}
+
+/* Notifications */
+.dark .notification,
+[data-theme="dark"] .notification {
+    background: var(--color-surface-elevated);
+    border-color: var(--color-border);
+    color: var(--color-text-primary);
+}
+
+.dark .notification.glassmorphism,
+[data-theme="dark"] .notification.glassmorphism {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Progress */
+.dark .progress,
+[data-theme="dark"] .progress {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.dark .progress-bar,
+[data-theme="dark"] .progress-bar {
+    background: var(--color-primary);
+}
+
+/* ========================================
+   COMPOSANTS DATA-DISPLAY
+   ======================================== */
+
+/* Tables */
+.dark .table,
+[data-theme="dark"] .table {
+    color: var(--color-text-primary);
+}
+
+.dark .table-header,
+[data-theme="dark"] .table-header {
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom-color: var(--color-border);
+}
+
+.dark .table-row:hover,
+[data-theme="dark"] .table-row:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.dark .table-cell,
+[data-theme="dark"] .table-cell {
+    border-color: var(--color-border);
+}
+
+/* Timeline */
+.dark .timeline-line,
+[data-theme="dark"] .timeline-line {
+    background: var(--color-border);
+}
+
+.dark .timeline-dot,
+[data-theme="dark"] .timeline-dot {
+    background: var(--color-surface-elevated);
+    border-color: var(--color-primary);
+}
+
+.dark .timeline-content,
+[data-theme="dark"] .timeline-content {
+    background: var(--glass-bg);
+    border-color: var(--glass-border);
+}
+
+/* Charts */
+.dark .chart-container,
+[data-theme="dark"] .chart-container {
+    background: var(--color-surface);
+}
+
+.dark .chart-grid-line,
+[data-theme="dark"] .chart-grid-line {
+    stroke: var(--color-border);
+}
+
+.dark .chart-text,
+[data-theme="dark"] .chart-text {
+    fill: var(--color-text-secondary);
+}
+
+/* Stats Cards */
+.dark .stats-card,
+[data-theme="dark"] .stats-card {
+    background: var(--glass-bg);
+    border-color: var(--glass-border);
+}
+
+.dark .stats-value,
+[data-theme="dark"] .stats-value {
+    color: var(--color-text-primary);
+}
+
+.dark .stats-label,
+[data-theme="dark"] .stats-label {
+    color: var(--color-text-secondary);
+}
+
+/* ========================================
+   COMPOSANTS DATA-ENTRY
+   ======================================== */
+
+/* Form Fields */
+.dark .form-field,
+[data-theme="dark"] .form-field {
+    color: var(--color-text-primary);
+}
+
+.dark .form-input,
+.dark .form-textarea,
+.dark .form-select,
+[data-theme="dark"] .form-input,
+[data-theme="dark"] .form-textarea,
+[data-theme="dark"] .form-select {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--color-border);
+    color: var(--color-text-primary);
+}
+
+.dark .form-input:hover,
+.dark .form-textarea:hover,
+.dark .form-select:hover,
+[data-theme="dark"] .form-input:hover,
+[data-theme="dark"] .form-textarea:hover,
+[data-theme="dark"] .form-select:hover {
+    border-color: var(--color-border-hover);
+}
+
+.dark .form-input:focus,
+.dark .form-textarea:focus,
+.dark .form-select:focus,
+[data-theme="dark"] .form-input:focus,
+[data-theme="dark"] .form-textarea:focus,
+[data-theme="dark"] .form-select:focus {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-subtle);
+}
+
+/* Placeholder text */
+.dark .form-input::placeholder,
+.dark .form-textarea::placeholder,
+[data-theme="dark"] .form-input::placeholder,
+[data-theme="dark"] .form-textarea::placeholder {
+    color: var(--color-text-tertiary);
+}
+
+/* Checkboxes & Radios */
+.dark .checkbox,
+.dark .radio,
+[data-theme="dark"] .checkbox,
+[data-theme="dark"] .radio {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--color-border);
+}
+
+.dark .checkbox:checked,
+.dark .radio:checked,
+[data-theme="dark"] .checkbox:checked,
+[data-theme="dark"] .radio:checked {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+/* Switches */
+.dark .switch-track,
+[data-theme="dark"] .switch-track {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.dark .switch-track.checked,
+[data-theme="dark"] .switch-track.checked {
+    background: var(--color-primary);
+}
+
+.dark .switch-thumb,
+[data-theme="dark"] .switch-thumb {
+    background: var(--color-text-primary);
+}
+
+/* ========================================
+   ÉLÉMENTS ET NAVIGATION
+   ======================================== */
+
+/* Icons */
+.dark .icon,
+[data-theme="dark"] .icon {
+    color: var(--color-text-secondary);
+}
+
+.dark .icon-button,
+[data-theme="dark"] .icon-button {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--color-text-secondary);
+}
+
+.dark .icon-button:hover,
+[data-theme="dark"] .icon-button:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--color-text-primary);
+}
+
+/* Badges */
+.dark .badge,
+[data-theme="dark"] .badge {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--color-text-primary);
+}
+
+.dark .badge.primary,
+[data-theme="dark"] .badge.primary {
+    background: var(--color-primary-subtle);
+    color: var(--color-primary);
+}
+
+/* Navigation */
+.dark .nav,
+[data-theme="dark"] .nav {
+    background: var(--color-surface);
+    border-color: var(--color-border);
+}
+
+.dark .nav-item,
+[data-theme="dark"] .nav-item {
+    color: var(--color-text-secondary);
+}
+
+.dark .nav-item:hover,
+[data-theme="dark"] .nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--color-text-primary);
+}
+
+.dark .nav-item.active,
+[data-theme="dark"] .nav-item.active {
+    background: var(--color-primary-subtle);
+    color: var(--color-primary);
+}
+
+/* Pagination */
+.dark .pagination-item,
+[data-theme="dark"] .pagination-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--color-border);
+    color: var(--color-text-secondary);
+}
+
+.dark .pagination-item:hover,
+[data-theme="dark"] .pagination-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--color-border-hover);
+}
+
+.dark .pagination-item.active,
+[data-theme="dark"] .pagination-item.active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+/* Tooltips */
+.dark .tooltip,
+[data-theme="dark"] .tooltip {
+    background: rgba(0, 0, 0, 0.9);
+    color: var(--color-text-primary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ========================================
+   SCROLLBARS
+   ======================================== */
+.dark ::-webkit-scrollbar,
+[data-theme="dark"] ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+.dark ::-webkit-scrollbar-track,
+[data-theme="dark"] ::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.dark ::-webkit-scrollbar-thumb,
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover,
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Firefox */
+.dark,
+[data-theme="dark"] {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) rgba(255, 255, 255, 0.02);
+}
+
+/* ========================================
+   SÉLECTION DE TEXTE
+   ======================================== */
+.dark ::selection,
+[data-theme="dark"] ::selection {
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.dark ::-moz-selection,
+[data-theme="dark"] ::-moz-selection {
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+/* ========================================
+   CODE ET PRE
+   ======================================== */
+.dark code,
+[data-theme="dark"] code {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--color-primary);
+    border: 1px solid var(--color-border);
+}
+
+.dark pre,
+[data-theme="dark"] pre {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+}
+
+/* ========================================
+   LIENS
+   ======================================== */
+.dark a,
+[data-theme="dark"] a {
+    color: var(--color-primary);
+}
+
+.dark a:hover,
+[data-theme="dark"] a:hover {
+    color: var(--color-primary-hover);
+}
+
+.dark a:active,
+[data-theme="dark"] a:active {
+    color: var(--color-primary-active);
+}
+
+/* ========================================
+   IMAGES ET MÉDIAS
+   ======================================== */
+.dark img,
+[data-theme="dark"] img {
+    opacity: 0.9;
+}
+
+.dark .image-overlay,
+[data-theme="dark"] .image-overlay {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+/* ========================================
+   ANIMATIONS SPÉCIFIQUES AU MODE SOMBRE
+   ======================================== */
+@keyframes dark-glow {
+    0% {
+        box-shadow: 0 0 5px var(--glow-color);
+    }
+    50% {
+        box-shadow: 0 0 20px var(--glow-color), 0 0 40px var(--glow-color);
+    }
+    100% {
+        box-shadow: 0 0 5px var(--glow-color);
+    }
+}
+
+.dark .glow-effect,
+[data-theme="dark"] .glow-effect {
+    animation: dark-glow 2s ease-in-out infinite;
+}
+
+/* ========================================
+   UTILITAIRES
+   ======================================== */
+
+/* Masquer en mode sombre */
+.dark .hide-dark,
+[data-theme="dark"] .hide-dark {
+    display: none !important;
+}
+
+/* Afficher uniquement en mode sombre */
+.show-dark {
+    display: none !important;
+}
+
+.dark .show-dark,
+[data-theme="dark"] .show-dark {
+    display: initial !important;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 768px) {
+    .dark,
+    [data-theme="dark"] {
+        --glass-blur: 12px;
+    }
+}
+
+/* ========================================
+   ACCESSIBILITÉ
+   ======================================== */
+
+/* Focus visible amélioré pour le mode sombre */
+.dark *:focus-visible,
+[data-theme="dark"] *:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* Contraste élevé */
+@media (prefers-contrast: high) {
+    .dark,
+    [data-theme="dark"] {
+        --color-text-primary: #ffffff;
+        --color-text-secondary: #e0e0e0;
+        --color-background: #000000;
+        --color-surface: #0a0a0a;
+        --color-border: rgba(255, 255, 255, 0.2);
+        --glass-border: rgba(255, 255, 255, 0.3);
+    }
+}
+
+/* ========================================
+   TRANSITIONS POUR LE CHANGEMENT DE THÈME
+   ======================================== */
+body,
+.theme-transition * {
+    transition: background-color 0.3s ease,
+                color 0.3s ease,
+                border-color 0.3s ease,
+                box-shadow 0.3s ease;
+}
+
+/* Désactiver les transitions pendant le changement */
+.theme-switching,
+.theme-switching * {
+    transition: none !important;
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [DATE] - Problème de contraste insuffisant
+   Solution: Ajusté les valeurs de luminosité des textes
+   
+   [DATE] - Backdrop-filter trop sombre
+   Solution: Réduit le blur et ajusté la brightness
+   
+   [DATE] - Transitions saccadées lors du changement
+   Solution: Ajout de classes pour gérer les transitions
+   
+   NOTES POUR REPRISES FUTURES:
+   - Tester sur différents écrans (OLED, LCD)
+   - Vérifier les ratios de contraste WCAG
+   - Optimiser les performances du backdrop-filter
+   ======================================== */
