@@ -209,7 +209,7 @@ function initClientSearch() {
     
     // Créer la nouvelle instance avec le bon sélecteur ID
     clientSearchDropdown = new SearchDropdown({
-        container: '#clientSearch',  // MODIFIÉ: ID au lieu de classe
+    container: '.client-search',  // MODIFIÉ: ID au lieu de classe
         placeholder: 'Rechercher un client (nom, prénom, téléphone...)',
         minLength: 2,
         noResultsText: 'Aucun client trouvé',
@@ -595,7 +595,7 @@ function initProductSearch() {
     
     // Créer la nouvelle instance avec le bon sélecteur ID
     productSearchDropdown = new SearchDropdown({
-        container: '#productSearch',  // MODIFIÉ: ID au lieu de classe
+    container: '.product-search',  // MODIFIÉ: ID au lieu de classe
         placeholder: 'Rechercher un produit...',
         minLength: 2,
         noResultsText: 'Aucun produit trouvé',
