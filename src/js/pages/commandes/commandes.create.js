@@ -85,24 +85,25 @@ function resetNouvelleCommande() {
     // Réinitialiser l'affichage
     afficherEtape(1);
     
-    // Réinitialiser la recherche client
-    const clientSearch = document.getElementById('clientSearch');
-    if (clientSearch) {
-        clientSearch.value = '';
-        clientSearch.style.display = 'block';
+    // MODIFIÉ : Utiliser le conteneur au lieu de l'input
+    const searchContainer = document.querySelector('.client-search');
+    if (searchContainer) {
+        searchContainer.style.display = 'block';
     }
+    
     const clientSelected = document.getElementById('clientSelected');
     if (clientSelected) {
         clientSelected.style.display = 'none';
     }
     
-    // IMPORTANT: Réinitialiser les search dropdowns
+    // Réinitialiser les search dropdowns
     if (clientSearchDropdown) {
         clientSearchDropdown.clear();
     }
     if (productSearchDropdown) {
         productSearchDropdown.clear();
     }
+    
     const tempCartItems = document.getElementById('tempCartItems');
     if (tempCartItems) {
         tempCartItems.innerHTML = '<p>Aucun produit sélectionné</p>';
@@ -259,9 +260,23 @@ export async function selectionnerClient(clientId) {
             nouvelleCommande.clientId = clientId;
             nouvelleCommande.client = client;
             
-            document.getElementById('clientSearch').style.display = 'none';
-            document.getElementById('clientSelected').style.display = 'block';
-            document.getElementById('selectedClientName').textContent = `${client.prenom} ${client.nom}`;
+            // MODIFIÉ : Cacher le conteneur SearchDropdown, pas l'input qui n'existe plus
+            const searchContainer = document.querySelector('.client-search');
+            if (searchContainer) {
+                searchContainer.style.display = 'none';
+            }
+            
+            // Afficher la section client sélectionné
+            const clientSelected = document.getElementById('clientSelected');
+            if (clientSelected) {
+                clientSelected.style.display = 'block';
+            }
+            
+            // Mettre à jour les informations
+            const selectedClientName = document.getElementById('selectedClientName');
+            if (selectedClientName) {
+                selectedClientName.textContent = `${client.prenom} ${client.nom}`;
+            }
             
             let infoText = '';
             if (client.telephone) infoText += client.telephone;
@@ -269,10 +284,15 @@ export async function selectionnerClient(clientId) {
             if (client.magasinReference) {
                 infoText += (infoText ? ' - ' : '') + `Magasin: ${client.magasinReference}`;
             }
-            document.getElementById('selectedClientInfo').textContent = infoText;
             
-            document.getElementById('clientSearchResults').classList.remove('active');
-            document.getElementById('clientSearchResults').innerHTML = '';
+            const selectedClientInfo = document.getElementById('selectedClientInfo');
+            if (selectedClientInfo) {
+                selectedClientInfo.textContent = infoText;
+            }
+            
+            // SUPPRIMÉ : Ces lignes ne servent plus à rien
+            // document.getElementById('clientSearchResults').classList.remove('active');
+            // document.getElementById('clientSearchResults').innerHTML = '';
         }
     } catch (error) {
         console.error('Erreur sélection client:', error);
@@ -283,8 +303,18 @@ export async function selectionnerClient(clientId) {
 export function changerClient() {
     nouvelleCommande.clientId = null;
     nouvelleCommande.client = null;
-    document.getElementById('clientSearch').style.display = 'block';
-    document.getElementById('clientSelected').style.display = 'none';
+    
+    // MODIFIÉ : Afficher le conteneur SearchDropdown
+    const searchContainer = document.querySelector('.client-search');
+    if (searchContainer) {
+        searchContainer.style.display = 'block';
+    }
+    
+    // Cacher la section client sélectionné
+    const clientSelected = document.getElementById('clientSelected');
+    if (clientSelected) {
+        clientSelected.style.display = 'none';
+    }
     
     // Réinitialiser le search dropdown
     if (clientSearchDropdown) {
