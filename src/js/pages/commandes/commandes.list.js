@@ -1,23 +1,19 @@
 // ========================================
-// COMMANDES.LIST.JS - Gestion de la liste et des filtres (MODIFIÉ)
+// COMMANDES.LIST.JS - Gestion de la liste et des filtres (AVEC BADGES MODERNES)
 // Chemin: src/js/pages/commandes/commandes.list.js
 //
 // DESCRIPTION:
-// Gère l'affichage de la liste des commandes avec un tableau simplifié
-// Modifié le 28/07/2025 : Retrait du bouton suppression
+// Gère l'affichage de la liste des commandes avec badges glassmorphism
+// Modifié le 29/07/2025 : Intégration StatusBadgeComponent
 //
 // STRUCTURE:
-// 1. Initialisation du module (lignes 20-25)
-// 2. Chargement des données (lignes 27-55)
-// 3. Affichage avec tableau simplifié (lignes 57-140)
-// 4. Filtres (lignes 142-230)
-// 5. Pagination (lignes 232-265)
-// 6. Fonctions utilitaires (lignes 267-275)
-//
-// DÉPENDANCES:
-// - CommandesService: Service d'accès aux données
-// - COMMANDES_CONFIG: Configuration des statuts et types
-// - formatDate: Utilitaire de formatage
+// 1. Imports et configuration badges (lignes 20-80)
+// 2. Initialisation du module (lignes 82-90)
+// 3. Chargement des données (lignes 92-120)
+// 4. Affichage avec badges modernes (lignes 122-230)
+// 5. Filtres (lignes 232-320)
+// 6. Pagination (lignes 322-355)
+// 7. Fonctions utilitaires (lignes 357-365)
 // ========================================
 
 import { CommandesService } from '../../services/commandes.service.js';
@@ -27,12 +23,83 @@ import { state } from './commandes.main.js';
 import { StatusBadgeComponent } from '../../shared/ui/elements/status-badge.component.js';
 
 // ========================================
+// CONFIGURATION DES BADGES
+// ========================================
+
+// Configuration des badges pour les statuts
+const BADGES_STATUTS = {
+    'nouvelle': { 
+        icon: 'sparkles',           // Étincelles
+        color: '#a855f7',           // Violet
+        label: 'Nouvelle'
+    },
+    'preparation': { 
+        icon: 'loader',             // Loader qui tourne
+        color: '#3b82f6',           // Bleu
+        label: 'En préparation',
+        animation: 'spin'           // Animation rotation continue
+    },
+    'terminee': { 
+        icon: 'check-circle',       // Check dans un cercle
+        color: '#10b981',           // Vert émeraude
+        label: 'Terminée'
+    },
+    'expediee': { 
+        icon: 'truck',              // Camion
+        color: '#6366f1',           // Indigo
+        label: 'Expédiée'
+    },
+    'receptionnee': { 
+        icon: 'package-check',      // Colis avec check
+        color: '#0ea5e9',           // Bleu ciel
+        label: 'Réceptionnée'
+    },
+    'livree': { 
+        icon: 'check-double',       // Double check
+        color: '#22c55e',           // Vert
+        label: 'Livrée'
+    },
+    'annulee': { 
+        icon: 'x-octagon',          // X dans octogone
+        color: '#ef4444',           // Rouge
+        label: 'Annulée'
+    },
+    'supprime': { 
+        icon: 'trash-2',            // Poubelle
+        color: '#dc3545',           // Rouge sombre
+        label: 'Supprimée',
+        special: true               // Pour appliquer des styles spéciaux
+    }
+};
+
+// Configuration des badges pour les urgences
+const BADGES_URGENCES = {
+    'normal': { 
+        icon: 'clock',              // Horloge
+        color: '#22c55e',           // Vert
+        label: 'Normal'
+    },
+    'urgent': { 
+        icon: 'alert-triangle',     // Triangle d'alerte
+        color: '#f59e0b',           // Orange
+        label: 'Urgent',
+        pulse: true                 // Animation pulse
+    },
+    'tres_urgent': { 
+        icon: 'flame',              // Flamme
+        color: '#ef4444',           // Rouge
+        label: 'Très urgent',
+        animation: 'flame'          // Animation flamme
+    }
+};
+
+// ========================================
 // INITIALISATION DU MODULE
 // ========================================
 
 export async function initListeCommandes() {
     // Initialisation spécifique au module liste
-    console.log('Module liste commandes initialisé');
+    console.log('Module liste commandes initialisé avec badges modernes');
 }
 
 // ========================================
@@ -70,7 +137,7 @@ export async function chargerDonnees() {
 }
 
 // ========================================
-// AFFICHAGE (MODIFIÉ - Sans bouton suppression)
+// AFFICHAGE AVEC BADGES MODERNES
 // ========================================
 
 function afficherStatistiques(stats) {
@@ -93,10 +160,7 @@ function afficherCommandes() {
     const end = start + state.itemsPerPage;
     const commandesPage = commandesFiltrees.slice(start, end);
     
-    // ========================================
-    // TABLEAU SIMPLIFIÉ - Sans bouton suppression
-    // Colonnes : N° Commande, Date, Client, Type, Urgence, Statut, Actions
-    // ========================================
+    // Tableau sans bouton suppression
     if (commandesPage.length === 0) {
         tbody.innerHTML = '<tr class="no-data"><td colspan="7">Aucune commande trouvée</td></tr>';
         return;
@@ -124,61 +188,94 @@ function afficherCommandes() {
 }
 
 // ========================================
-// FONCTION peutSupprimer() - DÉSACTIVÉE
-// Conservée mais commentée au cas où on voudrait la réactiver
-// Suppression de la fonctionnalité demandée le 28/07/2025
+// FONCTIONS D'AFFICHAGE DES BADGES
 // ========================================
-/*
-function peutSupprimer(commande) {
-    // Ne peut pas supprimer si déjà supprimée ou livrée
-    return commande.statut !== 'supprime' && commande.statut !== 'livree';
-}
-*/
 
-// ========================================
-// NOTE: La fonction afficherProduits() n'est plus utilisée
-// mais est conservée au cas où on voudrait la réactiver
-// ========================================
+/**
+ * Afficher un badge de statut avec le composant StatusBadgeComponent
+ */
+function afficherStatut(statut) {
+    const config = BADGES_STATUTS[statut];
+    
+    if (!config) {
+        // Si statut inconnu, afficher un badge par défaut
+        return `<span class="status-badge">${statut}</span>`;
+    }
+    
+    // Créer le badge avec le composant
+    const badge = StatusBadgeComponent.create({
+        status: statut,
+        customIcon: config.icon,
+        customColor: config.color,
+        text: config.label,
+        style: 'glassmorphism',
+        size: 'small',
+        showText: true,
+        showPulse: config.pulse || false,
+        animation: config.animation || 'subtle'
+    });
+    
+    // Cas spécial pour "supprimé" - ajouter le style barré
+    if (config.special && statut === 'supprime') {
+        badge.style.textDecoration = 'line-through';
+        badge.style.opacity = '0.8';
+    }
+    
+    return badge.outerHTML;
+}
+
+/**
+ * Afficher un badge d'urgence avec le composant StatusBadgeComponent
+ */
+function afficherUrgence(urgence) {
+    const config = BADGES_URGENCES[urgence];
+    
+    if (!config) {
+        // Si urgence inconnue, afficher un badge par défaut
+        return `<span class="urgence-badge">${urgence}</span>`;
+    }
+    
+    // Créer le badge avec le composant
+    const badge = StatusBadgeComponent.create({
+        status: urgence,
+        customIcon: config.icon,
+        customColor: config.color,
+        text: config.label,
+        style: 'glassmorphism',
+        size: 'small',
+        showText: true,
+        showPulse: config.pulse || false,
+        animation: config.animation || 'subtle'
+    });
+    
+    return badge.outerHTML;
+}
+
+/**
+ * Vérifier si on peut modifier le statut d'une commande
+ */
+function peutModifierStatut(commande) {
+    return commande.statut !== 'livree' && 
+           commande.statut !== 'annulee' && 
+           commande.statut !== 'supprime';
+}
+
+/**
+ * Afficher les produits (fonction conservée mais non utilisée)
+ */
 function afficherProduits(produits) {
     if (!produits || produits.length === 0) return '-';
     const summary = produits.slice(0, 2).map(p => p.designation).join(', ');
     return produits.length > 2 ? `${summary}... (+${produits.length - 2})` : summary;
 }
 
-// NOUVELLE VERSION avec StatusBadgeComponent
-function afficherStatut(statut) {
-    const config = COMMANDES_CONFIG.STATUTS[statut];
-    if (!config) return statut;
-    
-    // Créer un badge avec le composant
-    const badge = StatusBadgeComponent.create({
-        status: statut,
-        customIcon: 'check-circle',  // ou autre icône selon le statut
-        customColor: '#4caf50',       // ou autre couleur selon le statut
-        text: config.label,
-        style: 'glassmorphism',
-        size: 'small',
-        showText: true
-    });
-    
-    // Retourner le HTML du badge
-    return badge.outerHTML;
-}
-
-function peutModifierStatut(commande) {
-    return commande.statut !== 'livree' && commande.statut !== 'annulee' && commande.statut !== 'supprime';
-}
-
 // ========================================
-// FILTRES (Conserve l'exclusion des commandes supprimées)
+// FILTRES
 // ========================================
 
 function filtrerCommandesLocalement() {
     return state.commandesData.filter(commande => {
-        // ========================================
         // Exclure systématiquement les commandes supprimées
-        // (au cas où il y en aurait déjà en base)
-        // ========================================
         if (commande.statut === 'supprime') {
             return false;
         }
@@ -324,10 +421,15 @@ function formatDate(timestamp) {
    Raison: Demande utilisateur - simplification de l'interface
    Impact: Plus de suppression possible depuis le tableau
    
+   [29/07/2025] - Intégration StatusBadgeComponent
+   Modification: Remplacement des badges HTML par le composant moderne
+   Raison: Uniformisation avec le nouveau système UI glassmorphism
+   Impact: Badges animés avec icônes (loader qui tourne, flamme animée)
+   
    NOTES POUR REPRISES FUTURES:
-   - La fonction afficherProduits() est conservée mais non utilisée
-   - Le colspan reste à 7 colonnes
-   - Les commandes supprimées restent filtrées (au cas où)
-   - La fonction peutSupprimer() est commentée mais conservée
-   - La suppression reste possible via l'API si besoin
+   - Les badges utilisent des icônes Lucide via StatusBadgeComponent
+   - Animation 'spin' pour "En préparation" (loader qui tourne)
+   - Animation 'flame' pour "Très urgent" (flamme animée)
+   - Pulse sur "Urgent" pour attirer l'attention
+   - Style barré + opacité pour "Supprimé"
    ======================================== */
