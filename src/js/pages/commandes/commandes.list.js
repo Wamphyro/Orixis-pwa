@@ -1,19 +1,19 @@
 // ========================================
-// COMMANDES.LIST.JS - Gestion de la liste et des filtres (AVEC BADGES MODERNES)
+// COMMANDES.LIST.JS - Gestion de la liste avec TableComponent glassmorphism
 // Chemin: src/js/pages/commandes/commandes.list.js
 //
 // DESCRIPTION:
-// Gère l'affichage de la liste des commandes avec badges glassmorphism
-// Modifié le 29/07/2025 : Intégration StatusBadgeComponent
+// Gère l'affichage de la liste des commandes avec TableComponent moderne
+// Modifié le 29/07/2025 : Migration complète vers TableComponent
 //
 // STRUCTURE:
-// 1. Imports et configuration badges (lignes 20-80)
-// 2. Initialisation du module (lignes 82-90)
-// 3. Chargement des données (lignes 92-120)
-// 4. Affichage avec badges modernes (lignes 122-230)
-// 5. Filtres (lignes 232-320)
-// 6. Pagination (lignes 322-355)
-// 7. Fonctions utilitaires (lignes 357-365)
+// 1. Imports et configuration (lignes 20-100)
+// 2. Initialisation du module (lignes 102-110)
+// 3. Chargement des données (lignes 112-140)
+// 4. Affichage avec TableComponent (lignes 142-280)
+// 5. Fonctions badges (lignes 282-350)
+// 6. Filtres (lignes 352-440)
+// 7. Export état global (lignes 442-450)
 // ========================================
 
 import { CommandesService } from '../../services/commandes.service.js';
@@ -22,6 +22,9 @@ import { formatDate as formatDateUtil, formatMoney } from '../../shared/index.js
 import { state } from './commandes.main.js';
 import { StatusBadgeComponent } from '../../shared/ui/elements/status-badge.component.js';
 
+// Import du nouveau TableComponent
+import TableComponent from '../../shared/ui/data-display/table.component.js';
+
 // ========================================
 // CONFIGURATION DES BADGES
 // ========================================
@@ -29,77 +32,82 @@ import { StatusBadgeComponent } from '../../shared/ui/elements/status-badge.comp
 // Configuration des badges pour les statuts
 const BADGES_STATUTS = {
     'nouvelle': { 
-        icon: 'sparkles',           // Étincelles
-        color: '#a855f7',           // Violet
+        icon: 'sparkles',
+        color: '#a855f7',
         label: 'Nouvelle'
     },
     'preparation': { 
-        icon: 'loader',             // Loader qui tourne
-        color: '#3b82f6',           // Bleu
+        icon: 'loader',
+        color: '#3b82f6',
         label: 'En préparation',
-        animation: 'spin'           // Animation rotation continue
+        animation: 'spin'
     },
     'terminee': { 
-        icon: 'check-circle',       // Check dans un cercle
-        color: '#10b981',           // Vert émeraude
+        icon: 'check-circle',
+        color: '#10b981',
         label: 'Terminée'
     },
     'expediee': { 
-        icon: 'truck',              // Camion
-        color: '#6366f1',           // Indigo
+        icon: 'truck',
+        color: '#6366f1',
         label: 'Expédiée'
     },
     'receptionnee': { 
-        icon: 'package-check',      // Colis avec check
-        color: '#0ea5e9',           // Bleu ciel
+        icon: 'package-check',
+        color: '#0ea5e9',
         label: 'Réceptionnée'
     },
     'livree': { 
-        icon: 'check-double',       // Double check
-        color: '#22c55e',           // Vert
+        icon: 'check-double',
+        color: '#22c55e',
         label: 'Livrée'
     },
     'annulee': { 
-        icon: 'x-octagon',          // X dans octogone
-        color: '#ef4444',           // Rouge
+        icon: 'x-octagon',
+        color: '#ef4444',
         label: 'Annulée'
     },
     'supprime': { 
-        icon: 'trash-2',            // Poubelle
-        color: '#dc3545',           // Rouge sombre
+        icon: 'trash-2',
+        color: '#dc3545',
         label: 'Supprimée',
-        special: true               // Pour appliquer des styles spéciaux
+        special: true
     }
 };
 
 // Configuration des badges pour les urgences
 const BADGES_URGENCES = {
     'normal': { 
-        icon: 'clock',              // Horloge
-        color: '#22c55e',           // Vert
+        icon: 'clock',
+        color: '#22c55e',
         label: 'Normal'
     },
     'urgent': { 
-        icon: 'alert-triangle',     // Triangle d'alerte
-        color: '#f59e0b',           // Orange
+        icon: 'alert-triangle',
+        color: '#f59e0b',
         label: 'Urgent',
-        pulse: true                 // Animation pulse
+        pulse: true
     },
     'tres_urgent': { 
-        icon: 'flame',              // Flamme
-        color: '#ef4444',           // Rouge
+        icon: 'flame',
+        color: '#ef4444',
         label: 'Très urgent',
-        animation: 'flame'          // Animation flamme
+        animation: 'flame'
     }
 };
+
+// Instance de la table
+let tableInstance = null;
 
 // ========================================
 // INITIALISATION DU MODULE
 // ========================================
 
 export async function initListeCommandes() {
-    // Initialisation spécifique au module liste
-    console.log('Module liste commandes initialisé avec badges modernes');
+    console.log('Module liste commandes initialisé avec TableComponent glassmorphism');
+    
+    // Initialiser les event listeners pour les filtres
+    initEventListeners();
 }
 
 // ========================================
@@ -111,7 +119,6 @@ export async function chargerDonnees() {
         // Charger les commandes
         state.commandesData = await CommandesService.getCommandes();
         
-        // Si pas de commandes, initialiser un tableau vide
         if (!state.commandesData) {
             state.commandesData = [];
         }
@@ -120,24 +127,23 @@ export async function chargerDonnees() {
         const stats = await CommandesService.getStatistiques();
         afficherStatistiques(stats);
         
-        // Afficher les commandes
-        afficherCommandes();
+        // Afficher les commandes avec TableComponent
+        await afficherCommandes();
         
     } catch (error) {
         console.error('Erreur chargement données:', error);
-        // En cas d'erreur, initialiser avec des données vides
         state.commandesData = [];
         afficherStatistiques({
             parStatut: {},
             parUrgence: {},
             retards: 0
         });
-        afficherCommandes();
+        await afficherCommandes();
     }
 }
 
 // ========================================
-// AFFICHAGE AVEC BADGES MODERNES
+// AFFICHAGE AVEC TABLECOMPONENT
 // ========================================
 
 function afficherStatistiques(stats) {
@@ -147,62 +153,206 @@ function afficherStatistiques(stats) {
     document.getElementById('statLivrees').textContent = stats.parStatut.livree || 0;
 }
 
-function afficherCommandes() {
-    const tbody = document.getElementById('commandesTableBody');
-    tbody.innerHTML = '';
-    
-    // Filtrer les commandes
-    let commandesFiltrees = filtrerCommandesLocalement();
-    
-    // Pagination
-    const totalPages = Math.ceil(commandesFiltrees.length / state.itemsPerPage);
-    const start = (state.currentPage - 1) * state.itemsPerPage;
-    const end = start + state.itemsPerPage;
-    const commandesPage = commandesFiltrees.slice(start, end);
-    
-    // Tableau sans bouton suppression
-    if (commandesPage.length === 0) {
-        tbody.innerHTML = '<tr class="no-data"><td colspan="7">Aucune commande trouvée</td></tr>';
+async function afficherCommandes() {
+    // Conteneur de la table
+    const container = document.getElementById('commandesTableContainer');
+    if (!container) {
+        console.error('Container commandesTableContainer non trouvé');
         return;
     }
     
-    // Afficher les commandes
-    commandesPage.forEach(commande => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td><strong>${commande.numeroCommande}</strong></td>
-            <td>${formatDate(commande.dates.commande)}</td>
-            <td>${commande.client.prenom} ${commande.client.nom}</td>
-            <td>${COMMANDES_CONFIG.TYPES_PREPARATION[commande.typePreparation]?.label || commande.typePreparation}</td>
-            <td>${afficherUrgence(commande.niveauUrgence)}</td>
-            <td>${afficherStatut(commande.statut)}</td>
-            <td class="table-actions">
-                <button class="btn-action" onclick="voirDetailCommande('${commande.id}')">👁️</button>
-            </td>
-        `;
-        tbody.appendChild(tr);
+    // Filtrer les commandes
+    const commandesFiltrees = filtrerCommandesLocalement();
+    
+    // Préparer les données pour TableComponent
+    const dataForTable = commandesFiltrees.map(commande => ({
+        id: commande.id,
+        numeroCommande: commande.numeroCommande,
+        dateCommande: commande.dates.commande,
+        clientNom: `${commande.client.prenom} ${commande.client.nom}`,
+        typePreparation: COMMANDES_CONFIG.TYPES_PREPARATION[commande.typePreparation]?.label || commande.typePreparation,
+        niveauUrgence: commande.niveauUrgence,
+        statut: commande.statut,
+        // Données complètes pour les actions
+        _raw: commande
+    }));
+    
+    // Configuration des colonnes
+    const columns = [
+        { 
+            key: 'numeroCommande', 
+            label: 'N° Commande', 
+            type: 'text',
+            sortable: true,
+            searchable: true,
+            width: '150px'
+        },
+        { 
+            key: 'dateCommande', 
+            label: 'Date', 
+            type: 'date',
+            sortable: true,
+            searchable: false,
+            width: '120px'
+        },
+        { 
+            key: 'clientNom', 
+            label: 'Client', 
+            type: 'text',
+            sortable: true,
+            searchable: true,
+            minWidth: '200px'
+        },
+        { 
+            key: 'typePreparation', 
+            label: 'Type', 
+            type: 'text',
+            sortable: true,
+            searchable: true,
+            width: '150px'
+        },
+        { 
+            key: 'niveauUrgence', 
+            label: 'Urgence',
+            type: 'status',
+            sortable: true,
+            searchable: false,
+            width: '130px',
+            render: (value) => renderUrgenceBadge(value)
+        },
+        { 
+            key: 'statut', 
+            label: 'Statut',
+            type: 'status',
+            sortable: true,
+            searchable: true,
+            width: '150px',
+            render: (value) => renderStatutBadge(value)
+        },
+        { 
+            key: 'actions', 
+            label: 'Actions',
+            type: 'actions',
+            sortable: false,
+            searchable: false,
+            width: '100px',
+            actions: [
+                {
+                    icon: '👁️',
+                    tooltip: 'Voir les détails',
+                    className: 'btn-action',
+                    handler: (row) => {
+                        window.voirDetailCommande(row._raw.id);
+                    }
+                }
+            ]
+        }
+    ];
+    
+    // Si la table existe déjà, mettre à jour les données
+    if (tableInstance) {
+        await tableInstance.setData(dataForTable);
+        return;
+    }
+    
+    // Créer la table avec TableComponent
+    tableInstance = new TableComponent({
+        columns: columns,
+        data: dataForTable,
+        style: 'glassmorphism',
+        animation: 'smooth',
+        className: 'commandes-table',
+        features: {
+            // Pagination
+            pagination: {
+                enabled: true,
+                pageSize: state.itemsPerPage || 20,
+                pageSizeOptions: [10, 20, 50, 100],
+                position: 'bottom',
+                style: 'numbers',
+                showInfo: true,
+                showGoTo: true
+            },
+            // Recherche globale (on garde nos filtres custom)
+            search: {
+                enabled: false  // On utilise nos propres filtres
+            },
+            // Tri
+            sort: {
+                enabled: true,
+                multi: true,
+                defaultDirection: 'desc',
+                locale: 'fr-FR'
+            },
+            // Export
+            export: {
+                enabled: true,
+                formats: ['excel', 'csv', 'pdf'],
+                filename: `commandes_${new Date().toISOString().split('T')[0]}`
+            },
+            // Sélection
+            selection: {
+                enabled: false  // Pour l'instant
+            },
+            // Colonnes
+            columns: {
+                resize: true,
+                reorder: true,
+                hide: false
+            },
+            // Lignes
+            rows: {
+                hover: true,
+                striped: false,
+                border: true,
+                height: 'normal'
+            },
+            // Responsive
+            responsive: {
+                enabled: true,
+                cardView: true
+            }
+        },
+        // Messages en français
+        messages: {
+            noData: 'Aucune commande trouvée',
+            loading: 'Chargement...',
+            error: 'Erreur lors du chargement',
+            itemsPerPage: 'Éléments par page',
+            page: 'Page',
+            of: 'sur',
+            items: 'commandes',
+            first: 'Première',
+            last: 'Dernière',
+            previous: 'Précédente',
+            next: 'Suivante'
+        },
+        // Callbacks
+        onPageChange: (page) => {
+            state.currentPage = page;
+        }
     });
     
-    // Mettre à jour la pagination
-    updatePagination(totalPages);
+    // Vider le container et ajouter la table
+    container.innerHTML = '';
+    container.appendChild(tableInstance.getElement());
 }
 
 // ========================================
-// FONCTIONS D'AFFICHAGE DES BADGES
+// FONCTIONS DE RENDU DES BADGES
 // ========================================
 
 /**
- * Afficher un badge de statut avec le composant StatusBadgeComponent
+ * Rendre un badge de statut
  */
-function afficherStatut(statut) {
+function renderStatutBadge(statut) {
     const config = BADGES_STATUTS[statut];
     
     if (!config) {
-        // Si statut inconnu, afficher un badge par défaut
         return `<span class="status-badge">${statut}</span>`;
     }
     
-    // Créer le badge avec le composant
+    // Créer le badge avec StatusBadgeComponent
     const badge = StatusBadgeComponent.create({
         status: statut,
         customIcon: config.icon,
@@ -215,27 +365,26 @@ function afficherStatut(statut) {
         animation: config.animation || 'subtle'
     });
     
-    // Cas spécial pour "supprimé" - ajouter le style barré
+    // Cas spécial pour "supprimé"
     if (config.special && statut === 'supprime') {
         badge.style.textDecoration = 'line-through';
         badge.style.opacity = '0.8';
     }
     
-    return badge.outerHTML;
+    return badge;
 }
 
 /**
- * Afficher un badge d'urgence avec le composant StatusBadgeComponent
+ * Rendre un badge d'urgence
  */
-function afficherUrgence(urgence) {
+function renderUrgenceBadge(urgence) {
     const config = BADGES_URGENCES[urgence];
     
     if (!config) {
-        // Si urgence inconnue, afficher un badge par défaut
         return `<span class="urgence-badge">${urgence}</span>`;
     }
     
-    // Créer le badge avec le composant
+    // Créer le badge avec StatusBadgeComponent
     const badge = StatusBadgeComponent.create({
         status: urgence,
         customIcon: config.icon,
@@ -248,25 +397,7 @@ function afficherUrgence(urgence) {
         animation: config.animation || 'subtle'
     });
     
-    return badge.outerHTML;
-}
-
-/**
- * Vérifier si on peut modifier le statut d'une commande
- */
-function peutModifierStatut(commande) {
-    return commande.statut !== 'livree' && 
-           commande.statut !== 'annulee' && 
-           commande.statut !== 'supprime';
-}
-
-/**
- * Afficher les produits (fonction conservée mais non utilisée)
- */
-function afficherProduits(produits) {
-    if (!produits || produits.length === 0) return '-';
-    const summary = produits.slice(0, 2).map(p => p.designation).join(', ');
-    return produits.length > 2 ? `${summary}... (+${produits.length - 2})` : summary;
+    return badge;
 }
 
 // ========================================
@@ -275,7 +406,7 @@ function afficherProduits(produits) {
 
 function filtrerCommandesLocalement() {
     return state.commandesData.filter(commande => {
-        // Exclure systématiquement les commandes supprimées
+        // Exclure les commandes supprimées
         if (commande.statut === 'supprime') {
             return false;
         }
@@ -330,22 +461,73 @@ function filtrerCommandesLocalement() {
     });
 }
 
-export function filtrerCommandes() {
-    // Récupérer les valeurs des filtres
-    state.filtres.recherche = document.getElementById('searchInput').value;
-    state.filtres.statut = document.getElementById('filterStatut').value;
-    state.filtres.periode = document.getElementById('filterPeriode').value;
-    state.filtres.urgence = document.getElementById('filterUrgence').value;
+/**
+ * Initialiser les event listeners pour les filtres
+ */
+function initEventListeners() {
+    // Recherche
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce((e) => {
+            state.filtres.recherche = e.target.value;
+            afficherCommandes();
+        }, 300));
+    }
     
-    // Réinitialiser la page
-    state.currentPage = 1;
+    // Filtre statut
+    const filterStatut = document.getElementById('filterStatut');
+    if (filterStatut) {
+        filterStatut.addEventListener('change', (e) => {
+            state.filtres.statut = e.target.value;
+            afficherCommandes();
+        });
+    }
     
-    // Réafficher
-    afficherCommandes();
+    // Filtre période
+    const filterPeriode = document.getElementById('filterPeriode');
+    if (filterPeriode) {
+        filterPeriode.addEventListener('change', (e) => {
+            state.filtres.periode = e.target.value;
+            afficherCommandes();
+        });
+    }
+    
+    // Filtre urgence
+    const filterUrgence = document.getElementById('filterUrgence');
+    if (filterUrgence) {
+        filterUrgence.addEventListener('change', (e) => {
+            state.filtres.urgence = e.target.value;
+            afficherCommandes();
+        });
+    }
+    
+    // Bouton reset
+    const btnReset = document.querySelector('.btn-reset');
+    if (btnReset) {
+        btnReset.addEventListener('click', resetFiltres);
+    }
 }
 
+/**
+ * Fonction debounce pour optimiser les performances
+ */
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+/**
+ * Réinitialiser les filtres
+ */
 export function resetFiltres() {
-    // Réinitialiser les filtres
+    // Réinitialiser l'état
     state.filtres = {
         recherche: '',
         statut: '',
@@ -360,45 +542,30 @@ export function resetFiltres() {
     document.getElementById('filterUrgence').value = '';
     
     // Réafficher
-    state.currentPage = 1;
     afficherCommandes();
 }
 
 // ========================================
-// PAGINATION
+// EXPORT POUR COMPATIBILITÉ
 // ========================================
 
-function updatePagination(totalPages) {
-    document.getElementById('pageActuelle').textContent = state.currentPage;
-    document.getElementById('pageTotal').textContent = totalPages;
-    
-    document.getElementById('btnPrev').disabled = state.currentPage === 1;
-    document.getElementById('btnNext').disabled = state.currentPage === totalPages;
+// Ces fonctions ne sont plus utilisées avec TableComponent
+// mais on les garde pour compatibilité
+export function filtrerCommandes() {
+    afficherCommandes();
 }
 
 export function pagePrecedente() {
-    if (state.currentPage > 1) {
-        state.currentPage--;
-        afficherCommandes();
-    }
+    // Géré par TableComponent
 }
 
 export function pageSuivante() {
-    const commandesFiltrees = filtrerCommandesLocalement();
-    const totalPages = Math.ceil(commandesFiltrees.length / state.itemsPerPage);
-    if (state.currentPage < totalPages) {
-        state.currentPage++;
-        afficherCommandes();
-    }
+    // Géré par TableComponent
 }
 
-// ========================================
-// FONCTION UTILITAIRE LOCALE
-// ========================================
-
+// Fonction utilitaire
 function formatDate(timestamp) {
     if (!timestamp) return '-';
-    
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return formatDateUtil(date, 'DD/MM/YYYY');
 }
@@ -406,30 +573,23 @@ function formatDate(timestamp) {
 /* ========================================
    HISTORIQUE DES DIFFICULTÉS
    
-   [2025-07-26] - Simplification du tableau
-   Modification: Suppression des colonnes Produits et Livraison
-   Raison: Rendre le tableau plus lisible et moins chargé
-   Impact: Les infos restent accessibles via le détail
+   [29/07/2025] - Migration complète vers TableComponent
+   Modification: Remplacement du tableau HTML par TableComponent
+   Raison: Modernisation avec glassmorphism et fonctionnalités avancées
+   Impact: Interface plus moderne avec tri, export, animations
    
-   [27/07/2025] - Ajout de la suppression sécurisée
-   Modification: Remplacement du bouton ✏️ par 🗑️
-   Raison: Permettre la suppression (soft delete) des commandes
-   Impact: Les commandes supprimées sont filtrées et n'apparaissent plus
-   
-   [28/07/2025] - Retrait de la fonctionnalité de suppression
-   Modification: Suppression du bouton 🗑️ et désactivation de peutSupprimer()
-   Raison: Demande utilisateur - simplification de l'interface
-   Impact: Plus de suppression possible depuis le tableau
-   
-   [29/07/2025] - Intégration StatusBadgeComponent
-   Modification: Remplacement des badges HTML par le composant moderne
-   Raison: Uniformisation avec le nouveau système UI glassmorphism
-   Impact: Badges animés avec icônes (loader qui tourne, flamme animée)
+   Nouveautés:
+   - Style glassmorphism automatique
+   - Tri multi-colonnes (Shift+Click)
+   - Export Excel/CSV/PDF
+   - Pagination moderne
+   - Responsive avec card view mobile
+   - Animations fluides
+   - Badges avec StatusBadgeComponent
    
    NOTES POUR REPRISES FUTURES:
-   - Les badges utilisent des icônes Lucide via StatusBadgeComponent
-   - Animation 'spin' pour "En préparation" (loader qui tourne)
-   - Animation 'flame' pour "Très urgent" (flamme animée)
-   - Pulse sur "Urgent" pour attirer l'attention
-   - Style barré + opacité pour "Supprimé"
+   - TableComponent gère sa propre pagination
+   - Les filtres restent externes (nos inputs)
+   - Les badges utilisent StatusBadgeComponent
+   - La recherche globale est désactivée (on garde nos filtres)
    ======================================== */
