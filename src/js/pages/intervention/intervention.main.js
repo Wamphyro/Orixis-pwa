@@ -69,8 +69,21 @@ function initDateHeure() {
     const dateInput = document.getElementById('date');
     const heureInput = document.getElementById('heure');
     
-    if (dateInput) dateInput.value = now.toISOString().split('T')[0];
-    if (heureInput) heureInput.value = now.toTimeString().slice(0, 5);
+    if (dateInput) {
+        dateInput.value = now.toISOString().split('T')[0];
+        dateInput.readOnly = true;
+        dateInput.style.backgroundColor = '#f8f9fa';
+        dateInput.style.cursor = 'not-allowed';
+        dateInput.style.opacity = '0.8';
+    }
+    
+    if (heureInput) {
+        heureInput.value = now.toTimeString().slice(0, 5);
+        heureInput.readOnly = true;
+        heureInput.style.backgroundColor = '#f8f9fa';
+        heureInput.style.cursor = 'not-allowed';
+        heureInput.style.opacity = '0.8';
+    }
 }
 
 // ========================================
