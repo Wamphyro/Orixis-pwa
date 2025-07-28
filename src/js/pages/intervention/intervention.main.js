@@ -75,6 +75,10 @@ function initDateHeure() {
         dateInput.style.backgroundColor = '#f8f9fa';
         dateInput.style.cursor = 'not-allowed';
         dateInput.style.opacity = '0.8';
+        
+        // Désactiver aussi le clic (pour mobile)
+        dateInput.addEventListener('click', (e) => e.preventDefault());
+        dateInput.addEventListener('touchstart', (e) => e.preventDefault());
     }
     
     if (heureInput) {
@@ -83,6 +87,10 @@ function initDateHeure() {
         heureInput.style.backgroundColor = '#f8f9fa';
         heureInput.style.cursor = 'not-allowed';
         heureInput.style.opacity = '0.8';
+        
+        // Désactiver aussi le clic (pour mobile)
+        heureInput.addEventListener('click', (e) => e.preventDefault());
+        heureInput.addEventListener('touchstart', (e) => e.preventDefault());
     }
 }
 
