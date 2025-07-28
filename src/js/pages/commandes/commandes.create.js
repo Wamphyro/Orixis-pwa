@@ -128,8 +128,6 @@ function afficherEtape(etape) {
         document.getElementById(`step${i}`).classList.add('completed');
     }
     
-    // Plus besoin de data-step avec le CSS simplifié
-    
     // Gérer les boutons
     document.getElementById('btnPrevStep').disabled = etape === 1;
     document.getElementById('btnNextStep').style.display = etape < 4 ? 'block' : 'none';
@@ -138,12 +136,28 @@ function afficherEtape(etape) {
     // Actions spécifiques par étape
     switch (etape) {
         case 1:
-            setTimeout(() => initClientSearch(), 100);
+            // MODIFIÉ : Attendre plus longtemps et vérifier l'existence
+            setTimeout(() => {
+                const clientSearchContainer = document.querySelector('.client-search');
+                if (clientSearchContainer) {
+                    initClientSearch();
+                } else {
+                    console.error('Container .client-search introuvable');
+                }
+            }, 300); // Augmenté de 100 à 300ms
             break;
         case 2:
             console.log('📍 Arrivée à l\'étape 2 - Chargement des packs');
             chargerPackTemplates();
-            setTimeout(() => initProductSearch(), 100);
+            // MODIFIÉ : Même chose pour les produits
+            setTimeout(() => {
+                const productSearchContainer = document.querySelector('.product-search');
+                if (productSearchContainer) {
+                    initProductSearch();
+                } else {
+                    console.error('Container .product-search introuvable');
+                }
+            }, 300); // Augmenté de 100 à 300ms
             break;
         case 3:
             chargerMagasins();
