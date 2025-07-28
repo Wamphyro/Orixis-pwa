@@ -1,0 +1,291 @@
+/* ========================================
+   BADGE.CSS - Styles des badges réutilisables
+   Chemin: src/css/shared/ui/badge.css
+   
+   DESCRIPTION:
+   Centralise tous les styles de badges (statuts, urgence, etc.)
+   Extrait de commandes.css
+   
+   STRUCTURE:
+   1. Badge de base
+   2. Badges statut commandes
+   3. Badges urgence
+   4. Badges génériques
+   5. Tailles et variantes
+   ======================================== */
+
+/* ========================================
+   BADGE DE BASE
+   ======================================== */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    gap: 5px;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+/* ========================================
+   BADGES STATUT COMMANDES
+   ======================================== */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    gap: 5px;
+}
+
+.status-nouvelle {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.status-preparation {
+    background: #cfe2ff;
+    color: #084298;
+}
+
+.status-terminee {
+    background: #d1e7dd;
+    color: #0f5132;
+}
+
+.status-expediee {
+    background: #fff3cd;
+    color: #664d03;
+}
+
+.status-receptionnee {
+    background: #e7f1ff;
+    color: #0066cc;
+}
+
+.status-livree {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-annulee {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-supprime {
+    background: #dc3545;
+    color: white;
+    text-decoration: line-through;
+    opacity: 0.8;
+}
+
+/* ========================================
+   BADGES URGENCE
+   ======================================== */
+.urgence-badge {
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.urgence-badge.normal {
+    background: #e7f3ef;
+    color: #28a745;
+}
+
+.urgence-badge.urgent {
+    background: #fff3cd;
+    color: #ffc107;
+}
+
+.urgence-badge.tres-urgent {
+    background: #f8d7da;
+    color: #dc3545;
+}
+
+/* ========================================
+   BADGES GÉNÉRIQUES (couleurs Bootstrap-like)
+   ======================================== */
+.badge-primary {
+    background: #007bff;
+    color: white;
+}
+
+.badge-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.badge-success {
+    background: #28a745;
+    color: white;
+}
+
+.badge-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.badge-warning {
+    background: #ffc107;
+    color: #212529;
+}
+
+.badge-info {
+    background: #17a2b8;
+    color: white;
+}
+
+.badge-light {
+    background: #f8f9fa;
+    color: #495057;
+}
+
+.badge-dark {
+    background: #343a40;
+    color: white;
+}
+
+/* ========================================
+   VARIANTES OUTLINE
+   ======================================== */
+.badge-outline {
+    background: transparent;
+    border: 2px solid currentColor;
+}
+
+.badge-outline-primary {
+    color: #007bff;
+    border-color: #007bff;
+}
+
+.badge-outline-secondary {
+    color: #6c757d;
+    border-color: #6c757d;
+}
+
+.badge-outline-success {
+    color: #28a745;
+    border-color: #28a745;
+}
+
+.badge-outline-danger {
+    color: #dc3545;
+    border-color: #dc3545;
+}
+
+.badge-outline-warning {
+    color: #ffc107;
+    border-color: #ffc107;
+}
+
+.badge-outline-info {
+    color: #17a2b8;
+    border-color: #17a2b8;
+}
+
+/* ========================================
+   TAILLES
+   ======================================== */
+.badge-sm {
+    padding: 3px 8px;
+    font-size: 11px;
+}
+
+.badge-lg {
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
+/* ========================================
+   BADGE PILL (plus arrondi)
+   ======================================== */
+.badge-pill {
+    border-radius: 50px;
+}
+
+/* ========================================
+   BADGE AVEC ICÔNE
+   ======================================== */
+.badge-icon {
+    padding-left: 8px;
+}
+
+.badge-icon::before {
+    margin-right: 4px;
+    font-size: 14px;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+.badge-pulse {
+    animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.2);
+    }
+    70% {
+        box-shadow: 0 0 0 8px rgba(0, 0, 0, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+    }
+}
+
+/* ========================================
+   BADGE COMPTEUR
+   ======================================== */
+.badge-counter {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 6px;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
+    background: #dc3545;
+    color: white;
+    border-radius: 9px;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 480px) {
+    .badge {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+    
+    .urgence-badge {
+        font-size: 11px;
+        padding: 3px 8px;
+    }
+}
+
+/* ========================================
+   UTILISATION:
+   
+   <span class="badge badge-primary">Primary</span>
+   <span class="status-badge status-nouvelle">Nouvelle</span>
+   <span class="urgence-badge urgent">Urgent</span>
+   <span class="badge badge-danger badge-pill">3</span>
+   
+   Pour un compteur sur un bouton:
+   <button class="btn" style="position: relative;">
+       Messages
+       <span class="badge-counter">5</span>
+   </button>
+   ======================================== */

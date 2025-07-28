@@ -4,16 +4,17 @@
    
    DESCRIPTION:
    Ce fichier contient UNIQUEMENT les styles de la page liste des commandes.
-   Modifié le 27/01/2025 : Suppression des styles de boutons (déplacés dans button.css)
+   Modifié le 27/01/2025 : 
+   - Suppression des styles de boutons (déplacés dans button.css)
+   - Suppression des badges (déplacés dans badge.css)
    
    STRUCTURE:
    1. En-tête et statistiques
    2. Filtres
    3. Tableau des commandes
-   4. Badges statut et urgence
-   5. Pagination
-   6. Animations
-   7. Responsive
+   4. Pagination
+   5. Animations spécifiques page
+   6. Responsive
    ======================================== */
 
 /* ========================================
@@ -45,7 +46,6 @@
     transition: all 0.3s ease;
 }
 
-/* Animations au survol uniquement */
 .stat-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
@@ -108,26 +108,6 @@
     justify-content: flex-end;
 }
 
-.btn-reset {
-    background: #f8f9fa;
-    color: #6c757d;
-    border: 2px solid #e9ecef;
-    padding: 8px 20px;
-    border-radius: 10px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.btn-reset:hover {
-    background: #e9ecef;
-    border-color: #dee2e6;
-    transform: scale(1.05);
-}
-
 /* ========================================
    TABLEAU DES COMMANDES
    ======================================== */
@@ -187,87 +167,6 @@
 }
 
 /* ========================================
-   BADGES STATUT ET URGENCE
-   ======================================== */
-
-/* Badges statut */
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    gap: 5px;
-}
-
-.status-nouvelle {
-    background: #e9ecef;
-    color: #495057;
-}
-
-.status-preparation {
-    background: #cfe2ff;
-    color: #084298;
-}
-
-.status-terminee {
-    background: #d1e7dd;
-    color: #0f5132;
-}
-
-.status-expediee {
-    background: #fff3cd;
-    color: #664d03;
-}
-
-.status-receptionnee {
-    background: #e7f1ff;
-    color: #0066cc;
-}
-
-.status-livree {
-    background: #d4edda;
-    color: #155724;
-}
-
-.status-annulee {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-/* Badge statut supprimé */
-.status-supprime {
-    background: #dc3545;
-    color: white;
-    text-decoration: line-through;
-    opacity: 0.8;
-}
-
-/* Badges urgence */
-.urgence-badge {
-    padding: 4px 10px;
-    border-radius: 15px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.urgence-badge.normal {
-    background: #e7f3ef;
-    color: #28a745;
-}
-
-.urgence-badge.urgent {
-    background: #fff3cd;
-    color: #ffc107;
-}
-
-.urgence-badge.tres-urgent {
-    background: #f8d7da;
-    color: #dc3545;
-}
-
-/* ========================================
    PAGINATION
    ======================================== */
 .pagination {
@@ -307,7 +206,7 @@
 }
 
 /* ========================================
-   ANIMATIONS (activées après chargement)
+   ANIMATIONS SPÉCIFIQUES PAGE
    ======================================== */
 .page-loaded .stat-card {
     animation: fadeInUp 0.5s ease forwards;
@@ -318,17 +217,6 @@
 .page-loaded .stat-card:nth-child(2) { animation-delay: 0.2s; }
 .page-loaded .stat-card:nth-child(3) { animation-delay: 0.3s; }
 .page-loaded .stat-card:nth-child(4) { animation-delay: 0.4s; }
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
 
 /* ========================================
    RESPONSIVE
@@ -381,12 +269,13 @@
 /* ========================================
    HISTORIQUE DES DIFFICULTÉS
    
-   [27/01/2025] - Nettoyage des styles de boutons
-   Suppression: Tous les styles .btn-action déplacés dans button.css
-   Impact: Évite la duplication et centralise les styles de boutons
+   [27/01/2025] - Modularisation complète
+   - Suppression des styles de boutons → button.css
+   - Suppression des badges → badge.css
+   - Conservation uniquement des styles spécifiques à la page
    
    NOTES POUR REPRISES FUTURES:
-   - Les styles de boutons sont maintenant dans button.css
-   - Ce fichier ne contient que les styles spécifiques à la page liste
-   - Les badges pourraient être extraits dans un badge.css si réutilisés ailleurs
+   - Ce fichier ne contient QUE les styles de la page liste
+   - Les composants réutilisables sont dans /shared/ui/
+   - Ne pas ajouter de styles génériques ici
    ======================================== */

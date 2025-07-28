@@ -14,11 +14,26 @@
     <meta name="theme-color" content="#667eea">
     
     <!-- ========================================
-         CSS - Chemins mis à jour pour le dossier commandes/
-         MODIFIÉ : Ajout du support pour l'édition avec icônes stylo
+         CSS - Ordre de chargement optimisé
+         MODIFIÉ le 27/01/2025: Ajout des nouveaux CSS modulaires
+         
+         ORDRE IMPORTANT:
+         1. main.css (variables, reset, layout)
+         2. Composants UI génériques
+         3. CSS spécifiques à la page
          ======================================== -->
+    
+    <!-- 1. Base et layout -->
     <link rel="stylesheet" href="../src/css/main.css">
+    
+    <!-- 2. Composants UI partagés -->
+    <link rel="stylesheet" href="../src/css/shared/ui/animation.css">
     <link rel="stylesheet" href="../src/css/shared/ui/button.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/badge.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/form.css">
+    <!-- Les CSS des composants avec JS sont chargés automatiquement par leur JS -->
+    
+    <!-- 3. CSS spécifiques aux commandes -->
     <link rel="stylesheet" href="../src/css/commandes/commandes.css">
     <link rel="stylesheet" href="../src/css/commandes/commandes-custom.css">
 </head>
@@ -126,10 +141,7 @@
             </div>
         </div>
 
-        <!-- ========================================
-             TABLEAU DES COMMANDES - MODIFIÉ
-             Colonnes supprimées : Produits, Livraison
-             ======================================== -->
+        <!-- Tableau des commandes -->
         <div class="commandes-table-container section">
             <table class="commandes-table">
                 <thead>
@@ -337,11 +349,7 @@
         </div>
     </div>
 
-    <!-- ========================================
-         MODAL DÉTAIL COMMANDE - MODIFIÉ POUR ÉDITION
-         Ajout du support pour l'édition avec icônes stylo
-         Les sections sont maintenant éditables inline
-         ======================================== -->
+    <!-- Modal Détail Commande -->
     <div id="modalDetailCommande" class="modal" style="display: none;">
         <div class="modal-content modal-large">
             <div class="modal-header">
@@ -350,26 +358,14 @@
             </div>
             
             <div class="modal-body">
-                <!-- ========================================
-                     Timeline du statut
-                     IMPORTANT: Le div timeline sera rempli par le composant Timeline JS
-                     Ne pas ajouter de HTML statique ici
-                     ======================================== -->
+                <!-- Timeline du statut -->
                 <div class="timeline-container">
                     <div class="timeline" id="timeline">
                         <!-- Timeline générée dynamiquement par createOrderTimeline() -->
                     </div>
                 </div>
                 
-                <!-- ========================================
-                     SECTIONS DÉTAIL - NOUVELLE STRUCTURE AVEC ÉDITION
-                     Client et Livraison dans la colonne de gauche
-                     Produits dans la colonne de droite
-                     Chaque section contient maintenant :
-                     - Une icône stylo d'édition (top-right)
-                     - Le contenu en mode lecture
-                     - Un formulaire d'édition masqué
-                     ======================================== -->
+                <!-- Sections détail -->
                 <div class="detail-sections">
                     <!-- Colonne de gauche : Client + Livraison -->
                     <div class="detail-column-left">
@@ -476,8 +472,9 @@
     </div>
 
     <!-- ========================================
-         SCRIPTS - Inchangé
+         SCRIPTS
          Le fichier commandes.main.js charge tous les autres modules
+         Les composants UI avec JS chargent leur CSS automatiquement
          ======================================== -->
     <script type="module" src="../src/js/pages/commandes/commandes.main.js"></script>
 </body>
