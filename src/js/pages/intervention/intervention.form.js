@@ -129,11 +129,15 @@ function initBeforeUnloadHandler() {
 // ========================================
 
 function collectFormData(client) {
+    // Toujours prendre la valeur ACTUELLE du champ téléphone
+    const telephoneActuel = document.getElementById('telephone')?.value || '';
+    
     return {
         // Informations client
         clientId: client.id,
         nom: `${client.prenom} ${client.nom}`,
-        telephone: client.telephone || document.getElementById('telephone')?.value || '',
+        telephone: telephoneActuel,  // TOUJOURS prendre la valeur du champ !
+        telephoneOriginal: client.telephone,  // Garder l'original pour référence
         
         // Informations intervention
         date: document.getElementById('date')?.value || '',
@@ -269,6 +273,9 @@ function prepareEmailData(client) {
     const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
     const date = new Date();
     
+    // Toujours prendre le téléphone actuel du formulaire
+    const telephoneActuel = document.getElementById('telephone')?.value || client.telephone || 'Non renseigné';
+    
     return {
         // Destinataires
         to_email: 'korber@BROKERAUDIOLOGIE88.onmicrosoft.com',
@@ -284,7 +291,7 @@ function prepareEmailData(client) {
         
         // Informations client
         nom_client: `${client.prenom} ${client.nom}`,
-        telephone: client.telephone || document.getElementById('telephone')?.value || 'Non renseigné',
+        telephone: telephoneActuel,  // Utiliser le téléphone actuel !
         
         // Informations intervention
         type_appareil: document.querySelector('input[name="type_appareil"]:checked')?.value || 'Non spécifié',
