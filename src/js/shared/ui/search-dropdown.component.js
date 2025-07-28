@@ -9,6 +9,7 @@
 //
 // MODIFICATIONS:
 // [28/01/2025] - Ajout de protections contre les éléments null
+// [28/01/2025] - Améliorations pour mobile (position, clavier, scroll)
 //
 // UTILISATION:
 // const searchClient = new SearchDropdown({
@@ -53,6 +54,7 @@ export class SearchDropdown {
         this.searchTimeout = null;
         this.isLoading = false;
         this.results = [];
+        this.isMobile = window.innerWidth <= 768;
         
         if (this.options.container) {
             this.init();
@@ -116,6 +118,11 @@ export class SearchDropdown {
         this.input.className = 'search-dropdown-input';
         this.input.placeholder = this.options.placeholder;
         
+        // Sur mobile, augmenter la taille de police pour éviter le zoom
+        if (this.isMobile) {
+            this.input.style.fontSize = '16px';
+        }
+        
         inputWrapper.appendChild(this.input);
         
         // Créer le bouton clear si activé
@@ -151,7 +158,19 @@ export class SearchDropdown {
         // Click outside
         if (this.options.closeOnClickOutside) {
             document.addEventListener('click', this.handleClickOutside.bind(this));
+            // Pour mobile, ajouter aussi touchstart
+            if (this.isMobile) {
+                document.addEventListener('touchstart', this.handleClickOutside.bind(this));
+            }
         }
+        
+        // Détecter le changement d'orientation mobile
+        window.addEventListener('resize', () => {
+            this.isMobile = window.innerWidth <= 768;
+            if (this.resultsContainer.classList.contains('active')) {
+                this.adjustResultsPosition();
+            }
+        });
     }
     
     handleInput(e) {
@@ -189,6 +208,10 @@ export class SearchDropdown {
                 e.preventDefault();
                 if (currentIndex < items.length - 1) {
                     this.highlightItem(items[currentIndex + 1]);
+                    // Sur mobile, scroller vers l'élément
+                    if (this.isMobile && items[currentIndex + 1]) {
+                        items[currentIndex + 1].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
                 }
                 break;
                 
@@ -196,6 +219,10 @@ export class SearchDropdown {
                 e.preventDefault();
                 if (currentIndex > 0) {
                     this.highlightItem(items[currentIndex - 1]);
+                    // Sur mobile, scroller vers l'élément
+                    if (this.isMobile && items[currentIndex - 1]) {
+                        items[currentIndex - 1].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
                 }
                 break;
                 
@@ -209,6 +236,10 @@ export class SearchDropdown {
                 
             case 'Escape':
                 this.hideResults();
+                // Sur mobile, fermer aussi le clavier
+                if (this.isMobile) {
+                    this.input.blur();
+                }
                 break;
         }
     }
@@ -290,10 +321,29 @@ export class SearchDropdown {
             items.forEach((itemEl, index) => {
                 itemEl.addEventListener('click', () => this.selectItem(this.results[index]));
                 itemEl.addEventListener('mouseenter', () => this.highlightItem(itemEl));
+                
+                // Sur mobile, ajouter touch events
+                if (this.isMobile) {
+                    itemEl.addEventListener('touchstart', (e) => {
+                        e.preventDefault(); // Éviter le delay de 300ms
+                        this.highlightItem(itemEl);
+                    });
+                    itemEl.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        this.selectItem(this.results[index]);
+                    });
+                }
             });
         }
         
         this.showResults();
+        
+        // Sur mobile, scroll automatique vers les résultats
+        if (this.isMobile && this.results.length > 0) {
+            setTimeout(() => {
+                this.resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
     }
     
     renderResultItem(item, index) {
@@ -339,6 +389,11 @@ export class SearchDropdown {
         // Mettre à jour l'input avec la valeur
         this.input.value = this.getItemValue(item);
         
+        // Sur mobile, fermer le clavier
+        if (this.isMobile) {
+            this.input.blur();
+        }
+        
         // Appeler le callback
         if (this.options.onSelect) {
             this.options.onSelect(item);
@@ -355,15 +410,66 @@ export class SearchDropdown {
         }));
     }
     
+    // Méthode pour ajuster la position des résultats
+    adjustResultsPosition() {
+        if (!this.input || !this.resultsContainer) return;
+        
+        const inputRect = this.input.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const spaceBelow = viewportHeight - inputRect.bottom;
+        const spaceAbove = inputRect.top;
+        
+        // Reset les styles
+        this.resultsContainer.style.position = '';
+        this.resultsContainer.style.top = '';
+        this.resultsContainer.style.bottom = '';
+        this.resultsContainer.style.left = '';
+        this.resultsContainer.style.right = '';
+        this.resultsContainer.style.width = '';
+        this.resultsContainer.style.maxHeight = '';
+        
+        if (this.isMobile) {
+            // Sur mobile, position fixe
+            this.resultsContainer.style.position = 'fixed';
+            this.resultsContainer.style.left = `${inputRect.left}px`;
+            this.resultsContainer.style.width = `${inputRect.width}px`;
+            this.resultsContainer.style.zIndex = '9999';
+            
+            // Décider si afficher en haut ou en bas
+            if (spaceBelow > 200 || spaceBelow > spaceAbove) {
+                // Afficher en bas
+                this.resultsContainer.style.top = `${inputRect.bottom + 5}px`;
+                this.resultsContainer.style.maxHeight = `${Math.min(spaceBelow - 20, 300)}px`;
+            } else {
+                // Afficher en haut
+                this.resultsContainer.style.bottom = `${viewportHeight - inputRect.top + 5}px`;
+                this.resultsContainer.style.maxHeight = `${Math.min(spaceAbove - 20, 300)}px`;
+            }
+        }
+    }
+    
     showResults() {
         if (this.resultsContainer) {
             this.resultsContainer.classList.add('active');
+            
+            // Ajuster la position sur mobile
+            if (this.isMobile) {
+                this.adjustResultsPosition();
+                
+                // Empêcher le scroll du body quand les résultats sont ouverts
+                document.body.style.overflow = 'hidden';
+            }
         }
     }
     
     hideResults() {
         if (this.resultsContainer) {
             this.resultsContainer.classList.remove('active');
+            
+            // Restaurer le scroll du body sur mobile
+            if (this.isMobile) {
+                document.body.style.overflow = '';
+            }
         }
     }
     
@@ -450,6 +556,16 @@ export class SearchDropdown {
         
         if (this.options.closeOnClickOutside) {
             document.removeEventListener('click', this.handleClickOutside.bind(this));
+            if (this.isMobile) {
+                document.removeEventListener('touchstart', this.handleClickOutside.bind(this));
+            }
+        }
+        
+        window.removeEventListener('resize', this.adjustResultsPosition);
+        
+        // Restaurer le scroll du body si nécessaire
+        if (this.isMobile) {
+            document.body.style.overflow = '';
         }
         
         // Nettoyer le DOM seulement si le container existe
@@ -491,7 +607,16 @@ export default SearchDropdown;
 // - Protection dans showResults/hideResults
 // - Protection dans destroy
 //
+// [28/01/2025] - Améliorations mobile
+// - Détection mobile et ajustement position
+// - Fermeture clavier après sélection
+// - Touch events pour éviter delay 300ms
+// - Scroll automatique vers résultats
+// - Gestion overflow body sur mobile
+// - Position intelligente (haut/bas selon espace)
+//
 // NOTES POUR REPRISES FUTURES:
 // - Toujours vérifier l'existence des éléments DOM
 // - Le composant peut être détruit avant que tous les events soient terminés
+// - Sur mobile, penser à l'UX (clavier, position, scroll)
 // ========================================
