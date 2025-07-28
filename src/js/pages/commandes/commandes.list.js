@@ -1,111 +1,37 @@
 // ========================================
-// COMMANDES.LIST.JS - Gestion de la liste avec TableComponent glassmorphism
+// COMMANDES.LIST.JS - Gestion de la liste et des filtres (MODIFIÉ)
 // Chemin: src/js/pages/commandes/commandes.list.js
 //
 // DESCRIPTION:
-// Gère l'affichage de la liste des commandes avec TableComponent moderne
-// Modifié le 29/07/2025 : Migration complète vers TableComponent
+// Gère l'affichage de la liste des commandes avec un tableau simplifié
+// Modifié le 28/07/2025 : Retrait du bouton suppression
 //
 // STRUCTURE:
-// 1. Imports et configuration (lignes 20-100)
-// 2. Initialisation du module (lignes 102-110)
-// 3. Chargement des données (lignes 112-140)
-// 4. Affichage avec TableComponent (lignes 142-280)
-// 5. Fonctions badges (lignes 282-350)
-// 6. Filtres (lignes 352-440)
-// 7. Export état global (lignes 442-450)
+// 1. Initialisation du module (lignes 20-25)
+// 2. Chargement des données (lignes 27-55)
+// 3. Affichage avec tableau simplifié (lignes 57-140)
+// 4. Filtres (lignes 142-230)
+// 5. Pagination (lignes 232-265)
+// 6. Fonctions utilitaires (lignes 267-275)
+//
+// DÉPENDANCES:
+// - CommandesService: Service d'accès aux données
+// - COMMANDES_CONFIG: Configuration des statuts et types
+// - formatDate: Utilitaire de formatage
 // ========================================
 
 import { CommandesService } from '../../services/commandes.service.js';
 import { COMMANDES_CONFIG } from '../../data/commandes.data.js';
 import { formatDate as formatDateUtil, formatMoney } from '../../shared/index.js';
 import { state } from './commandes.main.js';
-import { UI } from '../../shared/ui/index.js';
-
-
-// ========================================
-// CONFIGURATION DES BADGES
-// ========================================
-
-// Configuration des badges pour les statuts
-const BADGES_STATUTS = {
-    'nouvelle': { 
-        icon: 'sparkles',
-        color: '#a855f7',
-        label: 'Nouvelle'
-    },
-    'preparation': { 
-        icon: 'loader',
-        color: '#3b82f6',
-        label: 'En préparation',
-        animation: 'spin'
-    },
-    'terminee': { 
-        icon: 'check-circle',
-        color: '#10b981',
-        label: 'Terminée'
-    },
-    'expediee': { 
-        icon: 'truck',
-        color: '#6366f1',
-        label: 'Expédiée'
-    },
-    'receptionnee': { 
-        icon: 'package-check',
-        color: '#0ea5e9',
-        label: 'Réceptionnée'
-    },
-    'livree': { 
-        icon: 'check-double',
-        color: '#22c55e',
-        label: 'Livrée'
-    },
-    'annulee': { 
-        icon: 'x-octagon',
-        color: '#ef4444',
-        label: 'Annulée'
-    },
-    'supprime': { 
-        icon: 'trash-2',
-        color: '#dc3545',
-        label: 'Supprimée',
-        special: true
-    }
-};
-
-// Configuration des badges pour les urgences
-const BADGES_URGENCES = {
-    'normal': { 
-        icon: 'clock',
-        color: '#22c55e',
-        label: 'Normal'
-    },
-    'urgent': { 
-        icon: 'alert-triangle',
-        color: '#f59e0b',
-        label: 'Urgent',
-        pulse: true
-    },
-    'tres_urgent': { 
-        icon: 'flame',
-        color: '#ef4444',
-        label: 'Très urgent',
-        animation: 'flame'
-    }
-};
-
-// Instance de la table
-let tableInstance = null;
 
 // ========================================
 // INITIALISATION DU MODULE
 // ========================================
 
 export async function initListeCommandes() {
-    console.log('Module liste commandes initialisé avec TableComponent glassmorphism');
-    
-    // Initialiser les event listeners pour les filtres
-    initEventListeners();
+    // Initialisation spécifique au module liste
+    console.log('Module liste commandes initialisé');
 }
 
 // ========================================
@@ -117,6 +43,7 @@ export async function chargerDonnees() {
         // Charger les commandes
         state.commandesData = await CommandesService.getCommandes();
         
+        // Si pas de commandes, initialiser un tableau vide
         if (!state.commandesData) {
             state.commandesData = [];
         }
@@ -125,23 +52,24 @@ export async function chargerDonnees() {
         const stats = await CommandesService.getStatistiques();
         afficherStatistiques(stats);
         
-        // Afficher les commandes avec TableComponent
-        await afficherCommandes();
+        // Afficher les commandes
+        afficherCommandes();
         
     } catch (error) {
         console.error('Erreur chargement données:', error);
+        // En cas d'erreur, initialiser avec des données vides
         state.commandesData = [];
         afficherStatistiques({
             parStatut: {},
             parUrgence: {},
             retards: 0
         });
-        await afficherCommandes();
+        afficherCommandes();
     }
 }
 
 // ========================================
-// AFFICHAGE AVEC TABLECOMPONENT
+// AFFICHAGE (MODIFIÉ - Sans bouton suppression)
 // ========================================
 
 function afficherStatistiques(stats) {
@@ -151,263 +79,97 @@ function afficherStatistiques(stats) {
     document.getElementById('statLivrees').textContent = stats.parStatut.livree || 0;
 }
 
-async function afficherCommandes() {
-    // Conteneur de la table
-    const container = document.getElementById('commandesTableContainer');
-    if (!container) {
-        console.error('Container commandesTableContainer non trouvé');
-        return;
-    }
+function afficherCommandes() {
+    const tbody = document.getElementById('commandesTableBody');
+    tbody.innerHTML = '';
     
     // Filtrer les commandes
-    const commandesFiltrees = filtrerCommandesLocalement();
+    let commandesFiltrees = filtrerCommandesLocalement();
     
-    // Préparer les données pour TableComponent
-    const dataForTable = commandesFiltrees.map(commande => ({
-        id: commande.id,
-        numeroCommande: commande.numeroCommande,
-        dateCommande: commande.dates.commande,
-        clientNom: `${commande.client.prenom} ${commande.client.nom}`,
-        typePreparation: COMMANDES_CONFIG.TYPES_PREPARATION[commande.typePreparation]?.label || commande.typePreparation,
-        niveauUrgence: commande.niveauUrgence,
-        statut: commande.statut,
-        // Données complètes pour les actions
-        _raw: commande
-    }));
+    // Pagination
+    const totalPages = Math.ceil(commandesFiltrees.length / state.itemsPerPage);
+    const start = (state.currentPage - 1) * state.itemsPerPage;
+    const end = start + state.itemsPerPage;
+    const commandesPage = commandesFiltrees.slice(start, end);
     
-    // Configuration des colonnes
-    const columns = [
-        { 
-            key: 'numeroCommande', 
-            label: 'N° Commande', 
-            type: 'text',
-            sortable: true,
-            searchable: true,
-            width: '150px'
-        },
-        { 
-            key: 'dateCommande', 
-            label: 'Date', 
-            type: 'date',
-            sortable: true,
-            searchable: false,
-            width: '120px'
-        },
-        { 
-            key: 'clientNom', 
-            label: 'Client', 
-            type: 'text',
-            sortable: true,
-            searchable: true,
-            minWidth: '200px'
-        },
-        { 
-            key: 'typePreparation', 
-            label: 'Type', 
-            type: 'text',
-            sortable: true,
-            searchable: true,
-            width: '150px'
-        },
-        { 
-            key: 'niveauUrgence', 
-            label: 'Urgence',
-            type: 'status',
-            sortable: true,
-            searchable: false,
-            width: '130px',
-            render: (value) => renderUrgenceBadge(value)
-        },
-        { 
-            key: 'statut', 
-            label: 'Statut',
-            type: 'status',
-            sortable: true,
-            searchable: true,
-            width: '150px',
-            render: (value) => renderStatutBadge(value)
-        },
-        { 
-            key: 'actions', 
-            label: 'Actions',
-            type: 'actions',
-            sortable: false,
-            searchable: false,
-            width: '100px',
-            actions: [
-                {
-                    icon: '👁️',
-                    tooltip: 'Voir les détails',
-                    className: 'btn-action',
-                    handler: (row) => {
-                        window.voirDetailCommande(row._raw.id);
-                    }
-                }
-            ]
-        }
-    ];
-    
-    // Si la table existe déjà, mettre à jour les données
-    if (tableInstance) {
-        await tableInstance.setData(dataForTable);
+    // ========================================
+    // TABLEAU SIMPLIFIÉ - Sans bouton suppression
+    // Colonnes : N° Commande, Date, Client, Type, Urgence, Statut, Actions
+    // ========================================
+    if (commandesPage.length === 0) {
+        tbody.innerHTML = '<tr class="no-data"><td colspan="7">Aucune commande trouvée</td></tr>';
         return;
     }
     
-    // Créer la table avec TableComponent
-    tableInstance = await UI.Table({
-        columns: columns,
-        data: dataForTable,
-        style: 'glassmorphism',
-        animation: 'smooth',
-        className: 'commandes-table',
-        features: {
-            // Pagination
-            pagination: {
-                enabled: true,
-                pageSize: state.itemsPerPage || 20,
-                pageSizeOptions: [10, 20, 50, 100],
-                position: 'bottom',
-                style: 'numbers',
-                showInfo: true,
-                showGoTo: true
-            },
-            // Recherche globale (on garde nos filtres custom)
-            search: {
-                enabled: false  // On utilise nos propres filtres
-            },
-            // Tri
-            sort: {
-                enabled: true,
-                multi: true,
-                defaultDirection: 'desc',
-                locale: 'fr-FR'
-            },
-            // Export
-            export: {
-                enabled: true,
-                formats: ['excel', 'csv', 'pdf'],
-                filename: `commandes_${new Date().toISOString().split('T')[0]}`
-            },
-            // Sélection
-            selection: {
-                enabled: false  // Pour l'instant
-            },
-            // Colonnes
-            columns: {
-                resize: true,
-                reorder: true,
-                hide: false
-            },
-            // Lignes
-            rows: {
-                hover: true,
-                striped: false,
-                border: true,
-                height: 'normal'
-            },
-            // Responsive
-            responsive: {
-                enabled: true,
-                cardView: true
-            }
-        },
-        // Messages en français
-        messages: {
-            noData: 'Aucune commande trouvée',
-            loading: 'Chargement...',
-            error: 'Erreur lors du chargement',
-            itemsPerPage: 'Éléments par page',
-            page: 'Page',
-            of: 'sur',
-            items: 'commandes',
-            first: 'Première',
-            last: 'Dernière',
-            previous: 'Précédente',
-            next: 'Suivante'
-        },
-        // Callbacks
-        onPageChange: (page) => {
-            state.currentPage = page;
-        }
+    // Afficher les commandes
+    commandesPage.forEach(commande => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><strong>${commande.numeroCommande}</strong></td>
+            <td>${formatDate(commande.dates.commande)}</td>
+            <td>${commande.client.prenom} ${commande.client.nom}</td>
+            <td>${COMMANDES_CONFIG.TYPES_PREPARATION[commande.typePreparation]?.label || commande.typePreparation}</td>
+            <td>${afficherUrgence(commande.niveauUrgence)}</td>
+            <td>${afficherStatut(commande.statut)}</td>
+            <td class="table-actions">
+                <button class="btn-action" onclick="voirDetailCommande('${commande.id}')">👁️</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
     });
     
-    // Vider le container et ajouter la table
-    container.innerHTML = '';
-    container.appendChild(tableInstance.getElement());
+    // Mettre à jour la pagination
+    updatePagination(totalPages);
 }
 
 // ========================================
-// FONCTIONS DE RENDU DES BADGES
+// FONCTION peutSupprimer() - DÉSACTIVÉE
+// Conservée mais commentée au cas où on voudrait la réactiver
+// Suppression de la fonctionnalité demandée le 28/07/2025
 // ========================================
+/*
+function peutSupprimer(commande) {
+    // Ne peut pas supprimer si déjà supprimée ou livrée
+    return commande.statut !== 'supprime' && commande.statut !== 'livree';
+}
+*/
 
-/**
- * Rendre un badge de statut
- */
-function renderStatutBadge(statut) {
-    const config = BADGES_STATUTS[statut];
-    
-    if (!config) {
-        return `<span class="status-badge">${statut}</span>`;
-    }
-    
-    // Version HTML simple sans StatusBadgeComponent
-    return `
-        <span class="status-badge glassmorphism ${statut}" 
-              style="display: inline-flex;
-                     align-items: center;
-                     gap: 6px;
-                     padding: 4px 12px;
-                     border-radius: 20px;
-                     font-size: 12px;
-                     font-weight: 500;
-                     color: white;
-                     background: ${config.color};
-                     backdrop-filter: blur(10px);
-                     border: 1px solid rgba(255, 255, 255, 0.2);
-                     ${config.special ? 'text-decoration: line-through; opacity: 0.8;' : ''}">
-            <span class="badge-icon">${config.icon || ''}</span>
-            <span class="badge-text">${config.label}</span>
-        </span>
-    `;
+// ========================================
+// NOTE: La fonction afficherProduits() n'est plus utilisée
+// mais est conservée au cas où on voudrait la réactiver
+// ========================================
+function afficherProduits(produits) {
+    if (!produits || produits.length === 0) return '-';
+    const summary = produits.slice(0, 2).map(p => p.designation).join(', ');
+    return produits.length > 2 ? `${summary}... (+${produits.length - 2})` : summary;
 }
 
-/**
- * Rendre un badge d'urgence
- */
-function renderUrgenceBadge(urgence) {
-    const config = BADGES_URGENCES[urgence];
-    
-    if (!config) {
-        return `<span class="urgence-badge">${urgence}</span>`;
-    }
-    
-    // Version HTML simple sans StatusBadgeComponent
-    return `
-        <span class="urgence-badge glassmorphism ${urgence}" 
-            style="display: inline-flex;
-                    align-items: center;
-                    gap: 6px;
-                    padding: 4px 12px;
-                    border-radius: 20px;
-                    font-size: 12px;
-                    font-weight: 500;
-                    color: white;
-                    background: ${config.color};
-                    backdrop-filter: blur(10px);
-                    border: 1px solid rgba(255, 255, 255, 0.2);">
-            <span class="badge-icon">${config.icon || ''}</span>
-            <span class="badge-text">${config.label}</span>
-        </span>
-    `;
+function afficherUrgence(urgence) {
+    const config = COMMANDES_CONFIG.NIVEAUX_URGENCE[urgence];
+    if (!config) return urgence;
+    return `<span class="urgence-badge ${urgence}">${config.icon} ${config.label}</span>`;
+}
+
+function afficherStatut(statut) {
+    const config = COMMANDES_CONFIG.STATUTS[statut];
+    if (!config) return statut;
+    return `<span class="status-badge status-${statut}">${config.icon} ${config.label}</span>`;
+}
+
+function peutModifierStatut(commande) {
+    return commande.statut !== 'livree' && commande.statut !== 'annulee' && commande.statut !== 'supprime';
 }
 
 // ========================================
-// FILTRES
+// FILTRES (Conserve l'exclusion des commandes supprimées)
 // ========================================
 
 function filtrerCommandesLocalement() {
     return state.commandesData.filter(commande => {
-        // Exclure les commandes supprimées
+        // ========================================
+        // Exclure systématiquement les commandes supprimées
+        // (au cas où il y en aurait déjà en base)
+        // ========================================
         if (commande.statut === 'supprime') {
             return false;
         }
@@ -462,73 +224,22 @@ function filtrerCommandesLocalement() {
     });
 }
 
-/**
- * Initialiser les event listeners pour les filtres
- */
-function initEventListeners() {
-    // Recherche
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-        searchInput.addEventListener('input', debounce((e) => {
-            state.filtres.recherche = e.target.value;
-            afficherCommandes();
-        }, 300));
-    }
+export function filtrerCommandes() {
+    // Récupérer les valeurs des filtres
+    state.filtres.recherche = document.getElementById('searchInput').value;
+    state.filtres.statut = document.getElementById('filterStatut').value;
+    state.filtres.periode = document.getElementById('filterPeriode').value;
+    state.filtres.urgence = document.getElementById('filterUrgence').value;
     
-    // Filtre statut
-    const filterStatut = document.getElementById('filterStatut');
-    if (filterStatut) {
-        filterStatut.addEventListener('change', (e) => {
-            state.filtres.statut = e.target.value;
-            afficherCommandes();
-        });
-    }
+    // Réinitialiser la page
+    state.currentPage = 1;
     
-    // Filtre période
-    const filterPeriode = document.getElementById('filterPeriode');
-    if (filterPeriode) {
-        filterPeriode.addEventListener('change', (e) => {
-            state.filtres.periode = e.target.value;
-            afficherCommandes();
-        });
-    }
-    
-    // Filtre urgence
-    const filterUrgence = document.getElementById('filterUrgence');
-    if (filterUrgence) {
-        filterUrgence.addEventListener('change', (e) => {
-            state.filtres.urgence = e.target.value;
-            afficherCommandes();
-        });
-    }
-    
-    // Bouton reset
-    const btnReset = document.querySelector('.btn-reset');
-    if (btnReset) {
-        btnReset.addEventListener('click', resetFiltres);
-    }
+    // Réafficher
+    afficherCommandes();
 }
 
-/**
- * Fonction debounce pour optimiser les performances
- */
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-/**
- * Réinitialiser les filtres
- */
 export function resetFiltres() {
-    // Réinitialiser l'état
+    // Réinitialiser les filtres
     state.filtres = {
         recherche: '',
         statut: '',
@@ -543,30 +254,45 @@ export function resetFiltres() {
     document.getElementById('filterUrgence').value = '';
     
     // Réafficher
+    state.currentPage = 1;
     afficherCommandes();
 }
 
 // ========================================
-// EXPORT POUR COMPATIBILITÉ
+// PAGINATION
 // ========================================
 
-// Ces fonctions ne sont plus utilisées avec TableComponent
-// mais on les garde pour compatibilité
-export function filtrerCommandes() {
-    afficherCommandes();
+function updatePagination(totalPages) {
+    document.getElementById('pageActuelle').textContent = state.currentPage;
+    document.getElementById('pageTotal').textContent = totalPages;
+    
+    document.getElementById('btnPrev').disabled = state.currentPage === 1;
+    document.getElementById('btnNext').disabled = state.currentPage === totalPages;
 }
 
 export function pagePrecedente() {
-    // Géré par TableComponent
+    if (state.currentPage > 1) {
+        state.currentPage--;
+        afficherCommandes();
+    }
 }
 
 export function pageSuivante() {
-    // Géré par TableComponent
+    const commandesFiltrees = filtrerCommandesLocalement();
+    const totalPages = Math.ceil(commandesFiltrees.length / state.itemsPerPage);
+    if (state.currentPage < totalPages) {
+        state.currentPage++;
+        afficherCommandes();
+    }
 }
 
-// Fonction utilitaire
+// ========================================
+// FONCTION UTILITAIRE LOCALE
+// ========================================
+
 function formatDate(timestamp) {
     if (!timestamp) return '-';
+    
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return formatDateUtil(date, 'DD/MM/YYYY');
 }
@@ -574,23 +300,25 @@ function formatDate(timestamp) {
 /* ========================================
    HISTORIQUE DES DIFFICULTÉS
    
-   [29/07/2025] - Migration complète vers TableComponent
-   Modification: Remplacement du tableau HTML par TableComponent
-   Raison: Modernisation avec glassmorphism et fonctionnalités avancées
-   Impact: Interface plus moderne avec tri, export, animations
+   [2025-07-26] - Simplification du tableau
+   Modification: Suppression des colonnes Produits et Livraison
+   Raison: Rendre le tableau plus lisible et moins chargé
+   Impact: Les infos restent accessibles via le détail
    
-   Nouveautés:
-   - Style glassmorphism automatique
-   - Tri multi-colonnes (Shift+Click)
-   - Export Excel/CSV/PDF
-   - Pagination moderne
-   - Responsive avec card view mobile
-   - Animations fluides
-   - Badges avec StatusBadgeComponent
+   [27/07/2025] - Ajout de la suppression sécurisée
+   Modification: Remplacement du bouton ✏️ par 🗑️
+   Raison: Permettre la suppression (soft delete) des commandes
+   Impact: Les commandes supprimées sont filtrées et n'apparaissent plus
+   
+   [28/07/2025] - Retrait de la fonctionnalité de suppression
+   Modification: Suppression du bouton 🗑️ et désactivation de peutSupprimer()
+   Raison: Demande utilisateur - simplification de l'interface
+   Impact: Plus de suppression possible depuis le tableau
    
    NOTES POUR REPRISES FUTURES:
-   - TableComponent gère sa propre pagination
-   - Les filtres restent externes (nos inputs)
-   - Les badges utilisent StatusBadgeComponent
-   - La recherche globale est désactivée (on garde nos filtres)
+   - La fonction afficherProduits() est conservée mais non utilisée
+   - Le colspan reste à 7 colonnes
+   - Les commandes supprimées restent filtrées (au cas où)
+   - La fonction peutSupprimer() est commentée mais conservée
+   - La suppression reste possible via l'API si besoin
    ======================================== */

@@ -230,7 +230,86 @@
     transform: scale(0.95);
 }
 
+/* ========================================
+   BADGES STATUT ET URGENCE
+   ======================================== */
 
+/* Badges statut */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    gap: 5px;
+}
+
+.status-nouvelle {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.status-preparation {
+    background: #cfe2ff;
+    color: #084298;
+}
+
+.status-terminee {
+    background: #d1e7dd;
+    color: #0f5132;
+}
+
+.status-expediee {
+    background: #fff3cd;
+    color: #664d03;
+}
+
+.status-receptionnee {
+    background: #e7f1ff;
+    color: #0066cc;
+}
+
+.status-livree {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-annulee {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Badge statut supprimé (NOUVEAU) */
+.status-supprime {
+    background: #dc3545;
+    color: white;
+    text-decoration: line-through;
+    opacity: 0.8;
+}
+
+/* Badges urgence */
+.urgence-badge {
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.urgence-badge.normal {
+    background: #e7f3ef;
+    color: #28a745;
+}
+
+.urgence-badge.urgent {
+    background: #fff3cd;
+    color: #ffc107;
+}
+
+.urgence-badge.tres-urgent {
+    background: #f8d7da;
+    color: #dc3545;
+}
 
 /* ========================================
    PAGINATION
@@ -342,23 +421,6 @@
         padding: 12px 20px;
     }
 }
-
-/* ========================================
-   STYLES DÉSACTIVÉS - Migration TableComponent
-   ======================================== */
-/*
-.commandes-table-container,
-.commandes-table,
-.commandes-table thead,
-.commandes-table tbody,
-.commandes-table th,
-.commandes-table td,
-.pagination,
-.pagination-btn,
-.pagination-info {
-    -- Styles désactivés pour TableComponent --
-}
-*/
 
 /* ========================================
    HISTORIQUE DES DIFFICULTÉS
