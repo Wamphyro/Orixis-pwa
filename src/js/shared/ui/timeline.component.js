@@ -3,8 +3,8 @@
 // ========================================
 // Chemin: src/js/shared/ui/timeline.component.js
 //
-// Version mise à jour : chemins CSS corrigés pour GitHub Pages
-// Charge maintenant : src/css/shared/ui/timeline.css (sans / au début)
+// Version mise à jour : chemins CSS corrigés pour pages dans /pages/
+// Charge maintenant : ../src/css/shared/ui/timeline.css
 // ========================================
 
 export class Timeline {
@@ -63,10 +63,10 @@ export class Timeline {
         const link = document.createElement('link');
         link.id = 'timeline-styles';
         link.rel = 'stylesheet';
-        link.href = 'src/css/shared/ui/timeline.css';
+        link.href = '../src/css/shared/ui/timeline.css';
         document.head.appendChild(link);
         
-        console.log('✅ Timeline styles chargés : src/css/shared/ui/timeline.css');
+        console.log('✅ Timeline styles chargés : ../src/css/shared/ui/timeline.css');
     }
     
     setupContainer() {

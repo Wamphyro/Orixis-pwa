@@ -3,8 +3,8 @@
 // ========================================
 // Chemin: src/js/shared/ui/notification.component.js
 //
-// Version mise à jour : chemins CSS corrigés pour GitHub Pages
-// Charge maintenant : src/css/shared/ui/notification.css (sans / au début)
+// Version mise à jour : chemins CSS corrigés pour pages dans /pages/
+// Charge maintenant : ../src/css/shared/ui/notification.css
 // ========================================
 
 export class NotificationManager {
@@ -47,10 +47,10 @@ export class NotificationManager {
         const link = document.createElement('link');
         link.id = 'notification-styles';
         link.rel = 'stylesheet';
-        link.href = 'src/css/shared/ui/notification.css';
+        link.href = '../src/css/shared/ui/notification.css';
         document.head.appendChild(link);
         
-        console.log('✅ Notification styles chargés : src/css/shared/ui/notification.css');
+        console.log('✅ Notification styles chargés : ../src/css/shared/ui/notification.css');
     }
     
     show(options) {
