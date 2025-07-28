@@ -1,0 +1,826 @@
+/* ========================================
+   MENU.CSS - Styles pour le composant Menu
+   Chemin: src/css/shared/ui/menu.css
+   
+   DESCRIPTION:
+   Styles complets pour le système de menus avec effet glassmorphism.
+   Supporte dropdown, context menu, mega menu, sidebar et animations.
+   
+   STRUCTURE:
+   1. Variables et configuration (lignes 20-100)
+   2. Conteneur et structure de base (lignes 102-250)
+   3. Items de menu (lignes 252-500)
+   4. Sous-menus (lignes 502-650)
+   5. Types spéciaux (mega, sidebar, mobile) (lignes 652-850)
+   6. Animations (lignes 852-1000)
+   7. États et interactions (lignes 1002-1150)
+   8. Responsive et accessibilité (lignes 1152-1300)
+   
+   DÉPENDANCES:
+   - menu.component.js (utilise toutes ces classes)
+   - ui.config.js (variables globales)
+   ======================================== */
+
+/* ========================================
+   VARIABLES ET CONFIGURATION
+   ======================================== */
+:root {
+    /* Couleurs glassmorphism */
+    --menu-glass-bg: rgba(255, 255, 255, 0.1);
+    --menu-glass-bg-hover: rgba(255, 255, 255, 0.15);
+    --menu-glass-border: rgba(255, 255, 255, 0.2);
+    --menu-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --menu-backdrop-blur: 20px;
+    
+    /* Couleurs sémantiques */
+    --menu-text: #1f2937;
+    --menu-text-muted: #6b7280;
+    --menu-text-hover: #111827;
+    --menu-item-hover: rgba(59, 130, 246, 0.1);
+    --menu-item-active: rgba(59, 130, 246, 0.2);
+    --menu-item-selected: #3b82f6;
+    --menu-divider: rgba(0, 0, 0, 0.1);
+    --menu-danger: #ef4444;
+    --menu-danger-hover: #dc2626;
+    
+    /* Dimensions */
+    --menu-min-width: 200px;
+    --menu-max-width: 320px;
+    --menu-item-height: 40px;
+    --menu-item-padding: 12px 16px;
+    --menu-border-radius: 12px;
+    --menu-item-border-radius: 8px;
+    
+    /* Espacement */
+    --menu-padding: 8px;
+    --menu-item-gap: 12px;
+    --menu-icon-size: 20px;
+    
+    /* Transitions */
+    --menu-transition-speed: 0.2s;
+    --menu-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Z-index */
+    --menu-z-index: 1000;
+}
+
+/* Mode sombre */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --menu-glass-bg: rgba(255, 255, 255, 0.05);
+        --menu-glass-bg-hover: rgba(255, 255, 255, 0.08);
+        --menu-glass-border: rgba(255, 255, 255, 0.1);
+        --menu-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        --menu-text: #f9fafb;
+        --menu-text-muted: #9ca3af;
+        --menu-text-hover: #ffffff;
+        --menu-item-hover: rgba(255, 255, 255, 0.1);
+        --menu-divider: rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* ========================================
+   CONTENEUR ET STRUCTURE DE BASE
+   ======================================== */
+
+/* Conteneur principal */
+.menu-container {
+    position: fixed;
+    z-index: var(--menu-z-index);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity var(--menu-transition-speed) var(--menu-transition-easing),
+                visibility var(--menu-transition-speed) var(--menu-transition-easing);
+}
+
+.menu-container.open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.menu-container.static {
+    position: static;
+}
+
+/* Menu principal */
+.menu {
+    min-width: var(--menu-min-width);
+    max-width: var(--menu-max-width);
+    padding: var(--menu-padding);
+    border-radius: var(--menu-border-radius);
+    overflow: hidden;
+    transform-origin: top left;
+}
+
+/* Style Glassmorphism */
+.menu.glassmorphism {
+    background: var(--menu-glass-bg);
+    backdrop-filter: blur(var(--menu-backdrop-blur)) brightness(1.1);
+    -webkit-backdrop-filter: blur(var(--menu-backdrop-blur)) brightness(1.1);
+    border: 1px solid var(--menu-glass-border);
+    box-shadow: var(--menu-glass-shadow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Effet de brillance */
+.menu.glassmorphism::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0) 40%,
+        rgba(255, 255, 255, 0) 60%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    pointer-events: none;
+}
+
+/* Autres styles */
+.menu.flat {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.menu.minimal {
+    background: #ffffff;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.menu.neumorphism {
+    background: #e0e5ec;
+    box-shadow: 9px 9px 16px #a3b1c6, -9px -9px 16px #ffffff;
+    border: none;
+}
+
+.menu.material {
+    background: #ffffff;
+    box-shadow: 0 3px 5px -1px rgba(0,0,0,.2),
+                0 6px 10px 0 rgba(0,0,0,.14),
+                0 1px 18px 0 rgba(0,0,0,.12);
+    border: none;
+    border-radius: 4px;
+}
+
+/* Flèche du menu */
+.menu-arrow {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: var(--menu-glass-bg);
+    border: 1px solid var(--menu-glass-border);
+    transform: rotate(45deg);
+    z-index: -1;
+}
+
+.menu-container.bottom .menu-arrow {
+    top: -6px;
+    left: 20px;
+    border-bottom: none;
+    border-right: none;
+}
+
+.menu-container.top .menu-arrow {
+    bottom: -6px;
+    left: 20px;
+    border-top: none;
+    border-left: none;
+}
+
+/* ========================================
+   ITEMS DE MENU
+   ======================================== */
+
+/* Item de base */
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: var(--menu-item-gap);
+    min-height: var(--menu-item-height);
+    padding: var(--menu-item-padding);
+    margin: 2px 0;
+    border-radius: var(--menu-item-border-radius);
+    color: var(--menu-text);
+    font-size: 14px;
+    cursor: pointer;
+    position: relative;
+    transition: all var(--menu-transition-speed) var(--menu-transition-easing);
+    user-select: none;
+}
+
+/* États hover et focus */
+.menu-item:hover:not(.disabled) {
+    background: var(--menu-item-hover);
+    color: var(--menu-text-hover);
+    transform: translateX(2px);
+}
+
+.menu-item:focus-visible {
+    outline: 2px solid var(--menu-item-selected);
+    outline-offset: -2px;
+}
+
+.menu-item:active:not(.disabled) {
+    transform: scale(0.98);
+}
+
+/* États spéciaux */
+.menu-item.active {
+    background: var(--menu-item-active);
+    color: var(--menu-item-selected);
+    font-weight: 500;
+}
+
+.menu-item.selected {
+    background: var(--menu-item-selected);
+    color: white;
+}
+
+.menu-item.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.menu-item.danger {
+    color: var(--menu-danger);
+}
+
+.menu-item.danger:hover:not(.disabled) {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--menu-danger-hover);
+}
+
+/* Icône */
+.menu-item-icon {
+    flex-shrink: 0;
+    width: var(--menu-icon-size);
+    height: var(--menu-icon-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: inherit;
+    opacity: 0.8;
+}
+
+.menu-item:hover .menu-item-icon {
+    opacity: 1;
+}
+
+.menu-item-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.menu-item-icon.emoji-icon {
+    font-size: 18px;
+    opacity: 1;
+}
+
+.menu-item-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+/* Spacer pour alignement */
+.menu-item-icon.icon-spacer {
+    visibility: hidden;
+}
+
+/* Label */
+.menu-item-label {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Description */
+.menu-item-description {
+    display: block;
+    font-size: 12px;
+    color: var(--menu-text-muted);
+    margin-top: 2px;
+    white-space: normal;
+    line-height: 1.4;
+}
+
+/* Badge */
+.menu-item-badge {
+    padding: 2px 8px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.menu-item-badge.badge-primary {
+    background: var(--menu-item-selected);
+    color: white;
+}
+
+.menu-item-badge.badge-danger {
+    background: var(--menu-danger);
+    color: white;
+}
+
+.menu-item-badge.badge-success {
+    background: #10b981;
+    color: white;
+}
+
+/* Shortcut */
+.menu-item-shortcut {
+    margin-left: auto;
+    padding-left: 16px;
+    font-size: 12px;
+    color: var(--menu-text-muted);
+    opacity: 0.7;
+}
+
+/* Arrow pour sous-menu */
+.menu-item-arrow {
+    margin-left: auto;
+    opacity: 0.5;
+    transition: transform var(--menu-transition-speed) var(--menu-transition-easing);
+}
+
+.menu-item-arrow svg {
+    width: 16px;
+    height: 16px;
+}
+
+.menu-item:hover .menu-item-arrow {
+    opacity: 1;
+    transform: translateX(2px);
+}
+
+/* Checkbox/Radio */
+.menu-item-input {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+/* Divider */
+.menu-divider {
+    height: 1px;
+    background: var(--menu-divider);
+    margin: var(--menu-padding) 0;
+}
+
+/* Header */
+.menu-header {
+    padding: 8px 16px 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--menu-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ========================================
+   SOUS-MENUS
+   ======================================== */
+
+/* Sous-menu */
+.menu-submenu {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-10px);
+    transition: all var(--menu-transition-speed) var(--menu-transition-easing);
+}
+
+.menu-submenu.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+}
+
+.menu-submenu .menu {
+    margin-top: -8px;
+}
+
+/* Item avec sous-menu */
+.menu-item[data-has-submenu="true"]::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: -8px;
+    bottom: 0;
+    width: 8px;
+}
+
+/* ========================================
+   TYPES SPÉCIAUX
+   ======================================== */
+
+/* Mega Menu */
+.menu-mega {
+    min-width: 600px;
+    max-width: 900px;
+    padding: 0;
+}
+
+.menu-mega-columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0;
+}
+
+.menu-mega-column {
+    padding: var(--menu-padding);
+    border-right: 1px solid var(--menu-divider);
+}
+
+.menu-mega-column:last-child {
+    border-right: none;
+}
+
+.menu-mega-title {
+    padding: 12px 16px 8px;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--menu-text);
+}
+
+/* Toolbar Menu */
+.menu-container.toolbar {
+    position: static;
+    opacity: 1;
+    visibility: visible;
+}
+
+.menu-container.toolbar .menu {
+    display: flex;
+    flex-direction: row;
+    padding: 4px;
+    min-width: auto;
+    max-width: none;
+}
+
+.menu-container.toolbar .menu-item {
+    margin: 0 2px;
+    padding: 8px 12px;
+}
+
+/* Mobile Menu */
+.menu-container.mobile {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.menu-container.mobile .menu {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-width: none;
+    border-radius: 24px 24px 0 0;
+    transform: translateY(100%);
+    transition: transform var(--menu-transition-speed) var(--menu-transition-easing);
+}
+
+.menu-container.mobile.open .menu {
+    transform: translateY(0);
+}
+
+/* Sidebar Menu */
+.menu-container.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 280px;
+    transform: translateX(-100%);
+    transition: transform var(--menu-transition-speed) var(--menu-transition-easing);
+}
+
+.menu-container.sidebar.open {
+    transform: translateX(0);
+}
+
+.menu-container.sidebar .menu {
+    height: 100%;
+    max-width: none;
+    border-radius: 0;
+    overflow-y: auto;
+}
+
+/* Context Menu */
+.menu-container.context .menu {
+    transform-origin: top left;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+/* Animation fadeIn */
+@keyframes menuFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.menu-container.animate-fadeIn .menu {
+    animation: menuFadeIn var(--menu-transition-speed) var(--menu-transition-easing);
+}
+
+/* Animation slideIn */
+@keyframes menuSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.menu-container.animate-slideIn .menu {
+    animation: menuSlideIn var(--menu-transition-speed) var(--menu-transition-easing);
+}
+
+/* Animation bounceIn */
+@keyframes menuBounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.menu-container.animate-bounceIn .menu {
+    animation: menuBounceIn 0.4s var(--menu-transition-easing);
+}
+
+/* Ripple effect */
+.menu-ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: scale(0);
+    animation: menuRipple 0.6s ease-out;
+    pointer-events: none;
+}
+
+@keyframes menuRipple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* ========================================
+   ÉTATS ET INTERACTIONS
+   ======================================== */
+
+/* Animation des items au hover */
+.menu.smooth .menu-item {
+    transition: all 0.2s ease;
+}
+
+.menu.rich .menu-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 3px;
+    height: 0;
+    background: var(--menu-item-selected);
+    transform: translateY(-50%);
+    transition: height 0.2s ease;
+}
+
+.menu.rich .menu-item:hover::before {
+    height: 70%;
+}
+
+/* État de fermeture */
+.menu-container.closing {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.menu-container.closing .menu {
+    transform: scale(0.95);
+}
+
+/* ========================================
+   CONTENU PERSONNALISÉ
+   ======================================== */
+
+.menu-content {
+    padding: var(--menu-padding);
+}
+
+.menu-content > * {
+    margin: 0;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+    :root {
+        --menu-item-height: 48px;
+        --menu-item-padding: 16px;
+    }
+    
+    .menu {
+        max-width: calc(100vw - 32px);
+    }
+    
+    /* Forcer le mode mobile sur petits écrans */
+    .menu-container.dropdown {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+    }
+    
+    .menu-container.dropdown .menu {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        max-width: none;
+        border-radius: 24px 24px 0 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .menu-mega {
+        min-width: 100%;
+    }
+    
+    .menu-mega-columns {
+        grid-template-columns: 1fr;
+    }
+    
+    .menu-mega-column {
+        border-right: none;
+        border-bottom: 1px solid var(--menu-divider);
+    }
+    
+    .menu-mega-column:last-child {
+        border-bottom: none;
+    }
+}
+
+/* ========================================
+   ACCESSIBILITÉ
+   ======================================== */
+
+/* Focus visible */
+.menu-item:focus-visible {
+    outline: 2px solid var(--menu-item-selected);
+    outline-offset: -2px;
+}
+
+/* Mode contraste élevé */
+@media (prefers-contrast: high) {
+    .menu {
+        border-width: 2px;
+    }
+    
+    .menu-item:hover {
+        outline: 2px solid currentColor;
+    }
+    
+    .menu-item.selected {
+        outline: 3px solid currentColor;
+    }
+}
+
+/* Préférences de mouvement réduit */
+@media (prefers-reduced-motion: reduce) {
+    .menu-container,
+    .menu,
+    .menu-item,
+    .menu-submenu {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+    }
+    
+    .menu-item:hover {
+        transform: none !important;
+    }
+}
+
+/* ========================================
+   THÈMES
+   ======================================== */
+
+/* Thème sombre */
+.dark .menu.glassmorphism,
+[data-theme="dark"] .menu.glassmorphism {
+    background: rgba(0, 0, 0, 0.8);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .menu-item,
+[data-theme="dark"] .menu-item {
+    color: #f9fafb;
+}
+
+.dark .menu-item:hover,
+[data-theme="dark"] .menu-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* ========================================
+   UTILITAIRES
+   ======================================== */
+
+/* Scrollbar personnalisée */
+.menu::-webkit-scrollbar {
+    width: 6px;
+}
+
+.menu::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.menu::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+
+.menu::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+/* État de chargement */
+.menu.loading::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+/* ========================================
+   SUPPORT NAVIGATEURS
+   ======================================== */
+
+/* Fallback pour navigateurs sans backdrop-filter */
+@supports not (backdrop-filter: blur(20px)) {
+    .menu.glassmorphism {
+        background: rgba(248, 248, 248, 0.95);
+    }
+    
+    .dark .menu.glassmorphism {
+        background: rgba(20, 20, 20, 0.95);
+    }
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [2024-01-15] - Backdrop-filter sur mobile
+   Solution: Réduction du blur sur petits écrans
+   
+   [2024-01-15] - Z-index avec multiples menus
+   Cause: Conflits d'empilement
+   Résolution: Incrémentation dynamique du z-index
+   
+   NOTES POUR REPRISES FUTURES:
+   - Les animations peuvent impacter les performances
+   - Le positionnement fixed nécessite des calculs précis
+   - Prévoir des fallbacks pour backdrop-filter
+   ======================================== */

@@ -1,0 +1,890 @@
+/* ========================================
+   FILTER-CHIPS.CSS - Styles pour le composant Filter Chips
+   Chemin: src/css/shared/ui/filter-chips.css
+   
+   DESCRIPTION:
+   Styles complets pour le système de chips de filtre avec effet glassmorphism.
+   Supporte multiples styles, tailles, animations et groupements.
+   
+   STRUCTURE:
+   1. Variables et configuration (lignes 20-120)
+   2. Conteneur et layout (lignes 122-250)
+   3. Chip de base et états (lignes 252-450)
+   4. Éléments internes (lignes 452-600)
+   5. Variantes de style (lignes 602-800)
+   6. Tailles (lignes 802-900)
+   7. Types spécifiques (lignes 902-1000)
+   8. Groupes et overflow (lignes 1002-1100)
+   9. Animations (lignes 1102-1250)
+   10. Responsive et accessibilité (lignes 1252-1400)
+   
+   DÉPENDANCES:
+   - filter-chips.component.js (utilise toutes ces classes)
+   ======================================== */
+
+/* ========================================
+   VARIABLES ET CONFIGURATION
+   ======================================== */
+:root {
+    /* Couleurs glassmorphism */
+    --chip-glass-bg: rgba(255, 255, 255, 0.1);
+    --chip-glass-bg-hover: rgba(255, 255, 255, 0.15);
+    --chip-glass-bg-active: rgba(255, 255, 255, 0.2);
+    --chip-glass-border: rgba(255, 255, 255, 0.2);
+    --chip-glass-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    --chip-backdrop-blur: 20px;
+    
+    /* Couleurs de base */
+    --chip-text-color: rgba(255, 255, 255, 0.9);
+    --chip-text-muted: rgba(255, 255, 255, 0.6);
+    --chip-remove-color: rgba(255, 255, 255, 0.7);
+    --chip-remove-hover: rgba(255, 255, 255, 0.9);
+    
+    /* Espacement */
+    --chip-padding-x: 12px;
+    --chip-padding-y: 6px;
+    --chip-gap: 8px;
+    --chip-group-gap: 16px;
+    
+    /* Bordures et radius */
+    --chip-border-radius: 20px;
+    --chip-border-width: 1px;
+    
+    /* Typographie */
+    --chip-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --chip-font-size: 14px;
+    --chip-font-weight: 500;
+    
+    /* Transitions */
+    --chip-transition-speed: 0.2s;
+    --chip-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Tailles d'icônes */
+    --chip-icon-size: 16px;
+    --chip-remove-size: 18px;
+}
+
+/* Mode sombre */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --chip-glass-bg: rgba(255, 255, 255, 0.05);
+        --chip-glass-bg-hover: rgba(255, 255, 255, 0.08);
+        --chip-glass-bg-active: rgba(255, 255, 255, 0.12);
+        --chip-glass-border: rgba(255, 255, 255, 0.1);
+        --chip-glass-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+}
+
+/* ========================================
+   CONTENEUR ET LAYOUT
+   ======================================== */
+.filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--chip-gap);
+    align-items: center;
+    font-family: var(--chip-font-family);
+    position: relative;
+}
+
+/* Direction verticale */
+.filter-chips.chips-vertical {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.filter-chips.chips-vertical .filter-chip {
+    width: 100%;
+    justify-content: space-between;
+}
+
+/* Sans wrap */
+.filter-chips.chips-nowrap {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+.filter-chips.chips-nowrap::-webkit-scrollbar {
+    height: 4px;
+}
+
+.filter-chips.chips-nowrap::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+}
+
+.filter-chips.chips-nowrap::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+}
+
+/* Alignements */
+.filter-chips.chips-align-center {
+    justify-content: center;
+}
+
+.filter-chips.chips-align-end {
+    justify-content: flex-end;
+}
+
+.filter-chips.chips-align-stretch .filter-chip {
+    flex: 1;
+}
+
+/* Message vide */
+.chips-empty {
+    color: var(--chip-text-muted);
+    font-size: var(--chip-font-size);
+    font-style: italic;
+    padding: var(--chip-padding-y) var(--chip-padding-x);
+}
+
+/* ========================================
+   CHIP DE BASE
+   ======================================== */
+.filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: var(--chip-padding-y) var(--chip-padding-x);
+    font-size: var(--chip-font-size);
+    font-weight: var(--chip-font-weight);
+    line-height: 1.4;
+    border-radius: var(--chip-border-radius);
+    cursor: default;
+    user-select: none;
+    position: relative;
+    transition: all var(--chip-transition-speed) var(--chip-transition-easing);
+    white-space: nowrap;
+}
+
+/* Style Glassmorphism par défaut */
+.chips-glassmorphism .filter-chip,
+.filter-chip:not([class*="chip-"]) {
+    background: var(--chip-glass-bg);
+    backdrop-filter: blur(var(--chip-backdrop-blur)) brightness(1.1);
+    -webkit-backdrop-filter: blur(var(--chip-backdrop-blur)) brightness(1.1);
+    border: var(--chip-border-width) solid var(--chip-glass-border);
+    color: var(--chip-text-color);
+    box-shadow: var(--chip-glass-shadow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Effet de brillance glassmorphism */
+.chips-glassmorphism .filter-chip::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.15) 0%,
+        rgba(255, 255, 255, 0) 50%
+    );
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--chip-transition-speed) ease;
+}
+
+/* États interactifs */
+.filter-chip:hover:not(.disabled) {
+    background: var(--chip-glass-bg-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--chip-glass-shadow),
+                0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.filter-chip:hover:not(.disabled)::before {
+    opacity: 1;
+}
+
+.filter-chip:active:not(.disabled) {
+    transform: translateY(0);
+    background: var(--chip-glass-bg-active);
+}
+
+/* État actif/sélectionné */
+.filter-chip.active {
+    background: var(--chip-glass-bg-active);
+    border-color: currentColor;
+    font-weight: 600;
+}
+
+.filter-chip.active .chip-icon-start {
+    transform: scale(1.1);
+}
+
+/* État désactivé */
+.filter-chip.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* État de suppression */
+.filter-chip.removing {
+    pointer-events: none;
+    opacity: 0;
+}
+
+/* État éditable */
+.filter-chip.editable .chip-label {
+    cursor: text;
+    padding: 2px 4px;
+    margin: -2px -4px;
+    border-radius: 4px;
+    transition: background var(--chip-transition-speed) ease;
+}
+
+.filter-chip.editable .chip-label:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.filter-chip.editable .chip-label:focus {
+    background: rgba(255, 255, 255, 0.15);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+/* ========================================
+   ÉLÉMENTS INTERNES
+   ======================================== */
+
+/* Contenu */
+.chip-content {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+}
+
+/* Label */
+.chip-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Icônes */
+.chip-icon {
+    flex-shrink: 0;
+    width: var(--chip-icon-size);
+    height: var(--chip-icon-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chip-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.chip-icon-start {
+    margin-right: 2px;
+}
+
+/* Préfixe */
+.chip-prefix {
+    opacity: 0.7;
+    font-weight: 400;
+}
+
+/* Badge */
+.chip-badge {
+    padding: 1px 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-left: 4px;
+}
+
+/* Bouton de suppression */
+.chip-remove {
+    flex-shrink: 0;
+    width: var(--chip-remove-size);
+    height: var(--chip-remove-size);
+    margin: -2px -6px -2px 2px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--chip-remove-color);
+    transition: all var(--chip-transition-speed) ease;
+}
+
+.chip-remove:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--chip-remove-hover);
+    transform: scale(1.1);
+}
+
+.chip-remove:active {
+    transform: scale(0.9);
+}
+
+.chip-remove svg {
+    width: 12px;
+    height: 12px;
+}
+
+/* ========================================
+   VARIANTES DE STYLE
+   ======================================== */
+
+/* Neumorphism */
+.chips-neumorphism .filter-chip {
+    background: #e0e5ec;
+    border: none;
+    box-shadow: 4px 4px 8px #a3b1c6, -4px -4px 8px #ffffff;
+    color: #4a5568;
+}
+
+.chips-neumorphism .filter-chip:hover:not(.disabled) {
+    box-shadow: 2px 2px 4px #a3b1c6, -2px -2px 4px #ffffff;
+}
+
+.chips-neumorphism .filter-chip:active:not(.disabled) {
+    box-shadow: inset 2px 2px 4px #a3b1c6, inset -2px -2px 4px #ffffff;
+}
+
+/* Flat */
+.chips-flat .filter-chip {
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    color: #374151;
+    box-shadow: none;
+}
+
+.chips-flat .filter-chip:hover:not(.disabled) {
+    background: #e5e7eb;
+    border-color: #d1d5db;
+}
+
+/* Minimal */
+.chips-minimal .filter-chip {
+    background: transparent;
+    border: 1px solid currentColor;
+    color: inherit;
+    box-shadow: none;
+}
+
+.chips-minimal .filter-chip:hover:not(.disabled) {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+/* Material */
+.chips-material .filter-chip {
+    background: #e0e0e0;
+    border: none;
+    color: rgba(0, 0, 0, 0.87);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+
+.chips-material .filter-chip:hover:not(.disabled) {
+    background: #d6d6d6;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+/* Outline */
+.chips-outline .filter-chip {
+    background: transparent;
+    border: 2px solid currentColor;
+    color: inherit;
+    box-shadow: none;
+    font-weight: 600;
+}
+
+.chips-outline .filter-chip:hover:not(.disabled) {
+    background: currentColor;
+    color: white;
+}
+
+.chips-outline .filter-chip:hover:not(.disabled) .chip-remove {
+    color: white;
+}
+
+/* ========================================
+   TAILLES
+   ======================================== */
+
+/* Tiny */
+.chips-tiny .filter-chip {
+    padding: 2px 8px;
+    font-size: 11px;
+    gap: 4px;
+}
+
+.chips-tiny .chip-icon {
+    width: 12px;
+    height: 12px;
+}
+
+.chips-tiny .chip-remove {
+    width: 14px;
+    height: 14px;
+    margin: -1px -4px -1px 1px;
+}
+
+.chips-tiny .chip-remove svg {
+    width: 8px;
+    height: 8px;
+}
+
+/* Small */
+.chips-small .filter-chip {
+    padding: 4px 10px;
+    font-size: 12px;
+    gap: 6px;
+}
+
+.chips-small .chip-icon {
+    width: 14px;
+    height: 14px;
+}
+
+.chips-small .chip-remove {
+    width: 16px;
+    height: 16px;
+}
+
+.chips-small .chip-remove svg {
+    width: 10px;
+    height: 10px;
+}
+
+/* Large */
+.chips-large .filter-chip {
+    padding: 8px 16px;
+    font-size: 16px;
+    gap: 10px;
+}
+
+.chips-large .chip-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.chips-large .chip-remove {
+    width: 22px;
+    height: 22px;
+}
+
+.chips-large .chip-remove svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* ========================================
+   TYPES SPÉCIFIQUES
+   ======================================== */
+
+/* Type Tag */
+.filter-chip.chip-tag {
+    padding-left: 10px;
+}
+
+.filter-chip.chip-tag .chip-prefix {
+    font-size: 0.9em;
+    margin-right: 2px;
+}
+
+/* Type Status */
+.filter-chip.chip-status {
+    font-weight: 600;
+}
+
+.filter-chip.chip-status .chip-icon {
+    width: 8px;
+    height: 8px;
+}
+
+/* Type Choice */
+.filter-chip.chip-choice:not(.disabled) {
+    cursor: pointer;
+}
+
+.filter-chip.chip-choice.active .chip-icon {
+    color: #22c55e;
+}
+
+/* Couleurs personnalisées */
+.filter-chip[style*="--chip-color"] {
+    background: var(--chip-color);
+    border-color: var(--chip-color);
+    color: white;
+}
+
+.filter-chip[style*="--chip-color"]:hover:not(.disabled) {
+    filter: brightness(1.1);
+}
+
+/* ========================================
+   GROUPES ET OVERFLOW
+   ======================================== */
+
+/* Groupe de chips */
+.chip-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--chip-gap);
+    margin-bottom: var(--chip-group-gap);
+}
+
+.chip-group:last-child {
+    margin-bottom: 0;
+}
+
+.chip-group-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--chip-text-muted);
+    margin-bottom: 4px;
+}
+
+.chip-group-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--chip-gap);
+}
+
+/* Indicateur d'overflow */
+.chip-overflow {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--chip-padding-y) var(--chip-padding-x);
+    font-size: var(--chip-font-size);
+    font-weight: 600;
+    color: var(--chip-text-muted);
+    background: var(--chip-glass-bg);
+    border: var(--chip-border-width) dashed var(--chip-glass-border);
+    border-radius: var(--chip-border-radius);
+    cursor: pointer;
+    transition: all var(--chip-transition-speed) ease;
+}
+
+.chip-overflow:hover {
+    color: var(--chip-text-color);
+    border-style: solid;
+}
+
+/* Bouton Clear All */
+.chips-clear-all {
+    margin-left: auto;
+    padding: var(--chip-padding-y) var(--chip-padding-x);
+    background: transparent;
+    border: 1px solid var(--chip-glass-border);
+    border-radius: var(--chip-border-radius);
+    color: var(--chip-text-muted);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--chip-transition-speed) ease;
+}
+
+.chips-clear-all:hover {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+/* Fade In/Out */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+/* Scale In/Out */
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes scaleOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+}
+
+/* Slide In/Out */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+}
+
+/* Pop In/Out */
+@keyframes popIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.6);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes popOut {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.6);
+    }
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 640px) {
+    :root {
+        --chip-padding-x: 10px;
+        --chip-padding-y: 4px;
+        --chip-gap: 6px;
+        --chip-font-size: 13px;
+    }
+    
+    .filter-chips {
+        gap: var(--chip-gap);
+    }
+    
+    .filter-chip {
+        padding: var(--chip-padding-y) var(--chip-padding-x);
+        font-size: var(--chip-font-size);
+    }
+    
+    /* Ajustement des tailles sur mobile */
+    .chips-large .filter-chip {
+        padding: 6px 14px;
+        font-size: 15px;
+    }
+    
+    .chips-tiny .filter-chip {
+        padding: 2px 6px;
+        font-size: 10px;
+    }
+    
+    /* Forcer le wrap sur mobile */
+    .filter-chips.chips-nowrap {
+        flex-wrap: wrap;
+    }
+}
+
+/* Support tactile */
+@media (hover: none) {
+    .filter-chip:active:not(.disabled) {
+        background: var(--chip-glass-bg-active);
+    }
+    
+    .chip-remove {
+        width: 24px;
+        height: 24px;
+        margin-right: -8px;
+    }
+    
+    .chips-tiny .chip-remove {
+        width: 20px;
+        height: 20px;
+        margin-right: -6px;
+    }
+}
+
+/* ========================================
+   ACCESSIBILITÉ
+   ======================================== */
+
+/* Focus visible */
+.filter-chip:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+.chip-remove:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: -2px;
+    border-radius: 50%;
+}
+
+/* Mode contraste élevé */
+@media (prefers-contrast: high) {
+    .filter-chip {
+        border-width: 2px;
+    }
+    
+    .filter-chip.active {
+        border-width: 3px;
+    }
+    
+    .chip-remove {
+        border: 1px solid currentColor;
+    }
+}
+
+/* Préférences de mouvement réduit */
+@media (prefers-reduced-motion: reduce) {
+    .filter-chip,
+    .filter-chip * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ========================================
+   SUPPORT NAVIGATEURS
+   ======================================== */
+
+/* Fallback pour navigateurs sans backdrop-filter */
+@supports not (backdrop-filter: blur(20px)) {
+    .chips-glassmorphism .filter-chip {
+        background: rgba(255, 255, 255, 0.95);
+    }
+    
+    .dark .chips-glassmorphism .filter-chip {
+        background: rgba(30, 30, 30, 0.95);
+    }
+}
+
+/* ========================================
+   THÈMES
+   ======================================== */
+
+/* Thème sombre */
+.dark .filter-chips,
+[data-theme="dark"] .filter-chips {
+    --chip-text-color: rgba(255, 255, 255, 0.9);
+    --chip-text-muted: rgba(255, 255, 255, 0.6);
+    --chip-remove-color: rgba(255, 255, 255, 0.7);
+}
+
+.dark .chips-flat .filter-chip,
+[data-theme="dark"] .chips-flat .filter-chip {
+    background: #1f2937;
+    border-color: #374151;
+    color: #f3f4f6;
+}
+
+.dark .chips-flat .filter-chip:hover:not(.disabled),
+[data-theme="dark"] .chips-flat .filter-chip:hover:not(.disabled) {
+    background: #374151;
+    border-color: #4b5563;
+}
+
+/* ========================================
+   ÉTATS SPÉCIAUX
+   ======================================== */
+
+/* Chips en cours de glisser-déposer */
+.filter-chip.dragging {
+    opacity: 0.5;
+    cursor: move;
+}
+
+.filter-chip.drag-over {
+    background: var(--chip-glass-bg-active);
+    border-color: #3b82f6;
+}
+
+/* Chips avec contenu long */
+.filter-chip.chip-multiline {
+    white-space: normal;
+    max-width: 200px;
+}
+
+.filter-chip.chip-multiline .chip-label {
+    white-space: normal;
+    line-height: 1.4;
+}
+
+/* ========================================
+   UTILITAIRES
+   ======================================== */
+
+/* Sans animation */
+.filter-chips.no-animation .filter-chip {
+    animation: none !important;
+    transition: none !important;
+}
+
+/* Chips compactes */
+.filter-chips.chips-compact {
+    gap: 4px;
+}
+
+.filter-chips.chips-compact .filter-chip {
+    padding: 2px 8px;
+    font-size: 12px;
+}
+
+/* Chips colorées prédéfinies */
+.filter-chip.chip-primary { --chip-color: #3b82f6; }
+.filter-chip.chip-secondary { --chip-color: #6366f1; }
+.filter-chip.chip-success { --chip-color: #22c55e; }
+.filter-chip.chip-warning { --chip-color: #f59e0b; }
+.filter-chip.chip-error { --chip-color: #ef4444; }
+.filter-chip.chip-info { --chip-color: #0ea5e9; }

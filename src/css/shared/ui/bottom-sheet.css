@@ -1,0 +1,735 @@
+/* ========================================
+   BOTTOM-SHEET.CSS - Styles pour le composant BottomSheet
+   Chemin: src/css/shared/ui/bottom-sheet.css
+   
+   DESCRIPTION:
+   Styles complets pour le panneau glissant avec support glassmorphism,
+   animations, drag et toutes les variantes.
+   
+   STRUCTURE:
+   1. Variables et configuration (lignes 20-120)
+   2. Container et overlay (lignes 122-250)
+   3. Content et structure (lignes 252-400)
+   4. Handle de drag (lignes 402-550)
+   5. Header (lignes 552-700)
+   6. Body et footer (lignes 702-850)
+   7. Styles par thème (lignes 852-1100)
+   8. États et animations (lignes 1102-1400)
+   9. Responsive (lignes 1402-1500)
+   10. Accessibilité (lignes 1502-1600)
+   
+   DÉPENDANCES:
+   - Variables globales du thème
+   - Animations partagées
+   ======================================== */
+
+/* ========================================
+   VARIABLES ET CONFIGURATION
+   ======================================== */
+:root {
+    /* Couleurs glassmorphism */
+    --bs-glass-bg: rgba(255, 255, 255, 0.08);
+    --bs-glass-bg-hover: rgba(255, 255, 255, 0.12);
+    --bs-glass-border: rgba(255, 255, 255, 0.15);
+    --bs-glass-shadow: 0 -8px 32px rgba(0, 0, 0, 0.2);
+    --bs-backdrop-blur: 20px;
+    
+    /* Couleurs de base */
+    --bs-bg: #ffffff;
+    --bs-text: #1f2937;
+    --bs-text-secondary: #6b7280;
+    --bs-border: #e5e7eb;
+    --bs-overlay: rgba(0, 0, 0, 0.5);
+    
+    /* Dimensions */
+    --bs-handle-height: 48px;
+    --bs-header-height: 64px;
+    --bs-footer-height: 72px;
+    --bs-border-radius: 24px;
+    
+    /* Espacement */
+    --bs-spacing-xs: 4px;
+    --bs-spacing-sm: 8px;
+    --bs-spacing-md: 12px;
+    --bs-spacing-lg: 16px;
+    --bs-spacing-xl: 20px;
+    --bs-spacing-xxl: 24px;
+    
+    /* Transitions */
+    --bs-transition-speed: 0.3s;
+    --bs-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+    --bs-transition-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    
+    /* Z-index */
+    --bs-z-overlay: 998;
+    --bs-z-content: 999;
+}
+
+/* Mode sombre */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bs-glass-bg: rgba(255, 255, 255, 0.05);
+        --bs-glass-bg-hover: rgba(255, 255, 255, 0.08);
+        --bs-glass-border: rgba(255, 255, 255, 0.1);
+        --bs-bg: #1a202c;
+        --bs-text: #f7fafc;
+        --bs-text-secondary: #a0aec0;
+        --bs-border: #2d3748;
+    }
+}
+
+/* ========================================
+   CONTAINER ET OVERLAY
+   ======================================== */
+.bottom-sheet {
+    position: fixed;
+    inset: 0;
+    z-index: var(--bs-z-content);
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.bottom-sheet * {
+    box-sizing: border-box;
+}
+
+/* Overlay */
+.bottom-sheet-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bs-overlay);
+    opacity: 0;
+    transition: opacity var(--bs-transition-speed) var(--bs-transition-easing);
+    z-index: var(--bs-z-overlay);
+    pointer-events: none;
+    display: none;
+}
+
+.bottom-sheet.is-open .bottom-sheet-overlay,
+.bottom-sheet.is-opening .bottom-sheet-overlay {
+    display: block;
+    pointer-events: auto;
+}
+
+.bottom-sheet.is-open .bottom-sheet-overlay {
+    opacity: 1;
+}
+
+/* Blur overlay */
+.bottom-sheet-overlay[data-blur="true"] {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* ========================================
+   CONTENT ET STRUCTURE
+   ======================================== */
+.bottom-sheet-content {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    background: var(--bs-bg);
+    border-radius: var(--bs-border-radius) var(--bs-border-radius) 0 0;
+    transform: translateY(100%);
+    transition: transform var(--bs-transition-speed) var(--bs-transition-easing);
+    pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    will-change: transform;
+}
+
+/* Glassmorphism style */
+.bottom-sheet.glassmorphism .bottom-sheet-content {
+    background: var(--bs-glass-bg);
+    backdrop-filter: blur(var(--bs-backdrop-blur)) saturate(180%);
+    -webkit-backdrop-filter: blur(var(--bs-backdrop-blur)) saturate(180%);
+    border: 1px solid var(--bs-glass-border);
+    border-bottom: none;
+    box-shadow: var(--bs-glass-shadow);
+}
+
+/* Effet de brillance glassmorphism */
+.bottom-sheet.glassmorphism .bottom-sheet-content::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.2) 0%,
+        rgba(255, 255, 255, 0) 50%
+    );
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+/* États ouverts */
+.bottom-sheet.is-open .bottom-sheet-content,
+.bottom-sheet.is-opening .bottom-sheet-content {
+    transform: translateY(0);
+}
+
+/* Hauteurs */
+.bottom-sheet.small .bottom-sheet-content {
+    height: 300px;
+    max-height: 40vh;
+}
+
+.bottom-sheet.medium .bottom-sheet-content {
+    height: 50vh;
+    max-height: 70vh;
+}
+
+.bottom-sheet.large .bottom-sheet-content {
+    height: 70vh;
+    max-height: 90vh;
+}
+
+.bottom-sheet.full .bottom-sheet-content {
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+}
+
+.bottom-sheet.auto .bottom-sheet-content {
+    height: auto;
+    max-height: 90vh;
+}
+
+/* ========================================
+   HANDLE DE DRAG
+   ======================================== */
+.bottom-sheet-handle-wrapper {
+    position: relative;
+    width: 100%;
+    height: var(--bs-handle-height);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: pan-y;
+    flex-shrink: 0;
+}
+
+.bottom-sheet.is-dragging .bottom-sheet-handle-wrapper {
+    cursor: grabbing;
+}
+
+.bottom-sheet-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--bs-spacing-md);
+    border-radius: var(--bs-spacing-sm);
+    transition: all var(--bs-transition-speed) var(--bs-transition-easing);
+}
+
+.bottom-sheet-handle:hover {
+    background: var(--bs-glass-bg-hover);
+}
+
+/* Handle bar style */
+.bottom-sheet-handle-bar {
+    width: 48px;
+    height: 4px;
+    background: var(--bs-text-secondary);
+    border-radius: 2px;
+    opacity: 0.3;
+    transition: opacity var(--bs-transition-speed) var(--bs-transition-easing);
+}
+
+.bottom-sheet.glassmorphism .bottom-sheet-handle-bar {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.bottom-sheet-handle:hover .bottom-sheet-handle-bar,
+.bottom-sheet.is-dragging .bottom-sheet-handle-bar {
+    opacity: 0.6;
+}
+
+/* Handle dots style */
+.bottom-sheet-handle-dots {
+    display: flex;
+    gap: 4px;
+}
+
+.bottom-sheet-handle-dots span {
+    width: 4px;
+    height: 4px;
+    background: var(--bs-text-secondary);
+    border-radius: 50%;
+    opacity: 0.3;
+}
+
+/* Handle chevron style */
+.bottom-sheet-handle-chevron {
+    width: 24px;
+    height: 24px;
+    color: var(--bs-text-secondary);
+    opacity: 0.5;
+    transform: rotate(180deg);
+}
+
+/* ========================================
+   HEADER
+   ======================================== */
+.bottom-sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: var(--bs-header-height);
+    padding: var(--bs-spacing-lg) var(--bs-spacing-xl);
+    border-bottom: 1px solid var(--bs-border);
+    flex-shrink: 0;
+}
+
+.bottom-sheet.glassmorphism .bottom-sheet-header {
+    border-bottom-color: var(--bs-glass-border);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.bottom-sheet-header.is-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.bottom-sheet-header-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--bs-text);
+}
+
+.bottom-sheet-header-subtitle {
+    margin: 4px 0 0;
+    font-size: 14px;
+    color: var(--bs-text-secondary);
+    line-height: 1.4;
+}
+
+/* Header actions */
+.bottom-sheet-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--bs-spacing-sm);
+    margin-left: auto;
+}
+
+.bottom-sheet-action {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: var(--bs-text);
+    cursor: pointer;
+    transition: all var(--bs-transition-speed) var(--bs-transition-easing);
+}
+
+.bottom-sheet-action:hover {
+    background: var(--bs-glass-bg-hover);
+    border-color: var(--bs-glass-border);
+}
+
+.bottom-sheet-action:active {
+    transform: scale(0.95);
+}
+
+.bottom-sheet-action svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* ========================================
+   BODY
+   ======================================== */
+.bottom-sheet-body {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+.bottom-sheet-body.is-scrollable {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+.bottom-sheet-body.has-padding {
+    padding: var(--bs-spacing-xl);
+}
+
+/* Scrollbar personnalisée */
+.bottom-sheet-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.bottom-sheet-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.bottom-sheet-body::-webkit-scrollbar-thumb {
+    background: var(--bs-glass-border);
+    border-radius: 4px;
+}
+
+.bottom-sheet-body::-webkit-scrollbar-thumb:hover {
+    background: var(--bs-text-secondary);
+}
+
+/* ========================================
+   FOOTER
+   ======================================== */
+.bottom-sheet-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-height: var(--bs-footer-height);
+    padding: var(--bs-spacing-lg) var(--bs-spacing-xl);
+    border-top: 1px solid var(--bs-border);
+    flex-shrink: 0;
+}
+
+.bottom-sheet.glassmorphism .bottom-sheet-footer {
+    border-top-color: var(--bs-glass-border);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.footer-actions {
+    gap: var(--bs-spacing-md);
+}
+
+/* Boutons */
+.bottom-sheet-button {
+    padding: var(--bs-spacing-sm) var(--bs-spacing-lg);
+    font-size: 15px;
+    font-weight: 500;
+    border: 1px solid var(--bs-border);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--bs-text);
+    cursor: pointer;
+    transition: all var(--bs-transition-speed) var(--bs-transition-easing);
+}
+
+.bottom-sheet-button:hover {
+    background: var(--bs-glass-bg-hover);
+    border-color: var(--bs-glass-border);
+}
+
+.bottom-sheet-button.primary {
+    background: var(--bs-text);
+    color: var(--bs-bg);
+    border-color: var(--bs-text);
+}
+
+.bottom-sheet-button.primary:hover {
+    opacity: 0.9;
+}
+
+/* ========================================
+   STYLES PAR THÈME
+   ======================================== */
+
+/* Neumorphism */
+.bottom-sheet.neumorphism .bottom-sheet-content {
+    background: #e0e5ec;
+    box-shadow: -20px -20px 40px #ffffff, 20px 20px 40px #a3b1c6;
+    border-radius: 30px 30px 0 0;
+}
+
+.bottom-sheet.neumorphism .bottom-sheet-handle {
+    background: #e0e5ec;
+    box-shadow: inset 4px 4px 8px #a3b1c6, inset -4px -4px 8px #ffffff;
+}
+
+/* Flat */
+.bottom-sheet.flat .bottom-sheet-content {
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Minimal */
+.bottom-sheet.minimal .bottom-sheet-content {
+    border-radius: 0;
+    border-top: 1px solid var(--bs-border);
+    box-shadow: none;
+}
+
+/* Material */
+.bottom-sheet.material .bottom-sheet-content {
+    box-shadow: 0 -3px 5px -1px rgba(0,0,0,.2),
+                0 -6px 10px 0 rgba(0,0,0,.14),
+                0 -1px 18px 0 rgba(0,0,0,.12);
+}
+
+/* iOS style */
+.bottom-sheet.ios .bottom-sheet-content {
+    background: #f2f2f7;
+    border-radius: 10px 10px 0 0;
+    box-shadow: 0 -0.5px 0 rgba(0, 0, 0, 0.3);
+}
+
+.bottom-sheet.ios .bottom-sheet-handle-bar {
+    width: 36px;
+    height: 5px;
+    background: #c6c6c8;
+}
+
+/* Android style */
+.bottom-sheet.android .bottom-sheet-content {
+    box-shadow: 0 -8px 10px -5px rgba(0,0,0,0.2),
+                0 -16px 24px 2px rgba(0,0,0,0.14),
+                0 -6px 30px 5px rgba(0,0,0,0.12);
+}
+
+/* ========================================
+   ÉTATS ET ANIMATIONS
+   ======================================== */
+
+/* État de drag */
+.bottom-sheet.is-dragging .bottom-sheet-content {
+    transition: none !important;
+}
+
+.bottom-sheet.is-dragging {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* État de snap */
+.bottom-sheet.is-snapping .bottom-sheet-content {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* État minimisé */
+.bottom-sheet.is-minimized .bottom-sheet-content {
+    height: 100px !important;
+}
+
+/* État maximisé */
+.bottom-sheet.is-maximized .bottom-sheet-content {
+    height: 95vh !important;
+}
+
+/* Animations */
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+}
+
+/* Animation smooth */
+.bottom-sheet.smooth .bottom-sheet-content {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.3s ease-out;
+}
+
+/* Animation rich avec bounce */
+.bottom-sheet.rich.is-opening .bottom-sheet-content {
+    animation: slideUpBounce 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes slideUpBounce {
+    0% {
+        transform: translateY(100%);
+    }
+    60% {
+        transform: translateY(-5%);
+    }
+    80% {
+        transform: translateY(2%);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+
+/* Animation élastique */
+.bottom-sheet.elastic .bottom-sheet-content {
+    transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Effet parallaxe sur le contenu principal */
+.bottom-sheet-parallax-active main {
+    transition: transform 0.3s ease-out;
+    transform: scale(0.95) translateY(-20px);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (min-width: 768px) {
+    .bottom-sheet-content {
+        max-width: 600px;
+        margin: 0 auto;
+        border-radius: var(--bs-border-radius) var(--bs-border-radius) 0 0;
+    }
+    
+    .bottom-sheet.full .bottom-sheet-content {
+        max-width: 100%;
+        border-radius: 0;
+    }
+}
+
+@media (max-width: 640px) {
+    .bottom-sheet-header {
+        padding: var(--bs-spacing-md) var(--bs-spacing-lg);
+    }
+    
+    .bottom-sheet-body.has-padding {
+        padding: var(--bs-spacing-lg);
+    }
+    
+    .bottom-sheet-footer {
+        padding: var(--bs-spacing-md) var(--bs-spacing-lg);
+    }
+}
+
+/* Safe area pour iOS */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .bottom-sheet-content {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    .bottom-sheet-footer {
+        padding-bottom: calc(var(--bs-spacing-lg) + env(safe-area-inset-bottom));
+    }
+}
+
+/* Mode paysage mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+    .bottom-sheet.medium .bottom-sheet-content {
+        height: 80vh;
+        max-height: 80vh;
+    }
+    
+    .bottom-sheet.large .bottom-sheet-content {
+        height: 90vh;
+        max-height: 90vh;
+    }
+}
+
+/* ========================================
+   ACCESSIBILITÉ
+   ======================================== */
+
+/* Focus visible */
+.bottom-sheet-handle:focus-visible,
+.bottom-sheet-action:focus-visible,
+.bottom-sheet-button:focus-visible {
+    outline: 2px solid var(--bs-text);
+    outline-offset: 2px;
+}
+
+/* Mode contraste élevé */
+@media (prefers-contrast: high) {
+    .bottom-sheet-content {
+        border: 2px solid var(--bs-text);
+    }
+    
+    .bottom-sheet.glassmorphism .bottom-sheet-content {
+        background: var(--bs-bg);
+        backdrop-filter: none;
+    }
+}
+
+/* Préférences de mouvement réduit */
+@media (prefers-reduced-motion: reduce) {
+    .bottom-sheet-content {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+    }
+    
+    .bottom-sheet-overlay {
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Screen reader only */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ========================================
+   UTILITAIRES
+   ======================================== */
+
+/* Désactiver le scroll du body */
+body.bottom-sheet-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+}
+
+/* GPU acceleration */
+.bottom-sheet-content {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+/* ========================================
+   SUPPORT NAVIGATEURS
+   ======================================== */
+
+/* Fallback pour navigateurs sans backdrop-filter */
+@supports not (backdrop-filter: blur(20px)) {
+    .bottom-sheet.glassmorphism .bottom-sheet-content {
+        background: rgba(255, 255, 255, 0.95);
+    }
+    
+    .dark .bottom-sheet.glassmorphism .bottom-sheet-content {
+        background: rgba(26, 32, 44, 0.95);
+    }
+}
+
+/* Support du thème sombre */
+.bottom-sheet[data-theme="dark"],
+.dark .bottom-sheet {
+    --bs-bg: #1a202c;
+    --bs-text: #f7fafc;
+    --bs-text-secondary: #a0aec0;
+    --bs-border: #2d3748;
+    --bs-glass-bg: rgba(255, 255, 255, 0.05);
+    --bs-glass-bg-hover: rgba(255, 255, 255, 0.08);
+    --bs-glass-border: rgba(255, 255, 255, 0.1);
+}

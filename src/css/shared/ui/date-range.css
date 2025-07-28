@@ -1,0 +1,1131 @@
+/* ========================================
+   DATE-RANGE.CSS - Styles pour le sélecteur de plage de dates
+   Chemin: src/css/shared/ui/date-range.css
+   
+   DESCRIPTION:
+   Styles complets pour le date range picker avec effet glassmorphism.
+   Double calendrier, presets, animations et modes d'affichage multiples.
+   
+   STRUCTURE:
+   1. Variables et configuration (lignes 20-180)
+   2. Conteneur principal (lignes 182-350)
+   3. Styles glassmorphism (lignes 352-550)
+   4. Input et trigger (lignes 552-700)
+   5. Header et navigation (lignes 702-900)
+   6. Calendrier et grille (lignes 902-1400)
+   7. États des jours (lignes 1402-1700)
+   8. Presets sidebar (lignes 1702-1900)
+   9. Footer et actions (lignes 1902-2100)
+   10. Animations (lignes 2102-2400)
+   11. Responsive (lignes 2402-2600)
+   
+   DÉPENDANCES:
+   - date-range.component.js (utilise toutes ces classes)
+   ======================================== */
+
+/* ========================================
+   VARIABLES ET CONFIGURATION
+   ======================================== */
+:root {
+    /* Couleurs glassmorphism */
+    --date-range-glass-bg: rgba(255, 255, 255, 0.08);
+    --date-range-glass-bg-hover: rgba(255, 255, 255, 0.12);
+    --date-range-glass-border: rgba(255, 255, 255, 0.15);
+    --date-range-glass-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    --date-range-backdrop-blur: 20px;
+    
+    /* Couleurs d'état */
+    --date-range-primary: #3b82f6;
+    --date-range-primary-light: rgba(59, 130, 246, 0.1);
+    --date-range-primary-dark: #2563eb;
+    
+    --date-range-selected: #3b82f6;
+    --date-range-selected-bg: rgba(59, 130, 246, 0.1);
+    --date-range-range-bg: rgba(59, 130, 246, 0.05);
+    --date-range-hover-bg: rgba(59, 130, 246, 0.08);
+    
+    --date-range-today: #ef4444;
+    --date-range-disabled: #94a3b8;
+    --date-range-highlighted: #fbbf24;
+    
+    /* Dimensions */
+    --date-range-cell-size: 40px;
+    --date-range-cell-size-compact: 32px;
+    --date-range-picker-width: 700px;
+    --date-range-calendar-width: 280px;
+    --date-range-presets-width: 160px;
+    
+    /* Espacement */
+    --date-range-spacing-xs: 4px;
+    --date-range-spacing-sm: 8px;
+    --date-range-spacing-md: 16px;
+    --date-range-spacing-lg: 24px;
+    --date-range-spacing-xl: 32px;
+    
+    /* Typographie */
+    --date-range-font-size-xs: 11px;
+    --date-range-font-size-sm: 12px;
+    --date-range-font-size-base: 14px;
+    --date-range-font-size-lg: 16px;
+    --date-range-font-size-xl: 18px;
+    
+    /* Animations */
+    --date-range-transition-speed: 0.3s;
+    --date-range-transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    --date-range-transition-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    
+    /* Z-index */
+    --date-range-z-index-dropdown: 1000;
+    --date-range-z-index-modal: 2000;
+    --date-range-z-index-tooltip: 3000;
+}
+
+/* Mode sombre */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --date-range-glass-bg: rgba(255, 255, 255, 0.05);
+        --date-range-glass-bg-hover: rgba(255, 255, 255, 0.08);
+        --date-range-glass-border: rgba(255, 255, 255, 0.1);
+        --date-range-glass-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+}
+
+/* ========================================
+   CONTENEUR PRINCIPAL
+   ======================================== */
+.date-range {
+    position: relative;
+    display: inline-block;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: var(--date-range-font-size-base);
+}
+
+/* Modes d'affichage */
+.date-range-inline .date-range-picker {
+    position: static;
+    display: block !important;
+}
+
+.date-range-dropdown .date-range-picker {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: var(--date-range-spacing-sm);
+    z-index: var(--date-range-z-index-dropdown);
+    display: none;
+}
+
+.date-range-modal .date-range-picker {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: var(--date-range-z-index-modal);
+    display: none;
+}
+
+.date-range-sidebar .date-range-picker {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    transform: translateX(100%);
+    z-index: var(--date-range-z-index-modal);
+    transition: transform var(--date-range-transition-speed) var(--date-range-transition-smooth);
+}
+
+/* État ouvert */
+.date-range.open .date-range-picker {
+    display: block;
+}
+
+.date-range-sidebar.open .date-range-picker {
+    transform: translateX(0);
+}
+
+/* Overlay modal */
+.date-range-modal::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transition: opacity var(--date-range-transition-speed) ease;
+    pointer-events: none;
+    z-index: calc(var(--date-range-z-index-modal) - 1);
+}
+
+.date-range-modal.open::before {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Picker container */
+.date-range-picker {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--date-range-glass-shadow);
+    max-width: var(--date-range-picker-width);
+    width: 100%;
+}
+
+.date-range-picker.show {
+    animation: dateRangeSlideIn 0.3s ease forwards;
+}
+
+/* ========================================
+   STYLE GLASSMORPHISM
+   ======================================== */
+.date-range-glassmorphism .date-range-picker {
+    background: var(--date-range-glass-bg);
+    backdrop-filter: blur(var(--date-range-backdrop-blur)) saturate(1.8);
+    -webkit-backdrop-filter: blur(var(--date-range-backdrop-blur)) saturate(1.8);
+    border: 1px solid var(--date-range-glass-border);
+    box-shadow: var(--date-range-glass-shadow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Effet de brillance glassmorphism */
+.date-range-glassmorphism .date-range-picker::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.15) 0%,
+        rgba(255, 255, 255, 0) 40%,
+        rgba(255, 255, 255, 0) 60%,
+        rgba(255, 255, 255, 0.1) 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Reflet supérieur */
+.date-range-glassmorphism .date-range-picker::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.5),
+        transparent
+    );
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* ========================================
+   INPUT ET TRIGGER
+   ======================================== */
+.date-range-input-container {
+    position: relative;
+    cursor: pointer;
+}
+
+.date-range-input {
+    width: 300px;
+    padding: var(--date-range-spacing-sm) var(--date-range-spacing-md);
+    padding-right: 40px;
+    background: var(--date-range-glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--date-range-glass-border);
+    border-radius: 12px;
+    font-size: var(--date-range-font-size-base);
+    color: #1e293b;
+    cursor: pointer;
+    transition: all var(--date-range-transition-speed) var(--date-range-transition-smooth);
+}
+
+.date-range-input:hover {
+    background: var(--date-range-glass-bg-hover);
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.date-range-input:focus {
+    outline: none;
+    border-color: var(--date-range-primary);
+    box-shadow: 0 0 0 3px var(--date-range-primary-light);
+}
+
+.date-range-input-icon {
+    position: absolute;
+    right: var(--date-range-spacing-sm);
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    color: #64748b;
+    pointer-events: none;
+    transition: color var(--date-range-transition-speed) ease;
+}
+
+.date-range-input:hover + .date-range-input-icon,
+.date-range-input:focus + .date-range-input-icon {
+    color: var(--date-range-primary);
+}
+
+.date-range-input-icon svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+}
+
+/* ========================================
+   HEADER ET NAVIGATION
+   ======================================== */
+.date-range-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--date-range-spacing-md) var(--date-range-spacing-lg);
+    border-bottom: 1px solid var(--date-range-glass-border);
+    position: relative;
+    z-index: 10;
+}
+
+.date-range-title {
+    font-size: var(--date-range-font-size-lg);
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.date-range-close {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--date-range-glass-bg);
+    border: 1px solid var(--date-range-glass-border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all var(--date-range-transition-speed) var(--date-range-transition-smooth);
+    color: #64748b;
+}
+
+.date-range-close:hover {
+    background: var(--date-range-glass-bg-hover);
+    color: var(--date-range-primary);
+    transform: rotate(90deg);
+}
+
+.date-range-close svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+}
+
+/* ========================================
+   BODY ET LAYOUT
+   ======================================== */
+.date-range-body {
+    display: flex;
+    position: relative;
+    z-index: 5;
+}
+
+/* ========================================
+   CALENDRIER ET GRILLE
+   ======================================== */
+.date-range-calendars {
+    display: flex;
+    gap: var(--date-range-spacing-lg);
+    padding: var(--date-range-spacing-lg);
+    flex: 1;
+}
+
+.date-range-calendar {
+    width: var(--date-range-calendar-width);
+}
+
+/* Navigation du calendrier */
+.date-range-calendar-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--date-range-spacing-md);
+    height: 40px;
+}
+
+.date-range-nav-prev,
+.date-range-nav-next {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--date-range-glass-bg);
+    border: 1px solid var(--date-range-glass-border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all var(--date-range-transition-speed) var(--date-range-transition-smooth);
+    color: #64748b;
+}
+
+.date-range-nav-prev:hover,
+.date-range-nav-next:hover {
+    background: var(--date-range-glass-bg-hover);
+    color: var(--date-range-primary);
+    transform: scale(1.1);
+}
+
+.date-range-nav-prev svg,
+.date-range-nav-next svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+}
+
+.date-range-month-year {
+    font-size: var(--date-range-font-size-base);
+    font-weight: 600;
+    color: #1e293b;
+}
+
+/* En-tête des jours */
+.date-range-days-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0;
+    margin-bottom: var(--date-range-spacing-sm);
+}
+
+.date-range-day-header {
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--date-range-font-size-sm);
+    font-weight: 500;
+    color: #64748b;
+    text-transform: uppercase;
+}
+
+.date-range-week-header {
+    grid-column: span 1;
+    font-size: var(--date-range-font-size-xs);
+}
+
+/* Grille des jours */
+.date-range-days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+
+.date-range-week-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--date-range-font-size-xs);
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+/* Cellule de jour */
+.date-range-day {
+    position: relative;
+    height: var(--date-range-cell-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all var(--date-range-transition-speed) var(--date-range-transition-smooth);
+    font-size: var(--date-range-font-size-sm);
+    color: #1e293b;
+    background: transparent;
+}
+
+.date-range-day:hover:not(.disabled) {
+    background: var(--date-range-hover-bg);
+    transform: scale(1.05);
+}
+
+.date-range-day-number {
+    position: relative;
+    z-index: 2;
+    font-weight: 500;
+}
+
+/* ========================================
+   ÉTATS DES JOURS
+   ======================================== */
+
+/* Autre mois */
+.date-range-day.other-month {
+    color: #cbd5e1;
+}
+
+/* Aujourd'hui */
+.date-range-day.today {
+    font-weight: 700;
+}
+
+.date-range-day.today .date-range-day-number::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    background: var(--date-range-today);
+    border-radius: 50%;
+}
+
+/* Sélectionné */
+.date-range-day.selected {
+    background: var(--date-range-selected);
+    color: white;
+    font-weight: 600;
+}
+
+.date-range-day.selected:hover {
+    background: var(--date-range-primary-dark);
+}
+
+/* Début/Fin de plage */
+.date-range-day.range-start,
+.date-range-day.range-end {
+    background: var(--date-range-selected);
+    color: white;
+    font-weight: 600;
+    position: relative;
+}
+
+.date-range-day.range-start::before,
+.date-range-day.range-end::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    background: var(--date-range-range-bg);
+    z-index: 0;
+}
+
+.date-range-day.range-start::before {
+    right: 0;
+    border-radius: 0 8px 8px 0;
+}
+
+.date-range-day.range-end::before {
+    left: 0;
+    border-radius: 8px 0 0 8px;
+}
+
+.date-range-day.range-start.range-end::before {
+    display: none;
+}
+
+/* Dans la plage */
+.date-range-day.in-range {
+    background: var(--date-range-range-bg);
+    color: var(--date-range-selected);
+    position: relative;
+}
+
+.date-range-day.in-range::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--date-range-range-bg);
+    margin: 0 -2px;
+    z-index: 0;
+}
+
+/* Preview de plage au hover */
+.date-range-day.in-range-preview {
+    background: var(--date-range-hover-bg);
+}
+
+/* Désactivé */
+.date-range-day.disabled {
+    color: var(--date-range-disabled);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.date-range-day.disabled:hover {
+    background: transparent;
+    transform: none;
+}
+
+/* Surligné */
+.date-range-day.highlighted {
+    position: relative;
+}
+
+.date-range-day.highlighted::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border: 2px solid var(--date-range-highlighted);
+    border-radius: 8px;
+    pointer-events: none;
+}
+
+/* ========================================
+   PRESETS SIDEBAR
+   ======================================== */
+.date-range-presets {
+    width: var(--date-range-presets-width);
+    border-right: 1px solid var(--date-range-glass-border);
+    padding: var(--date-range-spacing-lg) var(--date-range-spacing-md);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.date-range-presets-title {
+    font-size: var(--date-range-font-size-sm);
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    margin-bottom: var(--date-range-spacing-md);
+}
+
+.date-range-presets-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--date-range-spacing-xs);
+}
+
+.date-range-preset {
+    display: flex;
+    align-items: center;
+    gap: var(--date-range-spacing-sm);
+    padding: var(--date-range-spacing-sm) var(--date-range-spacing-md);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all var(--date-range-transition-speed) var(--date-range-transition-smooth);
+    font-size: var(--date-range-font-size-sm);
+    color: #475569;
+    text-align: left;
+    width: 100%;
+}
+
+.date-range-preset:hover {
+    background: var(--date-range-glass-bg);
+    border-color: var(--date-range-glass-border);
+    color: var(--date-range-primary);
+    transform: translateX(4px);
+}
+
+.date-range-preset:active {
+    transform: translateX(2px);
+}
+
+.date-range-preset-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.date-range-preset-icon svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+}
+
+.date-range-preset-label {
+    flex: 1;
+}
+
+/* ========================================
+   TIME PICKER
+   ======================================== */
+.date-range-time-picker {
+    border-top: 1px solid var(--date-range-glass-border);
+    padding: var(--date-range-spacing-md) var(--date-range-spacing-lg);
+}
+
+.date-range-time-title {
+    font-size: var(--date-range-font-size-sm);
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    margin-bottom: var(--date-range-spacing-md);
+}
+
+.date-range-time-inputs {
+    display: flex;
+    gap: var(--date-range-spacing-lg);
+}
+
+.date-range-time-input-group {
+    flex: 1;
+}
+
+.date-range-time-label {
+    display: block;
+    font-size: var(--date-range-font-size-sm);
+    color: #64748b;
+    margin-bottom: var(--date-range-spacing-xs);
+}
+
+.date-range-time-input {
+    width: 100%;
+    padding: var(--date-range-spacing-sm);
+    background: var(--date-range-glass-bg);
+    border: 1px solid var(--date-range-glass-border);
+    border-radius: 8px;
+    font-size: var(--date-range-font-size-base);
+    color: #1e293b;
+    transition: all var(--date-range-transition-speed) var(--date-range-transition-smooth);
+}
+
+.date-range-time-input:focus {
+    outline: none;
+    border-color: var(--date-range-primary);
+    box-shadow: 0 0 0 3px var(--date-range-primary-light);
+}
+
+/* ========================================
+   FOOTER ET ACTIONS
+   ======================================== */
+.date-range-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--date-range-spacing-md) var(--date-range-spacing-lg);
+    border-top: 1px solid var(--date-range-glass-border);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.date-range-display {
+    font-size: var(--date-range-font-size-sm);
+    color: #64748b;
+    font-weight: 500;
+}
+
+.date-range-actions {
+    display: flex;
+    gap: var(--date-range-spacing-sm);
+}
+
+.date-range-button {
+    padding: var(--date-range-spacing-sm) var(--date-range-spacing-md);
+    background: var(--date-range-glass-bg);
+    border: 1px solid var(--date-range-glass-border);
+    border-radius: 8px;
+    font-size: var(--date-range-font-size-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--date-range-transition-speed) var(--date-range-transition-smooth);
+    color: #64748b;
+}
+
+.date-range-button:hover {
+    background: var(--date-range-glass-bg-hover);
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.date-range-button-apply {
+    background: var(--date-range-primary);
+    border-color: var(--date-range-primary);
+    color: white;
+}
+
+.date-range-button-apply:hover {
+    background: var(--date-range-primary-dark);
+    border-color: var(--date-range-primary-dark);
+}
+
+.date-range-button-apply:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+/* Animation d'entrée */
+@keyframes dateRangeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Animation calendrier */
+@keyframes slideCalendarNext {
+    0% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    50% {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    51% {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideCalendarPrev {
+    0% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    50% {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    51% {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Animation de sélection */
+.date-range[data-animation="rich"] .date-range-day.selected {
+    animation: selectBounce 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes selectBounce {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Ripple effect */
+.date-range[data-animation="rich"] .date-range-day::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle, var(--date-range-primary) 0%, transparent 70%);
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.6s ease;
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+.date-range[data-animation="rich"] .date-range-day:active::after {
+    opacity: 0.3;
+    transform: scale(2);
+    transition: none;
+}
+
+/* ========================================
+   VARIANTES DE STYLES
+   ======================================== */
+
+/* Style Neumorphism */
+.date-range-neumorphism .date-range-picker {
+    background: #e0e5ec;
+    box-shadow: 20px 20px 40px #a3b1c6,
+                -20px -20px 40px #ffffff;
+    border: none;
+}
+
+.date-range-neumorphism .date-range-day {
+    background: #e0e5ec;
+    box-shadow: 5px 5px 10px #a3b1c6,
+                -5px -5px 10px #ffffff;
+}
+
+.date-range-neumorphism .date-range-day:active {
+    box-shadow: inset 5px 5px 10px #a3b1c6,
+                inset -5px -5px 10px #ffffff;
+}
+
+/* Style Flat */
+.date-range-flat .date-range-picker {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.date-range-flat .date-range-day:hover {
+    background: #e2e8f0;
+}
+
+/* Style Minimal */
+.date-range-minimal .date-range-picker {
+    background: white;
+    border: 1px solid #e5e7eb;
+    box-shadow: none;
+}
+
+.date-range-minimal .date-range-day {
+    border-radius: 4px;
+}
+
+/* Style Material */
+.date-range-material .date-range-picker {
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 3px 5px -1px rgba(0,0,0,.2),
+                0 6px 10px 0 rgba(0,0,0,.14),
+                0 1px 18px 0 rgba(0,0,0,.12);
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 768px) {
+    :root {
+        --date-range-picker-width: 100%;
+        --date-range-calendar-width: 240px;
+        --date-range-cell-size: 36px;
+    }
+    
+    .date-range-dropdown .date-range-picker {
+        position: fixed;
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin: 0;
+        border-radius: 16px 16px 0 0;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    
+    .date-range-body {
+        flex-direction: column;
+    }
+    
+    .date-range-presets {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--date-range-glass-border);
+        padding: var(--date-range-spacing-md);
+    }
+    
+    .date-range-presets-list {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: var(--date-range-spacing-sm);
+    }
+    
+    .date-range-preset {
+        flex: 1;
+        min-width: 120px;
+    }
+    
+    .date-range-calendars {
+        flex-direction: column;
+        align-items: center;
+        gap: var(--date-range-spacing-md);
+        padding: var(--date-range-spacing-md);
+    }
+    
+    .date-range-calendar {
+        width: 100%;
+        max-width: var(--date-range-calendar-width);
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --date-range-cell-size: 32px;
+        --date-range-font-size-base: 13px;
+    }
+    
+    .date-range-input {
+        width: 100%;
+        font-size: 16px; /* Éviter le zoom iOS */
+    }
+    
+    .date-range-time-inputs {
+        flex-direction: column;
+        gap: var(--date-range-spacing-md);
+    }
+    
+    .date-range-footer {
+        flex-direction: column;
+        gap: var(--date-range-spacing-md);
+        align-items: stretch;
+    }
+    
+    .date-range-actions {
+        justify-content: stretch;
+    }
+    
+    .date-range-button {
+        flex: 1;
+    }
+}
+
+/* ========================================
+   THÈMES
+   ======================================== */
+
+/* Thème sombre */
+.dark .date-range-picker,
+[data-theme="dark"] .date-range-picker {
+    background: rgba(30, 30, 30, 0.95);
+    color: #e2e8f0;
+}
+
+.dark .date-range-glassmorphism .date-range-picker,
+[data-theme="dark"] .date-range-glassmorphism .date-range-picker {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .date-range-title,
+.dark .date-range-month-year,
+.dark .date-range-day,
+[data-theme="dark"] .date-range-title,
+[data-theme="dark"] .date-range-month-year,
+[data-theme="dark"] .date-range-day {
+    color: #e2e8f0;
+}
+
+.dark .date-range-day.other-month,
+[data-theme="dark"] .date-range-day.other-month {
+    color: #475569;
+}
+
+/* ========================================
+   ACCESSIBILITÉ
+   ======================================== */
+
+/* Focus visible */
+.date-range-day:focus-visible {
+    outline: 2px solid var(--date-range-primary);
+    outline-offset: 2px;
+}
+
+.date-range-button:focus-visible {
+    outline: 2px solid var(--date-range-primary);
+    outline-offset: 2px;
+}
+
+/* Mode contraste élevé */
+@media (prefers-contrast: high) {
+    .date-range-picker {
+        border: 2px solid currentColor;
+    }
+    
+    .date-range-day.selected {
+        outline: 2px solid currentColor;
+        outline-offset: -2px;
+    }
+}
+
+/* Préférences de mouvement réduit */
+@media (prefers-reduced-motion: reduce) {
+    .date-range,
+    .date-range * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ========================================
+   UTILITAIRES
+   ======================================== */
+
+/* Position dropdown */
+.date-range-picker.position-top {
+    top: auto;
+    bottom: 100%;
+    margin-top: 0;
+    margin-bottom: var(--date-range-spacing-sm);
+}
+
+/* Support tactile */
+@media (hover: none) {
+    .date-range-day {
+        min-height: 44px; /* Taille minimale pour tactile */
+    }
+    
+    .date-range-day:active {
+        background: var(--date-range-hover-bg);
+    }
+}
+
+/* État de chargement */
+.date-range.loading .date-range-picker {
+    pointer-events: none;
+}
+
+.date-range.loading .date-range-picker::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: inherit;
+    z-index: 100;
+}
+
+/* ========================================
+   SUPPORT NAVIGATEURS
+   ======================================== */
+
+/* Fallback pour navigateurs sans backdrop-filter */
+@supports not (backdrop-filter: blur(20px)) {
+    .date-range-glassmorphism .date-range-picker {
+        background: rgba(255, 255, 255, 0.95);
+    }
+    
+    .dark .date-range-glassmorphism .date-range-picker {
+        background: rgba(30, 30, 30, 0.95);
+    }
+    
+    .date-range-input {
+        background: rgba(255, 255, 255, 0.95);
+    }
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [2024-01-15] - Alignement des calendriers côte à côte
+   Solution: Flexbox avec gap fixe et calendriers de largeur fixe
+   
+   [2024-01-16] - Performance avec beaucoup de jours
+   Cause: Trop de box-shadow et filtres
+   Résolution: Optimisation avec transform uniquement
+   
+   [2024-01-17] - Responsive mobile
+   Solution: Passage en colonne et adaptation tactile
+   
+   NOTES POUR REPRISES FUTURES:
+   - Le backdrop-filter peut ralentir sur mobile
+   - Prévoir virtualisation pour très longues plages
+   - Support swipe pour navigation mobile
+   ======================================== */

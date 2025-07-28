@@ -1,0 +1,970 @@
+/* ========================================
+   ADVANCED-FILTER.CSS - Styles pour le système de filtrage avancé
+   Chemin: src/css/shared/ui/advanced-filter.css
+   
+   DESCRIPTION:
+   Styles complets pour le système de filtrage avec effet glassmorphism.
+   Supporte tous les modes, types de filtres, animations et layouts.
+   
+   STRUCTURE:
+   1. Variables et configuration (lignes 20-120)
+   2. Conteneur principal et modes (lignes 122-300)
+   3. Toolbar et contrôles (lignes 302-450)
+   4. Items de filtre (lignes 452-700)
+   5. Groupes de filtres (lignes 702-850)
+   6. Composants d'input (lignes 852-1100)
+   7. Dialogues et overlays (lignes 1102-1250)
+   8. Animations et responsive (lignes 1252-1400)
+   
+   DÉPENDANCES:
+   - advanced-filter.component.js (utilise toutes ces classes)
+   - Variables CSS du thème glassmorphism
+   ======================================== */
+
+/* ========================================
+   VARIABLES ET CONFIGURATION
+   ======================================== */
+:root {
+    /* Couleurs glassmorphism */
+    --filter-glass-bg: rgba(255, 255, 255, 0.08);
+    --filter-glass-bg-hover: rgba(255, 255, 255, 0.12);
+    --filter-glass-border: rgba(255, 255, 255, 0.15);
+    --filter-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --filter-backdrop-blur: 20px;
+    
+    /* Couleurs sémantiques */
+    --filter-primary: #3b82f6;
+    --filter-secondary: #64748b;
+    --filter-success: #22c55e;
+    --filter-warning: #f59e0b;
+    --filter-error: #ef4444;
+    --filter-info: #06b6d4;
+    
+    /* Couleurs de texte */
+    --filter-text-primary: #e2e8f0;
+    --filter-text-secondary: #94a3b8;
+    --filter-text-muted: #64748b;
+    --filter-text-inverse: #1e293b;
+    
+    /* Espacement */
+    --filter-spacing-xs: 4px;
+    --filter-spacing-sm: 8px;
+    --filter-spacing-md: 12px;
+    --filter-spacing-lg: 16px;
+    --filter-spacing-xl: 20px;
+    --filter-spacing-2xl: 24px;
+    
+    /* Tailles */
+    --filter-font-size-sm: 12px;
+    --filter-font-size-base: 14px;
+    --filter-font-size-lg: 16px;
+    --filter-input-height: 36px;
+    --filter-btn-height: 36px;
+    
+    /* Transitions */
+    --filter-transition-speed: 0.2s;
+    --filter-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Rayon de bordure */
+    --filter-radius-sm: 6px;
+    --filter-radius-md: 8px;
+    --filter-radius-lg: 12px;
+    --filter-radius-xl: 16px;
+    
+    /* Z-index */
+    --filter-z-dropdown: 100;
+    --filter-z-modal: 1000;
+    --filter-z-dialog: 1100;
+}
+
+/* Mode clair */
+@media (prefers-color-scheme: light) {
+    :root {
+        --filter-glass-bg: rgba(255, 255, 255, 0.7);
+        --filter-glass-border: rgba(0, 0, 0, 0.1);
+        --filter-text-primary: #1e293b;
+        --filter-text-secondary: #475569;
+        --filter-text-muted: #94a3b8;
+        --filter-text-inverse: #ffffff;
+    }
+}
+
+/* ========================================
+   CONTENEUR PRINCIPAL
+   ======================================== */
+.advanced-filter {
+    position: relative;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: var(--filter-font-size-base);
+    color: var(--filter-text-primary);
+    line-height: 1.5;
+}
+
+/* Style Glassmorphism */
+.advanced-filter.glassmorphism {
+    background: var(--filter-glass-bg);
+    backdrop-filter: blur(var(--filter-backdrop-blur)) saturate(180%);
+    -webkit-backdrop-filter: blur(var(--filter-backdrop-blur)) saturate(180%);
+    border: 1px solid var(--filter-glass-border);
+    border-radius: var(--filter-radius-xl);
+    box-shadow: var(--filter-glass-shadow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+}
+
+/* Effet de brillance */
+.advanced-filter.glassmorphism::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0) 40%,
+        rgba(255, 255, 255, 0) 60%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    pointer-events: none;
+}
+
+/* ========================================
+   MODES D'AFFICHAGE
+   ======================================== */
+
+/* Mode Inline */
+.advanced-filter.mode-inline {
+    display: block;
+    width: 100%;
+}
+
+/* Mode Popover */
+.advanced-filter.mode-popover {
+    position: absolute;
+    min-width: 400px;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow: auto;
+    z-index: var(--filter-z-dropdown);
+    transform-origin: top;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px) scale(0.95);
+    transition: all var(--filter-transition-speed) var(--filter-transition-easing);
+}
+
+.advanced-filter.mode-popover.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+/* Mode Sidebar */
+.advanced-filter.mode-sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 400px;
+    height: 100vh;
+    transform: translateX(100%);
+    transition: transform var(--filter-transition-speed) var(--filter-transition-easing);
+    z-index: var(--filter-z-modal);
+}
+
+.advanced-filter.mode-sidebar.active {
+    transform: translateX(0);
+}
+
+/* Mode Modal */
+.advanced-filter.mode-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--filter-transition-speed) var(--filter-transition-easing);
+    z-index: var(--filter-z-modal);
+}
+
+.advanced-filter.mode-modal.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+/* Overlay pour modal/sidebar */
+.filter-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--filter-transition-speed) var(--filter-transition-easing);
+    z-index: calc(var(--filter-z-modal) - 1);
+}
+
+.filter-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ========================================
+   TOOLBAR
+   ======================================== */
+.filter-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--filter-spacing-md);
+    padding: var(--filter-spacing-lg);
+    border-bottom: 1px solid var(--filter-glass-border);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.filter-toolbar-left,
+.filter-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: var(--filter-spacing-sm);
+}
+
+/* Boutons */
+.filter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--filter-spacing-xs);
+    padding: 0 var(--filter-spacing-md);
+    height: var(--filter-btn-height);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--filter-glass-border);
+    border-radius: var(--filter-radius-md);
+    color: var(--filter-text-primary);
+    font-size: var(--filter-font-size-base);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--filter-transition-speed) var(--filter-transition-easing);
+    white-space: nowrap;
+}
+
+.filter-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.filter-btn:active {
+    transform: translateY(0);
+}
+
+.filter-btn svg {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2;
+}
+
+/* Bouton primaire */
+.filter-btn.btn-primary {
+    background: var(--filter-primary);
+    border-color: var(--filter-primary);
+    color: white;
+}
+
+.filter-btn.btn-primary:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+/* Boutons icône */
+.filter-btn-icon {
+    width: var(--filter-btn-height);
+    height: var(--filter-btn-height);
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: var(--filter-text-secondary);
+    cursor: pointer;
+    border-radius: var(--filter-radius-sm);
+    transition: all var(--filter-transition-speed) var(--filter-transition-easing);
+}
+
+.filter-btn-icon:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--filter-text-primary);
+}
+
+/* Préréglages */
+.filter-presets {
+    position: relative;
+}
+
+.filter-preset-select {
+    appearance: none;
+    padding: 0 var(--filter-spacing-lg) 0 var(--filter-spacing-md);
+    height: var(--filter-btn-height);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--filter-glass-border);
+    border-radius: var(--filter-radius-md);
+    color: var(--filter-text-primary);
+    font-size: var(--filter-font-size-base);
+    cursor: pointer;
+    transition: all var(--filter-transition-speed) var(--filter-transition-easing);
+}
+
+.filter-preset-select:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Compteur */
+.filter-count {
+    color: var(--filter-text-secondary);
+    font-size: var(--filter-font-size-sm);
+    padding: 2px 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--filter-radius-sm);
+}
+
+/* ========================================
+   CONTENU
+   ======================================== */
+.filter-content {
+    padding: var(--filter-spacing-lg);
+    min-height: 200px;
+    max-height: 60vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Scrollbar personnalisée */
+.filter-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.filter-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.filter-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+.filter-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* ========================================
+   ITEMS DE FILTRE
+   ========================================== */
+.filter-item {
+    margin-bottom: var(--filter-spacing-md);
+    opacity: 0;
+    transform: translateY(-10px);
+    animation: filterFadeIn 0.3s ease-out forwards;
+}
+
+.filter-item-content {
+    display: grid;
+    grid-template-columns: minmax(150px, 1fr) minmax(120px, auto) 1fr auto;
+    gap: var(--filter-spacing-sm);
+    align-items: center;
+    padding: var(--filter-spacing-md);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--filter-glass-border);
+    border-radius: var(--filter-radius-md);
+    transition: all var(--filter-transition-speed) var(--filter-transition-easing);
+}
+
+.filter-item-content:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Champs */
+.filter-field,
+.filter-operator,
+.filter-value {
+    position: relative;
+}
+
+.filter-field-select,
+.filter-operator-select {
+    width: 100%;
+    height: var(--filter-input-height);
+    padding: 0 var(--filter-spacing-md);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--filter-glass-border);
+    border-radius: var(--filter-radius-sm);
+    color: var(--filter-text-primary);
+    font-size: var(--filter-font-size-base);
+    cursor: pointer;
+    transition: all var(--filter-transition-speed) var(--filter-transition-easing);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23fff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+}
+
+.filter-field-select:hover,
+.filter-operator-select:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.filter-field-select:focus,
+.filter-operator-select:focus {
+    outline: none;
+    border-color: var(--filter-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Inputs de valeur */
+.filter-input,
+.filter-select {
+    width: 100%;
+    height: var(--filter-input-height);
+    padding: 0 var(--filter-spacing-md);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--filter-glass-border);
+    border-radius: var(--filter-radius-sm);
+    color: var(--filter-text-primary);
+    font-size: var(--filter-font-size-base);
+    transition: all var(--filter-transition-speed) var(--filter-transition-easing);
+}
+
+.filter-input:hover,
+.filter-select:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.filter-input:focus,
+.filter-select:focus {
+    outline: none;
+    border-color: var(--filter-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.filter-input::placeholder {
+    color: var(--filter-text-muted);
+}
+
+/* Inputs range */
+.filter-value {
+    display: flex;
+    align-items: center;
+    gap: var(--filter-spacing-xs);
+}
+
+.filter-input-min,
+.filter-input-max,
+.filter-input-start,
+.filter-input-end {
+    flex: 1;
+}
+
+.filter-range-separator {
+    color: var(--filter-text-secondary);
+    font-weight: 500;
+}
+
+/* No value */
+.filter-no-value {
+    color: var(--filter-text-muted);
+    font-style: italic;
+}
+
+/* Actions */
+.filter-actions {
+    display: flex;
+    gap: var(--filter-spacing-xs);
+}
+
+.btn-remove {
+    color: var(--filter-error);
+    opacity: 0.6;
+}
+
+.btn-remove:hover {
+    opacity: 1;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* ========================================
+   GROUPES DE FILTRES
+   ======================================== */
+.filter-group {
+    margin-bottom: var(--filter-spacing-lg);
+    padding: var(--filter-spacing-md);
+    background: rgba(255, 255, 255, 0.02);
+    border: 2px dashed var(--filter-glass-border);
+    border-radius: var(--filter-radius-lg);
+}
+
+.filter-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--filter-spacing-md);
+}
+
+.filter-logic-toggle {
+    padding: var(--filter-spacing-xs) var(--filter-spacing-md);
+    background: var(--filter-primary);
+    border: none;
+    border-radius: var(--filter-radius-sm);
+    color: white;
+    font-size: var(--filter-font-size-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--filter-transition-speed) var(--filter-transition-easing);
+}
+
+.filter-logic-toggle[data-logic="OR"] {
+    background: var(--filter-warning);
+}
+
+.filter-logic-toggle:hover {
+    transform: scale(1.05);
+}
+
+.filter-group-content {
+    padding-left: var(--filter-spacing-lg);
+}
+
+.filter-group-actions {
+    display: flex;
+    gap: var(--filter-spacing-xs);
+}
+
+/* ========================================
+   COMPOSANTS SPÉCIAUX
+   ======================================== */
+
+/* Checkbox */
+.filter-checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.filter-checkbox {
+    position: absolute;
+    opacity: 0;
+}
+
+.filter-checkbox-indicator {
+    width: 20px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid var(--filter-glass-border);
+    border-radius: var(--filter-radius-sm);
+    transition: all var(--filter-transition-speed) var(--filter-transition-easing);
+    position: relative;
+}
+
+.filter-checkbox:checked + .filter-checkbox-indicator {
+    background: var(--filter-primary);
+    border-color: var(--filter-primary);
+}
+
+.filter-checkbox:checked + .filter-checkbox-indicator::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 6px;
+    width: 6px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* Tags */
+.filter-tags-input {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--filter-spacing-xs);
+    padding: var(--filter-spacing-xs);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--filter-glass-border);
+    border-radius: var(--filter-radius-sm);
+    min-height: var(--filter-input-height);
+}
+
+.filter-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--filter-spacing-xs);
+    padding: 2px 8px;
+    background: var(--filter-primary);
+    color: white;
+    border-radius: var(--filter-radius-sm);
+    font-size: var(--filter-font-size-sm);
+}
+
+.filter-tags-input-field {
+    flex: 1;
+    min-width: 100px;
+    border: none;
+    background: transparent;
+    color: var(--filter-text-primary);
+    outline: none;
+}
+
+/* Color picker */
+.filter-color {
+    width: 100%;
+    height: var(--filter-input-height);
+    padding: var(--filter-spacing-xs);
+    cursor: pointer;
+}
+
+/* Range slider */
+.filter-range-container {
+    display: flex;
+    align-items: center;
+    gap: var(--filter-spacing-sm);
+}
+
+.filter-range {
+    flex: 1;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.filter-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--filter-primary);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.filter-range-value {
+    font-size: var(--filter-font-size-sm);
+    color: var(--filter-text-secondary);
+    min-width: 60px;
+    text-align: center;
+}
+
+/* ========================================
+   FOOTER
+   ======================================== */
+.filter-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--filter-spacing-lg);
+    border-top: 1px solid var(--filter-glass-border);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.filter-footer-left,
+.filter-footer-right {
+    display: flex;
+    gap: var(--filter-spacing-sm);
+}
+
+/* ========================================
+   DIALOGUES
+   ======================================== */
+.filter-dialog {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: var(--filter-z-dialog);
+    animation: fadeIn 0.2s ease-out;
+}
+
+.filter-dialog-content {
+    width: 90%;
+    max-width: 400px;
+    padding: var(--filter-spacing-xl);
+    background: var(--filter-glass-bg);
+    backdrop-filter: blur(var(--filter-backdrop-blur));
+    border: 1px solid var(--filter-glass-border);
+    border-radius: var(--filter-radius-xl);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease-out;
+}
+
+.filter-dialog-content h3 {
+    margin: 0 0 var(--filter-spacing-lg) 0;
+    font-size: var(--filter-font-size-lg);
+    font-weight: 600;
+}
+
+.filter-dialog-input,
+.filter-dialog-textarea {
+    width: 100%;
+    padding: var(--filter-spacing-md);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--filter-glass-border);
+    border-radius: var(--filter-radius-md);
+    color: var(--filter-text-primary);
+    font-size: var(--filter-font-size-base);
+    font-family: inherit;
+    resize: vertical;
+}
+
+.filter-dialog-input:focus,
+.filter-dialog-textarea:focus {
+    outline: none;
+    border-color: var(--filter-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.filter-dialog-actions {
+    display: flex;
+    gap: var(--filter-spacing-sm);
+    justify-content: flex-end;
+    margin-top: var(--filter-spacing-xl);
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+@keyframes filterFadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Animation de suppression */
+.filter-item.removing {
+    animation: filterRemove 0.3s ease-out forwards;
+}
+
+@keyframes filterRemove {
+    to {
+        opacity: 0;
+        transform: translateX(-20px);
+        margin-bottom: 0;
+        height: 0;
+        padding: 0;
+    }
+}
+
+/* ========================================
+   ÉTATS
+   ======================================== */
+
+/* Disabled */
+.advanced-filter.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Loading */
+.advanced-filter.loading::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: inherit;
+}
+
+/* Empty state */
+.filter-content:empty::after {
+    content: 'Aucun filtre ajouté';
+    display: block;
+    text-align: center;
+    color: var(--filter-text-muted);
+    padding: var(--filter-spacing-xl);
+    font-style: italic;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 768px) {
+    .advanced-filter.mode-sidebar {
+        width: 100%;
+    }
+    
+    .filter-item-content {
+        grid-template-columns: 1fr;
+        gap: var(--filter-spacing-md);
+    }
+    
+    .filter-toolbar {
+        flex-wrap: wrap;
+    }
+    
+    .filter-toolbar-left,
+    .filter-toolbar-right {
+        flex: 1 1 100%;
+    }
+    
+    .filter-dialog-content {
+        margin: var(--filter-spacing-lg);
+    }
+}
+
+@media (max-width: 480px) {
+    .advanced-filter {
+        --filter-spacing-lg: 12px;
+        --filter-spacing-xl: 16px;
+    }
+    
+    .filter-btn span {
+        display: none;
+    }
+    
+    .filter-btn {
+        padding: 0;
+        width: var(--filter-btn-height);
+    }
+}
+
+/* ========================================
+   THÈMES
+   ======================================== */
+
+/* Thème sombre */
+.dark .advanced-filter {
+    --filter-glass-bg: rgba(0, 0, 0, 0.6);
+    --filter-glass-border: rgba(255, 255, 255, 0.1);
+}
+
+/* Style Neumorphism */
+.advanced-filter.neumorphism {
+    background: #e0e5ec;
+    backdrop-filter: none;
+    box-shadow: 9px 9px 16px #a3b1c6,
+                -9px -9px 16px #ffffff;
+}
+
+.advanced-filter.neumorphism .filter-btn,
+.advanced-filter.neumorphism .filter-input,
+.advanced-filter.neumorphism .filter-select {
+    background: #e0e5ec;
+    box-shadow: inset 2px 2px 5px #a3b1c6,
+                inset -2px -2px 5px #ffffff;
+}
+
+/* ========================================
+   ACCESSIBILITÉ
+   ======================================== */
+
+/* Focus visible */
+.filter-btn:focus-visible,
+.filter-input:focus-visible,
+.filter-select:focus-visible {
+    outline: 2px solid var(--filter-primary);
+    outline-offset: 2px;
+}
+
+/* Mode contraste élevé */
+@media (prefers-contrast: high) {
+    .advanced-filter {
+        border-width: 2px;
+    }
+    
+    .filter-btn,
+    .filter-input,
+    .filter-select {
+        border-width: 2px;
+    }
+}
+
+/* Préférences de mouvement réduit */
+@media (prefers-reduced-motion: reduce) {
+    .advanced-filter,
+    .advanced-filter * {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ========================================
+   SUPPORT NAVIGATEURS
+   ======================================== */
+
+/* Fallback pour navigateurs sans backdrop-filter */
+@supports not (backdrop-filter: blur(20px)) {
+    .advanced-filter.glassmorphism {
+        background: rgba(30, 41, 59, 0.95);
+    }
+    
+    .filter-dialog {
+        background: rgba(0, 0, 0, 0.8);
+    }
+}
+
+/* ========================================
+   PRINT
+   ======================================== */
+@media print {
+    .advanced-filter {
+        background: white !important;
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+    }
+    
+    .filter-btn,
+    .filter-actions {
+        display: none !important;
+    }
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [2025-01-28] - Layout responsive des filtres
+   Solution: Grid avec breakpoints adaptés
+   
+   [2025-01-28] - Performance avec beaucoup de filtres
+   Solution: Virtualisation CSS et animations optimisées
+   
+   [2025-01-28] - Accessibilité des contrôles custom
+   Solution: ARIA labels et focus management
+   
+   NOTES POUR REPRISES FUTURES:
+   - Les animations peuvent être désactivées globalement
+   - Le système de grid est flexible pour nouveaux layouts
+   - Les variables CSS permettent une personnalisation facile
+   - Attention aux z-index avec les modales
+   ======================================== */

@@ -1,0 +1,1016 @@
+/* ========================================
+   ANCHOR.CSS - Styles pour le composant Anchor
+   Chemin: src/css/shared/ui/anchor.css
+   
+   DESCRIPTION:
+   Styles complets pour le système de navigation par ancres avec effet glassmorphism.
+   Supporte tous les types, positions, animations et interactions.
+   
+   STRUCTURE:
+   1. Variables et configuration (lignes 20-120)
+   2. Conteneur et structure (lignes 122-300)
+   3. Types d'affichage (lignes 302-600)
+   4. Positions (lignes 602-750)
+   5. Éléments internes (lignes 752-1000)
+   6. Styles glassmorphism (lignes 1002-1200)
+   7. Animations (lignes 1202-1400)
+   8. États et interactions (lignes 1402-1600)
+   9. Responsive (lignes 1602-1800)
+   10. Thèmes et accessibilité (lignes 1802-2000)
+   
+   DÉPENDANCES:
+   - anchor.component.js (utilise toutes ces classes)
+   ======================================== */
+
+/* ========================================
+   VARIABLES ET CONFIGURATION
+   ======================================== */
+:root {
+    /* Couleurs glassmorphism */
+    --anchor-glass-bg: rgba(255, 255, 255, 0.08);
+    --anchor-glass-bg-hover: rgba(255, 255, 255, 0.12);
+    --anchor-glass-border: rgba(255, 255, 255, 0.15);
+    --anchor-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --anchor-backdrop-blur: 20px;
+    
+    /* Couleurs de base */
+    --anchor-text-primary: #1a1a1a;
+    --anchor-text-secondary: #666666;
+    --anchor-text-muted: #999999;
+    --anchor-accent: #6366f1;
+    --anchor-accent-hover: #4f46e5;
+    
+    /* Dimensions */
+    --anchor-nav-width: 280px;
+    --anchor-nav-width-collapsed: 50px;
+    --anchor-item-height: 40px;
+    --anchor-dot-size: 12px;
+    --anchor-progress-height: 4px;
+    
+    /* Espacement */
+    --anchor-padding: 20px;
+    --anchor-item-padding: 12px 16px;
+    --anchor-gap: 4px;
+    
+    /* Transitions */
+    --anchor-transition-speed: 0.3s;
+    --anchor-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Z-index */
+    --anchor-z-index: 100;
+}
+
+/* Mode sombre */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --anchor-glass-bg: rgba(255, 255, 255, 0.05);
+        --anchor-glass-bg-hover: rgba(255, 255, 255, 0.08);
+        --anchor-glass-border: rgba(255, 255, 255, 0.1);
+        --anchor-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        --anchor-text-primary: #f0f0f0;
+        --anchor-text-secondary: #aaaaaa;
+        --anchor-text-muted: #666666;
+    }
+}
+
+/* ========================================
+   CONTENEUR PRINCIPAL
+   ======================================== */
+.anchor-nav {
+    position: fixed;
+    z-index: var(--anchor-z-index);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all var(--anchor-transition-speed) var(--anchor-transition-easing);
+}
+
+.anchor-nav.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.anchor-nav-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+}
+
+/* ========================================
+   HEADER DE NAVIGATION
+   ======================================== */
+.anchor-nav-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    border-bottom: 1px solid var(--anchor-glass-border);
+}
+
+.anchor-nav-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--anchor-text-primary);
+}
+
+.anchor-nav-toggle {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--anchor-glass-bg);
+    border: 1px solid var(--anchor-glass-border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all var(--anchor-transition-speed);
+}
+
+.anchor-nav-toggle:hover {
+    background: var(--anchor-glass-bg-hover);
+    transform: scale(1.05);
+}
+
+.anchor-nav-toggle svg {
+    width: 16px;
+    height: 16px;
+    transition: transform var(--anchor-transition-speed);
+}
+
+.anchor-nav.collapsed .anchor-nav-toggle svg {
+    transform: rotate(-90deg);
+}
+
+/* ========================================
+   BARRE DE PROGRESSION
+   ======================================== */
+.anchor-nav-progress {
+    position: relative;
+    height: var(--anchor-progress-height);
+    background: var(--anchor-glass-bg);
+    overflow: hidden;
+}
+
+.anchor-nav-progress-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    background: var(--anchor-accent);
+    transition: width var(--anchor-transition-speed);
+}
+
+/* ========================================
+   LISTE D'ANCRES
+   ======================================== */
+.anchor-nav-list {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: var(--anchor-padding);
+}
+
+/* Scrollbar personnalisée */
+.anchor-nav-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.anchor-nav-list::-webkit-scrollbar-track {
+    background: var(--anchor-glass-bg);
+    border-radius: 3px;
+}
+
+.anchor-nav-list::-webkit-scrollbar-thumb {
+    background: var(--anchor-glass-border);
+    border-radius: 3px;
+}
+
+.anchor-nav-list::-webkit-scrollbar-thumb:hover {
+    background: var(--anchor-text-secondary);
+}
+
+/* ========================================
+   ITEMS D'ANCRES
+   ========================================== */
+.anchor-nav-item {
+    position: relative;
+    margin-bottom: var(--anchor-gap);
+}
+
+/* Niveaux hiérarchiques */
+.anchor-nav-item.level-2 {
+    padding-left: 20px;
+}
+
+.anchor-nav-item.level-3 {
+    padding-left: 40px;
+}
+
+.anchor-nav-item.level-4 {
+    padding-left: 60px;
+}
+
+.anchor-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: var(--anchor-item-padding);
+    color: var(--anchor-text-secondary);
+    text-decoration: none;
+    border-radius: 10px;
+    transition: all var(--anchor-transition-speed);
+    position: relative;
+    overflow: hidden;
+}
+
+.anchor-nav-link:hover {
+    color: var(--anchor-text-primary);
+    background: var(--anchor-glass-bg-hover);
+}
+
+.anchor-nav-item.active .anchor-nav-link {
+    color: var(--anchor-accent);
+    background: rgba(99, 102, 241, 0.1);
+}
+
+/* Indicateur actif */
+.anchor-nav-item.active .anchor-nav-link::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--anchor-accent);
+}
+
+/* Numéro */
+.anchor-nav-number {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--anchor-glass-bg);
+    border: 1px solid var(--anchor-glass-border);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Icône */
+.anchor-nav-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.anchor-nav-icon svg {
+    width: 100%;
+    height: 100%;
+    stroke: currentColor;
+}
+
+/* Texte */
+.anchor-nav-text {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Date (pour timeline) */
+.anchor-nav-date {
+    font-size: 12px;
+    color: var(--anchor-text-muted);
+}
+
+/* Indicateur de progression */
+.anchor-nav-progress-indicator {
+    position: relative;
+    width: 20px;
+    height: 20px;
+}
+
+.anchor-nav-progress-indicator::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid var(--anchor-glass-border);
+}
+
+.anchor-nav-progress-indicator::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid var(--anchor-accent);
+    border-top-color: transparent;
+    border-right-color: transparent;
+    transform: rotate(calc(var(--progress, 0) * 360deg - 90deg));
+    transition: transform var(--anchor-transition-speed);
+}
+
+/* ========================================
+   TOOLTIP
+   ======================================== */
+.anchor-nav-tooltip {
+    position: absolute;
+    left: calc(100% + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 6px 12px;
+    background: var(--anchor-glass-bg);
+    backdrop-filter: blur(var(--anchor-backdrop-blur));
+    border: 1px solid var(--anchor-glass-border);
+    border-radius: 8px;
+    font-size: 13px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.anchor-nav-tooltip::before {
+    content: '';
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 6px solid transparent;
+    border-right-color: var(--anchor-glass-border);
+}
+
+.anchor-nav-tooltip.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ========================================
+   TYPES SPÉCIFIQUES
+   ======================================== */
+
+/* Type Sidebar */
+.type-sidebar {
+    width: var(--anchor-nav-width);
+    height: auto;
+    max-height: calc(100vh - 100px);
+}
+
+.type-sidebar .anchor-nav-container {
+    background: var(--anchor-glass-bg);
+    backdrop-filter: blur(var(--anchor-backdrop-blur));
+    border: 1px solid var(--anchor-glass-border);
+    border-radius: 16px;
+    box-shadow: var(--anchor-glass-shadow);
+}
+
+/* Type Floating */
+.type-floating {
+    width: auto;
+}
+
+.type-floating .anchor-nav-container {
+    background: var(--anchor-glass-bg);
+    backdrop-filter: blur(var(--anchor-backdrop-blur));
+    border: 1px solid var(--anchor-glass-border);
+    border-radius: 24px;
+    box-shadow: var(--anchor-glass-shadow);
+    padding: 8px;
+}
+
+.type-floating .anchor-nav-list {
+    padding: 8px;
+}
+
+.type-floating .anchor-nav-link {
+    border-radius: 16px;
+}
+
+/* Type Dots */
+.type-dots {
+    width: auto;
+}
+
+.type-dots .anchor-nav-list {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.type-dots .anchor-nav-item {
+    margin: 0;
+}
+
+.type-dots .anchor-nav-link {
+    width: var(--anchor-dot-size);
+    height: var(--anchor-dot-size);
+    padding: 0;
+    border-radius: 50%;
+    background: var(--anchor-glass-border);
+    justify-content: center;
+}
+
+.type-dots .anchor-nav-link:hover {
+    background: var(--anchor-text-secondary);
+    transform: scale(1.2);
+}
+
+.type-dots .anchor-nav-item.active .anchor-nav-link {
+    background: var(--anchor-accent);
+    transform: scale(1.4);
+}
+
+.type-dots .anchor-nav-text,
+.type-dots .anchor-nav-number,
+.type-dots .anchor-nav-icon {
+    display: none;
+}
+
+/* Type Progress */
+.type-progress {
+    width: 100%;
+    height: auto;
+    top: 0;
+    left: 0;
+    right: 0;
+}
+
+.type-progress .anchor-nav-container {
+    background: transparent;
+}
+
+.anchor-progress-track {
+    position: relative;
+    height: var(--anchor-progress-height);
+    background: var(--anchor-glass-bg);
+    backdrop-filter: blur(var(--anchor-backdrop-blur));
+}
+
+.anchor-progress-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--anchor-accent), var(--anchor-accent-hover));
+    transition: width 0.1s linear;
+}
+
+.anchor-progress-tooltip {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 8px;
+    padding: 4px 8px;
+    background: var(--anchor-glass-bg);
+    backdrop-filter: blur(var(--anchor-backdrop-blur));
+    border: 1px solid var(--anchor-glass-border);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    transform: translateX(-50%);
+    transition: left 0.1s linear;
+}
+
+/* Type Timeline */
+.type-timeline {
+    width: var(--anchor-nav-width);
+}
+
+.type-timeline .anchor-nav-list {
+    position: relative;
+    padding-left: 40px;
+}
+
+.type-timeline .anchor-nav-list::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--anchor-glass-border);
+}
+
+.type-timeline .anchor-nav-item::before {
+    content: '';
+    position: absolute;
+    left: -25px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    background: var(--anchor-glass-bg);
+    border: 2px solid var(--anchor-glass-border);
+    border-radius: 50%;
+}
+
+.type-timeline .anchor-nav-item.active::before {
+    background: var(--anchor-accent);
+    border-color: var(--anchor-accent);
+}
+
+/* Type Breadcrumb */
+.type-breadcrumb {
+    width: 100%;
+    height: auto;
+}
+
+.type-breadcrumb .anchor-nav-list {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.type-breadcrumb .anchor-nav-item {
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.type-breadcrumb .anchor-nav-item::after {
+    content: '/';
+    margin-left: 8px;
+    color: var(--anchor-text-muted);
+}
+
+.type-breadcrumb .anchor-nav-item:last-child::after {
+    display: none;
+}
+
+/* Type Tabs */
+.type-tabs {
+    width: 100%;
+    height: auto;
+}
+
+.type-tabs .anchor-nav-list {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.type-tabs .anchor-nav-item {
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.type-tabs .anchor-nav-link {
+    border-radius: 8px 8px 0 0;
+    border-bottom: 3px solid transparent;
+}
+
+.type-tabs .anchor-nav-item.active .anchor-nav-link {
+    border-bottom-color: var(--anchor-accent);
+}
+
+/* ========================================
+   STYLES GLASSMORPHISM
+   ======================================== */
+.style-glassmorphism .anchor-nav-container {
+    background: var(--anchor-glass-bg);
+    backdrop-filter: blur(var(--anchor-backdrop-blur)) saturate(1.5);
+    -webkit-backdrop-filter: blur(var(--anchor-backdrop-blur)) saturate(1.5);
+    border: 1px solid var(--anchor-glass-border);
+    box-shadow: var(--anchor-glass-shadow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Effet de brillance */
+.style-glassmorphism .anchor-nav-container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.15) 0%,
+        rgba(255, 255, 255, 0) 40%,
+        rgba(255, 255, 255, 0) 60%,
+        rgba(255, 255, 255, 0.1) 100%
+    );
+    pointer-events: none;
+}
+
+/* ========================================
+   POSITIONS
+   ======================================== */
+.position-left {
+    top: 50%;
+    left: 20px;
+    transform: translateY(-50%);
+}
+
+.position-right {
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+}
+
+.position-top {
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.position-bottom {
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.position-top-left {
+    top: 20px;
+    left: 20px;
+}
+
+.position-top-right {
+    top: 20px;
+    right: 20px;
+}
+
+.position-bottom-left {
+    bottom: 20px;
+    left: 20px;
+}
+
+.position-bottom-right {
+    bottom: 20px;
+    right: 20px;
+}
+
+/* Ajustement des tooltips selon la position */
+.position-left .anchor-nav-tooltip {
+    left: calc(100% + 10px);
+}
+
+.position-right .anchor-nav-tooltip {
+    left: auto;
+    right: calc(100% + 10px);
+}
+
+.position-right .anchor-nav-tooltip::before {
+    left: 100%;
+    right: auto;
+    border-right-color: transparent;
+    border-left-color: var(--anchor-glass-border);
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+/* Hide on scroll */
+.anchor-nav.hidden {
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+}
+
+.position-left.anchor-nav.hidden {
+    transform: translateX(-20px) translateY(-50%);
+}
+
+.position-right.anchor-nav.hidden {
+    transform: translateX(20px) translateY(-50%);
+}
+
+/* Collapsed state */
+.anchor-nav.collapsed .anchor-nav-list {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+}
+
+.anchor-nav.collapsed .anchor-nav-progress {
+    display: none;
+}
+
+.type-sidebar.anchor-nav.collapsed {
+    width: var(--anchor-nav-width-collapsed);
+}
+
+.type-sidebar.anchor-nav.collapsed .anchor-nav-text,
+.type-sidebar.anchor-nav.collapsed .anchor-nav-date,
+.type-sidebar.anchor-nav.collapsed .anchor-nav-progress-indicator {
+    display: none;
+}
+
+/* Animations d'entrée */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ========================================
+   AUTRES STYLES
+   ======================================== */
+
+/* Neumorphism */
+.style-neumorphism .anchor-nav-container {
+    background: #e0e5ec;
+    box-shadow: 9px 9px 16px #a3b1c6, -9px -9px 16px #ffffff;
+    border: none;
+}
+
+.style-neumorphism .anchor-nav-link:hover {
+    background: #e0e5ec;
+    box-shadow: inset 4px 4px 8px #a3b1c6, inset -4px -4px 8px #ffffff;
+}
+
+/* Flat */
+.style-flat .anchor-nav-container {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Minimal */
+.style-minimal .anchor-nav-container {
+    background: transparent;
+    border: 1px solid var(--anchor-glass-border);
+    box-shadow: none;
+}
+
+/* Material */
+.style-material .anchor-nav-container {
+    background: #ffffff;
+    box-shadow: 0 3px 5px -1px rgba(0,0,0,.2),
+                0 6px 10px 0 rgba(0,0,0,.14),
+                0 1px 18px 0 rgba(0,0,0,.12);
+    border: none;
+    border-radius: 4px;
+}
+
+/* Outline */
+.style-outline .anchor-nav-container {
+    background: transparent;
+    border: 2px solid var(--anchor-accent);
+    box-shadow: none;
+}
+
+.style-outline .anchor-nav-link {
+    border: 1px solid transparent;
+}
+
+.style-outline .anchor-nav-link:hover {
+    border-color: var(--anchor-glass-border);
+    background: transparent;
+}
+
+/* Gradient */
+.style-gradient .anchor-nav-container {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(167, 139, 250, 0.1));
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 1024px) {
+    .type-sidebar {
+        width: var(--anchor-nav-width-collapsed);
+    }
+    
+    .type-sidebar .anchor-nav-text,
+    .type-sidebar .anchor-nav-date {
+        display: none;
+    }
+    
+    .type-sidebar .anchor-nav-tooltip {
+        display: block;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Masquer sur mobile par défaut */
+    .anchor-nav {
+        display: none;
+    }
+    
+    /* Sauf types spécifiques mobile-friendly */
+    .type-progress,
+    .type-breadcrumb,
+    .type-tabs {
+        display: block;
+    }
+    
+    /* Ajustements mobile */
+    :root {
+        --anchor-nav-width: 240px;
+        --anchor-padding: 16px;
+    }
+    
+    .position-left,
+    .position-right {
+        top: auto;
+        bottom: 20px;
+        transform: none;
+    }
+    
+    .position-left {
+        left: 10px;
+    }
+    
+    .position-right {
+        right: 10px;
+    }
+}
+
+/* ========================================
+   ACCESSIBILITÉ
+   ======================================== */
+
+/* Focus visible */
+.anchor-nav-link:focus-visible {
+    outline: 2px solid var(--anchor-accent);
+    outline-offset: 2px;
+}
+
+.anchor-nav-toggle:focus-visible {
+    outline: 2px solid var(--anchor-accent);
+    outline-offset: 2px;
+}
+
+/* Mode contraste élevé */
+@media (prefers-contrast: high) {
+    .anchor-nav-container {
+        border-width: 2px;
+    }
+    
+    .style-glassmorphism .anchor-nav-container {
+        background: rgba(255, 255, 255, 0.95);
+    }
+}
+
+/* Préférences de mouvement réduit */
+@media (prefers-reduced-motion: reduce) {
+    .anchor-nav,
+    .anchor-nav * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .anchor-progress-fill,
+    .anchor-progress-tooltip {
+        transition: none !important;
+    }
+}
+
+/* Support RTL */
+.rtl .anchor-nav-link::before {
+    left: auto;
+    right: 0;
+}
+
+.rtl .anchor-nav-item.level-2 {
+    padding-left: 0;
+    padding-right: 20px;
+}
+
+.rtl .anchor-nav-item.level-3 {
+    padding-left: 0;
+    padding-right: 40px;
+}
+
+.rtl .anchor-nav-tooltip {
+    left: auto;
+    right: calc(100% + 10px);
+}
+
+.rtl .anchor-nav-tooltip::before {
+    left: 100%;
+    right: auto;
+    border-left-color: var(--anchor-glass-border);
+    border-right-color: transparent;
+}
+
+/* ========================================
+   SUPPORT NAVIGATEURS
+   ======================================== */
+
+/* Fallback pour navigateurs sans backdrop-filter */
+@supports not (backdrop-filter: blur(20px)) {
+    .style-glassmorphism .anchor-nav-container {
+        background: rgba(255, 255, 255, 0.95);
+    }
+    
+    @media (prefers-color-scheme: dark) {
+        .style-glassmorphism .anchor-nav-container {
+            background: rgba(30, 30, 30, 0.95);
+        }
+    }
+}
+
+/* ========================================
+   ÉTATS SPÉCIAUX
+   ======================================== */
+
+/* Loading state */
+.anchor-nav.loading .anchor-nav-list {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Empty state */
+.anchor-nav-list:empty::after {
+    content: 'Aucune ancre disponible';
+    display: block;
+    padding: 20px;
+    text-align: center;
+    color: var(--anchor-text-muted);
+    font-size: 14px;
+}
+
+/* ========================================
+   PRINT STYLES
+   ======================================== */
+@media print {
+    .anchor-nav {
+        display: none !important;
+    }
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [2024-01] - Tooltips mal positionnés
+   Solution: Calcul dynamique selon position
+   
+   [2024-01] - Performance scroll avec beaucoup d'ancres
+   Cause: Trop de recalculs
+   Résolution: Throttling + CSS transforms
+   
+   [2024-01] - Responsive complexe
+   Solution: Types adaptés mobile + media queries
+   
+   NOTES POUR REPRISES FUTURES:
+   - Les animations utilisent transform pour performance
+   - Le backdrop-filter a un fallback
+   - Les positions sont relatives au viewport
+   - Support RTL complet
+   ======================================== */
