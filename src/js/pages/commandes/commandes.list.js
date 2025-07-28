@@ -20,8 +20,7 @@ import { CommandesService } from '../../services/commandes.service.js';
 import { COMMANDES_CONFIG } from '../../data/commandes.data.js';
 import { formatDate as formatDateUtil, formatMoney } from '../../shared/index.js';
 import { state } from './commandes.main.js';
-import { StatusBadgeComponent } from '../../shared/ui/elements/status-badge.component.js';
-import { UI } from '../../shared/index.js';
+import { UI, StatusBadge } from '../../shared/index.js';
 
 
 // ========================================
@@ -255,7 +254,7 @@ async function afficherCommandes() {
     }
     
     // Créer la table avec TableComponent
-    tableInstance = new TableComponent({
+    tableInstance = await UI.Table({
         columns: columns,
         data: dataForTable,
         style: 'glassmorphism',
@@ -352,7 +351,7 @@ function renderStatutBadge(statut) {
     }
     
     // Créer le badge avec StatusBadgeComponent
-    const badge = StatusBadgeComponent.create({
+    const badge = StatusBadge.create({
         status: statut,
         customIcon: config.icon,
         customColor: config.color,
@@ -384,7 +383,7 @@ function renderUrgenceBadge(urgence) {
     }
     
     // Créer le badge avec StatusBadgeComponent
-    const badge = StatusBadgeComponent.create({
+    const badge = StatusBadge.create({
         status: urgence,
         customIcon: config.icon,
         customColor: config.color,
