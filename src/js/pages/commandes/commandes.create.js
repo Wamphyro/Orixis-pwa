@@ -7,6 +7,7 @@
 //
 // MODIFICATIONS:
 // [28/01/2025] - Intégration de SearchDropdown pour remplacer les recherches natives
+// [28/01/2025] - Utilisation des bons sélecteurs ID (#clientSearch, #productSearch)
 // ========================================
 
 import { db } from '../../services/firebase.service.js';
@@ -206,9 +207,9 @@ function initClientSearch() {
         clientSearchDropdown.destroy();
     }
     
-    // Créer la nouvelle instance
+    // Créer la nouvelle instance avec le bon sélecteur ID
     clientSearchDropdown = new SearchDropdown({
-        container: '.client-search',
+        container: '#clientSearch',  // MODIFIÉ: ID au lieu de classe
         placeholder: 'Rechercher un client (nom, prénom, téléphone...)',
         minLength: 2,
         noResultsText: 'Aucun client trouvé',
@@ -592,9 +593,9 @@ function initProductSearch() {
         productSearchDropdown.destroy();
     }
     
-    // Créer la nouvelle instance
+    // Créer la nouvelle instance avec le bon sélecteur ID
     productSearchDropdown = new SearchDropdown({
-        container: '.product-search',
+        container: '#productSearch',  // MODIFIÉ: ID au lieu de classe
         placeholder: 'Rechercher un produit...',
         minLength: 2,
         noResultsText: 'Aucun produit trouvé',
@@ -946,6 +947,17 @@ export async function validerCommande() {
 }
 
 // ========================================
+// EXPORTS GLOBAUX POUR COMPATIBILITÉ
+// ========================================
+// Fonctions vides pour éviter les erreurs si appelées depuis le HTML
+window.rechercherClient = () => {
+    console.warn('rechercherClient() est remplacé par SearchDropdown');
+};
+window.rechercherProduit = () => {
+    console.warn('rechercherProduit() est remplacé par SearchDropdown');
+};
+
+// ========================================
 // HISTORIQUE DES DIFFICULTÉS
 //
 // [28/01/2025] - Intégration SearchDropdown
@@ -953,9 +965,11 @@ export async function validerCommande() {
 // - Ajout des instances clientSearchDropdown et productSearchDropdown
 // - Initialisation dans afficherEtape() avec setTimeout pour le timing
 // - Clear() au lieu de manipulation DOM directe
+// - Utilisation des bons sélecteurs ID (#clientSearch, #productSearch)
+// - Ajout de fonctions vides pour compatibilité avec l'ancien code
 //
 // NOTES POUR REPRISES FUTURES:
 // - Les instances de SearchDropdown doivent être détruites avant recréation
 // - Le timing d'init est important (d'où les setTimeout)
-// - Les containers doivent avoir les classes .client-search et .product-search
+// - Les containers doivent utiliser les IDs #clientSearch et #productSearch
 // ========================================

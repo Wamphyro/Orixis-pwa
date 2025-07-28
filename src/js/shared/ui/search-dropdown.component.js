@@ -7,6 +7,9 @@
 // Composant générique de recherche avec résultats en dropdown.
 // Réutilisable pour clients, produits, ou toute autre recherche.
 //
+// MODIFICATIONS:
+// [28/01/2025] - Ajout de protections contre les éléments null
+//
 // UTILISATION:
 // const searchClient = new SearchDropdown({
 //     container: '#clientSearchContainer',
@@ -218,7 +221,8 @@ export class SearchDropdown {
     }
     
     handleClickOutside(e) {
-        if (!this.container.contains(e.target)) {
+        // Vérifier que container et resultsContainer existent
+        if (this.container && this.resultsContainer && !this.container.contains(e.target)) {
             this.hideResults();
         }
     }
@@ -352,11 +356,15 @@ export class SearchDropdown {
     }
     
     showResults() {
-        this.resultsContainer.classList.add('active');
+        if (this.resultsContainer) {
+            this.resultsContainer.classList.add('active');
+        }
     }
     
     hideResults() {
-        this.resultsContainer.classList.remove('active');
+        if (this.resultsContainer) {
+            this.resultsContainer.classList.remove('active');
+        }
     }
     
     clear() {
@@ -441,12 +449,14 @@ export class SearchDropdown {
         }
         
         if (this.options.closeOnClickOutside) {
-            document.removeEventListener('click', this.handleClickOutside);
+            document.removeEventListener('click', this.handleClickOutside.bind(this));
         }
         
-        // Nettoyer le DOM
-        this.container.innerHTML = '';
-        this.container.className = '';
+        // Nettoyer le DOM seulement si le container existe
+        if (this.container) {
+            this.container.innerHTML = '';
+            this.container.className = '';
+        }
         
         // Nettoyer les références
         this.input = null;
@@ -472,3 +482,16 @@ export class SearchDropdown {
 // ========================================
 
 export default SearchDropdown;
+
+// ========================================
+// HISTORIQUE DES DIFFICULTÉS
+//
+// [28/01/2025] - Protection contre les éléments null
+// - Ajout de vérifications dans handleClickOutside
+// - Protection dans showResults/hideResults
+// - Protection dans destroy
+//
+// NOTES POUR REPRISES FUTURES:
+// - Toujours vérifier l'existence des éléments DOM
+// - Le composant peut être détruit avant que tous les events soient terminés
+// ========================================

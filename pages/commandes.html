@@ -212,8 +212,8 @@
                     <h3>Sélection du client</h3>
                     
                     <div class="client-search">
-                        <input type="text" id="clientSearch" placeholder="Rechercher un client (nom, prénom, téléphone...)" 
-                               oninput="rechercherClient()">
+                        <!-- MODIFIÉ: Suppression de oninput="rechercherClient()" -->
+                        <input type="text" id="clientSearch" placeholder="Rechercher un client (nom, prénom, téléphone...)">
                         <div class="search-results" id="clientSearchResults"></div>
                     </div>
                     
@@ -250,8 +250,8 @@
                     
                     <!-- Recherche produits -->
                     <div class="product-search">
-                        <input type="text" id="productSearch" placeholder="Rechercher un produit..." 
-                               oninput="rechercherProduit()">
+                        <!-- MODIFIÉ: Suppression de oninput="rechercherProduit()" -->
+                        <input type="text" id="productSearch" placeholder="Rechercher un produit...">
                         <div class="search-results" id="productSearchResults"></div>
                     </div>
                     
@@ -475,6 +475,10 @@
          SCRIPTS
          Le fichier commandes.main.js charge tous les autres modules
          Les composants UI avec JS chargent leur CSS automatiquement
+         
+         MODIFIÉ le 28/01/2025:
+         - Suppression des oninput pour rechercherClient et rechercherProduit
+         - Ces fonctions sont remplacées par SearchDropdown
          ======================================== -->
     <script type="module" src="../src/js/pages/commandes/commandes.main.js"></script>
 </body>
