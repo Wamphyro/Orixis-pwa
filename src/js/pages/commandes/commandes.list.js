@@ -20,7 +20,7 @@ import { CommandesService } from '../../services/commandes.service.js';
 import { COMMANDES_CONFIG } from '../../data/commandes.data.js';
 import { formatDate as formatDateUtil, formatMoney } from '../../shared/index.js';
 import { state } from './commandes.main.js';
-import { UI, StatusBadge } from '../../shared/index.js';
+import { UI } from '../../shared/index.js';
 
 
 // ========================================
@@ -350,26 +350,25 @@ function renderStatutBadge(statut) {
         return `<span class="status-badge">${statut}</span>`;
     }
     
-    // Créer le badge avec StatusBadgeComponent
-    const badge = StatusBadge.create({
-        status: statut,
-        customIcon: config.icon,
-        customColor: config.color,
-        text: config.label,
-        style: 'glassmorphism',
-        size: 'small',
-        showText: true,
-        showPulse: config.pulse || false,
-        animation: config.animation || 'subtle'
-    });
-    
-    // Cas spécial pour "supprimé"
-    if (config.special && statut === 'supprime') {
-        badge.style.textDecoration = 'line-through';
-        badge.style.opacity = '0.8';
-    }
-    
-    return badge;
+    // Version HTML simple sans StatusBadgeComponent
+    return `
+        <span class="status-badge glassmorphism ${statut}" 
+              style="display: inline-flex;
+                     align-items: center;
+                     gap: 6px;
+                     padding: 4px 12px;
+                     border-radius: 20px;
+                     font-size: 12px;
+                     font-weight: 500;
+                     color: white;
+                     background: ${config.color};
+                     backdrop-filter: blur(10px);
+                     border: 1px solid rgba(255, 255, 255, 0.2);
+                     ${config.special ? 'text-decoration: line-through; opacity: 0.8;' : ''}">
+            <span class="badge-icon">${config.icon || ''}</span>
+            <span class="badge-text">${config.label}</span>
+        </span>
+    `;
 }
 
 /**
@@ -382,20 +381,24 @@ function renderUrgenceBadge(urgence) {
         return `<span class="urgence-badge">${urgence}</span>`;
     }
     
-    // Créer le badge avec StatusBadgeComponent
-    const badge = StatusBadge.create({
-        status: urgence,
-        customIcon: config.icon,
-        customColor: config.color,
-        text: config.label,
-        style: 'glassmorphism',
-        size: 'small',
-        showText: true,
-        showPulse: config.pulse || false,
-        animation: config.animation || 'subtle'
-    });
-    
-    return badge;
+    // Version HTML simple sans StatusBadgeComponent
+    return `
+        <span class="urgence-badge glassmorphism ${urgence}" 
+              style="display: inline-flex;
+                     align-items: center;
+                     gap: 6px;
+                     padding: 4px 12px;
+                     border-radius: 20px;
+                     font-size: 12px;
+                     font-weight: 500;
+                     color: white;
+                     background: ${config.color};
+                     backdrop-filter: blur(10px);
+                     border: 1px solid rgba(255, 255, 255, 0.2);">
+            <span class="badge-icon">${config.icon || ''}</span>
+            <span class="badge-text">${config.label}</span>
+        </span>
+    `;
 }
 
 // ========================================
