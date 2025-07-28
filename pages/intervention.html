@@ -65,13 +65,13 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="nom">Nom du client</label>
-                    <input type="text" id="nom" name="nom" required>
-                </div>
-                <div class="form-group">
-                    <label for="telephone">Téléphone</label>
-                    <input type="tel" id="telephone" name="telephone" required>
-                </div>
+                <label for="nom">Nom du client</label>
+                <input type="text" id="nom" name="nom" required>
+            </div>
+            <div class="form-group">
+                <label for="telephone">Téléphone</label>
+                <input type="tel" id="telephone" name="telephone" required>
+            </div>
             </div>
             
             <!-- Type d'appareil -->
@@ -224,205 +224,9 @@
         <p>Ouverture de l'aperçu...</p>
     </div>
     
-    <script>
-        // Vérification d'authentification
-        function checkAuth() {
-            const auth = localStorage.getItem('sav_auth');
-            if (!auth) return false;
-            
-            const authData = JSON.parse(auth);
-            const now = Date.now();
-            
-            if (now - authData.timestamp > authData.expiry) {
-                localStorage.removeItem('sav_auth');
-                return false;
-            }
-            
-            return authData.authenticated;
-        }
-        
-        // Vérifier l'authentification au chargement
-        window.addEventListener('load', () => {
-            if (!checkAuth()) {
-                window.location.href = '../index.html';
-                return;
-            }
-        });
-        
-        // Fonction d'envoi au SAV MODIFIÉE
-        function envoyerSAV() {
-            if (!confirm('Confirmer l\'envoi de l\'escalade SAV aux assistantes ?')) {
-                return;
-            }
-            
-            const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
-            const date = new Date();
-            
-            // ADRESSES EMAIL DÉFINIES ICI
-            const destinataires = [
-                'korber@BROKERAUDIOLOGIE88.onmicrosoft.com'
-            ];
-            
-            const templateParams = {
-                // AJOUT DES DESTINATAIRES
-                to_email: destinataires.join(', '),
-                reply_to: 'noreply@orixis.fr',
-                
-                // DONNÉES DE L'INTERVENTION
-                magasin: auth.magasin || 'Non spécifié',
-                intervenant: auth.collaborateur ? `${auth.collaborateur.prenom} ${auth.collaborateur.nom}` : 'Non spécifié',
-                date: date.toLocaleDateString('fr-FR'),
-                heure: date.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'}),
-                nom_client: document.getElementById('nom').value,
-                telephone: document.getElementById('telephone').value,
-                type_appareil: document.querySelector('input[name="type_appareil"]:checked')?.value || 'Non spécifié',
-                marque: document.getElementById('marque').value,
-                probleme: Array.from(document.querySelectorAll('input[name="probleme"]:checked'))
-                    .map(cb => cb.parentElement.querySelector('label').textContent.trim())
-                    .join(', ') || 'Non spécifié',
-                actions: Array.from(document.querySelectorAll('input[name="actions"]:checked'))
-                    .map(cb => cb.parentElement.querySelector('label').textContent.trim())
-                    .join(', ') || 'Aucune action',
-                resultat: document.getElementById('resultat').options[document.getElementById('resultat').selectedIndex].text,
-                observations: document.getElementById('observations').value || 'Aucune observation'
-            };
-            
-            const btnSAV = document.getElementById('btnSAV');
-            const btnText = btnSAV.innerHTML;
-            btnSAV.innerHTML = '⏳ Envoi en cours...';
-            btnSAV.disabled = true;
-            
-            emailjs.send('service_6juwjvq', 'template_51rhrbr', templateParams)
-                .then(function(response) {
-                    alert('✅ Escalade SAV envoyée avec succès aux assistantes !');
-                    console.log('Email envoyé avec succès', response);
-                    
-                    if (confirm('Voulez-vous créer une nouvelle fiche ?')) {
-                        resetForm();
-                    }
-                })
-                .catch(function(error) {
-                    console.error('Erreur EmailJS complète:', error);
-                    let errorMessage = '❌ Erreur lors de l\'envoi : ';
-                    
-                    if (error.text) {
-                        errorMessage += error.text;
-                    } else if (error.message) {
-                        errorMessage += error.message;
-                    } else if (error.status === 400) {
-                        errorMessage += 'Paramètres invalides. Vérifiez votre template EmailJS.';
-                    } else {
-                        errorMessage += 'Erreur inconnue';
-                    }
-                    
-                    alert(errorMessage);
-                })
-                .finally(function() {
-                    btnSAV.innerHTML = btnText;
-                    btnSAV.disabled = false;
-                });
-        }
-        
-        // Fonction de réinitialisation
-        function resetForm() {
-            if (confirm('Êtes-vous sûr de vouloir effacer tous les champs ?')) {
-                document.getElementById('interventionForm').reset();
-                
-                const now = new Date();
-                document.getElementById('date').value = now.toISOString().split('T')[0];
-                document.getElementById('heure').value = now.toTimeString().slice(0, 5);
-                
-                document.querySelectorAll('.device-card').forEach(card => {
-                    card.classList.remove('selected');
-                });
-                
-                document.getElementById('btnSAV').style.display = 'none';
-            }
-        }
-        
-        // Initialisation
-        document.addEventListener('DOMContentLoaded', function() {
-            const now = new Date();
-            document.getElementById('date').value = now.toISOString().split('T')[0];
-            document.getElementById('heure').value = now.toTimeString().slice(0, 5);
-            
-            // Gestion de la sélection des appareils
-            const deviceCards = document.querySelectorAll('.device-card');
-            deviceCards.forEach(card => {
-                card.addEventListener('click', function() {
-                    deviceCards.forEach(c => c.classList.remove('selected'));
-                    if (this.querySelector('input').checked) {
-                        this.classList.add('selected');
-                    }
-                });
-                
-                const input = card.querySelector('input');
-                input.addEventListener('change', function() {
-                    deviceCards.forEach(c => c.classList.remove('selected'));
-                    if (this.checked) {
-                        card.classList.add('selected');
-                    }
-                });
-            });
-            
-            // Afficher/masquer le bouton SAV
-            document.getElementById('resultat').addEventListener('change', function() {
-                const btnSAV = document.getElementById('btnSAV');
-                if (this.value === 'SAV') {
-                    btnSAV.style.display = 'inline-block';
-                } else {
-                    btnSAV.style.display = 'none';
-                }
-            });
-        });
-        
-        // Soumission du formulaire
-        document.getElementById('interventionForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            if (!this.checkValidity()) {
-                this.reportValidity();
-                return;
-            }
-            
-            // Collecter les données SANS les signatures
-            const formData = {
-                date: document.getElementById('date').value,
-                heure: document.getElementById('heure').value,
-                nom: document.getElementById('nom').value,
-                telephone: document.getElementById('telephone').value,
-                type_appareil: document.querySelector('input[name="type_appareil"]:checked')?.value || '',
-                marque: document.getElementById('marque').value,
-                problemes: Array.from(document.querySelectorAll('input[name="probleme"]:checked')).map(cb => cb.value),
-                actions: Array.from(document.querySelectorAll('input[name="actions"]:checked')).map(cb => cb.value),
-                resultat: document.getElementById('resultat').value,
-                observations: document.getElementById('observations').value
-            };
-            
-            // Sauvegarder dans localStorage
-            localStorage.setItem('sav_intervention_data', JSON.stringify(formData));
-            
-            // Rediriger vers la page de signature client
-            window.location.href = 'signature-client.html';
-        });
-        
-        // Empêcher la fermeture accidentelle avec données
-        window.addEventListener('beforeunload', function(e) {
-            const form = document.getElementById('interventionForm');
-            const hasData = Array.from(form.elements).some(element => {
-                if (element.type === 'checkbox' || element.type === 'radio') {
-                    return element.checked;
-                }
-                return element.value && element.value !== document.getElementById('date').value && 
-                       element.value !== document.getElementById('heure').value;
-            });
-            
-            if (hasData) {
-                e.preventDefault();
-                e.returnValue = '';
-                return '';
-            }
-        });
-    </script>
+    <!-- Scripts -->
+<script type="module" src="../src/js/pages/intervention/intervention.main.js"></script>
+</body>
+</html>
 </body>
 </html>
