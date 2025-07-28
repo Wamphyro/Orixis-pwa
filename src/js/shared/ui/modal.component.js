@@ -3,8 +3,8 @@
 // ========================================
 // Chemin: src/js/shared/ui/modal.component.js
 //
-// Version mise à jour : loadStyles() réactivé
-// Charge maintenant : src/css/shared/ui/modal.css
+// Version mise à jour : chemins CSS corrigés pour GitHub Pages
+// Charge maintenant : src/css/shared/ui/modal.css (sans / au début)
 // ========================================
 
 export class Modal {
@@ -54,10 +54,10 @@ export class Modal {
         const link = document.createElement('link');
         link.id = 'modal-styles';
         link.rel = 'stylesheet';
-        link.href = '/src/css/shared/ui/modal.css';
+        link.href = 'src/css/shared/ui/modal.css';
         document.head.appendChild(link);
         
-        console.log('✅ Modal styles chargés : /src/css/shared/ui/modal.css');
+        console.log('✅ Modal styles chargés : src/css/shared/ui/modal.css');
     }
     
     attachEvents() {
