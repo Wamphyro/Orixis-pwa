@@ -1,10 +1,10 @@
 // ========================================
-// COMMANDES.MAIN.JS - Point d'entrée principal (VERSION COMPLÈTE)
+// COMMANDES.MAIN.JS - Point d'entrée principal (VERSION CORRIGÉE)
 // Chemin: src/js/pages/commandes/commandes.main.js
 //
 // DESCRIPTION:
 // Point d'entrée principal du module commandes
-// Modifié le 27/07/2025 : Ajout de l'exposition de supprimerCommande et import serial
+// Modifié le 28/01/2025 : Suppression des imports rechercherClient/rechercherProduit
 //
 // STRUCTURE:
 // 1. Imports (lignes 15-36)
@@ -28,13 +28,11 @@ import {
 import { 
     initCreationCommande,
     ouvrirNouvelleCommande,
-    rechercherClient,
     selectionnerClient,
     changerClient,
     ouvrirNouveauClient,
     creerNouveauClient,
     appliquerPack,
-    rechercherProduit,
     ajouterProduit,
     retirerProduit,
     etapePrecedente,
@@ -215,13 +213,11 @@ window.filtrerCommandes = filtrerCommandes;
 window.resetFiltres = resetFiltres;
 window.pagePrecedente = pagePrecedente;
 window.pageSuivante = pageSuivante;
-window.rechercherClient = rechercherClient;
 window.selectionnerClient = selectionnerClient;
 window.changerClient = changerClient;
 window.ouvrirNouveauClient = ouvrirNouveauClient;
 window.creerNouveauClient = creerNouveauClient;
 window.appliquerPack = appliquerPack;
-window.rechercherProduit = rechercherProduit;
 window.ajouterProduit = ajouterProduit;
 window.retirerProduit = retirerProduit;
 window.etapePrecedente = etapePrecedente;
@@ -280,15 +276,6 @@ function initEventListeners() {
             }
         });
     });
-    
-    // Fermer les résultats de recherche en cliquant ailleurs
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.client-search') && !e.target.closest('.product-search')) {
-            document.querySelectorAll('.search-results').forEach(results => {
-                results.classList.remove('active');
-            });
-        }
-    });
 }
 
 // Cleanup au déchargement de la page
@@ -315,6 +302,10 @@ export function afficherErreur(message) {
 /* ========================================
    HISTORIQUE DES DIFFICULTÉS
    
+   [28/01/2025] - Suppression des imports rechercherClient/rechercherProduit
+   Modification: Ces fonctions ont été remplacées par SearchDropdown
+   Impact: Plus besoin de les importer ni de les exposer globalement
+   
    [27/07/2025] - Ajout de la fonction supprimerCommande
    Modification: Exposition de la fonction window.supprimerCommande
    Raison: Permettre la suppression sécurisée depuis le tableau
@@ -325,6 +316,7 @@ export function afficherErreur(message) {
    Raison: Gestion des numéros de série
    
    NOTES POUR REPRISES FUTURES:
+   - rechercherClient/rechercherProduit ont été remplacées par SearchDropdown
    - supprimerCommande est définie dans detail.js, pas ici
    - Elle nécessite une validation nom/prénom
    - Elle change le statut en "supprime" (soft delete)
