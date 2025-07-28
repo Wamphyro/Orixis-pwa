@@ -21,7 +21,7 @@
 </head>
 <body class="login-page">
     <!-- Loading overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
         <div class="loading-spinner">
             <p>Chargement des données...</p>
         </div>
@@ -151,13 +151,17 @@
         
         // Afficher/cacher le chargement
         function showLoading(show) {
-            const overlay = document.getElementById('loadingOverlay');
-            if (show) {
-                overlay.classList.remove('hidden');
-            } else {
-                overlay.classList.add('hidden');
-            }
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+        if (show) {
+            overlay.style.display = 'flex';
+            overlay.classList.remove('hidden');
+        } else {
+            overlay.style.display = 'none';
+            overlay.classList.add('hidden');
         }
+    }
+}
         
         // Remplir le select avec les utilisateurs
         function populateUtilisateurs() {
