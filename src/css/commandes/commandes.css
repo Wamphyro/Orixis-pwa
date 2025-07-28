@@ -344,6 +344,23 @@
 }
 
 /* ========================================
+   STYLES DÉSACTIVÉS - Migration TableComponent
+   ======================================== */
+/*
+.commandes-table-container,
+.commandes-table,
+.commandes-table thead,
+.commandes-table tbody,
+.commandes-table th,
+.commandes-table td,
+.pagination,
+.pagination-btn,
+.pagination-info {
+    -- Styles désactivés pour TableComponent --
+}
+*/
+
+/* ========================================
    HISTORIQUE DES DIFFICULTÉS
    
    [27/07/2025] - Ajout styles bouton suppression
