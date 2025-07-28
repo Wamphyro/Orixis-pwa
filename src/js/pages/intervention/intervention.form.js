@@ -77,28 +77,34 @@ function initFormSubmit() {
     const form = document.getElementById('interventionForm');
     
     form?.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        // Validation HTML5
-        if (!this.checkValidity()) {
-            this.reportValidity();
-            return;
-        }
-        
-        // Vérifier qu'un client est sélectionné
-        const client = getClientSelectionne();
-        if (!client) {
-            await Dialog.alert('Veuillez sélectionner un client dans la liste', 'Client requis');
-            return;
-        }
-        
-        // Collecter les données
-        const formData = collectFormData(client);
-        
-        // Sauvegarder et rediriger
-        localStorage.setItem('sav_intervention_data', JSON.stringify(formData));
-        window.location.href = 'signature-client.html';
-    });
+    e.preventDefault();
+    
+    // Validation HTML5
+    if (!this.checkValidity()) {
+        this.reportValidity();
+        return;
+    }
+    
+    // Vérifier qu'un client est sélectionné
+    const client = getClientSelectionne();
+    if (!client) {
+        await Dialog.alert('Veuillez sélectionner un client dans la liste', 'Client requis');
+        return;
+    }
+
+    // Vérifier que le client a un téléphone (et qu'il n'est pas vide)
+    if (!client.telephone || client.telephone.trim() === '') {
+        await Dialog.alert('Le client sélectionné n\'a pas de numéro de téléphone en base', 'Téléphone manquant');
+        return;
+    }
+    
+    // Collecter les données
+    const formData = collectFormData(client);
+    
+    // Sauvegarder et rediriger
+    localStorage.setItem('sav_intervention_data', JSON.stringify(formData));
+    window.location.href = 'signature-client.html';
+});
 }
 
 function initBeforeUnloadHandler() {

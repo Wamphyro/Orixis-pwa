@@ -100,50 +100,36 @@ export async function initClientSearch() {
 function selectionnerClient(client) {
     clientSelectionne = client;
     
-    // Remplir automatiquement le téléphone MAIS le laisser modifiable
+    // Remplir automatiquement le téléphone ET LE BLOQUER
     const telInput = document.getElementById('telephone');
-    if (telInput && client.telephone) {
-        telInput.value = client.telephone;
+    if (telInput) {
+        telInput.value = client.telephone || '';
         
-        // NE PAS désactiver le champ !
-        // telInput.disabled = false;  // S'assurer qu'il reste actif
-        // telInput.readOnly = false;  // S'assurer qu'il reste modifiable
+        // BLOQUER la modification
+        telInput.readOnly = true;
         
-        // Animation visuelle pour montrer que c'est auto-rempli
-        telInput.classList.add('auto-filled');
-        telInput.style.backgroundColor = '#e8f5e9';
-        setTimeout(() => {
-            telInput.style.backgroundColor = '';
-        }, 1000);
+        // Style visuel directement (pas besoin de CSS)
+        telInput.style.backgroundColor = '#f8f9fa';
+        telInput.style.cursor = 'not-allowed';
+        telInput.style.opacity = '0.8';
         
-        // Ajouter un petit indicateur visuel (optionnel)
+        // Petit texte d'aide simple
         const helpText = document.createElement('small');
-        helpText.className = 'text-muted phone-help';
-        helpText.textContent = '📝 Vous pouvez modifier ce numéro si nécessaire';
+        helpText.style.color = '#6c757d';
+        helpText.style.fontSize = '0.875rem';
         helpText.style.display = 'block';
         helpText.style.marginTop = '5px';
-        helpText.style.color = '#6c757d';
+        helpText.textContent = '🔒 Téléphone du client en base';
         
-        // Retirer l'ancien help text s'il existe
+        // Retirer l'ancien si existe
         const oldHelp = telInput.parentElement.querySelector('.phone-help');
         if (oldHelp) oldHelp.remove();
         
-        // Ajouter le nouveau
+        helpText.className = 'phone-help'; // juste pour pouvoir le retrouver
         telInput.parentElement.appendChild(helpText);
     }
     
-    console.log('✅ Client sélectionné:', {
-        id: client.id,
-        nom: `${client.prenom} ${client.nom}`,
-        telephone: client.telephone,
-        telephoneModifiable: true,  // Toujours modifiable !
-        magasin: client.magasinReference
-    });
-    
-    // Déclencher un événement personnalisé
-    document.dispatchEvent(new CustomEvent('clientSelected', {
-        detail: { client }
-    }));
+    console.log('✅ Client sélectionné:', client);
 }
 
 // ========================================
@@ -166,11 +152,18 @@ export function resetClientSelection() {
         clientSearchDropdown.clear();
     }
     
-    // Vider aussi le téléphone
+    // Débloquer et nettoyer
     const telInput = document.getElementById('telephone');
     if (telInput) {
         telInput.value = '';
-        telInput.classList.remove('auto-filled');
+        telInput.readOnly = false;
+        telInput.style.backgroundColor = '';
+        telInput.style.cursor = '';
+        telInput.style.opacity = '';
+        
+        // Retirer le texte d'aide
+        const helpText = telInput.parentElement.querySelector('.phone-help');
+        if (helpText) helpText.remove();
     }
 }
 
