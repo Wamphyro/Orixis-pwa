@@ -13,6 +13,9 @@
    4. Modal détail commande
    5. Modal numéros de série
    6. Styles édition avec icônes stylo
+   
+   MODIFICATIONS:
+   [28/01/2025] - Extraction des styles de recherche vers search-dropdown.css
    ======================================== */
 
 /* ========================================
@@ -129,63 +132,6 @@
 
 .step-content.hidden {
     display: none;
-}
-
-/* RECHERCHE CLIENT/PRODUIT */
-.client-search,
-.product-search {
-    position: relative;
-    margin-bottom: 20px;
-}
-
-.client-search input,
-.product-search input {
-    width: 100%;
-    padding: 12px 16px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 16px;
-    transition: border-color 0.2s ease;
-}
-
-.client-search input:focus,
-.product-search input:focus {
-    outline: none;
-    border-color: #667eea;
-}
-
-.search-results {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    margin-top: 4px;
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    max-height: 250px;
-    overflow-y: auto;
-    z-index: 100;
-    display: none;
-}
-
-.search-results.active {
-    display: block;
-}
-
-.search-result-item {
-    padding: 12px 16px;
-    cursor: pointer;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.search-result-item:hover {
-    background: #f8f9fa;
-}
-
-.search-result-item:last-child {
-    border-bottom: none;
 }
 
 /* CLIENT SÉLECTIONNÉ */
@@ -1022,3 +968,16 @@
         font-size: 13px;
     }
 }
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [28/01/2025] - Extraction des styles de recherche
+   - Les styles de recherche ont été déplacés vers search-dropdown.css
+   - Le composant SearchDropdown gère maintenant l'UI de recherche
+   - Plus besoin des classes .client-search, .product-search, .search-results
+   
+   NOTES POUR REPRISES FUTURES:
+   - Les styles de recherche sont dans /shared/ui/search-dropdown.css
+   - Ne pas ajouter de styles de recherche ici
+   ======================================== */

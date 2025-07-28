@@ -1,7 +1,11 @@
 // ========================================
 // INDEX.JS - Point d'entrée centralisé pour shared
 // ========================================
-// À placer dans : src/js/shared/index.js
+// Chemin: src/js/shared/index.js
+//
+// MODIFICATIONS:
+// [28/01/2025] - Ajout de l'export SearchDropdown
+// ========================================
 
 // ========================================
 // COMPOSANTS UI
@@ -33,6 +37,10 @@ export {
 // Timeline
 import Timeline, { createTimeline, createOrderTimeline } from './ui/timeline.component.js';
 export { Timeline, createTimeline, createOrderTimeline };
+
+// Search Dropdown
+import SearchDropdown from './ui/search-dropdown.component.js';
+export { SearchDropdown };
 
 // ========================================
 // UTILITAIRES
@@ -246,6 +254,7 @@ export default {
     Timeline: Timeline,
     createTimeline: createTimeline,
     createOrderTimeline: createOrderTimeline,
+    SearchDropdown: SearchDropdown,
     
     // Utils
     formatDate,
@@ -262,3 +271,16 @@ export default {
     sleep,
     retry
 };
+
+// ========================================
+// HISTORIQUE DES DIFFICULTÉS
+//
+// [28/01/2025] - Ajout SearchDropdown
+// - Import et export du composant SearchDropdown
+// - Ajouté dans l'export par défaut pour cohérence
+//
+// NOTES POUR REPRISES FUTURES:
+// - Tous les composants UI sont dans ./ui/
+// - Les utils sont directement dans ce fichier
+// - Toujours exporter à la fois en named export et dans le default
+// ========================================

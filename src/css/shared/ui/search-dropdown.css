@@ -1,0 +1,399 @@
+/* ========================================
+   SEARCH-DROPDOWN.CSS - Styles du composant SearchDropdown
+   Chemin: src/css/shared/ui/search-dropdown.css
+   
+   DESCRIPTION:
+   Styles pour le composant de recherche avec dropdown.
+   Utilise form.css pour les styles de base de l'input.
+   
+   STRUCTURE:
+   1. Container
+   2. Input wrapper
+   3. Bouton clear
+   4. Dropdown de résultats
+   5. Items de résultat
+   6. États spéciaux
+   7. Responsive
+   ======================================== */
+
+/* ========================================
+   CONTAINER
+   ======================================== */
+.search-dropdown-container {
+    position: relative;
+    width: 100%;
+}
+
+/* ========================================
+   INPUT WRAPPER
+   ======================================== */
+.search-dropdown-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* Input - hérite des styles de form.css */
+.search-dropdown-input {
+    /* Les styles de base viennent de form.css */
+    padding-right: 40px; /* Espace pour le bouton clear */
+}
+
+/* ========================================
+   BOUTON CLEAR
+   ======================================== */
+.search-dropdown-clear {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: none;
+    font-size: 20px;
+    color: #999;
+    cursor: pointer;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.search-dropdown-clear:hover {
+    background: #f0f0f0;
+    color: #666;
+}
+
+.search-dropdown-clear:active {
+    background: #e0e0e0;
+}
+
+/* ========================================
+   DROPDOWN DE RÉSULTATS
+   ======================================== */
+.search-dropdown-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    margin-top: 5px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.search-dropdown-results.active {
+    display: block;
+    animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Scrollbar personnalisée */
+.search-dropdown-results::-webkit-scrollbar {
+    width: 6px;
+}
+
+.search-dropdown-results::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.search-dropdown-results::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 3px;
+}
+
+.search-dropdown-results::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}
+
+/* ========================================
+   ITEMS DE RÉSULTAT
+   ======================================== */
+.search-dropdown-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+.search-dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.search-dropdown-item:hover,
+.search-dropdown-item.active {
+    background: #f0f3ff;
+}
+
+.search-dropdown-item.active {
+    position: relative;
+}
+
+.search-dropdown-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--primary-color, #667eea);
+}
+
+/* ========================================
+   ÉTATS SPÉCIAUX
+   ======================================== */
+
+/* Loading */
+.search-dropdown-loading {
+    padding: 20px;
+    text-align: center;
+    color: #666;
+    font-style: italic;
+}
+
+.search-dropdown-loading::before {
+    content: '';
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid var(--primary-color, #667eea);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Pas de résultats */
+.search-dropdown-no-results {
+    padding: 20px;
+    text-align: center;
+    color: #999;
+}
+
+/* Erreur */
+.search-dropdown-error {
+    padding: 20px;
+    text-align: center;
+    color: #dc3545;
+    background: #fee;
+    border-radius: 8px;
+    margin: 10px;
+}
+
+/* ========================================
+   PERSONNALISATION DES ITEMS
+   ======================================== */
+
+/* Support pour du contenu riche dans les items */
+.search-dropdown-item strong {
+    color: var(--text-dark, #2c3e50);
+    font-weight: 600;
+}
+
+.search-dropdown-item small {
+    display: block;
+    color: #6c757d;
+    font-size: 0.875em;
+    margin-top: 4px;
+}
+
+/* Style pour les items avec icônes */
+.search-dropdown-item-icon {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.search-dropdown-item-icon img,
+.search-dropdown-item-icon svg {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+}
+
+/* Style pour les items avec badges */
+.search-dropdown-item .badge {
+    margin-left: 8px;
+    font-size: 0.75em;
+}
+
+/* ========================================
+   VARIANTES
+   ======================================== */
+
+/* Compact */
+.search-dropdown-container.compact .search-dropdown-input {
+    padding: 8px 36px 8px 12px;
+    font-size: 14px;
+}
+
+.search-dropdown-container.compact .search-dropdown-clear {
+    width: 24px;
+    height: 24px;
+    font-size: 16px;
+}
+
+.search-dropdown-container.compact .search-dropdown-item {
+    padding: 8px 12px;
+    font-size: 14px;
+}
+
+/* Large */
+.search-dropdown-container.large .search-dropdown-input {
+    padding: 16px 48px 16px 20px;
+    font-size: 18px;
+}
+
+.search-dropdown-container.large .search-dropdown-clear {
+    width: 32px;
+    height: 32px;
+    font-size: 24px;
+    right: 12px;
+}
+
+.search-dropdown-container.large .search-dropdown-item {
+    padding: 16px 20px;
+    font-size: 16px;
+}
+
+/* ========================================
+   THÈMES
+   ======================================== */
+
+/* Thème sombre */
+.search-dropdown-container.dark .search-dropdown-results {
+    background: #2c3e50;
+    border-color: #34495e;
+    color: white;
+}
+
+.search-dropdown-container.dark .search-dropdown-item {
+    border-color: #34495e;
+}
+
+.search-dropdown-container.dark .search-dropdown-item:hover,
+.search-dropdown-container.dark .search-dropdown-item.active {
+    background: #34495e;
+}
+
+.search-dropdown-container.dark .search-dropdown-no-results,
+.search-dropdown-container.dark .search-dropdown-loading {
+    color: #bdc3c7;
+}
+
+/* ========================================
+   ÉTATS DÉSACTIVÉ
+   ======================================== */
+.search-dropdown-input:disabled {
+    background: #f8f9fa;
+    cursor: not-allowed;
+}
+
+.search-dropdown-input:disabled + .search-dropdown-clear {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ========================================
+   FOCUS TRAP (accessibilité)
+   ======================================== */
+.search-dropdown-container:focus-within .search-dropdown-input {
+    border-color: var(--primary-color, #667eea);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 768px) {
+    .search-dropdown-results {
+        max-height: 250px;
+    }
+    
+    .search-dropdown-item {
+        padding: 14px 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .search-dropdown-results {
+        position: fixed;
+        left: 10px;
+        right: 10px;
+        top: auto;
+        max-height: 50vh;
+    }
+    
+    /* Input plus grand sur mobile pour éviter le zoom */
+    .search-dropdown-input {
+        font-size: 16px;
+    }
+}
+
+/* ========================================
+   PRINT
+   ======================================== */
+@media print {
+    .search-dropdown-results,
+    .search-dropdown-clear {
+        display: none !important;
+    }
+}
+
+/* ========================================
+   ANIMATIONS SUPPLÉMENTAIRES
+   ======================================== */
+.search-dropdown-container.animated .search-dropdown-item {
+    animation: fadeIn 0.3s ease forwards;
+    opacity: 0;
+}
+
+.search-dropdown-container.animated .search-dropdown-item:nth-child(1) { animation-delay: 0.05s; }
+.search-dropdown-container.animated .search-dropdown-item:nth-child(2) { animation-delay: 0.1s; }
+.search-dropdown-container.animated .search-dropdown-item:nth-child(3) { animation-delay: 0.15s; }
+.search-dropdown-container.animated .search-dropdown-item:nth-child(4) { animation-delay: 0.2s; }
+.search-dropdown-container.animated .search-dropdown-item:nth-child(5) { animation-delay: 0.25s; }
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
+/* ========================================
+   UTILISATION:
+   
+   <div id="mySearchContainer"></div>
+   
+   new SearchDropdown({
+       container: '#mySearchContainer',
+       placeholder: 'Rechercher...',
+       onSearch: async (query) => { ... },
+       onSelect: (item) => { ... }
+   });
+   ======================================== */

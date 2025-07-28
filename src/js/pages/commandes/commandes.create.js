@@ -1,11 +1,19 @@
 // ========================================
-// COMMANDES.CREATE.JS - Gestion de la création de commandes (CORRIGÉ)
+// COMMANDES.CREATE.JS - Gestion de la création de commandes (MODULARISÉ)
+// Chemin: src/js/pages/commandes/commandes.create.js
+//
+// DESCRIPTION:
+// Module de création de commandes avec intégration du composant SearchDropdown
+//
+// MODIFICATIONS:
+// [28/01/2025] - Intégration de SearchDropdown pour remplacer les recherches natives
 // ========================================
 
 import { db } from '../../services/firebase.service.js';
 import { ClientsService } from '../../services/clients.service.js';
 import { ProduitsService } from '../../services/produits.service.js';
 import { CommandesService } from '../../services/commandes.service.js';
+import SearchDropdown from '../../shared/ui/search-dropdown.component.js';
 import { COMMANDES_CONFIG } from '../../data/commandes.data.js';
 import { Dialog, notify } from '../../shared/index.js';
 import { chargerDonnees } from './commandes.list.js';
@@ -27,6 +35,10 @@ let nouvelleCommande = {
     commentaires: ''
 };
 let produitEnCoursSelection = null;
+
+// Instances des search dropdowns
+let clientSearchDropdown = null;
+let productSearchDropdown = null;
 
 // Exposer l'état pour le module principal
 window.commandeCreateState = { nouvelleCommande };
@@ -83,15 +95,12 @@ function resetNouvelleCommande() {
         clientSelected.style.display = 'none';
     }
     
-    // IMPORTANT: Réinitialiser la recherche produit et le panier
-    const productSearch = document.getElementById('productSearch');
-    if (productSearch) {
-        productSearch.value = '';
+    // IMPORTANT: Réinitialiser les search dropdowns
+    if (clientSearchDropdown) {
+        clientSearchDropdown.clear();
     }
-    const productSearchResults = document.getElementById('productSearchResults');
-    if (productSearchResults) {
-        productSearchResults.innerHTML = '';
-        productSearchResults.classList.remove('active');
+    if (productSearchDropdown) {
+        productSearchDropdown.clear();
     }
     const tempCartItems = document.getElementById('tempCartItems');
     if (tempCartItems) {
@@ -127,9 +136,13 @@ function afficherEtape(etape) {
     
     // Actions spécifiques par étape
     switch (etape) {
+        case 1:
+            setTimeout(() => initClientSearch(), 100);
+            break;
         case 2:
             console.log('📍 Arrivée à l\'étape 2 - Chargement des packs');
             chargerPackTemplates();
+            setTimeout(() => initProductSearch(), 100);
             break;
         case 3:
             chargerMagasins();
@@ -184,45 +197,44 @@ async function validerEtape(etape) {
 }
 
 // ========================================
-// GESTION DES CLIENTS
+// INITIALISATION DES SEARCH DROPDOWNS
 // ========================================
 
-export async function rechercherClient() {
-    const recherche = document.getElementById('clientSearch').value;
-    const resultsDiv = document.getElementById('clientSearchResults');
-    
-    if (recherche.length < 2) {
-        resultsDiv.classList.remove('active');
-        resultsDiv.innerHTML = '';
-        return;
+function initClientSearch() {
+    // Détruire l'instance précédente si elle existe
+    if (clientSearchDropdown) {
+        clientSearchDropdown.destroy();
     }
     
-    try {
-        resultsDiv.innerHTML = '<div class="search-result-item">Recherche en cours...</div>';
-        resultsDiv.classList.add('active');
-        
-        const clients = await ClientsService.rechercherClients(recherche);
-        
-        if (clients.length > 0) {
-            resultsDiv.innerHTML = clients.map(client => `
-                <div class="search-result-item" onclick="selectionnerClient('${client.id}')">
-                    <strong>${client.prenom} ${client.nom}</strong>
-                    <br>
-                    <small>
-                        ${client.telephone || ''} 
-                        ${client.email ? '- ' + client.email : ''}
-                        ${client.magasinReference ? '- Magasin: ' + client.magasinReference : ''}
-                    </small>
-                </div>
-            `).join('');
-        } else {
-            resultsDiv.innerHTML = '<div class="search-result-item">Aucun client trouvé</div>';
+    // Créer la nouvelle instance
+    clientSearchDropdown = new SearchDropdown({
+        container: '.client-search',
+        placeholder: 'Rechercher un client (nom, prénom, téléphone...)',
+        minLength: 2,
+        noResultsText: 'Aucun client trouvé',
+        loadingText: 'Recherche en cours...',
+        onSearch: async (query) => {
+            try {
+                return await ClientsService.rechercherClients(query);
+            } catch (error) {
+                console.error('Erreur recherche client:', error);
+                throw error;
+            }
+        },
+        onSelect: (client) => {
+            selectionnerClient(client.id);
+        },
+        renderItem: (client) => {
+            return `
+                <strong>${client.prenom} ${client.nom}</strong>
+                <small>
+                    ${client.telephone || ''} 
+                    ${client.email ? '- ' + client.email : ''}
+                    ${client.magasinReference ? '- Magasin: ' + client.magasinReference : ''}
+                </small>
+            `;
         }
-        resultsDiv.classList.add('active');
-    } catch (error) {
-        console.error('Erreur recherche client:', error);
-        resultsDiv.innerHTML = '<div class="search-result-item">Erreur lors de la recherche</div>';
-    }
+    });
 }
 
 export async function selectionnerClient(clientId) {
@@ -257,10 +269,12 @@ export function changerClient() {
     nouvelleCommande.clientId = null;
     nouvelleCommande.client = null;
     document.getElementById('clientSearch').style.display = 'block';
-    document.getElementById('clientSearch').value = '';
     document.getElementById('clientSelected').style.display = 'none';
-    document.getElementById('clientSearchResults').innerHTML = '';
-    document.getElementById('clientSearchResults').classList.remove('active');
+    
+    // Réinitialiser le search dropdown
+    if (clientSearchDropdown) {
+        clientSearchDropdown.clear();
+    }
 }
 
 export function ouvrirNouveauClient() {
@@ -572,40 +586,47 @@ window.selectionnerCotePack = function(cote) {
     afficherPanierTemporaire();
 };
 
-export async function rechercherProduit() {
-    const recherche = document.getElementById('productSearch').value;
-    const resultsDiv = document.getElementById('productSearchResults');
-    
-    if (recherche.length < 2) {
-        resultsDiv.classList.remove('active');
-        return;
+function initProductSearch() {
+    // Détruire l'instance précédente si elle existe
+    if (productSearchDropdown) {
+        productSearchDropdown.destroy();
     }
     
-    try {
-        const produits = await ProduitsService.rechercherProduits(recherche);
-        
-        if (produits.length > 0) {
-            resultsDiv.innerHTML = produits.map(produit => `
-                <div class="product-card" onclick="ajouterProduit('${produit.id}')">
-                    <div class="product-card-header">
-                        <div>
-                            <div class="product-name">${produit.designation}</div>
-                            <div class="product-reference">${produit.reference}</div>
-                        </div>
+    // Créer la nouvelle instance
+    productSearchDropdown = new SearchDropdown({
+        container: '.product-search',
+        placeholder: 'Rechercher un produit...',
+        minLength: 2,
+        noResultsText: 'Aucun produit trouvé',
+        loadingText: 'Recherche en cours...',
+        onSearch: async (query) => {
+            try {
+                return await ProduitsService.rechercherProduits(query);
+            } catch (error) {
+                console.error('Erreur recherche produit:', error);
+                throw error;
+            }
+        },
+        onSelect: (produit) => {
+            ajouterProduit(produit.id);
+        },
+        renderItem: (produit) => {
+            return `
+                <div style="padding: 8px 0;">
+                    <div style="font-weight: 600; color: #2c3e50; margin-bottom: 4px;">
+                        ${produit.designation}
                     </div>
-                    <div class="product-info">
+                    <div style="background: #e0e0e0; padding: 2px 8px; border-radius: 4px; 
+                                font-size: 12px; display: inline-block; margin-bottom: 4px;">
+                        ${produit.reference}
+                    </div>
+                    <div style="font-size: 14px; color: #666;">
                         ${produit.marque} - ${produit.categorie}
                     </div>
                 </div>
-            `).join('');
-            resultsDiv.classList.add('active');
-        } else {
-            resultsDiv.innerHTML = '<div class="search-result-item">Aucun produit trouvé</div>';
-            resultsDiv.classList.add('active');
+            `;
         }
-    } catch (error) {
-        console.error('Erreur recherche produit:', error);
-    }
+    });
 }
 
 export async function ajouterProduit(produitId) {
@@ -666,8 +687,10 @@ export async function ajouterProduit(produitId) {
             
             afficherPanierTemporaire();
             
-            document.getElementById('productSearchResults').classList.remove('active');
-            document.getElementById('productSearch').value = '';
+            // Réinitialiser le search dropdown
+            if (productSearchDropdown) {
+                productSearchDropdown.clear();
+            }
         }
         
     } catch (error) {
@@ -706,8 +729,10 @@ export function selectionnerCote(cote) {
     
     afficherPanierTemporaire();
     
-    document.getElementById('productSearchResults').classList.remove('active');
-    document.getElementById('productSearch').value = '';
+    // Réinitialiser le search dropdown
+    if (productSearchDropdown) {
+        productSearchDropdown.clear();
+    }
 }
 
 export function annulerSelectionCote() {
@@ -919,3 +944,18 @@ export async function validerCommande() {
         afficherErreur('Erreur lors de la création de la commande: ' + error.message);
     }
 }
+
+// ========================================
+// HISTORIQUE DES DIFFICULTÉS
+//
+// [28/01/2025] - Intégration SearchDropdown
+// - Remplacement des fonctions rechercherClient() et rechercherProduit()
+// - Ajout des instances clientSearchDropdown et productSearchDropdown
+// - Initialisation dans afficherEtape() avec setTimeout pour le timing
+// - Clear() au lieu de manipulation DOM directe
+//
+// NOTES POUR REPRISES FUTURES:
+// - Les instances de SearchDropdown doivent être détruites avant recréation
+// - Le timing d'init est important (d'où les setTimeout)
+// - Les containers doivent avoir les classes .client-search et .product-search
+// ========================================
