@@ -386,6 +386,55 @@
 }
 
 /* ========================================
+   FIX MOBILE - Positionnement du dropdown
+   ======================================== */
+@media (max-width: 768px) {
+    .search-dropdown-container {
+        position: relative;
+    }
+    
+    .search-dropdown-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        margin-top: 5px; /* Petit espace entre input et résultats */
+        max-height: 200px; /* Limiter la hauteur sur mobile */
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch; /* Scroll smooth iOS */
+    }
+    
+    /* Ajuster l'affichage des items */
+    .search-dropdown-item {
+        padding: 12px 15px;
+        font-size: 16px; /* Plus grand pour mobile */
+    }
+    
+    /* Fix pour les claviers virtuels */
+    .search-dropdown-results.active {
+        z-index: 9999;
+        position: fixed;
+        top: auto;
+        bottom: 50%;
+        transform: translateY(50%);
+        max-height: 40vh;
+        width: calc(100% - 40px);
+        left: 20px;
+        right: 20px;
+        box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
+    }
+}
+
+/* Pour les très petits écrans */
+@media (max-width: 380px) {
+    .search-dropdown-results.active {
+        width: calc(100% - 20px);
+        left: 10px;
+        right: 10px;
+    }
+}
+
+/* ========================================
    UTILISATION:
    
    <div id="mySearchContainer"></div>
