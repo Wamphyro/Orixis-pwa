@@ -24,6 +24,7 @@ import { CommandesService } from '../../services/commandes.service.js';
 import { COMMANDES_CONFIG } from '../../data/commandes.data.js';
 import { formatDate as formatDateUtil, formatMoney } from '../../shared/index.js';
 import { state } from './commandes.main.js';
+import { StatusBadgeComponent } from '../../shared/ui/elements/status-badge.component.js';
 
 // ========================================
 // INITIALISATION DU MODULE
@@ -144,16 +145,24 @@ function afficherProduits(produits) {
     return produits.length > 2 ? `${summary}... (+${produits.length - 2})` : summary;
 }
 
-function afficherUrgence(urgence) {
-    const config = COMMANDES_CONFIG.NIVEAUX_URGENCE[urgence];
-    if (!config) return urgence;
-    return `<span class="urgence-badge ${urgence}">${config.icon} ${config.label}</span>`;
-}
-
+// NOUVELLE VERSION avec StatusBadgeComponent
 function afficherStatut(statut) {
     const config = COMMANDES_CONFIG.STATUTS[statut];
     if (!config) return statut;
-    return `<span class="status-badge status-${statut}">${config.icon} ${config.label}</span>`;
+    
+    // Créer un badge avec le composant
+    const badge = StatusBadgeComponent.create({
+        status: statut,
+        customIcon: 'check-circle',  // ou autre icône selon le statut
+        customColor: '#4caf50',       // ou autre couleur selon le statut
+        text: config.label,
+        style: 'glassmorphism',
+        size: 'small',
+        showText: true
+    });
+    
+    // Retourner le HTML du badge
+    return badge.outerHTML;
 }
 
 function peutModifierStatut(commande) {
