@@ -3,12 +3,8 @@
 // ========================================
 // Chemin: src/js/shared/ui/modal.component.js
 //
-// IMPORTANT: Les styles CSS ont été centralisés dans:
-// src/css/commandes/commandes-modal.css (Section 1: MODAL BASE STYLES, lignes 30-280)
-// 
-// Historique:
-// - Avant: Chargeait ./styles/modal.css via loadStyles()
-// - Maintenant: Utilise les styles centralisés pour éviter les conflits
+// Version mise à jour : loadStyles() réactivé
+// Charge maintenant : src/css/shared/ui/modal.css
 // ========================================
 
 export class Modal {
@@ -21,13 +17,13 @@ export class Modal {
         
         this.modalId = modalId;
         this.options = {
-            closeOnOverlayClick: false,    // Par défaut, ne pas fermer en cliquant sur l'overlay
-            closeOnEscape: true,            // Fermer avec la touche Escape
-            onOpen: null,                   // Callback à l'ouverture
-            onClose: null,                  // Callback à la fermeture
-            onBeforeClose: null,            // Callback avant fermeture (peut annuler)
-            animationDuration: 300,         // Durée de l'animation en ms
-            ...options                      // Surcharger avec les options fournies
+            closeOnOverlayClick: false,
+            closeOnEscape: true,
+            onOpen: null,
+            onClose: null,
+            onBeforeClose: null,
+            animationDuration: 300,
+            ...options
         };
         
         this.isOpen = false;
@@ -35,8 +31,8 @@ export class Modal {
     }
     
     init() {
-        // IMPORTANT: loadStyles() désactivé - Styles dans src/css/commandes/commandes-modal.css
-        // this.loadStyles(); // DÉSACTIVÉ le 2024-XX-XX
+        // Charger les styles
+        this.loadStyles();
         
         // Trouver le bouton de fermeture
         this.closeButton = this.modalElement.querySelector('.modal-close');
@@ -48,21 +44,7 @@ export class Modal {
         this.modalElement.classList.remove('active');
     }
     
-    /**
-     * FONCTION DÉSACTIVÉE - Conservée pour référence historique
-     * Les styles sont maintenant dans src/css/commandes/commandes-modal.css
-     * Section: MODAL BASE STYLES (lignes 30-280)
-     */
     loadStyles() {
-        // ========================================
-        // DÉSACTIVÉ - NE PAS RÉACTIVER
-        // Raison: Éviter les conflits CSS avec les styles centralisés
-        // Les styles sont maintenant gérés dans:
-        // src/css/commandes/commandes-modal.css
-        // ========================================
-        return; // Early return pour s'assurer que rien ne se charge
-        
-        /* Code original conservé pour documentation:
         // Vérifier si les styles sont déjà chargés
         if (document.getElementById('modal-styles')) {
             return;
@@ -72,9 +54,10 @@ export class Modal {
         const link = document.createElement('link');
         link.id = 'modal-styles';
         link.rel = 'stylesheet';
-        link.href = new URL('./styles/modal.css', import.meta.url).href;
+        link.href = '/src/css/shared/ui/modal.css';
         document.head.appendChild(link);
-        */
+        
+        console.log('✅ Modal styles chargés : /src/css/shared/ui/modal.css');
     }
     
     attachEvents() {

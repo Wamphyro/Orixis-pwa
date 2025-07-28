@@ -1,0 +1,1024 @@
+/* ========================================
+   COMMANDES-CUSTOM.CSS - Styles spécifiques au module commandes
+   Chemin: src/css/commandes/commandes-custom.css
+   
+   DESCRIPTION:
+   Styles custom pour les fonctionnalités spécifiques des commandes.
+   Extrait de commandes-modal.css (lignes 1151+)
+   
+   TABLE DES MATIÈRES:
+   1. Fix FOUC - Masquage initial des modales
+   2. Personnalisation des modales commandes
+   3. Modal nouvelle commande (stepper, recherche, etc.)
+   4. Modal détail commande
+   5. Modal numéros de série
+   6. Styles édition avec icônes stylo
+   ======================================== */
+
+/* ========================================
+   FIX FOUC - Cacher les modales au chargement
+   ======================================== */
+#modalNouvelleCommande,
+#modalDetailCommande,
+#modalNouveauClient,
+#modalNumerosSerie {
+    display: none !important;
+}
+
+#modalNouvelleCommande.active,
+#modalDetailCommande.active,
+#modalNouveauClient.active,
+#modalNumerosSerie.active {
+    display: flex !important;
+}
+
+/* ========================================
+   PERSONNALISATION DES MODALES COMMANDES
+   ======================================== */
+
+/* Taille des modales commandes */
+#modalNouvelleCommande .modal-content,
+#modalDetailCommande .modal-content,
+#modalNouveauClient .modal-content {
+    width: 900px;
+    max-width: 95%;
+    height: 80vh;
+    max-height: 90vh;
+}
+
+/* ========================================
+   MODAL NOUVELLE COMMANDE
+   ======================================== */
+
+/* STEPPER */
+.stepper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+    gap: 40px;
+}
+
+.step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0.5;
+    transition: all 0.3s ease;
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.step-label {
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+}
+
+.step.active {
+    opacity: 1;
+}
+
+.step.active .step-number {
+    background: #667eea;
+    color: white;
+    transform: scale(1.1);
+}
+
+.step.active .step-label {
+    color: #667eea;
+    font-weight: 600;
+}
+
+.step.completed {
+    opacity: 1;
+}
+
+.step.completed .step-number {
+    background: #4caf50;
+    color: white;
+}
+
+.step.completed .step-number::before {
+    content: '✓';
+    font-size: 20px;
+}
+
+.step.completed .step-label {
+    color: #4caf50;
+}
+
+/* CONTENU ÉTAPES */
+.step-content {
+    min-height: 300px;
+}
+
+.step-content.hidden {
+    display: none;
+}
+
+/* RECHERCHE CLIENT/PRODUIT */
+.client-search,
+.product-search {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.client-search input,
+.product-search input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.2s ease;
+}
+
+.client-search input:focus,
+.product-search input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 4px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-height: 250px;
+    overflow-y: auto;
+    z-index: 100;
+    display: none;
+}
+
+.search-results.active {
+    display: block;
+}
+
+.search-result-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.search-result-item:hover {
+    background: #f8f9fa;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+/* CLIENT SÉLECTIONNÉ */
+.client-selected {
+    background: #e8f5e9;
+    border: 2px solid #4caf50;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.client-info p {
+    margin: 4px 0;
+}
+
+/* PACK SELECTOR */
+.pack-selector {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.pack-selector label {
+    display: block;
+    margin-bottom: 8px;
+    color: #495057;
+    font-weight: 600;
+}
+
+.pack-selector select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 16px;
+    background: white;
+}
+
+/* PRODUITS */
+.product-card {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.product-card:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+}
+
+.product-name {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 4px;
+}
+
+.product-reference {
+    background: #e0e0e0;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    display: inline-block;
+    margin-bottom: 4px;
+}
+
+.product-info {
+    font-size: 14px;
+    color: #666;
+}
+
+/* PANIER TEMPORAIRE */
+.temp-cart {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 20px;
+}
+
+.temp-cart h4 {
+    color: #2c3e50;
+    margin-bottom: 12px;
+}
+
+.temp-cart-item {
+    background: white;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.temp-cart-item-name {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.temp-cart-item-details {
+    font-size: 14px;
+    color: #666;
+}
+
+/* URGENCE */
+.urgence-selector {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.urgence-option {
+    flex: 1;
+}
+
+.urgence-option input[type="radio"] {
+    display: none;
+}
+
+.urgence-option .urgence-badge {
+    display: block;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.urgence-option input[type="radio"]:checked + .urgence-badge {
+    border-color: #667eea;
+    background: #f8f9ff;
+}
+
+/* RÉCAPITULATIF */
+.recap-section {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+}
+
+.recap-section h4 {
+    color: #667eea;
+    margin-bottom: 8px;
+    font-size: 16px;
+}
+
+/* DIVIDER */
+.divider {
+    text-align: center;
+    margin: 24px 0;
+    position: relative;
+    color: #999;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 45%;
+    height: 1px;
+    background: #e0e0e0;
+}
+
+.divider::before {
+    left: 0;
+}
+
+.divider::after {
+    right: 0;
+}
+
+/* ========================================
+   MODAL DÉTAIL COMMANDE
+   ======================================== */
+
+/* SECTIONS DÉTAIL */
+.detail-sections {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.detail-column-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.detail-column-right {
+    flex: 1;
+}
+
+.detail-section {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+}
+
+.detail-section.full-width {
+    margin-top: 20px;
+    margin-bottom: 30px;
+}
+
+.detail-section h3 {
+    font-size: 18px;
+    color: #667eea;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+/* Info client compacte */
+.detail-info-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.info-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.info-row .detail-label {
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 14px;
+    min-width: 65px;
+}
+
+.info-row .detail-value {
+    color: #2c3e50;
+    font-size: 14px;
+}
+
+/* Liste produits */
+.produits-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.produit-item {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px;
+    transition: all 0.2s ease;
+}
+
+.produit-item:hover {
+    border-color: #dee2e6;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.produit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.produit-nom {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 15px;
+}
+
+.produit-cote {
+    font-weight: normal;
+    color: #6c757d;
+    font-size: 14px;
+    margin-left: 8px;
+}
+
+.produit-quantite {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #f8f9fa;
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+
+.qty-label {
+    font-size: 13px;
+    color: #6c757d;
+}
+
+.qty-value {
+    font-weight: 600;
+    color: #495057;
+}
+
+/* Ligne numéro de série */
+.produit-serial {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 14px;
+    margin-top: 8px;
+}
+
+.produit-serial.serial-ok {
+    background: #e8f5e9;
+    border: 1px solid #4caf50;
+}
+
+.produit-serial.serial-missing {
+    background: #fff3e0;
+    border: 1px solid #ff9800;
+}
+
+.serial-icon {
+    font-size: 16px;
+}
+
+.produit-serial.serial-ok .serial-icon {
+    color: #4caf50;
+}
+
+.produit-serial.serial-missing .serial-icon {
+    color: #ff9800;
+}
+
+.serial-label {
+    font-weight: 600;
+    color: #6c757d;
+}
+
+.serial-value {
+    flex: 1;
+    color: #495057;
+}
+
+.serial-value code {
+    background: rgba(0,0,0,0.05);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+}
+
+.produit-serial.serial-missing .serial-value {
+    color: #f57c00;
+    font-style: italic;
+}
+
+/* ACTIONS DÉTAIL */
+.detail-actions {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.detail-actions .btn {
+    min-width: 160px;
+}
+
+/* ========================================
+   MODAL NUMÉROS DE SÉRIE
+   ======================================== */
+
+/* Alert info */
+.ns-info-alert {
+    background: #e3f2fd;
+    border-left: 4px solid #2196f3;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.alert-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+/* Sections */
+.ns-section-title {
+    color: #667eea;
+    font-size: 16px;
+    margin-top: 20px;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+/* Champs de saisie */
+.ns-field-group {
+    margin-bottom: 20px;
+}
+
+.ns-field-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #495057;
+}
+
+.ns-reference {
+    background: #e9ecef;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: normal;
+}
+
+.ns-input {
+    font-family: 'Courier New', monospace;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* État vide */
+.ns-empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #28a745;
+    font-size: 16px;
+}
+
+/* ========================================
+   STYLES ÉDITION AVEC ICÔNES STYLO
+   ======================================== */
+
+/* Icône d'édition */
+.section-edit-icon {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 32px;
+    height: 32px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    opacity: 0.7;
+    z-index: 10;
+}
+
+.section-edit-icon:hover {
+    opacity: 1;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.section-edit-icon:active {
+    transform: scale(0.95);
+}
+
+/* États de l'icône */
+.section-edit-icon.saving {
+    background: #ff9800;
+    animation: pulse 1s infinite;
+}
+
+.section-edit-icon.saved {
+    background: #4caf50;
+}
+
+.section-edit-icon.error {
+    background: #f44336;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* Formulaire d'édition inline */
+.edit-form {
+    display: none;
+    background: white;
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    animation: slideDown 0.3s ease-out;
+}
+
+.edit-form.active {
+    display: block;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Groupes de champs */
+.edit-form-group {
+    margin-bottom: 15px;
+}
+
+.edit-form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+}
+
+.edit-form-group input,
+.edit-form-group select,
+.edit-form-group textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.edit-form-group input:focus,
+.edit-form-group select:focus,
+.edit-form-group textarea:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.edit-form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Rangée de champs */
+.edit-form-row {
+    display: flex;
+    gap: 15px;
+}
+
+.edit-form-row .edit-form-group {
+    flex: 1;
+}
+
+/* Actions du formulaire */
+.edit-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #e9ecef;
+}
+
+.edit-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 80px;
+}
+
+.edit-btn-save {
+    background: #4caf50;
+    color: white;
+}
+
+.edit-btn-save:hover {
+    background: #43a047;
+    transform: translateY(-1px);
+}
+
+.edit-btn-save:disabled {
+    background: #c8e6c9;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.edit-btn-cancel {
+    background: #f5f5f5;
+    color: #666;
+}
+
+.edit-btn-cancel:hover {
+    background: #eeeeee;
+}
+
+/* État de chargement */
+.edit-btn.loading {
+    position: relative;
+    color: transparent;
+}
+
+.edit-btn.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 16px;
+    height: 16px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+/* Mode édition pour les sections */
+.detail-section.editing {
+    border: 2px solid #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.detail-section.editing .section-edit-icon {
+    background: #ff9800;
+}
+
+.detail-section.editing .detail-info-compact,
+.detail-section.editing .produits-list {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+/* Formulaire d'édition des produits */
+.edit-produit-item {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+.edit-produit-header {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 10px;
+    font-size: 15px;
+}
+
+.edit-produit-fields {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+}
+
+.edit-produit-field {
+    flex: 1;
+}
+
+.edit-produit-field label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6c757d;
+}
+
+.edit-produit-field input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.edit-produit-field.serial input {
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* Bouton suppression produit */
+.btn-delete-produit {
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.btn-delete-produit:hover {
+    transform: scale(1.1) rotate(-5deg);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+}
+
+.edit-section h4 {
+    color: #667eea;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+/* ========================================
+   RESPONSIVE ÉDITION
+   ======================================== */
+@media (max-width: 768px) {
+    .section-edit-icon {
+        top: 10px;
+        right: 10px;
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+    
+    .edit-form {
+        padding: 15px;
+    }
+    
+    .edit-form-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .edit-actions {
+        flex-direction: column;
+    }
+    
+    .edit-btn {
+        width: 100%;
+    }
+    
+    .edit-produit-fields {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .detail-sections {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .detail-column-left,
+    .detail-column-right {
+        flex: auto;
+        width: 100%;
+    }
+}
+
+/* ========================================
+   RESPONSIVE COMMANDES MODALES
+   ======================================== */
+@media (max-width: 768px) {
+    #modalNouvelleCommande .modal-content,
+    #modalDetailCommande .modal-content,
+    #modalNouveauClient .modal-content {
+        width: 100%;
+        height: 100%;
+        max-height: 100%;
+        border-radius: 0;
+    }
+    
+    .stepper {
+        gap: 20px;
+        padding: 16px;
+    }
+    
+    .step-label {
+        display: none;
+    }
+    
+    .urgence-selector {
+        flex-direction: column;
+    }
+    
+    .detail-actions {
+        padding: 15px;
+    }
+    
+    .detail-actions .btn {
+        min-width: 100%;
+    }
+    
+    .info-row .detail-label {
+        min-width: 60px;
+        font-size: 13px;
+    }
+    
+    .produit-header {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .produit-nom {
+        font-size: 14px;
+    }
+    
+    .produit-serial {
+        flex-wrap: wrap;
+        font-size: 13px;
+    }
+}
