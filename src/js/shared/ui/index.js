@@ -180,11 +180,6 @@ export const UI = {
         return loadComponent('./data-entry/form-builder.component.js', 'FormBuilder', options);
     },
     
-    async FormField(type, options) {
-        const GlassFormFields = await loadComponent('./data-entry/glass-form-fields.js', 'GlassFormFields');
-        return GlassFormFields.create(type, options);
-    },
-    
     async Input(options) {
         return loadComponent('./data-entry/input-field.component.js', 'InputComponent', options);
     },
@@ -234,12 +229,12 @@ export const UI = {
     // ========================================
     
     async Icon(name, options) {
-        const FrostedIcons = await loadComponent('./elements/frosted-icons.component.js', 'FrostedIcons');
-        return FrostedIcons.create(name, options);
+        const Icons = await loadComponent('./elements/icons.component.js', 'Icons', options);
+        return Icons.create(name, options);
     },
     
     async Badge(type, text, options) {
-        const StatusBadge = await loadComponent('./elements/status-badge.component.js', 'StatusBadge');
+        const StatusBadge = await loadComponent('./elements/status-badge.component.js', 'StatusBadge', options);
         if (type === 'status') {
             return StatusBadge.createStatus(text, null, options);
         }
@@ -310,10 +305,6 @@ export const UI = {
         return loadComponent('./layout/divider.component.js', 'DividerComponent', options);
     },
     
-    async Drawer(options) {
-        return loadComponent('./layout/drawer.component.js', 'DrawerComponent', options);
-    },
-    
     // ========================================
     // NAVIGATION - Navigation
     // ========================================
@@ -376,83 +367,6 @@ export const UI = {
     
     async AdvancedFilter(options) {
         return loadComponent('./filters/advanced-filter.component.js', 'AdvancedFilterComponent', options);
-    },
-    
-    // ========================================
-    // MEDIA - Médias
-    // ========================================
-    
-    async ImageViewer(options) {
-        return loadComponent('./media/image-viewer.component.js', 'ImageViewerComponent', options);
-    },
-    
-    async Gallery(options) {
-        return loadComponent('./media/gallery.component.js', 'GalleryComponent', options);
-    },
-    
-    async Carousel(options) {
-        return loadComponent('./media/carousel.component.js', 'CarouselComponent', options);
-    },
-    
-    async VideoPlayer(options) {
-        return loadComponent('./media/video-player.component.js', 'VideoPlayerComponent', options);
-    },
-    
-    async AudioPlayer(options) {
-        return loadComponent('./media/audio-player.component.js', 'AudioPlayerComponent', options);
-    },
-    
-    async PDFViewer(options) {
-        return loadComponent('./media/pdf-viewer.component.js', 'PDFViewerComponent', options);
-    },
-    
-    // ========================================
-    // CHARTS - Graphiques
-    // ========================================
-    
-    async Chart(type, options) {
-        const ChartBuilder = await loadComponent('./charts/chart-builder.component.js', 'ChartBuilder');
-        return ChartBuilder.create(type, options);
-    },
-    
-    async LineChart(options) {
-        return loadComponent('./charts/line-chart.component.js', 'LineChartComponent', options);
-    },
-    
-    async BarChart(options) {
-        return loadComponent('./charts/bar-chart.component.js', 'BarChartComponent', options);
-    },
-    
-    async PieChart(options) {
-        return loadComponent('./charts/pie-chart.component.js', 'PieChartComponent', options);
-    },
-    
-    async GaugeChart(options) {
-        return loadComponent('./charts/gauge-chart.component.js', 'GaugeChartComponent', options);
-    },
-    
-    async Sparkline(options) {
-        return loadComponent('./charts/sparkline.component.js', 'SparklineComponent', options);
-    },
-    
-    // ========================================
-    // UTILITIES - Utilitaires
-    // ========================================
-    
-    async Clipboard(options) {
-        return loadComponent('./utilities/clipboard.component.js', 'ClipboardComponent', options);
-    },
-    
-    async Shortcuts(options) {
-        return loadComponent('./utilities/shortcuts.component.js', 'ShortcutsComponent', options);
-    },
-    
-    async ThemeSwitcher(options) {
-        return loadComponent('./utilities/theme-switcher.component.js', 'ThemeSwitcherComponent', options);
-    },
-    
-    async PullRefresh(options) {
-        return loadComponent('./utilities/pull-refresh.component.js', 'PullRefreshComponent', options);
     },
     
     // ========================================
@@ -522,17 +436,6 @@ export const UI = {
         );
     }
 };
-
-// ========================================
-// EXPORTS DIRECTS (pour imports nommés)
-// ========================================
-
-// Re-export des composants déjà créés pour compatibilité
-export { Modal } from './feedback/modal.component.js';
-export { Dialog } from './feedback/dialog.component.js';
-export { Timeline } from './data-display/timeline.component.js';
-export { FrostedIcons } from './elements/icons.component.js';
-export { StatusBadge } from './elements/status-badge.component.js';
 
 // Export par défaut
 export default UI;
