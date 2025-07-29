@@ -110,9 +110,11 @@ export async function initListeCommandes() {
         },
         
         export: {
-            filename: `commandes_${formatDateUtil(new Date(), 'YYYY-MM-DD')}`,
-            onBeforeExport: (data) => prepareExportData(data)
-        },
+    csv: true,              // AJOUTER
+    excel: true,            // AJOUTER
+    filename: `commandes_${formatDateUtil(new Date(), 'YYYY-MM-DD')}`,
+    onBeforeExport: (data) => prepareExportData(data)
+},
         
         messages: {
     noData: 'Aucune commande trouvée',
