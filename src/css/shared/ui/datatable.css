@@ -9,39 +9,30 @@
 /* Wrapper principal */
 .datatable-wrapper {
     position: relative;
+    background: white;  /* AJOUTER */
+    border-radius: 15px;  /* AJOUTER */
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);  /* AJOUTER */
+    overflow: hidden;  /* AJOUTER */
 }
 
 /* Boutons d'export */
 .datatable-export-buttons {
     display: flex;
     gap: 10px;
-    margin-bottom: 15px;
+    padding: 15px 20px;  /* AJOUTER padding */
+    margin-bottom: 0;  /* CHANGER 15px → 0 */
     justify-content: flex-end;
+    background: #f8f9fa;  /* AJOUTER fond gris clair */
+    border-bottom: 1px solid #e9ecef;  /* AJOUTER bordure */
 }
 
-.btn-export {
-    background: #667eea;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.3s ease;
-}
-
-.btn-export:hover {
-    background: #5a67d8;
-    transform: translateY(-1px);
-}
-
-/* Container (reprend les styles existants) */
+/* Container */
 .datatable-container {
-    background: white;
-    border-radius: 15px;
+    background: transparent;  /* CHANGER white → transparent */
+    border-radius: 0;  /* CHANGER 15px → 0 */
     padding: 0;
     overflow: hidden;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: none;  /* CHANGER → none */
 }
 
 /* Table */
