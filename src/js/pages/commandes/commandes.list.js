@@ -115,9 +115,13 @@ export async function initListeCommandes() {
         },
         
         messages: {
-            noData: 'Aucune commande trouvée',
-            loading: 'Chargement des commandes...'
-        },
+    noData: 'Aucune commande trouvée',
+    loading: 'Chargement des commandes...',
+    itemsPerPage: 'Éléments par page',
+    page: 'Page',
+    of: 'sur',
+    items: 'éléments'
+},
         
         onPageChange: (page) => {
             state.currentPage = page;
