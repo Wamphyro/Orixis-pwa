@@ -21,9 +21,7 @@ import {
     initListeCommandes, 
     chargerDonnees, 
     filtrerCommandes, 
-    resetFiltres,
-    pagePrecedente,
-    pageSuivante 
+    resetFiltres
 } from './commandes.list.js';
 import { 
     initCreationCommande,
@@ -211,8 +209,6 @@ window.modalManager = modalManager;
 window.ouvrirNouvelleCommande = ouvrirNouvelleCommande;
 window.filtrerCommandes = filtrerCommandes;
 window.resetFiltres = resetFiltres;
-window.pagePrecedente = pagePrecedente;
-window.pageSuivante = pageSuivante;
 window.selectionnerClient = selectionnerClient;
 window.changerClient = changerClient;
 window.ouvrirNouveauClient = ouvrirNouveauClient;
