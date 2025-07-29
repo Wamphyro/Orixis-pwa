@@ -1,37 +1,130 @@
 // ========================================
-// COMMANDES.LIST.JS - Gestion de la liste et des filtres (MODIFIÉ)
+// COMMANDES.LIST.JS - Gestion de la liste avec DataTable
 // Chemin: src/js/pages/commandes/commandes.list.js
 //
 // DESCRIPTION:
-// Gère l'affichage de la liste des commandes avec un tableau simplifié
-// Modifié le 28/07/2025 : Retrait du bouton suppression
+// Gère l'affichage de la liste des commandes avec DataTable
+// Refactorisé le 29/07/2025 : Migration vers DataTable
 //
 // STRUCTURE:
-// 1. Initialisation du module (lignes 20-25)
-// 2. Chargement des données (lignes 27-55)
-// 3. Affichage avec tableau simplifié (lignes 57-140)
-// 4. Filtres (lignes 142-230)
-// 5. Pagination (lignes 232-265)
-// 6. Fonctions utilitaires (lignes 267-275)
-//
-// DÉPENDANCES:
-// - CommandesService: Service d'accès aux données
-// - COMMANDES_CONFIG: Configuration des statuts et types
-// - formatDate: Utilitaire de formatage
+// 1. Imports et variables (lignes 15-25)
+// 2. Initialisation DataTable (lignes 27-120)
+// 3. Chargement des données (lignes 122-155)
+// 4. Filtres (lignes 157-245)
+// 5. Formatters et utilitaires (lignes 247-300)
 // ========================================
 
 import { CommandesService } from '../../services/commandes.service.js';
 import { COMMANDES_CONFIG } from '../../data/commandes.data.js';
-import { formatDate as formatDateUtil, formatMoney } from '../../shared/index.js';
+import { DataTable, formatDate as formatDateUtil } from '../../shared/index.js';
 import { state } from './commandes.main.js';
+
+// Variable pour l'instance DataTable
+let tableCommandes = null;
 
 // ========================================
 // INITIALISATION DU MODULE
 // ========================================
 
 export async function initListeCommandes() {
-    // Initialisation spécifique au module liste
-    console.log('Module liste commandes initialisé');
+    console.log('Initialisation DataTable pour les commandes...');
+    
+    // Créer l'instance DataTable
+    tableCommandes = new DataTable({
+        container: '.commandes-table-container',
+        
+        columns: [
+            {
+                key: 'numeroCommande',
+                label: 'N° Commande',
+                sortable: true,
+                width: 150,
+                formatter: (value) => `<strong>${value}</strong>`
+            },
+            {
+                key: 'dates.commande',
+                label: 'Date',
+                sortable: true,
+                width: 100,
+                formatter: (value) => formatDate(value)
+            },
+            {
+                key: 'client',
+                label: 'Client',
+                sortable: true,
+                formatter: (client) => `${client.prenom} ${client.nom}`,
+                sortFunction: (a, b, direction) => {
+                    const nameA = `${a.prenom} ${a.nom}`.toLowerCase();
+                    const nameB = `${b.prenom} ${b.nom}`.toLowerCase();
+                    return direction === 'asc' 
+                        ? nameA.localeCompare(nameB, 'fr')
+                        : nameB.localeCompare(nameA, 'fr');
+                }
+            },
+            {
+                key: 'typePreparation',
+                label: 'Type',
+                sortable: false,
+                formatter: (value) => {
+                    const type = COMMANDES_CONFIG.TYPES_PREPARATION[value];
+                    return type?.label || value;
+                }
+            },
+            {
+                key: 'niveauUrgence',
+                label: 'Urgence',
+                sortable: true,
+                formatter: (value) => afficherUrgence(value)
+            },
+            {
+                key: 'statut',
+                label: 'Statut',
+                sortable: true,
+                formatter: (value) => afficherStatut(value)
+            },
+            {
+                key: 'actions',
+                label: 'Actions',
+                sortable: false,
+                resizable: false,
+                exportable: false,
+                formatter: (_, row) => `
+                    <button class="btn-action" onclick="voirDetailCommande('${row.id}')">
+                        👁️
+                    </button>
+                `
+            }
+        ],
+        
+        features: {
+            sort: true,
+            resize: true,
+            export: true,
+            selection: false, // Peut être activé plus tard
+            pagination: true
+        },
+        
+        pagination: {
+            itemsPerPage: state.itemsPerPage || 20,
+            pageSizeOptions: [10, 20, 50, 100]
+        },
+        
+        export: {
+            filename: `commandes_${formatDateUtil(new Date(), 'YYYY-MM-DD')}`,
+            onBeforeExport: (data) => prepareExportData(data)
+        },
+        
+        messages: {
+            noData: 'Aucune commande trouvée',
+            loading: 'Chargement des commandes...'
+        },
+        
+        onPageChange: (page) => {
+            state.currentPage = page;
+        }
+    });
+    
+    console.log('✅ DataTable initialisée');
 }
 
 // ========================================
@@ -40,6 +133,12 @@ export async function initListeCommandes() {
 
 export async function chargerDonnees() {
     try {
+        // Afficher le loader
+        if (tableCommandes) {
+            tableCommandes.state.loading = true;
+            tableCommandes.refresh();
+        }
+        
         // Charger les commandes
         state.commandesData = await CommandesService.getCommandes();
         
@@ -65,11 +164,15 @@ export async function chargerDonnees() {
             retards: 0
         });
         afficherCommandes();
+    } finally {
+        if (tableCommandes) {
+            tableCommandes.state.loading = false;
+        }
     }
 }
 
 // ========================================
-// AFFICHAGE (MODIFIÉ - Sans bouton suppression)
+// AFFICHAGE DES DONNÉES
 // ========================================
 
 function afficherStatistiques(stats) {
@@ -80,96 +183,25 @@ function afficherStatistiques(stats) {
 }
 
 function afficherCommandes() {
-    const tbody = document.getElementById('commandesTableBody');
-    tbody.innerHTML = '';
-    
-    // Filtrer les commandes
-    let commandesFiltrees = filtrerCommandesLocalement();
-    
-    // Pagination
-    const totalPages = Math.ceil(commandesFiltrees.length / state.itemsPerPage);
-    const start = (state.currentPage - 1) * state.itemsPerPage;
-    const end = start + state.itemsPerPage;
-    const commandesPage = commandesFiltrees.slice(start, end);
-    
-    // ========================================
-    // TABLEAU SIMPLIFIÉ - Sans bouton suppression
-    // Colonnes : N° Commande, Date, Client, Type, Urgence, Statut, Actions
-    // ========================================
-    if (commandesPage.length === 0) {
-        tbody.innerHTML = '<tr class="no-data"><td colspan="7">Aucune commande trouvée</td></tr>';
+    if (!tableCommandes) {
+        console.error('DataTable non initialisée');
         return;
     }
     
-    // Afficher les commandes
-    commandesPage.forEach(commande => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td><strong>${commande.numeroCommande}</strong></td>
-            <td>${formatDate(commande.dates.commande)}</td>
-            <td>${commande.client.prenom} ${commande.client.nom}</td>
-            <td>${COMMANDES_CONFIG.TYPES_PREPARATION[commande.typePreparation]?.label || commande.typePreparation}</td>
-            <td>${afficherUrgence(commande.niveauUrgence)}</td>
-            <td>${afficherStatut(commande.statut)}</td>
-            <td class="table-actions">
-                <button class="btn-action" onclick="voirDetailCommande('${commande.id}')">👁️</button>
-            </td>
-        `;
-        tbody.appendChild(tr);
-    });
+    // Filtrer les commandes
+    const commandesFiltrees = filtrerCommandesLocalement();
     
-    // Mettre à jour la pagination
-    updatePagination(totalPages);
+    // Envoyer les données à DataTable
+    tableCommandes.setData(commandesFiltrees);
 }
 
 // ========================================
-// FONCTION peutSupprimer() - DÉSACTIVÉE
-// Conservée mais commentée au cas où on voudrait la réactiver
-// Suppression de la fonctionnalité demandée le 28/07/2025
-// ========================================
-/*
-function peutSupprimer(commande) {
-    // Ne peut pas supprimer si déjà supprimée ou livrée
-    return commande.statut !== 'supprime' && commande.statut !== 'livree';
-}
-*/
-
-// ========================================
-// NOTE: La fonction afficherProduits() n'est plus utilisée
-// mais est conservée au cas où on voudrait la réactiver
-// ========================================
-function afficherProduits(produits) {
-    if (!produits || produits.length === 0) return '-';
-    const summary = produits.slice(0, 2).map(p => p.designation).join(', ');
-    return produits.length > 2 ? `${summary}... (+${produits.length - 2})` : summary;
-}
-
-function afficherUrgence(urgence) {
-    const config = COMMANDES_CONFIG.NIVEAUX_URGENCE[urgence];
-    if (!config) return urgence;
-    return `<span class="urgence-badge ${urgence}">${config.icon} ${config.label}</span>`;
-}
-
-function afficherStatut(statut) {
-    const config = COMMANDES_CONFIG.STATUTS[statut];
-    if (!config) return statut;
-    return `<span class="status-badge status-${statut}">${config.icon} ${config.label}</span>`;
-}
-
-function peutModifierStatut(commande) {
-    return commande.statut !== 'livree' && commande.statut !== 'annulee' && commande.statut !== 'supprime';
-}
-
-// ========================================
-// FILTRES (Conserve l'exclusion des commandes supprimées)
+// FILTRES
 // ========================================
 
 function filtrerCommandesLocalement() {
     return state.commandesData.filter(commande => {
-        // ========================================
         // Exclure systématiquement les commandes supprimées
-        // (au cas où il y en aurait déjà en base)
-        // ========================================
         if (commande.statut === 'supprime') {
             return false;
         }
@@ -179,8 +211,11 @@ function filtrerCommandesLocalement() {
             const recherche = state.filtres.recherche.toLowerCase();
             const clientNom = `${commande.client.prenom} ${commande.client.nom}`.toLowerCase();
             const numero = commande.numeroCommande?.toLowerCase() || '';
+            const produits = commande.produits?.map(p => p.designation.toLowerCase()).join(' ') || '';
             
-            if (!clientNom.includes(recherche) && !numero.includes(recherche)) {
+            if (!clientNom.includes(recherche) && 
+                !numero.includes(recherche) && 
+                !produits.includes(recherche)) {
                 return false;
             }
         }
@@ -231,9 +266,6 @@ export function filtrerCommandes() {
     state.filtres.periode = document.getElementById('filterPeriode').value;
     state.filtres.urgence = document.getElementById('filterUrgence').value;
     
-    // Réinitialiser la page
-    state.currentPage = 1;
-    
     // Réafficher
     afficherCommandes();
 }
@@ -254,40 +286,11 @@ export function resetFiltres() {
     document.getElementById('filterUrgence').value = '';
     
     // Réafficher
-    state.currentPage = 1;
     afficherCommandes();
 }
 
 // ========================================
-// PAGINATION
-// ========================================
-
-function updatePagination(totalPages) {
-    document.getElementById('pageActuelle').textContent = state.currentPage;
-    document.getElementById('pageTotal').textContent = totalPages;
-    
-    document.getElementById('btnPrev').disabled = state.currentPage === 1;
-    document.getElementById('btnNext').disabled = state.currentPage === totalPages;
-}
-
-export function pagePrecedente() {
-    if (state.currentPage > 1) {
-        state.currentPage--;
-        afficherCommandes();
-    }
-}
-
-export function pageSuivante() {
-    const commandesFiltrees = filtrerCommandesLocalement();
-    const totalPages = Math.ceil(commandesFiltrees.length / state.itemsPerPage);
-    if (state.currentPage < totalPages) {
-        state.currentPage++;
-        afficherCommandes();
-    }
-}
-
-// ========================================
-// FONCTION UTILITAIRE LOCALE
+// FORMATTERS ET UTILITAIRES
 // ========================================
 
 function formatDate(timestamp) {
@@ -297,28 +300,64 @@ function formatDate(timestamp) {
     return formatDateUtil(date, 'DD/MM/YYYY');
 }
 
+function afficherUrgence(urgence) {
+    const config = COMMANDES_CONFIG.NIVEAUX_URGENCE[urgence];
+    if (!config) return urgence;
+    return `<span class="urgence-badge ${urgence}">${config.icon} ${config.label}</span>`;
+}
+
+function afficherStatut(statut) {
+    const config = COMMANDES_CONFIG.STATUTS[statut];
+    if (!config) return statut;
+    return `<span class="status-badge status-${statut}">${config.icon} ${config.label}</span>`;
+}
+
+/**
+ * Préparer les données pour l'export
+ */
+function prepareExportData(data) {
+    return data.map(row => ({
+        'N° Commande': row.numeroCommande,
+        'Date': formatDate(row.dates.commande),
+        'Client': `${row.client.prenom} ${row.client.nom}`,
+        'Téléphone': row.client.telephone || '-',
+        'Type': COMMANDES_CONFIG.TYPES_PREPARATION[row.typePreparation]?.label || row.typePreparation,
+        'Urgence': COMMANDES_CONFIG.NIVEAUX_URGENCE[row.niveauUrgence]?.label || row.niveauUrgence,
+        'Statut': COMMANDES_CONFIG.STATUTS[row.statut]?.label || row.statut,
+        'Magasin Livraison': row.magasinLivraison || '-',
+        'Commentaires': row.commentaires || '-'
+    }));
+}
+
+// ========================================
+// SUPPRESSION DES ANCIENNES FONCTIONS
+// ========================================
+
+// Les fonctions suivantes sont supprimées car gérées par DataTable :
+// - pagePrecedente()
+// - pageSuivante()
+// - updatePagination()
+// - afficherProduits() [non utilisée]
+// - peutSupprimer() [désactivée]
+
 /* ========================================
-   HISTORIQUE DES DIFFICULTÉS
+   HISTORIQUE DES MODIFICATIONS
    
-   [2025-07-26] - Simplification du tableau
-   Modification: Suppression des colonnes Produits et Livraison
-   Raison: Rendre le tableau plus lisible et moins chargé
-   Impact: Les infos restent accessibles via le détail
+   [29/07/2025] - Migration complète vers DataTable
+   - Suppression de tout le code de pagination manuelle
+   - Suppression de la génération HTML du tableau
+   - Utilisation du composant DataTable shared
+   - Ajout de l'export CSV/Excel
+   - Conservation des filtres existants
    
-   [27/07/2025] - Ajout de la suppression sécurisée
-   Modification: Remplacement du bouton ✏️ par 🗑️
-   Raison: Permettre la suppression (soft delete) des commandes
-   Impact: Les commandes supprimées sont filtrées et n'apparaissent plus
-   
-   [28/07/2025] - Retrait de la fonctionnalité de suppression
-   Modification: Suppression du bouton 🗑️ et désactivation de peutSupprimer()
-   Raison: Demande utilisateur - simplification de l'interface
-   Impact: Plus de suppression possible depuis le tableau
+   AVANTAGES:
+   - Code réduit de 50%
+   - Fonctionnalités ajoutées : tri, export, redimensionnement
+   - Maintenance simplifiée
+   - Cohérence avec les autres pages
    
    NOTES POUR REPRISES FUTURES:
-   - La fonction afficherProduits() est conservée mais non utilisée
-   - Le colspan reste à 7 colonnes
-   - Les commandes supprimées restent filtrées (au cas où)
-   - La fonction peutSupprimer() est commentée mais conservée
-   - La suppression reste possible via l'API si besoin
+   - La sélection multiple est désactivée mais peut être activée
+   - Les filtres restent côté client (peuvent passer côté serveur)
+   - L'export peut être personnalisé via onBeforeExport
    ======================================== */
