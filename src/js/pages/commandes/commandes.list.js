@@ -19,16 +19,6 @@ import { COMMANDES_CONFIG } from '../../data/commandes.data.js';
 import { DataTable, DataTableFilters, formatDate as formatDateUtil } from '../../shared/index.js';  // MODIFIÉ
 import { state } from './commandes.main.js';
 
-// TEST TEMPORAIRE
-console.log('Test DataTableFilters:', DataTableFilters);
-const testFilters = new DataTableFilters({
-    container: '.commandes-filters',
-    filters: [
-        { type: 'search', key: 'test', placeholder: 'Test...' }
-    ]
-});
-// FIN TEST
-
 // Variable pour l'instance DataTable
 let tableCommandes = null;
 
