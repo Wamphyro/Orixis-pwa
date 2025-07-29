@@ -19,6 +19,11 @@ export const Dialog = DialogComponent;
 import { notify } from './ui/notification.component.js';
 export { notify };
 
+// Table
+
+import { DataTable } from './ui/datatable/datatable.component.js';
+export { DataTable };
+
 // Modal (déjà existant - à déplacer dans ui/)
 import { 
     Modal, 
@@ -255,6 +260,7 @@ export default {
     createTimeline: createTimeline,
     createOrderTimeline: createOrderTimeline,
     SearchDropdown: SearchDropdown,
+    DataTable,
     
     // Utils
     formatDate,
