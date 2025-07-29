@@ -110,46 +110,46 @@ export class DataTable {
     }
     
     /**
-     * Initialisation du composant
-     */
-    init() {
-        // Vérifier le container
-        if (typeof this.config.container === 'string') {
-            this.elements.container = document.querySelector(this.config.container);
-        } else {
-            this.elements.container = this.config.container;
-        }
-        
-        if (!this.elements.container) {
-            console.error('DataTable: Container non trouvé');
-            return;
-        }
-        
-        // Initialiser les modules
-        if (this.config.features.sort) {
-            this.modules.sort = new DataTableSort(this);
-        }
-        
-        if (this.config.features.export) {
-            this.modules.export = new DataTableExport(this);
-        }
-        
-        if (this.config.features.pagination) {
-            this.modules.pagination = new DataTablePagination(this);
-        }
-        
-        if (this.config.features.resize) {
-            this.modules.resize = new DataTableResize(this);
-        }
-        
-        // Créer la structure
-        this.render();
-        
-        // Charger les données si fournies
-        if (this.config.data && this.config.data.length > 0) {
-            this.setData(this.config.data);
-        }
+ * Initialisation du composant
+ */
+init() {
+    // Vérifier le container
+    if (typeof this.config.container === 'string') {
+        this.elements.container = document.querySelector(this.config.container);
+    } else {
+        this.elements.container = this.config.container;
     }
+    
+    if (!this.elements.container) {
+        console.error('DataTable: Container non trouvé');
+        return;
+    }
+    
+    // Créer la structure AVANT d'initialiser les modules
+    this.render();
+    
+    // Initialiser les modules APRÈS la création du DOM
+    if (this.config.features.sort) {
+        this.modules.sort = new DataTableSort(this);
+    }
+    
+    if (this.config.features.export) {
+        this.modules.export = new DataTableExport(this);
+    }
+    
+    if (this.config.features.pagination) {
+        this.modules.pagination = new DataTablePagination(this);
+    }
+    
+    if (this.config.features.resize) {
+        this.modules.resize = new DataTableResize(this);
+    }
+    
+    // Charger les données si fournies
+    if (this.config.data && this.config.data.length > 0) {
+        this.setData(this.config.data);
+    }
+}
     
     /**
      * Créer la structure HTML
