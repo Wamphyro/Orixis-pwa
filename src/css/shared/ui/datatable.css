@@ -173,9 +173,12 @@ body.datatable-resizing {
     padding: 40px;
 }
 
-/* Pagination */
+/* Pagination - NOUVEAU STYLE */
 .datatable-pagination {
-    margin-top: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    margin-top: 0;
 }
 
 .pagination-wrapper {
@@ -183,75 +186,128 @@ body.datatable-resizing {
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 15px;
 }
 
-/* Sélecteur de taille */
+/* Améliorer le sélecteur */
 .pagination-size {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    background: white;
+    padding: 8px 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.pagination-size label {
+    margin: 0;
+    font-weight: 500;
+    color: #495057;
+    font-size: 14px;
 }
 
 .page-size-select {
     padding: 6px 12px;
-    border: 2px solid #e0e0e0;
+    border: 2px solid #e9ecef;
     border-radius: 6px;
     font-size: 14px;
     cursor: pointer;
+    background: white;
+    transition: all 0.2s;
 }
 
-/* Info pagination */
+.page-size-select:hover {
+    border-color: #667eea;
+}
+
+.page-size-select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Info pagination - centré */
 .pagination-info {
     font-size: 14px;
     color: #6c757d;
+    font-weight: 500;
 }
 
-/* Contrôles pagination */
+/* Améliorer les contrôles */
 .pagination-controls {
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-.pagination-numbers {
-    display: flex;
-    gap: 4px;
-}
-
-/* Boutons pagination */
+/* Style moderne pour les boutons */
 .pagination-btn {
     background: white;
     border: 2px solid #e9ecef;
     border-radius: 8px;
-    padding: 8px 12px;
+    padding: 8px 16px;
     cursor: pointer;
     font-size: 14px;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     color: #495057;
-    min-width: 40px;
+    min-width: auto;
+    font-weight: 500;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .pagination-btn:hover:not(:disabled) {
-    background: #f8f9fa;
+    background: #667eea;
     border-color: #667eea;
-    color: #667eea;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.pagination-btn:active:not(:disabled) {
+    transform: translateY(0);
 }
 
 .pagination-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    background: #f8f9fa;
 }
 
 .pagination-btn.active {
     background: #667eea;
     color: white;
     border-color: #667eea;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
-.pagination-ellipsis {
-    padding: 0 8px;
-    color: #6c757d;
+/* Numéros de page */
+.pagination-numbers {
+    display: flex;
+    gap: 4px;
+}
+
+.pagination-numbers .pagination-btn {
+    min-width: 40px;
+    padding: 8px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .pagination-wrapper {
+        justify-content: center;
+        text-align: center;
+    }
+    
+    .pagination-size {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .pagination-info {
+        width: 100%;
+        text-align: center;
+    }
 }
 
 /* Responsive */
