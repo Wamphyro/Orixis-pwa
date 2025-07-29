@@ -583,9 +583,3 @@ export class DataTable {
         };
     }
 }
-
-// Exporter également les styles à charger
-DataTable.loadStyles = function() {
-    // Déjà inclus dans commandes-modal.css
-    // Ou créer un fichier CSS séparé si nécessaire
-};
