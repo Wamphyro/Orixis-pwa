@@ -251,13 +251,6 @@ export const retry = async (fn, retries = 3, delay = 1000) => {
 };
 
 // ========================================
-// EXPORTS SUPPLÉMENTAIRES
-// ========================================
-
-// Export des utilitaires qui sont aussi utilisés en import nommé
-export { generateId };
-
-// ========================================
 // EXPORT PAR DÉFAUT
 // ========================================
 
