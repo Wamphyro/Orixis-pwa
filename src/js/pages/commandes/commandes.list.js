@@ -83,10 +83,19 @@ export async function initListeCommandes() {
             {
                 key: 'typePreparation',
                 label: 'Type',
-                sortable: false,
+                sortable: true,
                 formatter: (value) => {
-                    const type = COMMANDES_CONFIG.TYPES_PREPARATION[value];
-                    return type?.label || value;
+                    const config = COMMANDES_CONFIG.TYPES_PREPARATION[value];
+                    if (!config) return value || '-';
+                    return `<span class="badge badge-${value.replace(/_/g, '-')}">${config.icon} ${config.label}</span>`;
+                },
+                // 🆕 AJOUTER CETTE FONCTION DE TRI
+                sortFunction: (a, b, direction) => {
+                    const valueA = a.typePreparation || '';
+                    const valueB = b.typePreparation || '';
+                    return direction === 'asc' 
+                        ? valueA.localeCompare(valueB)
+                        : valueB.localeCompare(valueA);
                 }
             },
             {
