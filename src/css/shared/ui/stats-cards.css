@@ -3,6 +3,7 @@
    Chemin: src/css/shared/ui/stats-cards.css
    
    STRUCTURE:
+   - Anti-FOUC et chargement
    - Container et layout
    - Carte de base
    - Éléments internes (nombre, label, icône)
@@ -14,13 +15,41 @@
    ======================================== */
 
 /* ========================================
-   CONTAINER ET LAYOUT
+   ANTI-FOUC ET CHARGEMENT
    ======================================== */
 
 .stats-cards-wrapper {
     display: flex;
     gap: 20px;
     flex-wrap: wrap;
+    /* 🆕 Anti-FOUC : Masquer initialement */
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* 🆕 Afficher une fois chargé */
+.stats-cards-wrapper.loaded {
+    opacity: 1;
+}
+
+/* 🆕 État de chargement optionnel (skeleton) */
+.stats-cards-wrapper.loading .stat-card {
+    background: linear-gradient(90deg, #f9fafb 25%, #f3f4f6 50%, #f9fafb 75%);
+    background-size: 200% 100%;
+    animation: loading-shimmer 1.5s infinite;
+}
+
+.stats-cards-wrapper.loading .stat-number,
+.stats-cards-wrapper.loading .stat-label,
+.stats-cards-wrapper.loading .stat-icon {
+    background: #e5e7eb;
+    color: transparent;
+    border-radius: 4px;
+}
+
+@keyframes loading-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
 }
 
 /* ========================================
@@ -109,6 +138,7 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
     line-height: 1.2;
+    transition: all 0.3s ease; /* 🆕 Pour les animations de nombres */
 }
 
 /* Label principal */
@@ -229,18 +259,18 @@
     100% { transform: scale(1); }
 }
 
-/* Animation d'apparition */
-.stats-cards-wrapper .stat-card {
+/* 🆕 Animation d'apparition - SEULEMENT quand .loaded */
+.stats-cards-wrapper.loaded .stat-card {
     animation: fadeInUp 0.5s ease forwards;
     opacity: 0;
 }
 
-.stats-cards-wrapper .stat-card:nth-child(1) { animation-delay: 0.1s; }
-.stats-cards-wrapper .stat-card:nth-child(2) { animation-delay: 0.2s; }
-.stats-cards-wrapper .stat-card:nth-child(3) { animation-delay: 0.3s; }
-.stats-cards-wrapper .stat-card:nth-child(4) { animation-delay: 0.4s; }
-.stats-cards-wrapper .stat-card:nth-child(5) { animation-delay: 0.5s; }
-.stats-cards-wrapper .stat-card:nth-child(6) { animation-delay: 0.6s; }
+.stats-cards-wrapper.loaded .stat-card:nth-child(1) { animation-delay: 0.1s; }
+.stats-cards-wrapper.loaded .stat-card:nth-child(2) { animation-delay: 0.2s; }
+.stats-cards-wrapper.loaded .stat-card:nth-child(3) { animation-delay: 0.3s; }
+.stats-cards-wrapper.loaded .stat-card:nth-child(4) { animation-delay: 0.4s; }
+.stats-cards-wrapper.loaded .stat-card:nth-child(5) { animation-delay: 0.5s; }
+.stats-cards-wrapper.loaded .stat-card:nth-child(6) { animation-delay: 0.6s; }
 
 @keyframes fadeInUp {
     from {
@@ -379,6 +409,12 @@
     }
 }
 
+/* 🆕 Désactiver les animations si souhaité */
+.stats-cards-wrapper.no-animation .stat-card {
+    animation: none !important;
+    opacity: 1 !important;
+}
+
 /* Impression */
 @media print {
     .stat-card {
@@ -389,6 +425,15 @@
     
     .stat-card::before {
         display: none;
+    }
+    
+    .stats-cards-wrapper {
+        opacity: 1 !important;
+    }
+    
+    .stats-cards-wrapper .stat-card {
+        opacity: 1 !important;
+        animation: none !important;
     }
 }
 
@@ -401,8 +446,18 @@
    - Support des thèmes
    - Animations optionnelles
    
+   [30/01/2025] - Correction FOUC
+   - Ajout anti-FOUC avec opacity: 0 initial
+   - Classe .loaded pour déclencher l'affichage
+   - Animations ne se déclenchent qu'avec .loaded
+   - État de chargement skeleton optionnel
+   - Utilitaire .no-animation pour désactiver
+   - Gestion de l'impression améliorée
+   
    NOTES POUR REPRISES FUTURES:
    - Les animations peuvent être désactivées avec .no-animation
    - Les couleurs suivent les variables CSS globales
    - Le gradient sur le texte nécessite -webkit-background-clip
+   - L'anti-FOUC nécessite la classe .loaded du JS
+   - Le skeleton loading est optionnel (.loading)
    ======================================== */

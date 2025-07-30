@@ -94,6 +94,14 @@ export class StatsCards {
         // Attacher les événements
         this.attachEvents();
         
+        // 🆕 ANTI-FOUC : Marquer comme chargé après un court délai
+        setTimeout(() => {
+            const wrapper = this.elements.container.querySelector('.stats-cards-wrapper');
+            if (wrapper) {
+                wrapper.classList.add('loaded');
+            }
+        }, 150); // Délai pour s'assurer que le CSS est chargé
+        
         console.log('✅ StatsCards initialisé');
     }
     
@@ -106,6 +114,11 @@ export class StatsCards {
             link.rel = 'stylesheet';
             link.href = '../src/css/shared/ui/stats-cards.css';
             document.head.appendChild(link);
+            
+            // 🆕 ANTI-FOUC : Attendre que le CSS soit chargé
+            link.onload = () => {
+                console.log('📦 CSS StatsCards chargé');
+            };
         }
     }
     
@@ -126,6 +139,10 @@ export class StatsCards {
         const wrapper = document.createElement('div');
         wrapper.className = `stats-cards-wrapper theme-${this.config.theme}`;
         wrapper.id = this.id;
+        
+        // 🆕 ANTI-FOUC : Ajouter les styles inline initiaux
+        wrapper.style.opacity = '0';
+        wrapper.style.transition = 'opacity 0.3s ease';
         
         // Créer chaque carte
         this.config.cards.forEach(cardConfig => {
@@ -163,6 +180,9 @@ export class StatsCards {
             card.classList.add('disabled');
         }
         
+        // 🆕 AMÉLIORATION : Valeur d'affichage par défaut
+        const displayValue = config.value !== undefined ? config.value : '-';
+        
         // Icône optionnelle
         const iconHtml = config.icon ? `<div class="stat-icon">${config.icon}</div>` : '';
         
@@ -171,7 +191,7 @@ export class StatsCards {
             ${iconHtml}
             <div class="stat-content">
                 <div class="stat-number" data-value="${config.value || 0}">
-                    ${this.formatNumber(config.value || 0)}
+                    ${this.formatNumber(displayValue)}
                 </div>
                 <div class="stat-label">${config.label}</div>
                 ${config.sublabel ? `<div class="stat-sublabel">${config.sublabel}</div>` : ''}
@@ -197,6 +217,11 @@ export class StatsCards {
     }
     
     formatNumber(value) {
+        // 🆕 AMÉLIORATION : Gérer les valeurs non numériques
+        if (value === '-' || value === null || value === undefined) {
+            return '-';
+        }
+        
         // Formatage selon le type
         switch (this.config.numberFormat) {
             case 'currency':
@@ -334,6 +359,28 @@ export class StatsCards {
     }
     
     /**
+     * 🆕 NOUVELLE MÉTHODE : Afficher le composant une fois chargé
+     */
+    show() {
+        const wrapper = this.elements.container.querySelector('.stats-cards-wrapper');
+        if (wrapper) {
+            wrapper.style.opacity = '1';
+            wrapper.classList.add('loaded');
+        }
+    }
+    
+    /**
+     * 🆕 NOUVELLE MÉTHODE : Masquer le composant
+     */
+    hide() {
+        const wrapper = this.elements.container.querySelector('.stats-cards-wrapper');
+        if (wrapper) {
+            wrapper.style.opacity = '0';
+            wrapper.classList.remove('loaded');
+        }
+    }
+    
+    /**
      * Récupère les données d'une carte
      * @param {string} cardId - ID de la carte
      * @returns {Object} Données de la carte
@@ -397,8 +444,15 @@ export class StatsCards {
    - Animation des nombres optionnelle
    - Support de différents formats de nombres
    
+   [30/01/2025] - Correction FOUC
+   - Ajout de l'opacité initiale à 0
+   - Délai avant affichage (150ms)
+   - Méthodes show()/hide() ajoutées
+   - Gestion des valeurs '-' par défaut
+   
    NOTES POUR REPRISES FUTURES:
    - Le composant charge automatiquement son CSS
    - Les callbacks sont optionnels
    - L'animation peut être désactivée globalement ou par mise à jour
+   - Anti-FOUC intégré avec transition d'opacité
    ======================================== */
