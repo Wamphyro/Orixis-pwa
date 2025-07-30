@@ -248,23 +248,38 @@ async function initFiltres() {  // ← AJOUTER async
     });
     
     filtresCommandes = new DataTableFilters({
-        container: '.commandes-filters',
-        filters: filtresConfigAjustes,
-            onFilter: (filters) => {
-                // Conserver statuts lors de la mise à jour des filtres
-                state.filtres = {
-                    recherche: filters.recherche || '',
-                    magasin: filters.magasin || '',  
-                    periode: filters.periode || 'all',
-                    urgence: filters.urgence || '',
-                    statuts: state.filtres.statuts || []  // 🆕 GARDER statuts
-                };
-                
-                if (tableCommandes) {
-                    afficherCommandes();
-                }
-            }
-    });
+    container: '.commandes-filters',
+    filters: filtresConfigAjustes,
+    onFilter: (filters) => {
+        // Conserver statuts lors de la mise à jour des filtres
+        state.filtres = {
+            recherche: filters.recherche || '',
+            magasin: filters.magasin || '',  
+            periode: filters.periode || 'all',
+            urgence: filters.urgence || '',
+            statuts: state.filtres.statuts || []
+        };
+        
+        if (tableCommandes) {
+            afficherCommandes();
+        }
+    },
+    // 🆕 AJOUTER le callback onReset
+    onReset: () => {
+        // Réinitialiser les statuts
+        state.filtres.statuts = [];
+        
+        // Retirer la classe active de toutes les cartes
+        if (statsCards && statsCards.elements.cards) {
+            Object.values(statsCards.elements.cards).forEach(card => {
+                card.classList.remove('active');
+            });
+        }
+        
+        // Réafficher les commandes
+        afficherCommandes();
+    }
+});
 }
 
 // ========================================
