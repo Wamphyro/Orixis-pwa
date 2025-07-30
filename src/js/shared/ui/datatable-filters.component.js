@@ -18,66 +18,67 @@ import { generateId } from '../index.js';
 
 export class DataTableFilters {
     constructor(config) {
-        this.id = generateId('filters');
-        
-        // Configuration par défaut
-        this.config = {
-            container: null,
-            filters: [],
-            autoSubmit: true,  // Filtrer automatiquement au changement
-            debounceDelay: 300, // Délai pour la recherche (ms)
-            onFilter: null,     // Callback quand les filtres changent
-            resetButton: true,  // Afficher le bouton reset
-            ...config
-        };
-        
-        // État des filtres
-        this.values = {};
-        
-        // Éléments DOM
-        this.elements = {
-            container: null,
-            form: null,
-            resetButton: null,
-            filters: {} // Stockage des éléments de chaque filtre
-        };
-        
-        // Timer pour le debounce
-        this.debounceTimer = null;
-        
-        // Définir les types de filtres disponibles
-        this.filterTypes = {
-            'search': this.renderSearch.bind(this),
-            'select': this.renderSelect.bind(this),
-            'date': this.renderDate.bind(this),
-            'daterange': this.renderDateRange.bind(this),
-            'checkbox': this.renderCheckbox.bind(this),
-            'radio': this.renderRadio.bind(this),
-            'range': this.renderRange.bind(this),
-            'tags': this.renderTags.bind(this),
-            'buttongroup': this.renderButtonGroup.bind(this),
-            'custom': this.renderCustom.bind(this)
-        };
-        
-        // Initialiser
-        this.init();
+    this.id = generateId('filters');
+    
+    // Configuration par défaut
+    this.config = {
+        container: null,
+        filters: [],
+        autoSubmit: true,
+        debounceDelay: 300,
+        onFilter: null,
+        resetButton: true,
+        ...config
+    };
+    
+    // État des filtres
+    this.values = {};
+    
+    // Éléments DOM
+    this.elements = {
+        container: null,
+        form: null,
+        resetButton: null,
+        filters: {}
+    };
+    
+    // Timer pour le debounce
+    this.debounceTimer = null;
+    
+    // SUPPRIMER CE BLOC ICI
+    // this.filterTypes = { ... }
+    
+    // Initialiser
+    this.init();
+}
+
+/**
+ * Initialisation
+ */
+init() {
+    // AJOUTER ICI - Définir les types de filtres disponibles
+    this.filterTypes = {
+        'search': this.renderSearch.bind(this),
+        'select': this.renderSelect.bind(this),
+        'date': this.renderDate.bind(this),
+        'daterange': this.renderDateRange.bind(this),
+        'checkbox': this.renderCheckbox.bind(this),
+        'radio': this.renderRadio.bind(this),
+        'range': this.renderRange.bind(this),
+        'tags': this.renderTags.bind(this),
+        'buttongroup': this.renderButtonGroup.bind(this),
+        'custom': this.renderCustom.bind(this)
+    };
+    
+    // Vérifier le container
+    if (typeof this.config.container === 'string') {
+        this.elements.container = document.querySelector(this.config.container);
+    } else {
+        this.elements.container = this.config.container;
     }
     
-    /**
-     * Initialisation
-     */
-    init() {
-        // Vérifier le container
-        if (typeof this.config.container === 'string') {
-            this.elements.container = document.querySelector(this.config.container);
-        } else {
-            this.elements.container = this.config.container;
-        }
-        
-        if (!this.elements.container) {
-            console.error('DataTableFilters: Container non trouvé');
-            return;
-        }
+    // ... reste du code init()
+}
         
         // Créer la structure
         this.render();
