@@ -542,6 +542,7 @@ export async function appliquerPack() {
         if (!packDoc.exists()) return;
         
         const pack = packDoc.data();
+        console.log('📦 Données du pack:', pack);
         
         // Vérifier que le pack a bien des produits
         if (!pack.produits || !Array.isArray(pack.produits) || pack.produits.length === 0) {
@@ -554,29 +555,54 @@ export async function appliquerPack() {
         
         // Traiter chaque produit du pack
         for (const produitPack of pack.produits) {
+            console.log('🔍 Traitement produit du pack:', produitPack);
+            
+            let produitsFound = [];
+            
+            // Si on a une référence, rechercher par référence
             if (produitPack.reference) {
-                const produits = await ProduitsService.rechercherProduits(produitPack.reference);
-                if (produits.length > 0) {
-                    const produit = produits[0];
-                    
-                    if (produit.necessiteCote && produitPack.cote === 'both') {
-                        nouvelleCommande.produits.push({
-                            ...produit,
-                            cote: 'droit',
-                            quantite: produitPack.quantite || 1
-                        });
-                        nouvelleCommande.produits.push({
-                            ...produit,
-                            cote: 'gauche',
-                            quantite: produitPack.quantite || 1
-                        });
-                    } else {
-                        nouvelleCommande.produits.push({
-                            ...produit,
-                            quantite: produitPack.quantite || 1
-                        });
-                    }
+                produitsFound = await ProduitsService.rechercherProduits(produitPack.reference);
+            } 
+            // Sinon, rechercher par catégorie et type
+            else if (produitPack.categorie || produitPack.type) {
+                // Rechercher tous les produits qui correspondent
+                produitsFound = await ProduitsService.rechercherProduits('', {
+                    categorie: produitPack.categorie,
+                    type: produitPack.type
+                });
+                
+                // Si on n'a pas trouvé de produits, essayer avec seulement la catégorie
+                if (produitsFound.length === 0 && produitPack.categorie) {
+                    produitsFound = await ProduitsService.rechercherProduits(produitPack.categorie);
                 }
+            }
+            
+            console.log('✅ Produits trouvés:', produitsFound);
+            
+            if (produitsFound.length > 0) {
+                const produit = produitsFound[0]; // Prendre le premier produit trouvé
+                
+                // Si le produit nécessite un côté et que le pack indique "both"
+                if ((produit.necessiteCote || produitPack.type === 'appareil_auditif') && produitPack.cote === 'both') {
+                    nouvelleCommande.produits.push({
+                        ...produit,
+                        cote: 'droit',
+                        quantite: produitPack.quantite || 1
+                    });
+                    nouvelleCommande.produits.push({
+                        ...produit,
+                        cote: 'gauche',
+                        quantite: produitPack.quantite || 1
+                    });
+                } else {
+                    nouvelleCommande.produits.push({
+                        ...produit,
+                        quantite: produitPack.quantite || 1
+                    });
+                }
+            } else {
+                console.warn(`⚠️ Aucun produit trouvé pour:`, produitPack);
+                notify.warning(`Produit non trouvé: ${produitPack.reference || produitPack.categorie || 'Inconnu'}`);
             }
         }
         
