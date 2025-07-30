@@ -288,7 +288,7 @@ export class DropdownList {
     
     attachEvents() {
         // Trigger
-        this.trigger.addEventListener('click', () => this.toggle());
+        this.trigger.addEventListener('click', this.toggle.bind(this));
         
         // Options (délégation d'événements)
         this.panel.addEventListener('click', (e) => {
