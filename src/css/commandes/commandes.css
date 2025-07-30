@@ -36,36 +36,11 @@
     flex-wrap: wrap;
 }
 
-.stat-card {
-    background: white;
-    border-radius: 15px;
-    padding: 20px 30px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-    text-align: center;
-    min-width: 140px;
-    transition: all 0.3s ease;
-}
-
-.stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
-}
-
-.stat-number {
-    font-size: 32px;
-    font-weight: 700;
-    color: #2c3e50;
-    margin-bottom: 5px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.stat-label {
-    font-size: 14px;
-    color: #6c757d;
-    font-weight: 500;
-}
+/* ========================================
+   STYLES STATS DÉPLACÉS
+   [29/01/2025] - Styles déplacés vers stats-cards.css
+   Le composant StatsCards charge son propre CSS
+   ======================================== */
 
 .commandes-actions {
     display: flex;
@@ -132,18 +107,6 @@
     gap: 8px;
 }
 
-/* ========================================
-   ANIMATIONS SPÉCIFIQUES PAGE
-   ======================================== */
-.page-loaded .stat-card {
-    animation: fadeInUp 0.5s ease forwards;
-    opacity: 0;
-}
-
-.page-loaded .stat-card:nth-child(1) { animation-delay: 0.1s; }
-.page-loaded .stat-card:nth-child(2) { animation-delay: 0.2s; }
-.page-loaded .stat-card:nth-child(3) { animation-delay: 0.3s; }
-.page-loaded .stat-card:nth-child(4) { animation-delay: 0.4s; }
 
 /* ========================================
    RESPONSIVE
