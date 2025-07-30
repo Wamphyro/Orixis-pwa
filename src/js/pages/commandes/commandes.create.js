@@ -1080,7 +1080,7 @@ export {
     ouvrirNouveauClient,
     creerNouveauClient,
     appliquerPack,
-    ajouterProduit,        // ← CETTE LIGNE CORRIGE L'ERREUR
+    ajouterProduit,
     retirerProduit,
     etapePrecedente,
     etapeSuivante,
