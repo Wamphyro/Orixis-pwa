@@ -8,6 +8,7 @@
 // [29/01/2025] - Ajout de l'export DataTableFilters
 // [29/01/2025] - Correction export generateId
 // [30/01/2025] - Ajout de l'export AppHeader
+// [31/01/2025] - Ajout de l'export Stepper
 // ========================================
 
 // ========================================
@@ -60,6 +61,10 @@ export { Timeline, createTimeline, createOrderTimeline };
 // Search Dropdown
 import SearchDropdown from './ui/search-dropdown.component.js';
 export { SearchDropdown };
+
+// 🆕 Stepper
+import { Stepper } from './ui/stepper.component.js';
+export { Stepper };
 
 // ========================================
 // UTILITAIRES
@@ -278,6 +283,7 @@ export default {
     DataTable,
     DataTableFilters,
     StatsCards,
+    Stepper,  // 🆕 Stepper ajouté
     
     // Utils
     formatDate,
@@ -315,9 +321,14 @@ export default {
 // - Composant header d'application réutilisable
 // - Ajouté en première position pour l'ordre logique
 //
+// [31/01/2025] - Ajout Stepper
+// - Import et export du composant Stepper
+// - Composant stepper réutilisable pour workflows multi-étapes
+// - Ajouté après SearchDropdown pour l'ordre logique
+//
 // NOTES POUR REPRISES FUTURES:
 // - Tous les composants UI sont dans ./ui/
 // - Les utils sont directement dans ce fichier
 // - Toujours exporter à la fois en named export et dans le default
-// - AppHeader est maintenant disponible partout via l'import shared
+// - Stepper est maintenant disponible partout via l'import shared
 // ========================================

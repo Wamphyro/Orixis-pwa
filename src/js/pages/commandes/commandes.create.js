@@ -8,6 +8,7 @@
 // MODIFICATIONS:
 // [28/01/2025] - Intégration de SearchDropdown pour remplacer les recherches natives
 // [28/01/2025] - Utilisation des bons sélecteurs ID (#clientSearch, #productSearch)
+// [31/01/2025] - Intégration du composant Stepper réutilisable
 // ========================================
 
 import { db } from '../../services/firebase.service.js';
@@ -15,6 +16,7 @@ import { ClientsService } from '../../services/clients.service.js';
 import { ProduitsService } from '../../services/produits.service.js';
 import { CommandesService } from '../../services/commandes.service.js';
 import SearchDropdown from '../../shared/ui/search-dropdown.component.js';
+import { Stepper } from '../../shared/index.js';  // 🆕 Import du Stepper
 import { COMMANDES_CONFIG } from '../../data/commandes.data.js';
 import { Dialog, notify } from '../../shared/index.js';
 import { chargerDonnees } from './commandes.list.js';
@@ -24,7 +26,6 @@ import { ouvrirModal, afficherSucces, afficherErreur } from './commandes.main.js
 // ÉTAT LOCAL DU MODULE
 // ========================================
 
-let etapeActuelle = 1;
 let nouvelleCommande = {
     clientId: null,
     client: null,
@@ -41,6 +42,9 @@ let produitEnCoursSelection = null;
 let clientSearchDropdown = null;
 let productSearchDropdown = null;
 
+// 🆕 Instance du stepper
+let stepperInstance = null;
+
 // Exposer l'état pour le module principal
 window.commandeCreateState = { nouvelleCommande };
 
@@ -53,7 +57,111 @@ export function initCreationCommande() {
     window.resetNouvelleCommande = resetNouvelleCommande;
     window.setDateLivraisonDefaut = setDateLivraisonDefaut;
     
-    console.log('Module création commande initialisé');
+    // 🆕 Initialiser le stepper une seule fois
+    initStepper();
+    
+    console.log('Module création commande initialisé avec Stepper');
+}
+
+// ========================================
+// 🆕 INITIALISATION DU STEPPER
+// ========================================
+
+function initStepper() {
+    // Vérifier si le container existe
+    const stepperContainer = document.querySelector('.stepper');
+    if (!stepperContainer) {
+        console.warn('Container .stepper non trouvé, initialisation différée');
+        return;
+    }
+    
+    // Créer l'instance du stepper
+    stepperInstance = new Stepper({
+        container: '.stepper',
+        steps: [
+            { id: 1, label: 'Client', content: 'stepContent1' },
+            { id: 2, label: 'Produits', content: 'stepContent2' },
+            { id: 3, label: 'Livraison', content: 'stepContent3' },
+            { id: 4, label: 'Validation', content: 'stepContent4' }
+        ],
+        currentStep: 1,
+        
+        // Callbacks
+        onStepChange: (step, direction, previousStep) => {
+            console.log(`📍 Changement d'étape: ${previousStep} → ${step}`);
+            
+            // Actions spécifiques par étape
+            executeStepActions(step);
+            
+            // Gérer les boutons de navigation
+            updateNavigationButtons(step);
+        },
+        
+        onValidateStep: async (step) => {
+            return await validerEtape(step);
+        },
+        
+        onStepCompleted: (step) => {
+            console.log(`✅ Étape ${step} complétée`);
+        }
+    });
+    
+    console.log('✅ Stepper initialisé avec succès');
+}
+
+// ========================================
+// 🆕 ACTIONS SPÉCIFIQUES PAR ÉTAPE
+// ========================================
+
+function executeStepActions(step) {
+    switch (step) {
+        case 1:
+            setTimeout(() => {
+                const clientSearchContainer = document.querySelector('.client-search');
+                if (clientSearchContainer) {
+                    initClientSearch();
+                } else {
+                    console.error('Container .client-search introuvable');
+                }
+            }, 300);
+            break;
+            
+        case 2:
+            console.log('📍 Arrivée à l\'étape 2 - Chargement des packs');
+            chargerPackTemplates();
+            setTimeout(() => {
+                const productSearchContainer = document.querySelector('.product-search');
+                if (productSearchContainer) {
+                    initProductSearch();
+                } else {
+                    console.error('Container .product-search introuvable');
+                }
+            }, 300);
+            break;
+            
+        case 3:
+            chargerMagasins();
+            setDateLivraisonDefaut();
+            break;
+            
+        case 4:
+            afficherRecapitulatif();
+            break;
+    }
+}
+
+// ========================================
+// 🆕 GESTION DES BOUTONS DE NAVIGATION
+// ========================================
+
+function updateNavigationButtons(step) {
+    const btnPrev = document.getElementById('btnPrevStep');
+    const btnNext = document.getElementById('btnNextStep');
+    const btnValider = document.getElementById('btnValiderCommande');
+    
+    if (btnPrev) btnPrev.disabled = step === 1;
+    if (btnNext) btnNext.style.display = step < 4 ? 'block' : 'none';
+    if (btnValider) btnValider.classList.toggle('hidden', step !== 4);
 }
 
 // ========================================
@@ -61,13 +169,17 @@ export function initCreationCommande() {
 // ========================================
 
 export function ouvrirNouvelleCommande() {
+    // S'assurer que le stepper est initialisé
+    if (!stepperInstance) {
+        initStepper();
+    }
+    
     resetNouvelleCommande();
-    afficherEtape(1);
     ouvrirModal('modalNouvelleCommande');
 }
 
 function resetNouvelleCommande() {
-    etapeActuelle = 1;
+    // Réinitialiser l'état
     nouvelleCommande = {
         clientId: null,
         client: null,
@@ -82,10 +194,13 @@ function resetNouvelleCommande() {
     // Mettre à jour la référence globale
     window.commandeCreateState.nouvelleCommande = nouvelleCommande;
     
-    // Réinitialiser l'affichage
-    afficherEtape(1);
+    // 🆕 Réinitialiser le stepper
+    if (stepperInstance) {
+        stepperInstance.reset();
+        updateNavigationButtons(1);
+    }
     
-    // MODIFIÉ : Utiliser le conteneur au lieu de l'input
+    // Réinitialiser l'affichage
     const searchContainer = document.querySelector('.client-search');
     if (searchContainer) {
         searchContainer.style.display = 'block';
@@ -110,83 +225,32 @@ function resetNouvelleCommande() {
     }
 }
 
-function afficherEtape(etape) {
-    // Mettre à jour l'étape actuelle
-    etapeActuelle = etape;
-    
-    // Masquer toutes les étapes
-    for (let i = 1; i <= 4; i++) {
-        document.getElementById(`stepContent${i}`).classList.add('hidden');
-        document.getElementById(`step${i}`).classList.remove('active', 'completed');
-    }
-    
-    // Afficher l'étape actuelle
-    document.getElementById(`stepContent${etape}`).classList.remove('hidden');
-    document.getElementById(`step${etape}`).classList.add('active');
-    
-    // Marquer les étapes précédentes comme complétées
-    for (let i = 1; i < etape; i++) {
-        document.getElementById(`step${i}`).classList.add('completed');
-    }
-    
-    // Gérer les boutons
-    document.getElementById('btnPrevStep').disabled = etape === 1;
-    document.getElementById('btnNextStep').style.display = etape < 4 ? 'block' : 'none';
-    document.getElementById('btnValiderCommande').classList.toggle('hidden', etape !== 4);
-    
-    // Actions spécifiques par étape
-    switch (etape) {
-        case 1:
-            // MODIFIÉ : Attendre plus longtemps et vérifier l'existence
-            setTimeout(() => {
-                const clientSearchContainer = document.querySelector('.client-search');
-                if (clientSearchContainer) {
-                    initClientSearch();
-                } else {
-                    console.error('Container .client-search introuvable');
-                }
-            }, 300); // Augmenté de 100 à 300ms
-            break;
-        case 2:
-            console.log('📍 Arrivée à l\'étape 2 - Chargement des packs');
-            chargerPackTemplates();
-            // MODIFIÉ : Même chose pour les produits
-            setTimeout(() => {
-                const productSearchContainer = document.querySelector('.product-search');
-                if (productSearchContainer) {
-                    initProductSearch();
-                } else {
-                    console.error('Container .product-search introuvable');
-                }
-            }, 300); // Augmenté de 100 à 300ms
-            break;
-        case 3:
-            chargerMagasins();
-            setDateLivraisonDefaut();
-            break;
-        case 4:
-            afficherRecapitulatif();
-            break;
-    }
-}
+// ========================================
+// 🆕 NAVIGATION AVEC LE STEPPER
+// ========================================
 
 export function etapePrecedente() {
-    if (etapeActuelle > 1) {
-        etapeActuelle--;
-        afficherEtape(etapeActuelle);
+    if (stepperInstance) {
+        stepperInstance.prevStep();
+    } else {
+        console.error('Stepper non initialisé');
     }
 }
 
 export async function etapeSuivante() {
-    if (!await validerEtape(etapeActuelle)) {
-        return;
-    }
-    
-    if (etapeActuelle < 4) {
-        etapeActuelle++;
-        afficherEtape(etapeActuelle);
+    if (stepperInstance) {
+        const success = await stepperInstance.nextStep();
+        if (!success) {
+            console.log('Validation échouée, reste sur l\'étape actuelle');
+        }
+    } else {
+        console.error('Stepper non initialisé');
     }
 }
+
+// ========================================
+// VALIDATION DES ÉTAPES
+// ========================================
 
 async function validerEtape(etape) {
     switch (etape) {
@@ -224,7 +288,7 @@ function initClientSearch() {
     
     // Créer la nouvelle instance avec le bon sélecteur ID
     clientSearchDropdown = new SearchDropdown({
-    container: '.client-search',  // MODIFIÉ: ID au lieu de classe
+        container: '.client-search',
         placeholder: 'Rechercher un client (nom, prénom, téléphone...)',
         minLength: 2,
         noResultsText: 'Aucun client trouvé',
@@ -260,7 +324,7 @@ export async function selectionnerClient(clientId) {
             nouvelleCommande.clientId = clientId;
             nouvelleCommande.client = client;
             
-            // MODIFIÉ : Cacher le conteneur SearchDropdown, pas l'input qui n'existe plus
+            // Cacher le conteneur SearchDropdown
             const searchContainer = document.querySelector('.client-search');
             if (searchContainer) {
                 searchContainer.style.display = 'none';
@@ -289,10 +353,6 @@ export async function selectionnerClient(clientId) {
             if (selectedClientInfo) {
                 selectedClientInfo.textContent = infoText;
             }
-            
-            // SUPPRIMÉ : Ces lignes ne servent plus à rien
-            // document.getElementById('clientSearchResults').classList.remove('active');
-            // document.getElementById('clientSearchResults').innerHTML = '';
         }
     } catch (error) {
         console.error('Erreur sélection client:', error);
@@ -304,7 +364,7 @@ export function changerClient() {
     nouvelleCommande.clientId = null;
     nouvelleCommande.client = null;
     
-    // MODIFIÉ : Afficher le conteneur SearchDropdown
+    // Afficher le conteneur SearchDropdown
     const searchContainer = document.querySelector('.client-search');
     if (searchContainer) {
         searchContainer.style.display = 'block';
@@ -639,7 +699,7 @@ function initProductSearch() {
     
     // Créer la nouvelle instance avec le bon sélecteur ID
     productSearchDropdown = new SearchDropdown({
-    container: '.product-search',  // MODIFIÉ: ID au lieu de classe
+        container: '.product-search',
         placeholder: 'Rechercher un produit...',
         minLength: 2,
         noResultsText: 'Aucun produit trouvé',
@@ -991,6 +1051,18 @@ export async function validerCommande() {
 }
 
 // ========================================
+// 🆕 NETTOYAGE DU STEPPER
+// ========================================
+
+export function cleanupStepper() {
+    if (stepperInstance) {
+        stepperInstance.destroy();
+        stepperInstance = null;
+        console.log('🧹 Stepper nettoyé');
+    }
+}
+
+// ========================================
 // EXPORTS GLOBAUX POUR COMPATIBILITÉ
 // ========================================
 // Fonctions vides pour éviter les erreurs si appelées depuis le HTML
@@ -1012,8 +1084,18 @@ window.rechercherProduit = () => {
 // - Utilisation des bons sélecteurs ID (#clientSearch, #productSearch)
 // - Ajout de fonctions vides pour compatibilité avec l'ancien code
 //
+// [31/01/2025] - Intégration du composant Stepper
+// - Import du composant depuis shared/index.js
+// - Création de l'instance dans initCreationCommande()
+// - Remplacement de afficherEtape() par l'API du composant
+// - Migration de la logique dans les callbacks du stepper
+// - Ajout de cleanupStepper() pour le nettoyage
+// - Les IDs HTML restent inchangés pour la compatibilité
+//
 // NOTES POUR REPRISES FUTURES:
 // - Les instances de SearchDropdown doivent être détruites avant recréation
 // - Le timing d'init est important (d'où les setTimeout)
 // - Les containers doivent utiliser les IDs #clientSearch et #productSearch
+// - Le stepper gère maintenant toute la navigation entre étapes
+// - La logique métier reste dans ce fichier, le stepper ne fait que l'UI
 // ========================================
