@@ -19,49 +19,93 @@
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
 }
 
-/* Grille de filtres */
-.filters-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    margin-bottom: 20px;
+/* Wrapper pour structure */
+.filters-wrapper {
+    width: 100%;
+}
+
+/* Formulaire */
+.filters-form {
+    margin: 0;
+}
+
+/* Ligne de filtres - NOUVELLE APPROCHE */
+.filters-row {
+    display: flex;
+    align-items: flex-end;  /* IMPORTANT: Aligne tous les éléments en bas */
+    gap: 15px;
+    min-height: 70px;  /* Hauteur minimale pour uniformité */
 }
 
 /* Groupe de filtre */
 .filter-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
+    justify-content: flex-end;  /* Pousse le contenu vers le bas */
 }
 
+/* Labels */
 .filter-group label {
     font-size: 14px;
     font-weight: 600;
     color: #495057;
+    margin: 0;
 }
 
 /* ========================================
-   TYPES DE FILTRES
+   LARGEURS SPÉCIFIQUES
    ======================================== */
 
-/* Search */
-.filter-search {
-    position: relative;
+/* Search prend plus de place */
+.filter-group.filter-search {
+    flex: 1 1 300px;  /* Flexible, min 300px */
 }
 
-.filter-search input {
+/* Selects largeur fixe */
+.filter-group.filter-select {
+    flex: 0 0 200px;  /* Fixe à 200px */
+}
+
+/* ========================================
+   INPUTS ET SELECTS UNIFORMES
+   ======================================== */
+
+/* Tous les inputs/selects même style et hauteur */
+.filter-search-input,
+.filter-select-input,
+.filter-date-input {
+    height: 40px;  /* IMPORTANT: Hauteur fixe */
     width: 100%;
-    padding: 10px 40px 10px 15px;
+    padding: 8px 12px;
     border: 2px solid #e9ecef;
     border-radius: 8px;
     font-size: 14px;
+    background: white;
     transition: all 0.2s ease;
+    box-sizing: border-box;
 }
 
-.filter-search input:focus {
+/* Focus uniforme */
+.filter-search-input:focus,
+.filter-select-input:focus,
+.filter-date-input:focus {
     outline: none;
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* ========================================
+   SEARCH SPÉCIFIQUE
+   ======================================== */
+
+.filter-search-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.filter-search-input {
+    padding-right: 40px;  /* Espace pour l'icône */
 }
 
 .filter-search-icon {
@@ -73,48 +117,80 @@
     pointer-events: none;
 }
 
-/* Select */
-.filter-select select {
-    width: 100%;
-    padding: 10px 15px;
-    border: 2px solid #e9ecef;
-    border-radius: 8px;
-    font-size: 14px;
-    background: white;
+/* ========================================
+   SELECT SPÉCIFIQUE
+   ======================================== */
+
+.filter-select-input {
     cursor: pointer;
-    transition: all 0.2s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 40px;
 }
 
-.filter-select select:focus {
-    outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
+/* ========================================
+   BOUTON RESET
+   ======================================== */
 
-/* Date & DateRange */
-.filter-date input,
-.filter-daterange input {
-    width: 100%;
-    padding: 10px 15px;
+.btn-reset-filters {
+    flex: 0 0 auto;
+    height: 40px;  /* IMPORTANT: Même hauteur que les inputs */
+    align-self: flex-end;  /* S'assure qu'il est en bas */
+    margin-left: auto;  /* Le pousse à droite */
+    background: #f8f9fa;
+    color: #495057;
     border: 2px solid #e9ecef;
+    padding: 0 20px;
     border-radius: 8px;
+    cursor: pointer;
     font-size: 14px;
+    font-weight: 500;
     transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
 }
 
-.filter-daterange {
+.btn-reset-filters:hover {
+    background: #e9ecef;
+    border-color: #dee2e6;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-reset-filters:active {
+    transform: translateY(0);
+}
+
+/* ========================================
+   AUTRES TYPES DE FILTRES (pour plus tard)
+   ======================================== */
+
+/* DateRange */
+.filter-daterange-container {
     display: flex;
     gap: 10px;
     align-items: center;
 }
 
-.filter-daterange input {
+.filter-daterange-start,
+.filter-daterange-end {
     flex: 1;
+    height: 40px;
+    padding: 8px 12px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
 }
 
 .filter-daterange-separator {
     color: #6c757d;
     font-size: 14px;
+    flex: 0 0 auto;
 }
 
 /* Checkbox Group */
@@ -140,147 +216,7 @@
     font-weight: normal !important;
     cursor: pointer;
     user-select: none;
-}
-
-/* Range Slider */
-.filter-range {
-    padding: 10px 0;
-}
-
-.filter-range-track {
-    width: 100%;
-    height: 6px;
-    background: #e9ecef;
-    border-radius: 3px;
-    position: relative;
-}
-
-.filter-range-fill {
-    height: 100%;
-    background: #667eea;
-    border-radius: 3px;
-}
-
-.filter-range input[type="range"] {
-    width: 100%;
-    -webkit-appearance: none;
-    appearance: none;
-    background: transparent;
-    cursor: pointer;
-}
-
-.filter-range input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 20px;
-    height: 20px;
-    background: #667eea;
-    border-radius: 50%;
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.filter-range-value {
-    display: flex;
-    justify-content: space-between;
-    font-size: 13px;
-    color: #6c757d;
-    margin-top: 5px;
-}
-
-/* Tags */
-.filter-tags {
-    position: relative;
-}
-
-.filter-tags-input {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    padding: 5px;
-    min-height: 42px;
-    border: 2px solid #e9ecef;
-    border-radius: 8px;
-    cursor: text;
-}
-
-.filter-tag {
-    background: #667eea;
-    color: white;
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.filter-tag-remove {
-    cursor: pointer;
-    font-size: 16px;
-    line-height: 1;
-}
-
-/* Button Group */
-.filter-buttongroup {
-    display: flex;
-    gap: 0;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-.filter-buttongroup button {
-    flex: 1;
-    padding: 10px 15px;
-    border: none;
-    background: white;
-    color: #495057;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border-right: 1px solid #e9ecef;
-}
-
-.filter-buttongroup button:last-child {
-    border-right: none;
-}
-
-.filter-buttongroup button:hover {
-    background: #f8f9fa;
-}
-
-.filter-buttongroup button.active {
-    background: #667eea;
-    color: white;
-}
-
-/* ========================================
-   ACTIONS
-   ======================================== */
-
-.filters-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-}
-
-.btn-reset-filters {
-    background: #f8f9fa;
-    color: #495057;
-    border: 2px solid #e9ecef;
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.btn-reset-filters:hover {
-    background: #e9ecef;
-    border-color: #dee2e6;
+    margin: 0;
 }
 
 /* ========================================
@@ -315,29 +251,38 @@
    RESPONSIVE
    ======================================== */
 
+@media (max-width: 1024px) {
+    .filters-row {
+        flex-wrap: wrap;
+    }
+    
+    .filter-group.filter-search {
+        flex: 1 1 100%;  /* Recherche sur toute la largeur */
+        margin-bottom: 10px;
+    }
+}
+
 @media (max-width: 768px) {
     .filters-container {
         padding: 20px 15px;
     }
     
-    .filters-grid {
-        grid-template-columns: 1fr;
+    .filters-row {
+        flex-direction: column;
+        align-items: stretch;
         gap: 15px;
     }
     
-    .filter-daterange {
-        flex-direction: column;
+    .filter-group {
+        flex: 1 1 100%;
     }
     
-    .filter-daterange-separator {
-        display: none;
-    }
-    
-    .filters-actions {
-        justify-content: center;
+    .filter-group.filter-select {
+        flex: 1 1 100%;  /* Full width sur mobile */
     }
     
     .btn-reset-filters {
+        margin-left: 0;
         width: 100%;
         justify-content: center;
     }
@@ -348,15 +293,6 @@
         border-radius: 0;
         margin-left: -15px;
         margin-right: -15px;
-    }
-    
-    .filter-buttongroup {
-        flex-direction: column;
-    }
-    
-    .filter-buttongroup button {
-        border-right: none;
-        border-bottom: 1px solid #e9ecef;
     }
 }
 
