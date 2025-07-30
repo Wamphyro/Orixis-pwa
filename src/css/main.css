@@ -2,17 +2,16 @@
    ORIXIS PWA - MAIN.CSS
    Base commune à toutes les pages
    
-   MODIFIÉ le 27/01/2025:
-   - Suppression des boutons → button.css
-   - Suppression des formulaires → form.css  
-   - Suppression des animations → animation.css
+   MODIFIÉ le 30/01/2025:
+   - Suppression des styles .app-header → app-header.css
+   - Le composant AppHeader gère ses propres styles
    
    CONTIENT UNIQUEMENT:
    - Variables CSS
    - Reset & base
    - Typographie
-   - Header/Footer
-   - Layout général
+   - Layout général (container, section)
+   - Footer
    - Messages d'alerte
    - Utilitaires
    ======================================== */
@@ -102,91 +101,13 @@ a:hover {
 }
 
 /* ========================================
-   HEADER LAYOUT UNIFORME
+   🆕 AJUSTEMENT BODY POUR HEADER COMPOSANT
    ======================================== */
-.app-header {
-    background: var(--primary-gradient);
-    color: white;
-    padding: 25px 20px;
-    box-shadow: var(--shadow-md);
-    position: relative;
-}
 
-.app-header-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.app-header-left {
-    flex: 0 0 200px;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.app-header-center {
-    flex: 1;
-    text-align: center;
-    padding: 0 20px;
-}
-
-.app-header-right {
-    flex: 0 0 200px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 15px;
-}
-
-.app-header h1 {
-    font-size: 32px;
-    margin-bottom: 5px;
-    color: white;
-}
-
-.app-header p {
-    font-size: 16px;
-    opacity: 0.9;
-    margin: 0;
-}
-
-.header-back-button {
-    background: rgba(255,255,255,0.2);
-    color: white;
-    text-decoration: none;
-    padding: 10px 20px;
-    border-radius: 25px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s ease;
-    font-size: 14px;
-    font-weight: 500;
-    border: 2px solid transparent;
-}
-
-.header-back-button:hover {
-    background: rgba(255,255,255,0.3);
-    transform: translateX(-2px);
-    border-color: rgba(255,255,255,0.3);
-    text-decoration: none;
-}
-
-.header-user-info {
-    background: rgba(255,255,255,0.2);
-    padding: 10px 20px;
-    border-radius: 25px;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.header-user-info span {
-    font-weight: bold;
+/* Classe utilitaire ajoutée par AppHeader si nécessaire */
+body.app-header-present {
+    /* Le composant AppHeader ajoutera cette classe si besoin */
+    /* pour gérer l'espacement automatiquement */
 }
 
 /* ========================================
@@ -341,32 +262,6 @@ a:hover {
         padding: 20px 15px;
     }
     
-    .app-header {
-        padding: 20px 15px;
-    }
-    
-    .app-header-content {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    .app-header-left,
-    .app-header-center,
-    .app-header-right {
-        flex: initial;
-        width: 100%;
-        justify-content: center;
-        text-align: center;
-    }
-    
-    .app-header h1 {
-        font-size: 24px;
-    }
-    
-    .app-header p {
-        font-size: 14px;
-    }
-    
     .section {
         padding: 20px;
         margin-bottom: 20px;
@@ -380,14 +275,6 @@ a:hover {
 @media (max-width: 480px) {
     .container {
         padding: 15px 10px;
-    }
-    
-    .app-header {
-        padding: 15px 10px;
-    }
-    
-    .app-header h1 {
-        font-size: 20px;
     }
     
     .section {
@@ -412,7 +299,6 @@ a:hover {
         display: none !important;
     }
     
-    .app-header,
     .footer {
         display: none !important;
     }
@@ -443,8 +329,14 @@ a:hover {
    - Extraction des formulaires → form.css
    - Extraction des animations → animation.css
    
+   [30/01/2025] - Suppression styles header
+   - Suppression de tous les styles .app-header → app-header.css
+   - Le composant AppHeader gère maintenant ses propres styles
+   - Évite les conflits entre styles statiques et composant
+   
    NOTES POUR REPRISES FUTURES:
-   - Ce fichier contient uniquement les styles de base
-   - Tous les composants UI sont dans /shared/ui/
+   - Ce fichier ne contient QUE les styles de base
+   - Tous les composants UI (header inclus) sont dans /shared/ui/
    - Ne pas réintroduire de styles de composants ici
+   - Le header est maintenant un composant totalement indépendant
    ======================================== */

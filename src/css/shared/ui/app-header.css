@@ -1,0 +1,551 @@
+/* ========================================
+   APP-HEADER.CSS - Styles pour le composant header d'application
+   Chemin: src/css/shared/ui/app-header.css
+   
+   STRUCTURE:
+   - Anti-FOUC et chargement
+   - Header de base
+   - Layout interne (left, center, right)
+   - Éléments de navigation (retour, breadcrumb)
+   - Section titre
+   - Section utilisateur
+   - États et interactions
+   - Thèmes
+   - Responsive
+   ======================================== */
+
+/* ========================================
+   ANTI-FOUC ET CHARGEMENT
+   ======================================== */
+
+.app-header {
+    /* Anti-FOUC : Masquer initialement */
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Afficher une fois chargé */
+.app-header.loaded {
+    opacity: 1;
+}
+
+/* ========================================
+   HEADER DE BASE
+   ======================================== */
+
+.app-header {
+    background: var(--primary-gradient, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+    color: white;
+    padding: 25px 20px;
+    box-shadow: var(--shadow-md, 0 5px 20px rgba(0, 0, 0, 0.08));
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.app-header.fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+/* ========================================
+   LAYOUT INTERNE (LEFT, CENTER, RIGHT)
+   ======================================== */
+
+.app-header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.app-header-left {
+    flex: 0 0 200px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.app-header-center {
+    flex: 1;
+    text-align: center;
+    padding: 0 20px;
+    min-width: 0; /* Pour permettre le text-overflow */
+}
+
+.app-header-right {
+    flex: 0 0 200px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+/* ========================================
+   ÉLÉMENTS DE NAVIGATION
+   ======================================== */
+
+/* Bouton retour */
+.header-back-button {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    font-weight: 500;
+    border: 2px solid transparent;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.header-back-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateX(-2px);
+    border-color: rgba(255, 255, 255, 0.3);
+    text-decoration: none;
+    color: white;
+}
+
+.header-back-button:active {
+    transform: translateX(-1px) scale(0.98);
+}
+
+/* Breadcrumb */
+.header-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+.breadcrumb-link {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.breadcrumb-link:hover {
+    color: white;
+    text-decoration: underline;
+}
+
+.breadcrumb-separator {
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0 4px;
+}
+
+.breadcrumb-current {
+    color: white;
+    font-weight: 500;
+}
+
+/* ========================================
+   SECTION TITRE
+   ======================================== */
+
+.app-header-icon {
+    font-size: 28px;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.app-header-title {
+    font-size: 32px;
+    margin: 0 0 5px 0;
+    color: white;
+    font-weight: 700;
+    line-height: 1.2;
+    /* Gestion du débordement */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.app-header-subtitle {
+    font-size: 16px;
+    opacity: 0.9;
+    margin: 0;
+    font-weight: 400;
+    line-height: 1.4;
+    /* Gestion du débordement */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ========================================
+   SECTION UTILISATEUR
+   ======================================== */
+
+.header-user-info {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.header-user-info:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.header-user-info span {
+    font-weight: 600;
+    color: white;
+}
+
+.user-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    object-fit: cover;
+}
+
+.header-logout-button {
+    background: rgba(220, 53, 69, 0.9);
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: inherit;
+}
+
+.header-logout-button:hover {
+    background: rgba(220, 53, 69, 1);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+}
+
+.header-logout-button:active {
+    transform: translateY(0);
+}
+
+/* ========================================
+   ÉTATS ET INTERACTIONS
+   ======================================== */
+
+/* État de chargement */
+.app-header.loading {
+    opacity: 0.7;
+}
+
+.app-header.loading * {
+    pointer-events: none;
+}
+
+/* Effet de focus pour accessibilité */
+.header-back-button:focus,
+.header-user-info:focus,
+.header-logout-button:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 2px;
+}
+
+/* Animation d'apparition */
+.app-header.loaded {
+    animation: slideDown 0.4s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========================================
+   THÈMES
+   ======================================== */
+
+/* Thème sombre */
+.app-header.theme-dark {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+}
+
+.app-header.theme-dark .header-back-button,
+.app-header.theme-dark .header-user-info {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.app-header.theme-dark .header-back-button:hover,
+.app-header.theme-dark .header-user-info:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* Thème success */
+.app-header.theme-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+/* Thème warning */
+.app-header.theme-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    color: #333;
+}
+
+.app-header.theme-warning .header-back-button,
+.app-header.theme-warning .header-user-info,
+.app-header.theme-warning .app-header-title,
+.app-header.theme-warning .app-header-subtitle {
+    color: #333;
+}
+
+.app-header.theme-warning .header-back-button,
+.app-header.theme-warning .header-user-info {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.app-header.theme-warning .header-back-button:hover,
+.app-header.theme-warning .header-user-info:hover {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+/* Thème minimal */
+.app-header.theme-minimal {
+    background: white;
+    color: #333;
+    border-bottom: 1px solid #e9ecef;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.app-header.theme-minimal .header-back-button,
+.app-header.theme-minimal .header-user-info {
+    background: #f8f9fa;
+    color: #333;
+    border: 1px solid #dee2e6;
+}
+
+.app-header.theme-minimal .header-back-button:hover,
+.app-header.theme-minimal .header-user-info:hover {
+    background: #e9ecef;
+}
+
+.app-header.theme-minimal .app-header-title,
+.app-header.theme-minimal .app-header-subtitle {
+    color: #333;
+}
+
+.app-header.theme-minimal .header-logout-button {
+    background: #dc3545;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 992px) {
+    .app-header-left,
+    .app-header-right {
+        flex: 0 0 auto;
+    }
+    
+    .app-header-center {
+        padding: 0 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    .app-header {
+        padding: 20px 15px;
+    }
+    
+    .app-header-content {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+    
+    .app-header-left,
+    .app-header-center,
+    .app-header-right {
+        flex: initial;
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+    
+    .app-header-left {
+        order: 3; /* Mettre les boutons en bas */
+    }
+    
+    .app-header-center {
+        order: 1;
+        padding: 0;
+    }
+    
+    .app-header-right {
+        order: 2;
+    }
+    
+    .app-header-title {
+        font-size: 24px;
+    }
+    
+    .app-header-subtitle {
+        font-size: 14px;
+    }
+    
+    .header-back-button,
+    .header-user-info,
+    .header-logout-button {
+        font-size: 13px;
+        padding: 8px 16px;
+    }
+    
+    /* Breadcrumb sur mobile */
+    .header-breadcrumb {
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .breadcrumb-separator {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .app-header {
+        padding: 15px 10px;
+    }
+    
+    .app-header-content {
+        gap: 10px;
+    }
+    
+    .app-header-title {
+        font-size: 20px;
+    }
+    
+    .app-header-subtitle {
+        font-size: 13px;
+    }
+    
+    .header-back-button,
+    .header-user-info,
+    .header-logout-button {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    
+    /* Sur très petit écran, simplifier l'affichage */
+    .app-header-icon {
+        font-size: 20px;
+    }
+    
+    .header-breadcrumb {
+        font-size: 11px;
+    }
+}
+
+/* ========================================
+   PRINT
+   ======================================== */
+
+@media print {
+    .app-header {
+        background: white !important;
+        color: black !important;
+        box-shadow: none !important;
+        page-break-after: avoid;
+    }
+    
+    .header-back-button,
+    .header-logout-button {
+        display: none !important;
+    }
+    
+    .header-user-info {
+        background: transparent !important;
+        color: black !important;
+    }
+    
+    .app-header-title,
+    .app-header-subtitle {
+        color: black !important;
+    }
+}
+
+/* ========================================
+   UTILITAIRES
+   ======================================== */
+
+/* Masquer le header */
+.app-header.hidden {
+    display: none;
+}
+
+/* Header collapsé */
+.app-header.collapsed {
+    padding: 10px 20px;
+}
+
+.app-header.collapsed .app-header-title {
+    font-size: 20px;
+}
+
+.app-header.collapsed .app-header-subtitle {
+    display: none;
+}
+
+/* Ajustement si header fixe */
+body.header-fixed {
+    padding-top: 100px; /* Ajuster selon la hauteur du header */
+}
+
+@media (max-width: 768px) {
+    body.header-fixed {
+        padding-top: 140px; /* Plus d'espace sur mobile */
+    }
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [30/01/2025] - Création initiale
+   - Styles extraits et améliorés depuis main.css
+   - Anti-FOUC intégré avec opacity et .loaded
+   - Support complet responsive mobile-first
+   - Thèmes multiples (dark, success, warning, minimal)
+   - Gestion du débordement de texte
+   - États interactifs et accessibilité
+   - Support header fixe avec ajustement body
+   
+   NOTES POUR REPRISES FUTURES:
+   - Les variables CSS de main.css sont utilisées
+   - Le composant est complètement autonome
+   - Les thèmes peuvent être étendus facilement
+   - L'ordre responsive peut être personnalisé
+   - Support impression intégré
+   ======================================== */

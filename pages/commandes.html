@@ -15,16 +15,15 @@
     
     <!-- ========================================
          CSS - Ordre de chargement optimisé
-         MODIFIÉ le 27/01/2025: Ajout des nouveaux CSS modulaires
+         MODIFIÉ le 30/01/2025: 
+         - Suppression double chargement main.css
+         - Le header est maintenant un composant
          
          ORDRE IMPORTANT:
          1. main.css (variables, reset, layout)
          2. Composants UI génériques
          3. CSS spécifiques à la page
          ======================================== -->
-    
-    <!-- 1. Base et layout -->
-    <link rel="stylesheet" href="../src/css/main.css">
     
     <!-- 1. Base et layout -->
     <link rel="stylesheet" href="../src/css/main.css">
@@ -47,31 +46,11 @@
     <link rel="stylesheet" href="../src/css/commandes/commandes-custom.css">
 </head>
 <body>
-    <!-- Header uniforme -->
-    <div class="app-header">
-        <div class="app-header-content">
-            <div class="app-header-left">
-                <a href="home.html" class="header-back-button">
-                    ← Retour
-                </a>
-            </div>
-            <div class="app-header-center">
-                <h1>📦 Gestion des Commandes</h1>
-                <p>Commandes d'appareils et accessoires</p>
-            </div>
-            <div class="app-header-right">
-                <div class="header-user-info">
-                    <span id="userName">-</span>
-                </div>
-                <button class="header-logout-button" onclick="logout()">
-                    🚪 Déconnexion
-                </button>
-            </div>
-        </div>
-    </div>
-
+    <!-- 🆕 Container pour le composant AppHeader -->
+    <!-- AppHeader sera injecté ici par JavaScript -->
+    
     <div class="container">
-        <!-- NOUVEAU CODE CORRECT -->
+        <!-- Barre d'actions et statistiques -->
         <div class="commandes-header">
             <div class="commandes-stats">
                 <!-- StatsCards va générer le contenu ici -->
@@ -84,10 +63,6 @@
             </div>
         </div>
 
-<!-- Filtres -->
-
-<!-- Filtres -->
-
         <!-- Filtres -->
         <div class="commandes-filters section">
             <!-- DataTableFilters va générer le contenu ici -->
@@ -97,6 +72,7 @@
         <div class="commandes-table-container section">
             <!-- DataTable sera généré ici -->
         </div>
+    </div>
 
     <!-- Modal Nouvelle Commande -->
     <div id="modalNouvelleCommande" class="modal" style="display: none;">
@@ -396,9 +372,9 @@
          Le fichier commandes.main.js charge tous les autres modules
          Les composants UI avec JS chargent leur CSS automatiquement
          
-         MODIFIÉ le 28/01/2025:
-         - Suppression des oninput pour rechercherClient et rechercherProduit
-         - Ces fonctions sont remplacées par SearchDropdown
+         MODIFIÉ le 30/01/2025:
+         - Header supprimé du HTML, géré par composant AppHeader
+         - Le JavaScript doit maintenant créer l'instance AppHeader
          ======================================== -->
     <script type="module" src="../src/js/pages/commandes/commandes.main.js"></script>
 </body>

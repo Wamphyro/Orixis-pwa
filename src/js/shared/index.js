@@ -7,11 +7,16 @@
 // [28/01/2025] - Ajout de l'export SearchDropdown
 // [29/01/2025] - Ajout de l'export DataTableFilters
 // [29/01/2025] - Correction export generateId
+// [30/01/2025] - Ajout de l'export AppHeader
 // ========================================
 
 // ========================================
 // COMPOSANTS UI
 // ========================================
+
+// 🆕 Header d'application réutilisable
+import { AppHeader } from './ui/app-header.component.js';
+export { AppHeader };
 
 // Dialog (remplace alert, confirm, prompt)
 import DialogComponent from './ui/dialog.component.js';
@@ -260,6 +265,7 @@ export const retry = async (fn, retries = 3, delay = 1000) => {
 
 export default {
     // UI Components
+    AppHeader: AppHeader,         // 🆕 Header d'application
     Dialog: Dialog,
     notify: notify,
     Modal: Modal,
@@ -304,8 +310,14 @@ export default {
 // - Ajout de l'export nommé pour generateId
 // - Utilisé par les composants DataTable et DataTableFilters
 //
+// [30/01/2025] - Ajout AppHeader
+// - Import et export du composant AppHeader
+// - Composant header d'application réutilisable
+// - Ajouté en première position pour l'ordre logique
+//
 // NOTES POUR REPRISES FUTURES:
 // - Tous les composants UI sont dans ./ui/
 // - Les utils sont directement dans ce fichier
 // - Toujours exporter à la fois en named export et dans le default
+// - AppHeader est maintenant disponible partout via l'import shared
 // ========================================

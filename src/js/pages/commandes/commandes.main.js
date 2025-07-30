@@ -1,22 +1,29 @@
 // ========================================
-// COMMANDES.MAIN.JS - Point d'entrée principal (VERSION CORRIGÉE)
+// COMMANDES.MAIN.JS - Point d'entrée principal (VERSION AVEC APPHEADER)
 // Chemin: src/js/pages/commandes/commandes.main.js
 //
 // DESCRIPTION:
 // Point d'entrée principal du module commandes
-// Modifié le 28/01/2025 : Suppression des imports rechercherClient/rechercherProduit
+// Modifié le 30/01/2025 : Intégration du composant AppHeader
 //
 // STRUCTURE:
-// 1. Imports (lignes 15-36)
-// 2. Variables globales (lignes 38-50)
-// 3. Initialisation (lignes 52-130)
-// 4. Gestion des modales (lignes 132-200)
-// 5. Exposition des fonctions (lignes 202-251)
-// 6. Utilitaires (lignes 253-300)
+// 1. Imports (lignes 15-40)
+// 2. Variables globales (lignes 42-54)
+// 3. Initialisation (lignes 56-140)
+// 4. Gestion des modales (lignes 142-210)
+// 5. Exposition des fonctions (lignes 212-261)
+// 6. Utilitaires (lignes 263-310)
 // ========================================
 
 import { initFirebase } from '../../services/firebase.service.js';
-import { modalManager, confirmerAction, Dialog, notify } from '../../shared/index.js';
+import { 
+    AppHeader,
+    StatsCards,
+    modalManager, 
+    confirmerAction, 
+    Dialog, 
+    notify 
+} from '../../shared/index.js';
 import { 
     initListeCommandes, 
     chargerDonnees, 
@@ -61,6 +68,10 @@ export const state = {
     }
 };
 
+// 🆕 Variables pour les composants UI
+let appHeader = null;
+let statsCards = null;
+
 // ========================================
 // INITIALISATION
 // ========================================
@@ -81,6 +92,85 @@ function checkAuth() {
     return authData.authenticated;
 }
 
+// 🆕 Récupérer les données utilisateur pour le header
+function getUserData() {
+    const auth = JSON.parse(localStorage.getItem('sav_auth'));
+    if (auth && auth.collaborateur) {
+        return {
+            name: `${auth.collaborateur.prenom} ${auth.collaborateur.nom}`,
+            showLogout: true
+        };
+    }
+    return {
+        name: 'Utilisateur',
+        showLogout: true
+    };
+}
+
+// 🆕 Initialiser les composants UI
+async function initUIComponents() {
+    try {
+        // 1. Créer le header d'application
+        appHeader = new AppHeader({
+            container: 'body',  // Injecter en début de body
+            title: '📦 Gestion des Commandes',
+            subtitle: 'Commandes d\'appareils et accessoires',
+            backUrl: 'home.html',
+            user: getUserData(),
+            onLogout: handleLogout,  // Utiliser notre fonction logout
+            onBack: () => {
+                // Optionnel : logique custom avant retour
+                console.log('Retour vers l\'accueil');
+            }
+        });
+        
+        // 2. Créer les cartes de statistiques
+        statsCards = new StatsCards({
+            container: '.commandes-stats',
+            cards: [
+                { 
+                    id: 'nouvelle', 
+                    label: 'Nouvelles', 
+                    value: 0, 
+                    icon: '📋', 
+                    color: 'info' 
+                },
+                { 
+                    id: 'preparation', 
+                    label: 'En préparation', 
+                    value: 0, 
+                    icon: '🔧', 
+                    color: 'warning' 
+                },
+                { 
+                    id: 'expediee', 
+                    label: 'Expédiées', 
+                    value: 0, 
+                    icon: '📦', 
+                    color: 'primary' 
+                },
+                { 
+                    id: 'livree', 
+                    label: 'Livrées', 
+                    value: 0, 
+                    icon: '✅', 
+                    color: 'success' 
+                }
+            ],
+            onClick: (cardId, cardData) => {
+                // Optionnel : filtrer par statut au clic
+                console.log(`Filtre par statut: ${cardId}`, cardData);
+            }
+        });
+        
+        console.log('🎨 Composants UI initialisés');
+        
+    } catch (error) {
+        console.error('❌ Erreur initialisation UI:', error);
+        notify.error('Erreur lors de l\'initialisation de l\'interface');
+    }
+}
+
 // Initialisation au chargement
 window.addEventListener('load', async () => {
     if (!checkAuth()) {
@@ -88,48 +178,56 @@ window.addEventListener('load', async () => {
         return;
     }
     
-    // Afficher les infos utilisateur
-    afficherInfosUtilisateur();
-    
-    // Initialiser Firebase
-    await initFirebase();
-    
-    // Initialiser les modales
-    initModales();
-    
-    // HACK: Retirer TOUS les event listeners du modal component
-    setTimeout(() => {
-        const modal = modalManager.get('modalNouvelleCommande');
-        if (modal && modal.closeButton) {
-            // Cloner le bouton pour retirer TOUS les event listeners
-            const oldButton = modal.closeButton;
-            const newButton = oldButton.cloneNode(true);
-            oldButton.parentNode.replaceChild(newButton, oldButton);
-            
-            // Ajouter notre propre handler
-            newButton.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                modalManager.close('modalNouvelleCommande');
-            });
-            
-            // Mettre à jour la référence
-            modal.closeButton = newButton;
-        }
-    }, 500);
-    
-    // Initialiser les modules
-    await initListeCommandes();
-    initCreationCommande();
-    
-    // Charger les données initiales
-    await chargerDonnees();
-    
-    // Activer les animations après le chargement
-    document.body.classList.add('page-loaded');
-    
-    // Initialiser les événements
-    initEventListeners();
+    try {
+        // 🆕 1. Initialiser les composants UI en premier
+        await initUIComponents();
+        
+        // 2. Initialiser Firebase
+        await initFirebase();
+        
+        // 3. Initialiser les modales
+        initModales();
+        
+        // 4. HACK: Retirer TOUS les event listeners du modal component
+        setTimeout(() => {
+            const modal = modalManager.get('modalNouvelleCommande');
+            if (modal && modal.closeButton) {
+                // Cloner le bouton pour retirer TOUS les event listeners
+                const oldButton = modal.closeButton;
+                const newButton = oldButton.cloneNode(true);
+                oldButton.parentNode.replaceChild(newButton, oldButton);
+                
+                // Ajouter notre propre handler
+                newButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    modalManager.close('modalNouvelleCommande');
+                });
+                
+                // Mettre à jour la référence
+                modal.closeButton = newButton;
+            }
+        }, 500);
+        
+        // 5. Initialiser les modules
+        await initListeCommandes();
+        initCreationCommande();
+        
+        // 6. Charger les données initiales
+        await chargerDonnees();
+        
+        // 7. Activer les animations après le chargement
+        document.body.classList.add('page-loaded');
+        
+        // 8. Initialiser les événements
+        initEventListeners();
+        
+        console.log('✅ Page commandes initialisée avec succès');
+        
+    } catch (error) {
+        console.error('❌ Erreur lors de l\'initialisation:', error);
+        notify.error('Erreur lors du chargement de la page');
+    }
 });
 
 // ========================================
@@ -185,16 +283,47 @@ function initModales() {
 }
 
 // ========================================
-// AFFICHAGE DES INFOS UTILISATEUR
+// GESTION UTILISATEUR (DÉPLACÉ D'afficherInfosUtilisateur)
 // ========================================
 
-function afficherInfosUtilisateur() {
-    const auth = JSON.parse(localStorage.getItem('sav_auth'));
-    if (auth && auth.collaborateur) {
-        const userName = document.getElementById('userName');
-        if (userName) {
-            userName.textContent = `${auth.collaborateur.prenom} ${auth.collaborateur.nom}`;
+// 🆕 Fonction de déconnexion pour le header
+async function handleLogout() {
+    try {
+        const confirme = await confirmerAction({
+            titre: 'Déconnexion',
+            message: 'Voulez-vous vraiment vous déconnecter ?',
+            boutonConfirmer: 'Déconnexion',
+            boutonAnnuler: 'Annuler',
+            danger: true
+        });
+        
+        if (confirme) {
+            localStorage.removeItem('sav_auth');
+            localStorage.removeItem('sav_user_permissions');
+            
+            // Optionnel : notification de déconnexion
+            notify.success('Déconnexion réussie');
+            
+            // Redirection
+            setTimeout(() => {
+                window.location.href = '../../index.html';
+            }, 1000);
         }
+    } catch (error) {
+        console.error('Erreur lors de la déconnexion:', error);
+        notify.error('Erreur lors de la déconnexion');
+    }
+}
+
+// 🆕 Mise à jour des statistiques (appelée depuis commandes.list.js)
+export function updateStats(stats) {
+    if (statsCards) {
+        statsCards.updateAll({
+            nouvelle: stats.nouvelle || 0,
+            preparation: stats.preparation || 0,
+            expediee: stats.expediee || 0,
+            livree: stats.livree || 0
+        });
     }
 }
 
@@ -205,13 +334,17 @@ function afficherInfosUtilisateur() {
 // Exposer modalManager globalement pour les autres modules
 window.modalManager = modalManager;
 
+// 🆕 Exposer les composants UI pour les autres modules
+window.appHeader = () => appHeader;
+window.statsCards = () => statsCards;
+window.updateStats = updateStats;
+
 // Toutes les fonctions utilisées dans le HTML avec onclick
 window.ouvrirNouvelleCommande = ouvrirNouvelleCommande;
-// Dans commandes.main.js, les window.XXX restent mais pointent vers les nouvelles fonctions
 window.filtrerCommandes = () => {
     console.log('Filtrage géré automatiquement par DataTableFilters');
 };
-window.resetFiltres = resetFiltres; // Pointe vers la fonction de commandes.list.js
+window.resetFiltres = resetFiltres;
 window.selectionnerClient = selectionnerClient;
 window.changerClient = changerClient;
 window.ouvrirNouveauClient = ouvrirNouveauClient;
@@ -225,16 +358,9 @@ window.validerCommande = validerCommande;
 window.voirDetailCommande = voirDetailCommande;
 window.changerStatutCommande = changerStatutCommande;
 window.fermerModal = fermerModal;
-window.logout = logout;
+window.logout = handleLogout; // 🆕 Pointer vers la nouvelle fonction
 window.selectionnerCote = selectionnerCote;
 window.annulerSelectionCote = annulerSelectionCote;
-
-// ========================================
-// NOUVELLE EXPOSITION : supprimerCommande
-// Ajoutée le 27/07/2025
-// Note: La fonction est définie dans commandes.detail.js
-// ========================================
-// window.supprimerCommande est définie dans commandes.detail.js
 
 // ========================================
 // UTILITAIRES GLOBAUX
@@ -244,20 +370,9 @@ function fermerModal(modalId) {
     modalManager.close(modalId);
 }
 
+// 🆕 Fonction logout legacy (pour compatibilité)
 async function logout() {
-    const confirme = await confirmerAction({
-        titre: 'Déconnexion',
-        message: 'Voulez-vous vraiment vous déconnecter ?',
-        boutonConfirmer: 'Déconnexion',
-        boutonAnnuler: 'Annuler',
-        danger: true
-    });
-    
-    if (confirme) {
-        localStorage.removeItem('sav_auth');
-        localStorage.removeItem('sav_user_permissions');
-        window.location.href = '../../index.html';
-    }
+    await handleLogout();
 }
 
 // ========================================
@@ -280,6 +395,14 @@ function initEventListeners() {
 // Cleanup au déchargement de la page
 window.addEventListener('beforeunload', () => {
     modalManager.destroyAll();
+    
+    // 🆕 Cleanup des composants UI
+    if (appHeader) {
+        appHeader.destroy();
+    }
+    if (statsCards) {
+        statsCards.destroy();
+    }
 });
 
 // ========================================
@@ -298,6 +421,15 @@ export function afficherErreur(message) {
     notify.error(message);
 }
 
+// 🆕 Getters pour les composants (pour les autres modules)
+export function getAppHeader() {
+    return appHeader;
+}
+
+export function getStatsCards() {
+    return statsCards;
+}
+
 /* ========================================
    HISTORIQUE DES DIFFICULTÉS
    
@@ -305,19 +437,29 @@ export function afficherErreur(message) {
    Modification: Ces fonctions ont été remplacées par SearchDropdown
    Impact: Plus besoin de les importer ni de les exposer globalement
    
+   [30/01/2025] - Intégration AppHeader et StatsCards
+   Modification: 
+   - Ajout imports AppHeader et StatsCards
+   - Création fonction initUIComponents()
+   - Nouvelle fonction handleLogout() pour le header
+   - Export updateStats() pour mise à jour depuis list.js
+   - Cleanup des composants au beforeunload
+   - Getters pour accès aux composants depuis autres modules
+   
+   Impact: 
+   - Header maintenant géré par composant (plus de HTML statique)
+   - Stats cards avec animation et interactions
+   - Déconnexion unifiée entre bouton header et fonction legacy
+   
    [27/07/2025] - Ajout de la fonction supprimerCommande
    Modification: Exposition de la fonction window.supprimerCommande
    Raison: Permettre la suppression sécurisée depuis le tableau
    Impact: La fonction est définie dans commandes.detail.js
    
-   [27/07/2025] - Import du module serial
-   Modification: Ajout de l'import './commandes.serial.js'
-   Raison: Gestion des numéros de série
-   
    NOTES POUR REPRISES FUTURES:
-   - rechercherClient/rechercherProduit ont été remplacées par SearchDropdown
-   - supprimerCommande est définie dans detail.js, pas ici
-   - Elle nécessite une validation nom/prénom
-   - Elle change le statut en "supprime" (soft delete)
-   - Le module serial est importé pour side-effects
+   - AppHeader remplace complètement le header HTML statique
+   - StatsCards remplace les cartes statiques du HTML
+   - La fonction updateStats() doit être appelée depuis list.js
+   - Les composants UI sont accessibles via getters pour autres modules
+   - Cleanup automatique des composants au déchargement
    ======================================== */
