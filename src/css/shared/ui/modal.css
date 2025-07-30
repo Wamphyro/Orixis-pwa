@@ -5,6 +5,10 @@
    DESCRIPTION:
    Styles de base pour toutes les modales de l'application.
    Extrait de commandes-modal.css (lignes 30-280)
+   
+   MODIFIÉ [01/02/2025]:
+   - Suppression des styles de boutons (utilisent button.css)
+   - Les modales utilisent maintenant le système unifié
    ======================================== */
 
 /* Conteneur modal (overlay) */
@@ -100,54 +104,21 @@
     background: #fafafa;
 }
 
-/* Boutons dans la modal */
+/* ========================================
+   BOUTONS DANS LES MODALES
+   Utilise maintenant les classes de button.css
+   ======================================== */
+
+/* Ajustements contextuels pour les modales uniquement */
 .modal .btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: inherit;
-    min-width: 80px;
+    /* Les styles principaux viennent de button.css */
+    /* Ici seulement les ajustements spécifiques aux modales */
+    min-width: 100px;
 }
 
-.modal .btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.modal .btn:active {
-    transform: translateY(0);
-}
-
-/* Variantes de boutons */
-.modal .btn-primary {
-    background: #1976d2;
-    color: white;
-}
-
-.modal .btn-primary:hover {
-    background: #1565c0;
-}
-
-.modal .btn-secondary {
-    background: #f5f5f5;
-    color: #424242;
-}
-
-.modal .btn-secondary:hover {
-    background: #e0e0e0;
-}
-
-.modal .btn-danger {
-    background: #f44336;
-    color: white;
-}
-
-.modal .btn-danger:hover {
-    background: #d32f2f;
+.modal-footer .btn {
+    /* Espacement spécifique pour le footer */
+    margin: 0;
 }
 
 /* Animations */

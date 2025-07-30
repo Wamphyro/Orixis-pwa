@@ -15,18 +15,8 @@
     
     <!-- ========================================
          CSS - Ordre de chargement optimisé
-         MODIFIÉ le 30/01/2025: 
-         - Suppression double chargement main.css
-         - Le header est maintenant un composant
-         
-         MODIFIÉ le 31/01/2025:
-         - Ajout de stepper.css après search-dropdown.css
-         - Ajout de dropdown-list.css pour le nouveau composant
-         
-         ORDRE IMPORTANT:
-         1. main.css (variables, reset, layout)
-         2. Composants UI génériques
-         3. CSS spécifiques à la page
+         MODIFIÉ le 01/02/2025:
+         - button.css chargé pour les styles glassmorphism
          ======================================== -->
     
     <!-- 1. Base et layout -->
@@ -52,7 +42,7 @@
     <link rel="stylesheet" href="../src/css/commandes/commandes-custom.css">
 </head>
 <body>
-    <!-- 🆕 Container pour le composant AppHeader -->
+    <!-- Container pour le composant AppHeader -->
     <!-- AppHeader sera injecté ici par JavaScript -->
     
     <div class="container">
@@ -63,7 +53,8 @@
             </div>
             
             <div class="commandes-actions">
-                <button class="btn btn-primary" onclick="ouvrirNouvelleCommande()">
+                <!-- ✅ Bouton avec glassmorphism -->
+                <button class="btn btn-primary btn-with-icon" onclick="ouvrirNouvelleCommande()">
                     <span>➕</span> Nouvelle commande
                 </button>
             </div>
@@ -123,13 +114,15 @@
                             <p><strong id="selectedClientName"></strong></p>
                             <p id="selectedClientInfo"></p>
                         </div>
+                        <!-- ✅ Bouton lien -->
                         <button class="btn-link" onclick="changerClient()">Changer de client</button>
                     </div>
                     
                     <div class="divider">OU</div>
                     
-                    <button class="btn btn-secondary" onclick="ouvrirNouveauClient()">
-                        ➕ Créer un nouveau client
+                    <!-- ✅ Bouton secondaire avec icône -->
+                    <button class="btn btn-secondary btn-with-icon" onclick="ouvrirNouveauClient()">
+                        <span>➕</span> Créer un nouveau client
                     </button>
                 </div>
                 
@@ -137,7 +130,6 @@
                 <div class="step-content hidden" id="stepContent2">
                     <h3>Sélection des produits</h3>
                     
-                    <!-- 🔄 MODIFIÉ : Pack selector avec DropdownList -->
                     <div class="pack-selector">
                         <label>Utiliser un pack prédéfini</label>
                         <div id="packTemplate"></div>
@@ -161,13 +153,11 @@
                 <div class="step-content hidden" id="stepContent3">
                     <h3>Informations de livraison</h3>
                     
-                    <!-- 🔄 MODIFIÉ : Type de préparation avec DropdownList -->
                     <div class="form-group">
                         <label>Type de préparation</label>
                         <div id="typePreparation"></div>
                     </div>
                     
-                    <!-- ✅ CORRIGÉ : Suppression de la duplication -->
                     <div class="form-group">
                         <label>Niveau d'urgence</label>
                         <div class="urgence-selector">
@@ -176,7 +166,6 @@
                     </div>
                     
                     <div class="form-row">
-                        <!-- 🔄 MODIFIÉ : Magasin de livraison avec DropdownList -->
                         <div class="form-group">
                             <label>Magasin de livraison</label>
                             <div id="magasinLivraison"></div>
@@ -217,13 +206,14 @@
             </div>
             
             <div class="modal-footer">
+                <!-- ✅ Boutons glassmorphism -->
                 <button class="btn btn-secondary" id="btnPrevStep" onclick="etapePrecedente()" disabled>
                     ← Précédent
                 </button>
                 <button class="btn btn-primary" id="btnNextStep" onclick="etapeSuivante()">
                     Suivant →
                 </button>
-                <button class="btn btn-primary hidden" id="btnValiderCommande" onclick="validerCommande()">
+                <button class="btn btn-success hidden" id="btnValiderCommande" onclick="validerCommande()">
                     ✓ Valider la commande
                 </button>
             </div>
@@ -327,7 +317,6 @@
                         </div>
                     </div>
                     
-                    <!-- 🔄 MODIFIÉ : Magasin de référence avec DropdownList -->
                     <div class="form-group">
                         <label>Magasin de référence *</label>
                         <div id="newClientMagasin"></div>
@@ -336,11 +325,12 @@
             </div>
             
             <div class="modal-footer">
+                <!-- ✅ Boutons glassmorphism -->
                 <button class="btn btn-secondary" onclick="fermerModal('modalNouveauClient')">
                     Annuler
                 </button>
-                <button class="btn btn-primary" onclick="creerNouveauClient()">
-                    Créer le client
+                <button class="btn btn-primary btn-with-icon" onclick="creerNouveauClient()">
+                    <span>➕</span> Créer le client
                 </button>
             </div>
         </div>
@@ -351,23 +341,6 @@
         <p>Orixis - © 2025</p>
     </div>
 
-    <!-- ========================================
-         SCRIPTS
-         Le fichier commandes.main.js charge tous les autres modules
-         Les composants UI avec JS chargent leur CSS automatiquement
-         
-         MODIFIÉ le 30/01/2025:
-         - Header supprimé du HTML, géré par composant AppHeader
-         - Le JavaScript doit maintenant créer l'instance AppHeader
-         
-         MODIFIÉ le 31/01/2025:
-         - Le Stepper est maintenant géré par le composant JS
-         - Le HTML reste identique pour la compatibilité
-         
-         MODIFIÉ le 01/02/2025:
-         - Remplacement des <select> par des <div> pour DropdownList
-         - Pack template, type préparation, magasins utilisent maintenant DropdownList
-         ======================================== -->
     <script type="module" src="../src/js/pages/commandes/commandes.main.js"></script>
 </body>
 </html>
