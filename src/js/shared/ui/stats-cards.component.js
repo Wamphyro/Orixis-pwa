@@ -11,6 +11,8 @@
 // - updateCard(cardId, value)
 // - updateAll(values)
 // - setEnabled(cardId, enabled)
+// - show()
+// - hide()
 // - destroy()
 //
 // CALLBACKS DISPONIBLES:
@@ -52,12 +54,14 @@ export class StatsCards {
         // État interne
         this.state = {
             values: {},
-            enabled: {}
+            enabled: {},
+            loaded: false
         };
         
         // Éléments DOM
         this.elements = {
             container: null,
+            wrapper: null,
             cards: {}
         };
         
@@ -70,9 +74,49 @@ export class StatsCards {
     // ========================================
     
     init() {
-        // Charger les styles
-        this.loadStyles();
-        
+        // Charger les styles en premier
+        this.loadStyles().then(() => {
+            // Une fois le CSS chargé, continuer
+            this.setupContainer();
+            this.initState();
+            this.render();
+            this.attachEvents();
+            this.showWithDelay();
+            
+            console.log('✅ StatsCards initialisé');
+        });
+    }
+    
+    loadStyles() {
+        return new Promise((resolve) => {
+            const styleId = 'stats-cards-styles';
+            
+            if (!document.getElementById(styleId)) {
+                const link = document.createElement('link');
+                link.id = styleId;
+                link.rel = 'stylesheet';
+                link.href = '../src/css/shared/ui/stats-cards.css';
+                
+                // Attendre que le CSS soit chargé
+                link.onload = () => {
+                    console.log('📦 CSS StatsCards chargé');
+                    resolve();
+                };
+                
+                link.onerror = () => {
+                    console.warn('⚠️ Erreur chargement CSS StatsCards');
+                    resolve(); // Continuer même en cas d'erreur
+                };
+                
+                document.head.appendChild(link);
+            } else {
+                // CSS déjà chargé
+                resolve();
+            }
+        });
+    }
+    
+    setupContainer() {
         // Vérifier le container
         if (typeof this.config.container === 'string') {
             this.elements.container = document.querySelector(this.config.container);
@@ -84,48 +128,12 @@ export class StatsCards {
             console.error('StatsCards: Container non trouvé');
             return;
         }
-        
-        // Initialiser l'état
-        this.initState();
-        
-        // Créer le DOM
-        this.render();
-        
-        // Attacher les événements
-        this.attachEvents();
-        
-        // 🆕 ANTI-FOUC : Marquer comme chargé après un court délai
-        setTimeout(() => {
-            const wrapper = this.elements.container.querySelector('.stats-cards-wrapper');
-            if (wrapper) {
-                wrapper.classList.add('loaded');
-            }
-        }, 150); // Délai pour s'assurer que le CSS est chargé
-        
-        console.log('✅ StatsCards initialisé');
-    }
-    
-    loadStyles() {
-        const styleId = 'stats-cards-styles';
-        
-        if (!document.getElementById(styleId)) {
-            const link = document.createElement('link');
-            link.id = styleId;
-            link.rel = 'stylesheet';
-            link.href = '../src/css/shared/ui/stats-cards.css';
-            document.head.appendChild(link);
-            
-            // 🆕 ANTI-FOUC : Attendre que le CSS soit chargé
-            link.onload = () => {
-                console.log('📦 CSS StatsCards chargé');
-            };
-        }
     }
     
     initState() {
         // Initialiser les valeurs et états
         this.config.cards.forEach(card => {
-            this.state.values[card.id] = card.value || 0;
+            this.state.values[card.id] = card.value !== undefined ? card.value : 0;
             this.state.enabled[card.id] = card.enabled !== false;
         });
     }
@@ -140,9 +148,8 @@ export class StatsCards {
         wrapper.className = `stats-cards-wrapper theme-${this.config.theme}`;
         wrapper.id = this.id;
         
-        // 🆕 ANTI-FOUC : Ajouter les styles inline initiaux
-        wrapper.style.opacity = '0';
-        wrapper.style.transition = 'opacity 0.3s ease';
+        // 🆕 PAS de style inline opacity - Laisser le CSS gérer
+        // Le CSS définit opacity: 0 par défaut, puis .loaded met opacity: 1
         
         // Créer chaque carte
         this.config.cards.forEach(cardConfig => {
@@ -152,6 +159,9 @@ export class StatsCards {
                 this.elements.cards[cardConfig.id] = card;
             }
         });
+        
+        // Sauvegarder la référence au wrapper
+        this.elements.wrapper = wrapper;
         
         // Vider et remplir le container
         this.elements.container.innerHTML = '';
@@ -180,7 +190,7 @@ export class StatsCards {
             card.classList.add('disabled');
         }
         
-        // 🆕 AMÉLIORATION : Valeur d'affichage par défaut
+        // Valeur d'affichage
         const displayValue = config.value !== undefined ? config.value : '-';
         
         // Icône optionnelle
@@ -217,7 +227,7 @@ export class StatsCards {
     }
     
     formatNumber(value) {
-        // 🆕 AMÉLIORATION : Gérer les valeurs non numériques
+        // Gérer les valeurs non numériques
         if (value === '-' || value === null || value === undefined) {
             return '-';
         }
@@ -294,6 +304,41 @@ export class StatsCards {
     }
     
     // ========================================
+    // AFFICHAGE ET MASQUAGE
+    // ========================================
+    
+    /**
+     * 🆕 Affiche le composant avec délai pour éviter le FOUC
+     */
+    showWithDelay() {
+        // Attendre un court délai pour s'assurer que tout est en place
+        setTimeout(() => {
+            this.show();
+        }, 100);
+    }
+    
+    /**
+     * Affiche le composant immédiatement
+     */
+    show() {
+        if (this.elements.wrapper) {
+            this.elements.wrapper.classList.add('loaded');
+            this.state.loaded = true;
+            console.log('📦 StatsCards affiché');
+        }
+    }
+    
+    /**
+     * Masque le composant
+     */
+    hide() {
+        if (this.elements.wrapper) {
+            this.elements.wrapper.classList.remove('loaded');
+            this.state.loaded = false;
+        }
+    }
+    
+    // ========================================
     // API PUBLIQUE
     // ========================================
     
@@ -315,7 +360,7 @@ export class StatsCards {
         // Mettre à jour le DOM
         const numberElement = this.elements.cards[cardId].querySelector('.stat-number');
         if (numberElement) {
-            if (this.config.animated && animate) {
+            if (this.config.animated && animate && this.state.loaded) {
                 this.animateNumber(numberElement, oldValue, value);
             } else {
                 numberElement.textContent = this.formatNumber(value);
@@ -359,28 +404,6 @@ export class StatsCards {
     }
     
     /**
-     * 🆕 NOUVELLE MÉTHODE : Afficher le composant une fois chargé
-     */
-    show() {
-        const wrapper = this.elements.container.querySelector('.stats-cards-wrapper');
-        if (wrapper) {
-            wrapper.style.opacity = '1';
-            wrapper.classList.add('loaded');
-        }
-    }
-    
-    /**
-     * 🆕 NOUVELLE MÉTHODE : Masquer le composant
-     */
-    hide() {
-        const wrapper = this.elements.container.querySelector('.stats-cards-wrapper');
-        if (wrapper) {
-            wrapper.style.opacity = '0';
-            wrapper.classList.remove('loaded');
-        }
-    }
-    
-    /**
      * Récupère les données d'une carte
      * @param {string} cardId - ID de la carte
      * @returns {Object} Données de la carte
@@ -395,6 +418,18 @@ export class StatsCards {
     }
     
     /**
+     * Retourne l'état du composant
+     * @returns {Object} État actuel
+     */
+    getState() {
+        return {
+            loaded: this.state.loaded,
+            values: { ...this.state.values },
+            enabled: { ...this.state.enabled }
+        };
+    }
+    
+    /**
      * Détruit le composant
      */
     destroy() {
@@ -404,8 +439,8 @@ export class StatsCards {
         }
         
         // Réinitialiser
-        this.state = { values: {}, enabled: {} };
-        this.elements = { container: null, cards: {} };
+        this.state = { values: {}, enabled: {}, loaded: false };
+        this.elements = { container: null, wrapper: null, cards: {} };
     }
     
     // ========================================
@@ -413,6 +448,10 @@ export class StatsCards {
     // ========================================
     
     animateNumber(element, from, to) {
+        // Validation des paramètres
+        if (typeof from !== 'number') from = 0;
+        if (typeof to !== 'number') to = 0;
+        
         const duration = 1000; // 1 seconde
         const steps = 30;
         const stepDuration = duration / steps;
@@ -444,15 +483,20 @@ export class StatsCards {
    - Animation des nombres optionnelle
    - Support de différents formats de nombres
    
-   [30/01/2025] - Correction FOUC
-   - Ajout de l'opacité initiale à 0
-   - Délai avant affichage (150ms)
-   - Méthodes show()/hide() ajoutées
-   - Gestion des valeurs '-' par défaut
+   [30/01/2025] - Correction FOUC v1
+   - Tentative avec opacité inline
+   - Conflit entre style inline et classe CSS
+   
+   [30/01/2025] - Correction FOUC v2
+   - Suppression des styles inline opacity
+   - Chargement CSS en Promise
+   - Référence directe au wrapper
+   - Méthodes show/hide améliorées
+   - État loaded dans le state
    
    NOTES POUR REPRISES FUTURES:
-   - Le composant charge automatiquement son CSS
-   - Les callbacks sont optionnels
-   - L'animation peut être désactivée globalement ou par mise à jour
-   - Anti-FOUC intégré avec transition d'opacité
+   - Le CSS gère complètement l'opacité (.loaded)
+   - Pas de style inline opacity pour éviter les conflits
+   - Le chargement CSS est asynchrone avec Promise
+   - L'état loaded est centralisé dans this.state
    ======================================== */
