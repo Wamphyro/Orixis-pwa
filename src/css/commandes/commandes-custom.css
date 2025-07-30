@@ -870,66 +870,30 @@
 
 /* ========================================
    FIX DROPDOWNS DANS LES MODALS
-   [01/02/2025] - Position fixed pour les dropdowns
+   [01/02/2025] - Correction pour dropdowns dans modals
    ======================================== */
 
-/* Force position fixed pour tous les dropdowns dans les modals */
+/* Le modal-body doit garder son overflow pour le scroll */
+/* On ne touche PAS à l'overflow du modal-body */
+
+/* Forcer les dropdowns dans les modals à utiliser updatePosition() correctement */
 .modal .dropdown-list-panel {
     position: fixed !important;
-    z-index: 10050 !important; /* Au-dessus des modals (z-index: 1000) */
+    z-index: 10500 !important; /* Au-dessus du modal (z-index: 1000) et du footer */
 }
 
-/* Fix pour le calcul de position dans les modals */
+/* S'assurer que le wrapper ne limite pas le dropdown */
 .modal .dropdown-list-wrapper {
-    position: relative;
-    z-index: inherit;
-}
-
-/* S'assurer que le dropdown ne déborde pas de l'écran */
-.modal .dropdown-list-panel {
-    max-height: 300px !important;
-    overflow-y: auto !important;
-}
-
-/* Empêcher le modal-body de couper les dropdowns */
-.modal-body {
-    overflow: visible !important;
-}
-
-/* S'assurer que le modal-footer ne passe pas au-dessus */
-.modal-footer {
-    position: relative;
+    position: static !important; /* Important pour que le calcul de position fonctionne */
     z-index: 1;
 }
 
-/* Fix pour les dropdowns avec recherche dans les modals */
-.modal .dropdown-list-search {
-    position: sticky;
-    top: 0;
-    background: inherit;
-    z-index: 1;
-    padding: 10px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+/* Animation adaptée */
+.modal .dropdown-list-panel.show {
+    animation: modalDropdownSlideIn 0.2s ease-out;
 }
 
-/* Ajustement pour le glassmorphism dans les modals */
-.modal .dropdown-list-panel.glassmorphism {
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-}
-
-/* Fix spécifique pour les dropdowns dans les formulaires d'édition */
-.edit-form .dropdown-list-panel {
-    position: fixed !important;
-    z-index: 10060 !important; /* Encore plus haut pour l'édition */
-}
-
-/* Animation d'ouverture adaptée pour position fixed */
-.modal .dropdown-list-panel {
-    animation: dropdownSlideIn 0.2s ease-out;
-}
-
-@keyframes dropdownSlideIn {
+@keyframes modalDropdownSlideIn {
     from {
         opacity: 0;
         transform: translateY(-10px);
@@ -940,19 +904,11 @@
     }
 }
 
-/* ========================================
-   RESPONSIVE POUR DROPDOWNS FIXED
-   ======================================== */
+/* Sur mobile, le dropdown est déjà en position fixed grâce au JS */
 @media (max-width: 768px) {
-    .modal .dropdown-list-dropdown {
-        max-width: calc(100vw - 40px);
-        left: 20px !important;
-        right: 20px !important;
-        width: auto !important;
-    }
-    
-    .dropdown-list-dropdown {
-        max-height: 50vh !important;
+    .modal .dropdown-list-panel {
+        /* Le JS gère déjà le positionnement mobile */
+        max-width: calc(100vw - 40px) !important;
     }
 }
 
@@ -969,8 +925,14 @@
    - Suppression des doublons (lignes 75-151 et responsive)
    - Le composant Stepper gère maintenant ses propres styles
    
+   [01/02/2025] - Fix dropdowns dans modals
+   - NE PAS toucher à overflow du modal-body
+   - Utiliser position: fixed pour les panels de dropdown
+   - Le JS du composant gère le positionnement
+   
    NOTES POUR REPRISES FUTURES:
    - Les styles de recherche sont dans /shared/ui/search-dropdown.css
    - Les styles du stepper sont dans /shared/ui/stepper.css
-   - Ne pas réintroduire ces styles ici
+   - Ne jamais mettre overflow: visible sur modal-body
+   - Les dropdowns utilisent position: fixed dans les modals
    ======================================== */
