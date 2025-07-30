@@ -37,7 +37,7 @@ export async function initListeCommandes() {
     tableCommandes = new DataTable({
         container: '.commandes-table-container',
         
-        columns: [
+                columns: [
             {
                 key: 'numeroCommande',
                 label: 'N° Commande',
@@ -51,6 +51,14 @@ export async function initListeCommandes() {
                 sortable: true,
                 width: 100,
                 formatter: (value) => formatDate(value)
+            },
+            // 🆕 NOUVELLE COLONNE MAGASIN
+            {
+                key: 'magasinLivraison',
+                label: 'Magasin',
+                sortable: true,
+                width: 80,
+                formatter: (value) => value || '-'
             },
             {
                 key: 'client',
