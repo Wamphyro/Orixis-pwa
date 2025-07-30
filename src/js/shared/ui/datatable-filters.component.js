@@ -492,6 +492,7 @@ export class DataTableFilters {
             value: config.defaultValue || '',
             searchable: true, // Toujours activé
             showIcons: true,  // Toujours afficher les icônes
+            keepPlaceholder: config.keepPlaceholder || false, // Transmettre l'option
             onChange: (value) => {
                 if (this.config.autoSubmit) {
                     this.handleFilterChange();

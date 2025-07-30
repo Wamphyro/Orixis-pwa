@@ -247,9 +247,20 @@ async function initFiltres() {  // ← AJOUTER async
         return filtre;
     });
     
+    // Activer keepPlaceholder sur tous les filtres select
+    const filtresAvecKeepPlaceholder = filtresConfigAjustes.map(filtre => {
+        if (filtre.type === 'select') {
+            return {
+                ...filtre,
+                keepPlaceholder: true  // Garder le label fixe
+            };
+        }
+        return filtre;
+    });
+    
     filtresCommandes = new DataTableFilters({
         container: '.commandes-filters',
-        filters: filtresConfigAjustes,
+        filters: filtresAvecKeepPlaceholder,
             onFilter: (filters) => {
                 // Détecter si c'est un reset (tous les filtres sont vides)
                 const isReset = !filters.recherche && 

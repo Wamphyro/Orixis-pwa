@@ -33,6 +33,7 @@ export class DropdownList {
             closeOnSelect: true,         // Fermer après sélection
             closeOnClickOutside: true,   // Fermer au clic extérieur
             disabled: false,             // État désactivé
+            keepPlaceholder: false,      // Garder le placeholder au lieu de la valeur
             
             // Apparence
             showIcons: true,             // Afficher les icônes
@@ -430,12 +431,18 @@ export class DropdownList {
         // Mettre à jour l'affichage
         const valueEl = this.trigger.querySelector('.dropdown-list-value');
         if (valueEl) {
-            let html = '';
-            if (this.options.showIcons && option.icon) {
-                html += `<span class="dropdown-value-icon">${option.icon}</span> `;
+            if (this.options.keepPlaceholder) {
+                // Garder le placeholder, juste ajouter une classe pour indiquer qu'une valeur est sélectionnée
+                this.trigger.classList.add('has-value');
+            } else {
+                // Comportement normal : remplacer par la valeur sélectionnée
+                let html = '';
+                if (this.options.showIcons && option.icon) {
+                    html += `<span class="dropdown-value-icon">${option.icon}</span> `;
+                }
+                html += option.label;
+                valueEl.innerHTML = html;
             }
-            html += option.label;
-            valueEl.innerHTML = html;
         }
         
         // Mettre à jour l'input caché
@@ -612,9 +619,27 @@ export class DropdownList {
     }
     
     setValue(value) {
-        const option = this.options.options.find(opt => opt.value === value);
-        if (option) {
-            this.selectOption(option);
+        if (value === '' || value === null || value === undefined) {
+            // Reset : remettre le placeholder
+            this.selectedValue = '';
+            this.selectedOption = null;
+            
+            const valueEl = this.trigger.querySelector('.dropdown-list-value');
+            if (valueEl) {
+                valueEl.innerHTML = this.options.placeholder;
+            }
+            this.trigger.classList.remove('has-value');
+            
+            if (this.hiddenInput) {
+                this.hiddenInput.value = '';
+            }
+            
+            this.renderOptions();
+        } else {
+            const option = this.options.options.find(opt => opt.value === value);
+            if (option) {
+                this.selectOption(option);
+            }
         }
     }
     
