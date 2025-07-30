@@ -38,7 +38,7 @@ export async function initListeCommandes() {
         container: '.commandes-table-container',
         
                 columns: [
-                    
+
             {
                 key: 'dates.commande',
                 label: 'Date',
@@ -372,7 +372,9 @@ function formatDate(timestamp) {
 function afficherUrgence(urgence) {
     const config = COMMANDES_CONFIG.NIVEAUX_URGENCE[urgence];
     if (!config) return urgence;
-    return `<span class="urgence-badge ${urgence}">${config.icon} ${config.label}</span>`;
+    
+    // Juste l'icône avec un title pour le tooltip
+    return `<span class="urgence-icon" title="${config.label} (${config.delai})">${config.icon}</span>`;
 }
 
 function afficherStatut(statut) {

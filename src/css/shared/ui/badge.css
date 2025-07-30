@@ -101,13 +101,21 @@
 
 .urgence-badge.urgent {
     background: #fff3cd;
-    color: #856404;  /* 🔧 CORRIGÉ : marron au lieu de jaune */
+    color: #856404;
 }
 
-/* 🔧 CORRIGÉ : underscore au lieu de tiret */
 .urgence-badge.tres_urgent {
     background: #f8d7da;
-    color: #721c24;  /* 🔧 CORRIGÉ : rouge foncé au lieu de rouge vif */
+    color: #721c24;
+}
+
+/* 🆕 ICÔNES URGENCE SANS BADGE */
+.urgence-icon {
+    font-size: 20px;
+    cursor: help;
+    display: inline-block;
+    text-align: center;
+    min-width: 30px;
 }
 
 /* ========================================
