@@ -10,8 +10,11 @@
    1. Badge de base
    2. Badges statut commandes
    3. Badges urgence
-   4. Badges génériques
-   5. Tailles et variantes
+   4. Icônes avec tooltips (urgence & statuts)
+   5. Badges génériques
+   6. Tailles et variantes
+   7. Animations
+   8. Responsive
    ======================================== */
 
 /* ========================================
@@ -109,16 +112,11 @@
     color: #721c24;
 }
 
-/* 🆕 ICÔNES URGENCE SANS BADGE */
-.urgence-icon {
-    font-size: 20px;
-    cursor: help;
-    display: inline-block;
-    text-align: center;
-    min-width: 30px;
-}
+/* ========================================
+   ICÔNES AVEC TOOLTIPS (URGENCE & STATUTS)
+   ======================================== */
 
-/* ICÔNES URGENCE AVEC TOOLTIP */
+/* --- URGENCE --- */
 .urgence-icon-wrapper {
     position: relative;
     display: inline-block;
@@ -150,7 +148,6 @@
     z-index: 1000;
 }
 
-/* Petite flèche sous le tooltip */
 .urgence-tooltip::after {
     content: '';
     position: absolute;
@@ -161,8 +158,54 @@
     border-top-color: #333;
 }
 
-/* Afficher au survol */
 .urgence-icon-wrapper:hover .urgence-tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* --- STATUTS --- */
+.statut-icon-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.statut-icon {
+    font-size: 20px;
+    cursor: help;
+    display: inline-block;
+    text-align: center;
+    min-width: 30px;
+}
+
+.statut-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s;
+    margin-bottom: 5px;
+    z-index: 1000;
+}
+
+.statut-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #333;
+}
+
+.statut-icon-wrapper:hover .statut-tooltip {
     opacity: 1;
     visibility: visible;
 }
@@ -331,17 +374,30 @@
         font-size: 11px;
         padding: 3px 8px;
     }
+    
+    /* Icônes plus petites sur mobile */
+    .urgence-icon,
+    .statut-icon {
+        font-size: 16px;
+        min-width: 25px;
+    }
 }
 
 /* ========================================
    UTILISATION:
    
+   Badges classiques:
    <span class="badge badge-primary">Primary</span>
    <span class="status-badge status-nouvelle">Nouvelle</span>
    <span class="urgence-badge urgent">Urgent</span>
-   <span class="badge badge-danger badge-pill">3</span>
    
-   Pour un compteur sur un bouton:
+   Icônes avec tooltip:
+   <span class="urgence-icon-wrapper">
+       <span class="urgence-icon">🔥</span>
+       <span class="urgence-tooltip">Très urgent (24h)</span>
+   </span>
+   
+   Badge compteur:
    <button class="btn" style="position: relative;">
        Messages
        <span class="badge-counter">5</span>

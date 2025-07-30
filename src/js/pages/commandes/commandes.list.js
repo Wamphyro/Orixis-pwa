@@ -385,7 +385,14 @@ function afficherUrgence(urgence) {
 function afficherStatut(statut) {
     const config = COMMANDES_CONFIG.STATUTS[statut];
     if (!config) return statut;
-    return `<span class="status-badge status-${statut}">${config.icon} ${config.label}</span>`;
+    
+    // Structure identique avec tooltip CSS
+    return `
+        <span class="statut-icon-wrapper">
+            <span class="statut-icon">${config.icon}</span>
+            <span class="statut-tooltip">${config.label}</span>
+        </span>
+    `;
 }
 
 /**
