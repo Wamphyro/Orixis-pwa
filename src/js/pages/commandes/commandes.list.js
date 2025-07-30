@@ -5,10 +5,11 @@
 // DESCRIPTION:
 // Gère l'affichage de la liste des commandes avec DataTable et DataTableFilters
 // Refactorisé le 29/07/2025 : Migration vers DataTable + DataTableFilters
+// Modifié le 31/01/2025 : Utilisation de la config centralisée pour les filtres
 // ========================================
 
 import { CommandesService } from '../../services/commandes.service.js';
-import { COMMANDES_CONFIG } from '../../data/commandes.data.js';
+import { COMMANDES_CONFIG, genererOptionsFiltres } from '../../data/commandes.data.js';
 import { DataTable, DataTableFilters, StatsCards, formatDate as formatDateUtil } from '../../shared/index.js';
 import { state } from './commandes.main.js';
 
@@ -193,55 +194,15 @@ function initStatsCards() {
 
 /**
  * Initialiser les filtres
+ * MODIFIÉ : Utilise maintenant genererOptionsFiltres() depuis commandes.data.js
  */
 function initFiltres() {
+    // Récupérer la configuration des filtres depuis commandes.data.js
+    const filtresConfig = genererOptionsFiltres();
+    
     filtresCommandes = new DataTableFilters({
         container: '.commandes-filters',
-        filters: [
-            {
-                type: 'search',
-                key: 'recherche',
-                placeholder: 'Client, produit, n° commande...'
-            },
-            {
-                type: 'select',
-                key: 'statut',
-                label: 'Statut',
-                options: [
-                    { value: '', label: 'Tous les statuts' },
-                    { value: 'nouvelle', label: '📋 Nouvelle' },
-                    { value: 'preparation', label: '🔧 En préparation' },
-                    { value: 'terminee', label: '🎯 Préparée' },
-                    { value: 'expediee', label: '📦 Expédiée' },
-                    { value: 'receptionnee', label: '📥 Réceptionnée' },
-                    { value: 'livree', label: '✅ Livrée' },
-                    { value: 'annulee', label: '❌ Annulée' }
-                ]
-            },
-            {
-                type: 'select',
-                key: 'periode',
-                label: 'Période',
-                defaultValue: 'all',
-                options: [
-                    { value: 'all', label: 'Toutes' },
-                    { value: 'today', label: "Aujourd'hui" },
-                    { value: 'week', label: 'Cette semaine' },
-                    { value: 'month', label: 'Ce mois' }
-                ]
-            },
-            {
-                type: 'select',
-                key: 'urgence',
-                label: 'Urgence',
-                options: [
-                    { value: '', label: 'Toutes' },
-                    { value: 'normal', label: '🍃 Normal' },
-                    { value: 'urgent', label: '💨 Urgent' },
-                    { value: 'tres_urgent', label: '🔥 Très urgent' }
-                ]
-            }
-        ],
+        filters: filtresConfig,
         onFilter: (filters) => {
             // Mettre à jour l'état global
             state.filtres = {
@@ -460,14 +421,23 @@ function prepareExportData(data) {
    - Suppression du code HTML en dur
    - Les filtres sont maintenant générés dynamiquement
    
+   [31/01/2025] - Centralisation de la configuration des filtres
+   - Les options de filtres sont maintenant générées depuis commandes.data.js
+   - Utilisation de genererOptionsFiltres() au lieu de définir les options en dur
+   - Import de genererOptionsFiltres depuis commandes.data.js
+   - Assure la cohérence entre les filtres et les données affichées
+   
    AVANTAGES:
    - Composants réutilisables
    - Code plus maintenable
    - Filtres configurables
    - Export CSV/Excel intégré
+   - Configuration centralisée
+   - Une seule source de vérité pour les icônes et labels
    
    NOTES:
    - Les fonctions filtrerCommandes et resetFiltres sont conservées pour compatibilité
    - Les IDs HTML (searchInput, etc.) ne sont plus utilisés
    - Tout est géré par les composants
+   - La configuration des filtres est maintenant dans commandes.data.js
    ======================================== */

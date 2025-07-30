@@ -6,13 +6,15 @@
 // Centralise toutes les configurations liées aux commandes
 // Modifié le 27/07/2025 : Ajout du statut "supprime"
 // Modifié le 31/01/2025 : Correction des icônes pour cohérence avec UI
+// Modifié le 31/01/2025 : Centralisation de la configuration des filtres
 //
 // STRUCTURE:
 // 1. Configuration générale (lignes 15-20)
 // 2. Statuts de commande (lignes 22-85)
 // 3. Types de préparation (lignes 87-110)
 // 4. Niveaux d'urgence (lignes 112-135)
-// 5. Autres configurations (lignes 137+)
+// 5. Configuration des filtres (lignes 137-180)
+// 6. Autres configurations (lignes 182+)
 // ========================================
 
 export const COMMANDES_CONFIG = {
@@ -94,19 +96,64 @@ export const COMMANDES_CONFIG = {
             label: 'Normal',
             delai: '3-5 jours',
             couleur: '#28a745',
-            icon: '🍃'  // ← Icône cohérente avec le dropdown
+            icon: '🍃'
         },
         urgent: {
             label: 'Urgent',
             delai: '48h',
             couleur: '#ffc107',
-            icon: '💨'  // ← Icône cohérente avec le dropdown
+            icon: '💨'
         },
         tres_urgent: {
             label: 'Très urgent',
             delai: '24h',
             couleur: '#dc3545',
-            icon: '🔥'  // ← Icône cohérente avec le dropdown
+            icon: '🔥'
+        }
+    },
+    
+    // ========================================
+    // NOUVELLE SECTION : Configuration des filtres
+    // Centralise toutes les options de filtrage
+    // ========================================
+    FILTRES_CONFIG: {
+        recherche: {
+            type: 'search',
+            key: 'recherche',
+            placeholder: 'Client, produit, n° commande...'
+        },
+        
+        statut: {
+            type: 'select',
+            key: 'statut',
+            label: 'Statut',
+            options: [
+                { value: '', label: 'Tous les statuts' }
+            ]
+            // Les autres options seront générées dynamiquement depuis STATUTS
+        },
+        
+        periode: {
+            type: 'select',
+            key: 'periode',
+            label: 'Période',
+            defaultValue: 'all',
+            options: [
+                { value: 'all', label: 'Toutes' },
+                { value: 'today', label: "Aujourd'hui" },
+                { value: 'week', label: 'Cette semaine' },
+                { value: 'month', label: 'Ce mois' }
+            ]
+        },
+        
+        urgence: {
+            type: 'select',
+            key: 'urgence',
+            label: 'Urgence',
+            options: [
+                { value: '', label: 'Toutes' }
+            ]
+            // Les autres options seront générées dynamiquement depuis NIVEAUX_URGENCE
         }
     },
     
@@ -220,6 +267,35 @@ export const COMMANDES_CONFIG = {
     }
 };
 
+// ========================================
+// NOUVELLE FONCTION : Générer les options de filtres dynamiquement
+// ========================================
+export function genererOptionsFiltres() {
+    const config = { ...COMMANDES_CONFIG.FILTRES_CONFIG };
+    
+    // Générer les options de statut depuis STATUTS
+    config.statut.options = [
+        { value: '', label: 'Tous les statuts' },
+        ...Object.entries(COMMANDES_CONFIG.STATUTS)
+            .filter(([key]) => key !== 'supprime') // Exclure le statut supprimé
+            .map(([key, statut]) => ({
+                value: key,
+                label: `${statut.icon} ${statut.label}`
+            }))
+    ];
+    
+    // Générer les options d'urgence depuis NIVEAUX_URGENCE
+    config.urgence.options = [
+        { value: '', label: 'Toutes' },
+        ...Object.entries(COMMANDES_CONFIG.NIVEAUX_URGENCE).map(([key, urgence]) => ({
+            value: key,
+            label: `${urgence.icon} ${urgence.label}`
+        }))
+    ];
+    
+    return Object.values(config);
+}
+
 // Fonction helper pour générer un numéro de commande
 export function genererNumeroCommande() {
     const date = new Date();
@@ -316,9 +392,15 @@ export function calculerDelaiLivraison(urgence = 'normal') {
    - Statuts: 📋 Nouvelle, 🔧 En préparation, etc.
    - Urgences: 🍃 Normal, 💨 Urgent, 🔥 Très urgent
    
+   [31/01/2025] - Centralisation de la configuration des filtres
+   Problème: Options de filtres dupliquées dans commandes.list.js
+   Solution: Ajout de FILTRES_CONFIG et genererOptionsFiltres()
+   Impact: Une seule source de vérité pour tous les filtres
+   
    NOTES POUR REPRISES FUTURES:
    - Le statut "supprime" est un statut final comme "livree" et "annulee"
    - Les commandes supprimées sont filtrées dans commandes.list.js
    - La suppression nécessite une validation nom/prénom pour sécurité
    - Les icônes doivent rester cohérentes avec le dropdown des filtres
+   - Les filtres sont maintenant générés dynamiquement depuis les configs
    ======================================== */
