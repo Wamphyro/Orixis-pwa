@@ -630,6 +630,15 @@ export class DropdownList {
         document.body.style.overflow = '';
     }
 }
+
+// AJOUTEZ CETTE MÉTHODE ICI
+toggle() {
+    if (this.isOpen) {
+        this.close();
+    } else {
+        this.open();
+    }
+}
     
     // ========================================
     // API PUBLIQUE
