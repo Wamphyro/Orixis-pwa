@@ -207,8 +207,11 @@ window.modalManager = modalManager;
 
 // Toutes les fonctions utilisées dans le HTML avec onclick
 window.ouvrirNouvelleCommande = ouvrirNouvelleCommande;
-window.filtrerCommandes = filtrerCommandes;
-window.resetFiltres = resetFiltres;
+// Dans commandes.main.js, les window.XXX restent mais pointent vers les nouvelles fonctions
+window.filtrerCommandes = () => {
+    console.log('Filtrage géré automatiquement par DataTableFilters');
+};
+window.resetFiltres = resetFiltres; // Pointe vers la fonction de commandes.list.js
 window.selectionnerClient = selectionnerClient;
 window.changerClient = changerClient;
 window.ouvrirNouveauClient = ouvrirNouveauClient;

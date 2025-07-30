@@ -338,106 +338,84 @@ export class DataTableFilters {
      * Render Search
      */
     renderSearch(config) {
-        // TODO: Implémenter
         const input = document.createElement('input');
         input.type = 'search';
         input.placeholder = config.placeholder || 'Rechercher...';
         input.id = `${this.id}-${config.key}`;
-        return input;
+        input.className = 'filter-search-input';
+        
+        // Si valeur par défaut
+        if (config.defaultValue) {
+            input.value = config.defaultValue;
+        }
+        
+        // Gestion du debounce pour la recherche
+        if (this.config.autoSubmit) {
+            input.addEventListener('input', (e) => {
+                clearTimeout(this.debounceTimer);
+                this.debounceTimer = setTimeout(() => {
+                    this.handleFilterChange();
+                }, this.config.debounceDelay);
+            });
+        }
+        
+        // Icône de recherche
+        const wrapper = document.createElement('div');
+        wrapper.className = 'filter-search-wrapper';
+        wrapper.innerHTML = `
+            <span class="filter-search-icon">🔍</span>
+        `;
+        wrapper.insertBefore(input, wrapper.firstChild);
+        
+        return wrapper;
     }
-    
+
     /**
      * Render Select
      */
     renderSelect(config) {
-        // TODO: Implémenter
         const select = document.createElement('select');
         select.id = `${this.id}-${config.key}`;
+        select.className = 'filter-select-input';
+        
+        // Ajouter les options
+        if (config.options) {
+            config.options.forEach(option => {
+                const opt = document.createElement('option');
+                
+                if (typeof option === 'object') {
+                    opt.value = option.value;
+                    opt.textContent = option.label;
+                } else {
+                    opt.value = option;
+                    opt.textContent = option;
+                }
+                
+                // Sélection par défaut
+                if (config.defaultValue && option.value === config.defaultValue) {
+                    opt.selected = true;
+                }
+                
+                select.appendChild(opt);
+            });
+        }
+        
         return select;
     }
-    
+
     /**
-     * Render Date
+     * Get Value Search
      */
-    renderDate(config) {
-        // TODO: Implémenter
-        const input = document.createElement('input');
-        input.type = 'date';
-        input.id = `${this.id}-${config.key}`;
-        return input;
+    getValueSearch(element) {
+        const input = element.querySelector('input');
+        return input ? input.value.trim() : '';
     }
-    
+
     /**
-     * Render DateRange
+     * Get Value Select
      */
-    renderDateRange(config) {
-        // TODO: Implémenter
-        const container = document.createElement('div');
-        container.className = 'filter-daterange-container';
-        return container;
-    }
-    
-    /**
-     * Render Checkbox
-     */
-    renderCheckbox(config) {
-        // TODO: Implémenter
-        const container = document.createElement('div');
-        container.className = 'filter-checkbox-group';
-        return container;
-    }
-    
-    /**
-     * Render Radio
-     */
-    renderRadio(config) {
-        // TODO: Implémenter
-        const container = document.createElement('div');
-        container.className = 'filter-radio-group';
-        return container;
-    }
-    
-    /**
-     * Render Range
-     */
-    renderRange(config) {
-        // TODO: Implémenter
-        const container = document.createElement('div');
-        container.className = 'filter-range-container';
-        return container;
-    }
-    
-    /**
-     * Render Tags
-     */
-    renderTags(config) {
-        // TODO: Implémenter
-        const container = document.createElement('div');
-        container.className = 'filter-tags-container';
-        return container;
-    }
-    
-    /**
-     * Render Button Group
-     */
-    renderButtonGroup(config) {
-        // TODO: Implémenter
-        const container = document.createElement('div');
-        container.className = 'filter-buttongroup';
-        return container;
-    }
-    
-    /**
-     * Render Custom
-     */
-    renderCustom(config) {
-        // TODO: Implémenter
-        if (config.render) {
-            const temp = document.createElement('div');
-            temp.innerHTML = config.render();
-            return temp.firstChild;
-        }
-        return null;
+    getValueSelect(element) {
+        return element.value;
     }
     
     // ========================================

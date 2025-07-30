@@ -101,53 +101,7 @@
 
         <!-- Filtres -->
         <div class="commandes-filters section">
-            <div class="filters-row">
-                <div class="filter-group">
-                    <label>Rechercher</label>
-                    <input type="text" id="searchInput" placeholder="Client, produit, n° commande..." 
-                           oninput="filtrerCommandes()">
-                </div>
-                
-                <div class="filter-group">
-                    <label>Statut</label>
-                    <select id="filterStatut" onchange="filtrerCommandes()">
-                        <option value="">Tous les statuts</option>
-                        <option value="nouvelle">⚪ Nouvelle</option>
-                        <option value="preparation">🔵 En préparation</option>
-                        <option value="terminee">🟢 Préparée</option>
-                        <option value="expediee">📦 Expédiée</option>
-                        <option value="receptionnee">📥 Réceptionnée</option>
-                        <option value="livree">✅ Livrée</option>
-                        <option value="annulee">❌ Annulée</option>
-                    </select>
-                </div>
-                
-                <div class="filter-group">
-                    <label>Période</label>
-                    <select id="filterPeriode" onchange="filtrerCommandes()">
-                        <option value="all">Toutes</option>
-                        <option value="today">Aujourd'hui</option>
-                        <option value="week">Cette semaine</option>
-                        <option value="month">Ce mois</option>
-                    </select>
-                </div>
-                
-                <div class="filter-group">
-                    <label>Urgence</label>
-                    <select id="filterUrgence" onchange="filtrerCommandes()">
-                        <option value="">Toutes</option>
-                        <option value="normal">Normal</option>
-                        <option value="urgent">🟡 Urgent</option>
-                        <option value="tres_urgent">🔴 Très urgent</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="filters-actions">
-                <button class="btn-reset" onclick="resetFiltres()">
-                    🔄 Réinitialiser
-                </button>
-            </div>
+            <!-- DataTableFilters va générer le contenu ici -->
         </div>
 
         <!-- Container pour DataTable -->
