@@ -66,6 +66,13 @@ export async function initListeCommandes() {
                 }
             },
             {
+                key: 'magasinLivraison',  // ou 'client.magasinReference'
+                label: 'Magasin',
+                sortable: true,
+                width: 100,
+                formatter: (value) => value || '-'
+            },
+            {
                 key: 'typePreparation',
                 label: 'Type',
                 sortable: false,
