@@ -165,19 +165,16 @@ function initStatsCards() {
         cards: cardsConfig,
         animated: true,
         onClick: (cardId) => {
-            // Mettre à jour le filtre statut
-            if (filtresCommandes) {
-                // Si un filtre statut n'existe pas, on filtre directement
-                const hasStatutFilter = filtresCommandes.filters.some(f => f.key === 'statut');
-                
-                if (hasStatutFilter) {
-                    filtresCommandes.setValue('statut', cardId);
-                } else {
-                    // Filtrage direct si pas de filtre statut dans DataTableFilters
-                    state.filtres.statut = cardId;
-                    afficherCommandes();
-                }
-            }
+            // Mise à jour directe du filtre statut dans l'état
+            state.filtres.statut = cardId;
+            
+            // Réafficher les commandes avec le nouveau filtre
+            afficherCommandes();
+            
+            // Optionnel : Si tu veux aussi réinitialiser les autres filtres
+            // if (filtresCommandes) {
+            //     filtresCommandes.reset();
+            // }
         }
     });
 }
