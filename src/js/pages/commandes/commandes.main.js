@@ -5,6 +5,7 @@
 // DESCRIPTION:
 // Point d'entrée principal du module commandes
 // Modifié le 30/01/2025 : Intégration du composant AppHeader avec magasin
+// Modifié le 31/01/2025 : Utilisation de la config centralisée pour les stats cards
 //
 // STRUCTURE:
 // 1. Imports (lignes 15-40)
@@ -50,6 +51,7 @@ import {
     voirDetailCommande, 
     changerStatutCommande 
 } from './commandes.detail.js';
+import { genererConfigStatsCards } from '../../data/commandes.data.js';
 import './commandes.serial.js'; // Import du module de gestion des NS
 
 // ========================================
@@ -92,22 +94,15 @@ function checkAuth() {
     return authData.authenticated;
 }
 
-// ========================================
-// CORRECTION FONCTION getUserData() 
-// Lignes 89-117 dans commandes.main.js
-// ========================================
-
-// 🔧 REMPLACE LA FONCTION getUserData() EXISTANTE PAR CELLE-CI :
-
+// Obtenir les données utilisateur
 function getUserData() {
     const auth = JSON.parse(localStorage.getItem('sav_auth'));
     if (auth && auth.collaborateur) {
-        // ✅ CORRECTION : Chercher le magasin au bon endroit
         let storeName = '';
         
         // 1. D'abord chercher dans auth.magasin (niveau principal)
         if (auth.magasin) {
-            storeName = auth.magasin;  // ← 9DIJ sera récupéré ici !
+            storeName = auth.magasin;
         }
         // 2. Puis essayer dans collaborateur si pas trouvé
         else if (auth.collaborateur.magasin) {
@@ -123,16 +118,11 @@ function getUserData() {
             storeName = 'NON_DEFINI';
         }
         
-        // ✅ AMÉLIORATION : Formatage plus intelligent
         let formattedStore = '';
         
         // Si c'est un code magasin (format 9XXX), on peut le garder tel quel ou le formater
         if (/^9[A-Z]{3}$/.test(storeName)) {
-            // Option 1 : Garder le code tel quel
-            formattedStore = storeName;  // Affichera "9DIJ"
-            
-            // Option 2 : Formater avec "Magasin" (décommente si tu préfères)
-            // formattedStore = `Magasin ${storeName}`;  // Affichera "Magasin 9DIJ"
+            formattedStore = storeName;
         } 
         // Si c'est déjà formaté ou un nom complet
         else if (storeName.startsWith('Magasin')) {
@@ -145,7 +135,7 @@ function getUserData() {
         
         return {
             name: `${auth.collaborateur.prenom} ${auth.collaborateur.nom}`,
-            store: formattedStore,  // ✅ Maintenant affichera "9DIJ" ou "Magasin 9DIJ"
+            store: formattedStore,
             showLogout: true
         };
     }
@@ -161,65 +151,33 @@ function getUserData() {
 // Initialiser les composants UI
 async function initUIComponents() {
     try {
-        // 🆕 Récupérer les données utilisateur avec magasin
+        // Récupérer les données utilisateur avec magasin
         const userData = getUserData();
         
         // 1. Créer le header d'application
         appHeader = new AppHeader({
-            container: 'body',  // Injecter en début de body
+            container: 'body',
             title: '📦 Gestion des Commandes',
             subtitle: 'Commandes d\'appareils et accessoires',
             backUrl: 'home.html',
-            user: userData, // 🆕 Données complètes avec magasin
-            onLogout: handleLogout,  // Utiliser notre fonction logout
+            user: userData,
+            onLogout: handleLogout,
             onBack: () => {
-                // Optionnel : logique custom avant retour
                 console.log('Retour vers l\'accueil');
             },
             onUserClick: (user) => {
-                // 🆕 Optionnel : Action au clic sur la section utilisateur
                 console.log('Clic sur utilisateur:', user);
-                // Ici on pourrait ouvrir un menu utilisateur ou un profil
             }
         });
         
-        // 2. Créer les cartes de statistiques
+        // 2. Créer les cartes de statistiques avec la config centralisée
+        const cardsConfig = genererConfigStatsCards();
+        
         statsCards = new StatsCards({
             container: '.commandes-stats',
-            cards: [
-                { 
-                    id: 'nouvelle', 
-                    label: 'Nouvelles', 
-                    value: 0, 
-                    icon: '📋', 
-                    color: 'info' 
-                },
-                { 
-                    id: 'preparation', 
-                    label: 'En préparation', 
-                    value: 0, 
-                    icon: '🔧', 
-                    color: 'warning' 
-                },
-                { 
-                    id: 'expediee', 
-                    label: 'Expédiées', 
-                    value: 0, 
-                    icon: '📦', 
-                    color: 'primary' 
-                },
-                { 
-                    id: 'livree', 
-                    label: 'Livrées', 
-                    value: 0, 
-                    icon: '✅', 
-                    color: 'success' 
-                }
-            ],
+            cards: cardsConfig,
             onClick: (cardId, cardData) => {
-                // Optionnel : filtrer par statut au clic
                 console.log(`Filtre par statut: ${cardId}`, cardData);
-                // Ici on pourrait déclencher un filtre automatique
             }
         });
         
@@ -375,7 +333,7 @@ async function handleLogout() {
     }
 }
 
-// 🆕 Mise à jour des informations utilisateur (si changement de magasin par exemple)
+// Mise à jour des informations utilisateur (si changement de magasin par exemple)
 export function updateUserInfo() {
     if (appHeader) {
         const userData = getUserData();
@@ -407,7 +365,7 @@ window.modalManager = modalManager;
 window.appHeader = () => appHeader;
 window.statsCards = () => statsCards;
 window.updateStats = updateStats;
-window.updateUserInfo = updateUserInfo; // 🆕 Fonction de mise à jour utilisateur
+window.updateUserInfo = updateUserInfo;
 
 // Toutes les fonctions utilisées dans le HTML avec onclick
 window.ouvrirNouvelleCommande = ouvrirNouvelleCommande;
@@ -428,7 +386,7 @@ window.validerCommande = validerCommande;
 window.voirDetailCommande = voirDetailCommande;
 window.changerStatutCommande = changerStatutCommande;
 window.fermerModal = fermerModal;
-window.logout = handleLogout; // Pointer vers la nouvelle fonction
+window.logout = handleLogout;
 window.selectionnerCote = selectionnerCote;
 window.annulerSelectionCote = annulerSelectionCote;
 
@@ -500,7 +458,7 @@ export function getStatsCards() {
     return statsCards;
 }
 
-// 🆕 Getter pour les données utilisateur actuelles
+// Getter pour les données utilisateur actuelles
 export function getCurrentUser() {
     return getUserData();
 }
@@ -530,9 +488,16 @@ export function getCurrentUser() {
    - Export updateUserInfo() pour mise à jour dynamique
    - Export getCurrentUser() pour accès aux données utilisateur
    
+   [31/01/2025] - Centralisation de la config des stats cards
+   Modification:
+   - Import de genererConfigStatsCards depuis commandes.data.js
+   - Les cartes de stats utilisent maintenant la config centralisée
+   - Plus de duplication des icônes et labels
+   
    Impact: 
    - Header maintenant géré par composant (plus de HTML statique)
    - Stats cards avec animation et interactions
+   - Configuration des stats cards centralisée dans commandes.data.js
    - Déconnexion unifiée entre bouton header et fonction legacy
    - Affichage magasin utilisateur dans le header
    - Possibilité de mise à jour dynamique des infos utilisateur
@@ -545,4 +510,5 @@ export function getCurrentUser() {
    - Cleanup automatique des composants au déchargement
    - Le magasin est auto-détecté depuis plusieurs champs possibles
    - Format final: "Magasin [nom]" affiché dans le header
+   - Les stats cards sont maintenant générées depuis commandes.data.js
    ======================================== */

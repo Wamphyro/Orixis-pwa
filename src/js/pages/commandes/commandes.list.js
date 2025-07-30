@@ -5,11 +5,16 @@
 // DESCRIPTION:
 // Gère l'affichage de la liste des commandes avec DataTable et DataTableFilters
 // Refactorisé le 29/07/2025 : Migration vers DataTable + DataTableFilters
-// Modifié le 31/01/2025 : Utilisation de la config centralisée pour les filtres
+// Modifié le 31/01/2025 : Utilisation complète de la config centralisée
 // ========================================
 
 import { CommandesService } from '../../services/commandes.service.js';
-import { COMMANDES_CONFIG, genererOptionsFiltres } from '../../data/commandes.data.js';
+import { 
+    COMMANDES_CONFIG, 
+    genererOptionsFiltres,
+    genererConfigStatsCards,
+    formaterDonneesExport 
+} from '../../data/commandes.data.js';
 import { DataTable, DataTableFilters, StatsCards, formatDate as formatDateUtil } from '../../shared/index.js';
 import { state } from './commandes.main.js';
 
@@ -137,56 +142,18 @@ export async function initListeCommandes() {
 
 /**
  * Initialiser les cartes de statistiques
+ * MODIFIÉ : Utilise la config centralisée
  */
 function initStatsCards() {
+    const cardsConfig = genererConfigStatsCards();
+    
     statsCards = new StatsCards({
         container: '.commandes-stats',
-        cards: [
-            { 
-                id: 'nouvelle', 
-                label: 'Nouvelles', 
-                value: 0, 
-                icon: '📋',
-                color: 'info'
-            },
-            { 
-                id: 'preparation', 
-                label: 'En préparation', 
-                value: 0,
-                icon: '🔧',
-                color: 'warning'
-            },
-            { 
-                id: 'expediee', 
-                label: 'Expédiées', 
-                value: 0,
-                icon: '📦',
-                color: 'primary'
-            },
-            { 
-                id: 'livree', 
-                label: 'Livrées', 
-                value: 0,
-                icon: '✅',
-                color: 'success'
-            }
-        ],
+        cards: cardsConfig,
         animated: true,
         onClick: (cardId) => {
-            // Quand on clique sur une carte, filtrer par ce statut
             if (filtresCommandes) {
-                // Mapper l'ID de la carte au statut
-                const statusMap = {
-                    'nouvelle': 'nouvelle',
-                    'preparation': 'preparation',
-                    'expediee': 'expediee',
-                    'livree': 'livree'
-                };
-                
-                const statut = statusMap[cardId];
-                if (statut) {
-                    filtresCommandes.setValue('statut', statut);
-                }
+                filtresCommandes.setValue('statut', cardId);
             }
         }
     });
@@ -194,17 +161,15 @@ function initStatsCards() {
 
 /**
  * Initialiser les filtres
- * MODIFIÉ : Utilise maintenant genererOptionsFiltres() depuis commandes.data.js
+ * MODIFIÉ : Utilise genererOptionsFiltres() depuis commandes.data.js
  */
 function initFiltres() {
-    // Récupérer la configuration des filtres depuis commandes.data.js
     const filtresConfig = genererOptionsFiltres();
     
     filtresCommandes = new DataTableFilters({
         container: '.commandes-filters',
         filters: filtresConfig,
         onFilter: (filters) => {
-            // Mettre à jour l'état global
             state.filtres = {
                 recherche: filters.recherche || '',
                 statut: filters.statut || '',
@@ -212,7 +177,6 @@ function initFiltres() {
                 urgence: filters.urgence || ''
             };
             
-            // Réafficher les commandes
             afficherCommandes();
         }
     });
@@ -397,19 +361,10 @@ function afficherStatut(statut) {
 
 /**
  * Préparer les données pour l'export
+ * MODIFIÉ : Utilise formaterDonneesExport() centralisé
  */
 function prepareExportData(data) {
-    return data.map(row => ({
-        'N° Commande': row.numeroCommande,
-        'Date': formatDate(row.dates.commande),
-        'Client': `${row.client.prenom} ${row.client.nom}`,
-        'Téléphone': row.client.telephone || '-',
-        'Type': COMMANDES_CONFIG.TYPES_PREPARATION[row.typePreparation]?.label || row.typePreparation,
-        'Urgence': COMMANDES_CONFIG.NIVEAUX_URGENCE[row.niveauUrgence]?.label || row.niveauUrgence,
-        'Statut': COMMANDES_CONFIG.STATUTS[row.statut]?.label || row.statut,
-        'Magasin Livraison': row.magasinLivraison || '-',
-        'Commentaires': row.commentaires || '-'
-    }));
+    return formaterDonneesExport(data);
 }
 
 /* ========================================
@@ -421,23 +376,24 @@ function prepareExportData(data) {
    - Suppression du code HTML en dur
    - Les filtres sont maintenant générés dynamiquement
    
-   [31/01/2025] - Centralisation de la configuration des filtres
-   - Les options de filtres sont maintenant générées depuis commandes.data.js
-   - Utilisation de genererOptionsFiltres() au lieu de définir les options en dur
-   - Import de genererOptionsFiltres depuis commandes.data.js
-   - Assure la cohérence entre les filtres et les données affichées
+   [31/01/2025] - Centralisation complète de la configuration
+   - Import de genererOptionsFiltres, genererConfigStatsCards, formaterDonneesExport
+   - initStatsCards() utilise genererConfigStatsCards()
+   - initFiltres() utilise genererOptionsFiltres()
+   - prepareExportData() utilise formaterDonneesExport()
+   - Toute la config vient maintenant de commandes.data.js
    
    AVANTAGES:
    - Composants réutilisables
    - Code plus maintenable
    - Filtres configurables
    - Export CSV/Excel intégré
-   - Configuration centralisée
-   - Une seule source de vérité pour les icônes et labels
+   - Configuration 100% centralisée
+   - Une seule source de vérité pour toutes les configs
    
    NOTES:
    - Les fonctions filtrerCommandes et resetFiltres sont conservées pour compatibilité
    - Les IDs HTML (searchInput, etc.) ne sont plus utilisés
    - Tout est géré par les composants
-   - La configuration des filtres est maintenant dans commandes.data.js
+   - La configuration est maintenant uniquement dans commandes.data.js
    ======================================== */

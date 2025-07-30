@@ -6,7 +6,7 @@
 // Centralise toutes les configurations liées aux commandes
 // Modifié le 27/07/2025 : Ajout du statut "supprime"
 // Modifié le 31/01/2025 : Correction des icônes pour cohérence avec UI
-// Modifié le 31/01/2025 : Centralisation de la configuration des filtres
+// Modifié le 31/01/2025 : Centralisation COMPLÈTE de toutes les configs UI
 //
 // STRUCTURE:
 // 1. Configuration générale (lignes 15-20)
@@ -14,7 +14,10 @@
 // 3. Types de préparation (lignes 87-110)
 // 4. Niveaux d'urgence (lignes 112-135)
 // 5. Configuration des filtres (lignes 137-180)
-// 6. Autres configurations (lignes 182+)
+// 6. Configuration des stats cards (lignes 182-200)
+// 7. Configuration des selects UI (lignes 202-250)
+// 8. Configuration des exports (lignes 252-280)
+// 9. Autres configurations (lignes 282+)
 // ========================================
 
 export const COMMANDES_CONFIG = {
@@ -113,8 +116,7 @@ export const COMMANDES_CONFIG = {
     },
     
     // ========================================
-    // NOUVELLE SECTION : Configuration des filtres
-    // Centralise toutes les options de filtrage
+    // Configuration des filtres
     // ========================================
     FILTRES_CONFIG: {
         recherche: {
@@ -127,10 +129,7 @@ export const COMMANDES_CONFIG = {
             type: 'select',
             key: 'statut',
             label: 'Statut',
-            options: [
-                { value: '', label: 'Tous les statuts' }
-            ]
-            // Les autres options seront générées dynamiquement depuis STATUTS
+            options: [] // Généré dynamiquement
         },
         
         periode: {
@@ -150,11 +149,52 @@ export const COMMANDES_CONFIG = {
             type: 'select',
             key: 'urgence',
             label: 'Urgence',
-            options: [
-                { value: '', label: 'Toutes' }
-            ]
-            // Les autres options seront générées dynamiquement depuis NIVEAUX_URGENCE
+            options: [] // Généré dynamiquement
         }
+    },
+    
+    // ========================================
+    // Configuration des cartes de statistiques
+    // ========================================
+    STATS_CARDS_CONFIG: {
+        cartes: [
+            { statut: 'nouvelle', color: 'info' },
+            { statut: 'preparation', color: 'warning' },
+            { statut: 'expediee', color: 'primary' },
+            { statut: 'livree', color: 'success' }
+        ]
+    },
+    
+    // ========================================
+    // Configuration des selects UI
+    // ========================================
+    UI_SELECTS: {
+        transporteurs: [
+            { value: 'Colissimo', label: 'Colissimo' },
+            { value: 'Chronopost', label: 'Chronopost' },
+            { value: 'UPS', label: 'UPS' },
+            { value: 'DHL', label: 'DHL' },
+            { value: 'Fedex', label: 'Fedex' },
+            { value: 'GLS', label: 'GLS' },
+            { value: 'Autre', label: 'Autre' }
+        ]
+    },
+    
+    // ========================================
+    // Configuration des colonnes d'export
+    // ========================================
+    EXPORT_CONFIG: {
+        colonnes: [
+            { key: 'numeroCommande', label: 'N° Commande' },
+            { key: 'date', label: 'Date', formatter: 'date' },
+            { key: 'client', label: 'Client', formatter: 'client' },
+            { key: 'telephone', label: 'Téléphone' },
+            { key: 'typePreparation', label: 'Type', formatter: 'typePreparation' },
+            { key: 'niveauUrgence', label: 'Urgence', formatter: 'urgence' },
+            { key: 'statut', label: 'Statut', formatter: 'statut' },
+            { key: 'magasinLivraison', label: 'Magasin Livraison' },
+            { key: 'commentaires', label: 'Commentaires' }
+        ]
     },
     
     // Types de produits
@@ -195,7 +235,7 @@ export const COMMANDES_CONFIG = {
         'entretien': 'Produits d\'entretien'
     },
     
-    // Transporteurs
+    // Transporteurs (config détaillée)
     TRANSPORTEURS: {
         colissimo: {
             nom: 'Colissimo',
@@ -268,8 +308,12 @@ export const COMMANDES_CONFIG = {
 };
 
 // ========================================
-// NOUVELLE FONCTION : Générer les options de filtres dynamiquement
+// FONCTIONS DE GÉNÉRATION DES CONFIGS
 // ========================================
+
+/**
+ * Générer les options de filtres dynamiquement
+ */
 export function genererOptionsFiltres() {
     const config = { ...COMMANDES_CONFIG.FILTRES_CONFIG };
     
@@ -295,6 +339,87 @@ export function genererOptionsFiltres() {
     
     return Object.values(config);
 }
+
+/**
+ * Générer la configuration des cartes de statistiques
+ */
+export function genererConfigStatsCards() {
+    return COMMANDES_CONFIG.STATS_CARDS_CONFIG.cartes.map(carte => {
+        const statut = COMMANDES_CONFIG.STATUTS[carte.statut];
+        return {
+            id: carte.statut,
+            label: statut.label,
+            value: 0,
+            icon: statut.icon,
+            color: carte.color
+        };
+    });
+}
+
+/**
+ * Générer les options pour un select d'urgence
+ */
+export function genererOptionsUrgence() {
+    return Object.entries(COMMANDES_CONFIG.NIVEAUX_URGENCE).map(([key, urgence]) => ({
+        value: key,
+        label: `${urgence.icon} ${urgence.label}`
+    }));
+}
+
+/**
+ * Générer les options pour un select de transporteurs
+ */
+export function genererOptionsTransporteurs() {
+    return COMMANDES_CONFIG.UI_SELECTS.transporteurs;
+}
+
+/**
+ * Générer les options pour un select de types de préparation
+ */
+export function genererOptionsTypesPreparation() {
+    return Object.entries(COMMANDES_CONFIG.TYPES_PREPARATION).map(([key, type]) => ({
+        value: key,
+        label: type.label,
+        description: type.description
+    }));
+}
+
+/**
+ * Formater les données pour l'export selon la config
+ */
+export function formaterDonneesExport(data) {
+    return data.map(row => {
+        const result = {};
+        
+        COMMANDES_CONFIG.EXPORT_CONFIG.colonnes.forEach(col => {
+            switch (col.formatter) {
+                case 'date':
+                    result[col.label] = formatDate(row.dates?.commande);
+                    break;
+                case 'client':
+                    result[col.label] = `${row.client.prenom} ${row.client.nom}`;
+                    break;
+                case 'typePreparation':
+                    result[col.label] = COMMANDES_CONFIG.TYPES_PREPARATION[row.typePreparation]?.label || row.typePreparation;
+                    break;
+                case 'urgence':
+                    result[col.label] = COMMANDES_CONFIG.NIVEAUX_URGENCE[row.niveauUrgence]?.label || row.niveauUrgence;
+                    break;
+                case 'statut':
+                    result[col.label] = COMMANDES_CONFIG.STATUTS[row.statut]?.label || row.statut;
+                    break;
+                default:
+                    result[col.label] = row[col.key] || '-';
+            }
+        });
+        
+        return result;
+    });
+}
+
+// ========================================
+// FONCTIONS HELPERS EXISTANTES
+// ========================================
 
 // Fonction helper pour générer un numéro de commande
 export function genererNumeroCommande() {
@@ -354,7 +479,6 @@ export function peutEtreAnnulee(statut) {
 
 // Vérifier si une commande peut être supprimée
 export function peutEtreSupprimee(statut) {
-    // Ne peut pas supprimer si déjà supprimée ou livrée
     return !['livree', 'supprime'].includes(statut);
 }
 
@@ -378,6 +502,13 @@ export function calculerDelaiLivraison(urgence = 'normal') {
     return maintenant;
 }
 
+// Fonction helper private pour formater les dates (utilisée en interne)
+function formatDate(timestamp) {
+    if (!timestamp) return '-';
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return date.toLocaleDateString('fr-FR');
+}
+
 /* ========================================
    HISTORIQUE DES DIFFICULTÉS
    
@@ -392,15 +523,17 @@ export function calculerDelaiLivraison(urgence = 'normal') {
    - Statuts: 📋 Nouvelle, 🔧 En préparation, etc.
    - Urgences: 🍃 Normal, 💨 Urgent, 🔥 Très urgent
    
-   [31/01/2025] - Centralisation de la configuration des filtres
-   Problème: Options de filtres dupliquées dans commandes.list.js
-   Solution: Ajout de FILTRES_CONFIG et genererOptionsFiltres()
-   Impact: Une seule source de vérité pour tous les filtres
+   [31/01/2025] - Centralisation COMPLÈTE de toutes les configs
+   Problème: Duplication des configs dans plusieurs fichiers
+   Solution: Tout centralisé dans commandes.data.js
+   - FILTRES_CONFIG + genererOptionsFiltres()
+   - STATS_CARDS_CONFIG + genererConfigStatsCards()
+   - UI_SELECTS pour les transporteurs et autres
+   - EXPORT_CONFIG pour les colonnes d'export
+   - Nouvelles fonctions de génération d'options
    
    NOTES POUR REPRISES FUTURES:
-   - Le statut "supprime" est un statut final comme "livree" et "annulee"
-   - Les commandes supprimées sont filtrées dans commandes.list.js
-   - La suppression nécessite une validation nom/prénom pour sécurité
-   - Les icônes doivent rester cohérentes avec le dropdown des filtres
-   - Les filtres sont maintenant générés dynamiquement depuis les configs
+   - Toute configuration UI doit être dans ce fichier
+   - Utiliser les fonctions de génération plutôt que dupliquer
+   - Les icônes sont définies à UN SEUL endroit
    ======================================== */
