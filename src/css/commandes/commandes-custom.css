@@ -870,46 +870,40 @@
 
 /* ========================================
    FIX DROPDOWNS DANS LES MODALS
-   [01/02/2025] - Correction pour dropdowns dans modals
+   [01/02/2025] - Correction position dropdowns dans modals
    ======================================== */
 
-/* Le modal-body doit garder son overflow pour le scroll */
-/* On ne touche PAS à l'overflow du modal-body */
-
-/* Forcer les dropdowns dans les modals à utiliser updatePosition() correctement */
+/* Forcer position fixed pour les dropdowns dans les modals */
 .modal .dropdown-list-panel {
     position: fixed !important;
-    z-index: 10500 !important; /* Au-dessus du modal (z-index: 1000) et du footer */
+    z-index: 10500 !important;
 }
 
-/* S'assurer que le wrapper ne limite pas le dropdown */
+/* IMPORTANT: Override le top: 100% du dropdown-list.css */
+.modal .dropdown-list-panel {
+    top: auto !important;
+}
+
+/* Le JS du composant calculera la bonne position avec updatePosition() */
 .modal .dropdown-list-wrapper {
-    position: static !important; /* Important pour que le calcul de position fonctionne */
-    z-index: 1;
+    position: static !important;
 }
 
-/* Animation adaptée */
-.modal .dropdown-list-panel.show {
-    animation: modalDropdownSlideIn 0.2s ease-out;
+/* Empêcher le panel d'hériter du border-radius quand dans un modal */
+.modal .dropdown-list-wrapper.open .dropdown-list-trigger {
+    border-radius: 12px !important;
 }
 
-@keyframes modalDropdownSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+/* Panel avec border complet dans les modals */
+.modal .dropdown-list-panel {
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 12px !important;
 }
 
-/* Sur mobile, le dropdown est déjà en position fixed grâce au JS */
-@media (max-width: 768px) {
-    .modal .dropdown-list-panel {
-        /* Le JS gère déjà le positionnement mobile */
-        max-width: calc(100vw - 40px) !important;
-    }
+/* Fix spécifique pour Chrome/Safari */
+.modal .dropdown-list-panel {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
 }
 
 /* ========================================
