@@ -76,7 +76,7 @@ export async function initListeCommandes() {
             },
             {
                 key: 'typePreparation',
-                label: 'Type',
+                label: 'Type de préparation',
                 sortable: true,
                 formatter: (value) => {
                     const config = COMMANDES_CONFIG.TYPES_PREPARATION[value];
