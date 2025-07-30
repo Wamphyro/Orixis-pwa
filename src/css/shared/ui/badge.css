@@ -101,12 +101,13 @@
 
 .urgence-badge.urgent {
     background: #fff3cd;
-    color: #ffc107;
+    color: #856404;  /* 🔧 CORRIGÉ : marron au lieu de jaune */
 }
 
-.urgence-badge.tres-urgent {
+/* 🔧 CORRIGÉ : underscore au lieu de tiret */
+.urgence-badge.tres_urgent {
     background: #f8d7da;
-    color: #dc3545;
+    color: #721c24;  /* 🔧 CORRIGÉ : rouge foncé au lieu de rouge vif */
 }
 
 /* ========================================
