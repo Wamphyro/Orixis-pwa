@@ -250,18 +250,20 @@ async function initFiltres() {  // ← AJOUTER async
     filtresCommandes = new DataTableFilters({
         container: '.commandes-filters',
         filters: filtresConfigAjustes,
-        onFilter: (filters) => {
-            state.filtres = {
-                recherche: filters.recherche || '',
-                magasin: filters.magasin || '',  // ← CHANGÉ ICI
-                periode: filters.periode || 'all',
-                urgence: filters.urgence || ''
-            };
-            
-            if (tableCommandes) {
-                afficherCommandes();
+            onFilter: (filters) => {
+                // Conserver statuts lors de la mise à jour des filtres
+                state.filtres = {
+                    recherche: filters.recherche || '',
+                    magasin: filters.magasin || '',  
+                    periode: filters.periode || 'all',
+                    urgence: filters.urgence || '',
+                    statuts: state.filtres.statuts || []  // 🆕 GARDER statuts
+                };
+                
+                if (tableCommandes) {
+                    afficherCommandes();
+                }
             }
-        }
     });
 }
 
@@ -385,7 +387,27 @@ function filtrerCommandesLocalement() {
         
         // Filtre période
         if (state.filtres.periode !== 'all') {
-            // ... code existant ...
+            const dateCommande = commande.dates.commande?.toDate ? 
+                commande.dates.commande.toDate() : 
+                new Date(commande.dates.commande);
+            
+            const maintenant = new Date();
+            const debut = new Date();
+            
+            switch (state.filtres.periode) {
+                case 'today':
+                    debut.setHours(0, 0, 0, 0);
+                    if (dateCommande < debut) return false;
+                    break;
+                case 'week':
+                    debut.setDate(debut.getDate() - 7);
+                    if (dateCommande < debut) return false;
+                    break;
+                case 'month':
+                    debut.setMonth(debut.getMonth() - 1);
+                    if (dateCommande < debut) return false;
+                    break;
+            }
         }
         
         return true;
