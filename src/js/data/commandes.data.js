@@ -5,6 +5,7 @@
 // DESCRIPTION:
 // Centralise toutes les configurations liées aux commandes
 // Modifié le 27/07/2025 : Ajout du statut "supprime"
+// Modifié le 31/01/2025 : Correction des icônes pour cohérence avec UI
 //
 // STRUCTURE:
 // 1. Configuration générale (lignes 15-20)
@@ -23,19 +24,19 @@ export const COMMANDES_CONFIG = {
     STATUTS: {
         nouvelle: {
             label: 'Nouvelle',
-            icon: '⚪',
+            icon: '📋',
             couleur: '#e9ecef',
             suivant: 'preparation'
         },
         preparation: {
             label: 'En préparation',
-            icon: '🔵',
+            icon: '🔧',
             couleur: '#cfe2ff',
             suivant: 'terminee'
         },
         terminee: {
             label: 'Préparée',
-            icon: '🟢',
+            icon: '🎯',
             couleur: '#d1e7dd',
             suivant: 'expediee'
         },
@@ -63,15 +64,11 @@ export const COMMANDES_CONFIG = {
             couleur: '#f8d7da',
             suivant: null
         },
-        // ========================================
-        // NOUVEAU STATUT : Supprimée
-        // Ajouté le 27/07/2025 pour la suppression sécurisée
-        // ========================================
         supprime: {
             label: 'Supprimée',
             icon: '🗑️',
             couleur: '#dc3545',
-            suivant: null // Statut final, pas de transition possible
+            suivant: null
         }
     },
     
@@ -97,19 +94,19 @@ export const COMMANDES_CONFIG = {
             label: 'Normal',
             delai: '3-5 jours',
             couleur: '#28a745',
-            icon: ''
+            icon: '🍃'  // ← Icône cohérente avec le dropdown
         },
         urgent: {
             label: 'Urgent',
             delai: '48h',
             couleur: '#ffc107',
-            icon: '🟡'
+            icon: '💨'  // ← Icône cohérente avec le dropdown
         },
         tres_urgent: {
             label: 'Très urgent',
             delai: '24h',
             couleur: '#dc3545',
-            icon: '🔴'
+            icon: '🔥'  // ← Icône cohérente avec le dropdown
         }
     },
     
@@ -183,13 +180,13 @@ export const COMMANDES_CONFIG = {
         COMMANDE_CREEE: 'Commande créée avec succès',
         COMMANDE_MISE_A_JOUR: 'Commande mise à jour',
         COMMANDE_ANNULEE: 'Commande annulée',
-        COMMANDE_SUPPRIMEE: 'Commande supprimée avec succès', // NOUVEAU
+        COMMANDE_SUPPRIMEE: 'Commande supprimée avec succès',
         
         // Confirmations
         CONFIRMER_ANNULATION: 'Êtes-vous sûr de vouloir annuler cette commande ?',
         CONFIRMER_VALIDATION: 'Confirmer la validation de cette étape ?',
         CONFIRMER_EXPEDITION: 'Confirmer l\'expédition ? Le numéro de suivi est-il correct ?',
-        CONFIRMER_SUPPRESSION: 'Êtes-vous sûr de vouloir supprimer cette commande ?', // NOUVEAU
+        CONFIRMER_SUPPRESSION: 'Êtes-vous sûr de vouloir supprimer cette commande ?',
         
         // Erreurs
         ERREUR_CLIENT_REQUIS: 'Veuillez sélectionner un client',
@@ -197,7 +194,7 @@ export const COMMANDES_CONFIG = {
         ERREUR_SCAN_REQUIS: 'Veuillez scanner le code-barres du colis',
         ERREUR_NUMERO_SERIE: 'Veuillez saisir les numéros de série',
         ERREUR_DROITS: 'Vous n\'avez pas les droits pour cette action',
-        ERREUR_VALIDATION_NOM: 'Le nom et prénom saisis ne correspondent pas au client' // NOUVEAU
+        ERREUR_VALIDATION_NOM: 'Le nom et prénom saisis ne correspondent pas au client'
     },
     
     // Validations
@@ -279,10 +276,7 @@ export function peutEtreAnnulee(statut) {
     return !['livree', 'annulee', 'supprime'].includes(statut);
 }
 
-// ========================================
-// NOUVELLE FONCTION : Vérifier si une commande peut être supprimée
-// Ajoutée le 27/07/2025
-// ========================================
+// Vérifier si une commande peut être supprimée
 export function peutEtreSupprimee(statut) {
     // Ne peut pas supprimer si déjà supprimée ou livrée
     return !['livree', 'supprime'].includes(statut);
@@ -316,8 +310,15 @@ export function calculerDelaiLivraison(urgence = 'normal') {
    Solution: Ajout d'un statut "supprime" pour soft delete
    Impact: Les commandes supprimées restent en base mais n'apparaissent plus
    
+   [31/01/2025] - Correction des icônes pour cohérence UI
+   Problème: Icônes différentes entre dropdown et tableau
+   Solution: Uniformisation des icônes dans toute l'interface
+   - Statuts: 📋 Nouvelle, 🔧 En préparation, etc.
+   - Urgences: 🍃 Normal, 💨 Urgent, 🔥 Très urgent
+   
    NOTES POUR REPRISES FUTURES:
    - Le statut "supprime" est un statut final comme "livree" et "annulee"
    - Les commandes supprimées sont filtrées dans commandes.list.js
    - La suppression nécessite une validation nom/prénom pour sécurité
+   - Les icônes doivent rester cohérentes avec le dropdown des filtres
    ======================================== */
