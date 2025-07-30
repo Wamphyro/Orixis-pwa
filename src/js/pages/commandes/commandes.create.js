@@ -541,6 +541,12 @@ export async function appliquerPack() {
         
         const pack = packDoc.data();
         
+        // Vérifier que le pack a bien des produits
+        if (!pack.produits || !Array.isArray(pack.produits) || pack.produits.length === 0) {
+            notify.warning(`Le pack "${pack.nom}" ne contient aucun produit`);
+            return;
+        }
+        
         // Vider le panier actuel
         nouvelleCommande.produits = [];
         
