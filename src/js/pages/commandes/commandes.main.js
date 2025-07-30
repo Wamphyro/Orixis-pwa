@@ -1,18 +1,18 @@
 // ========================================
-// COMMANDES.MAIN.JS - Point d'entrée principal (VERSION AVEC APPHEADER)
+// COMMANDES.MAIN.JS - Point d'entrée principal (VERSION AVEC APPHEADER + MAGASIN)
 // Chemin: src/js/pages/commandes/commandes.main.js
 //
 // DESCRIPTION:
 // Point d'entrée principal du module commandes
-// Modifié le 30/01/2025 : Intégration du composant AppHeader
+// Modifié le 30/01/2025 : Intégration du composant AppHeader avec magasin
 //
 // STRUCTURE:
 // 1. Imports (lignes 15-40)
 // 2. Variables globales (lignes 42-54)
-// 3. Initialisation (lignes 56-140)
-// 4. Gestion des modales (lignes 142-210)
-// 5. Exposition des fonctions (lignes 212-261)
-// 6. Utilitaires (lignes 263-310)
+// 3. Initialisation (lignes 56-150)
+// 4. Gestion des modales (lignes 152-220)
+// 5. Exposition des fonctions (lignes 222-271)
+// 6. Utilitaires (lignes 273-320)
 // ========================================
 
 import { initFirebase } from '../../services/firebase.service.js';
@@ -68,7 +68,7 @@ export const state = {
     }
 };
 
-// 🆕 Variables pour les composants UI
+// Variables pour les composants UI
 let appHeader = null;
 let statsCards = null;
 
@@ -92,35 +92,67 @@ function checkAuth() {
     return authData.authenticated;
 }
 
-// 🆕 Récupérer les données utilisateur pour le header
+// 🆕 Récupérer les données utilisateur pour le header (avec magasin)
 function getUserData() {
     const auth = JSON.parse(localStorage.getItem('sav_auth'));
     if (auth && auth.collaborateur) {
+        // 🆕 Gestion du magasin - plusieurs formats possibles
+        let storeName = '';
+        
+        // Essayer différents champs possibles pour le magasin
+        if (auth.collaborateur.magasin) {
+            storeName = auth.collaborateur.magasin;
+        } else if (auth.collaborateur.magasin_nom) {
+            storeName = auth.collaborateur.magasin_nom;
+        } else if (auth.collaborateur.store) {
+            storeName = auth.collaborateur.store;
+        } else if (auth.collaborateur.agence) {
+            storeName = auth.collaborateur.agence;
+        } else {
+            // Valeur par défaut si aucun magasin trouvé
+            storeName = 'Magasin principal';
+        }
+        
+        // 🆕 Formater le nom du magasin
+        const formattedStore = storeName.startsWith('Magasin') ? storeName : `Magasin ${storeName}`;
+        
         return {
             name: `${auth.collaborateur.prenom} ${auth.collaborateur.nom}`,
+            store: formattedStore, // 🆕 Ajout du magasin
             showLogout: true
         };
     }
+    
+    // Fallback si pas d'auth
     return {
         name: 'Utilisateur',
+        store: 'Magasin non défini', // 🆕 Fallback magasin
         showLogout: true
     };
 }
 
-// 🆕 Initialiser les composants UI
+// Initialiser les composants UI
 async function initUIComponents() {
     try {
+        // 🆕 Récupérer les données utilisateur avec magasin
+        const userData = getUserData();
+        
         // 1. Créer le header d'application
         appHeader = new AppHeader({
             container: 'body',  // Injecter en début de body
             title: '📦 Gestion des Commandes',
             subtitle: 'Commandes d\'appareils et accessoires',
             backUrl: 'home.html',
-            user: getUserData(),
+            user: userData, // 🆕 Données complètes avec magasin
             onLogout: handleLogout,  // Utiliser notre fonction logout
             onBack: () => {
                 // Optionnel : logique custom avant retour
                 console.log('Retour vers l\'accueil');
+            },
+            onUserClick: (user) => {
+                // 🆕 Optionnel : Action au clic sur la section utilisateur
+                console.log('Clic sur utilisateur:', user);
+                // Ici on pourrait ouvrir un menu utilisateur ou un profil
             }
         });
         
@@ -160,10 +192,11 @@ async function initUIComponents() {
             onClick: (cardId, cardData) => {
                 // Optionnel : filtrer par statut au clic
                 console.log(`Filtre par statut: ${cardId}`, cardData);
+                // Ici on pourrait déclencher un filtre automatique
             }
         });
         
-        console.log('🎨 Composants UI initialisés');
+        console.log('🎨 Composants UI initialisés avec magasin:', userData.store);
         
     } catch (error) {
         console.error('❌ Erreur initialisation UI:', error);
@@ -179,7 +212,7 @@ window.addEventListener('load', async () => {
     }
     
     try {
-        // 🆕 1. Initialiser les composants UI en premier
+        // 1. Initialiser les composants UI en premier
         await initUIComponents();
         
         // 2. Initialiser Firebase
@@ -283,10 +316,10 @@ function initModales() {
 }
 
 // ========================================
-// GESTION UTILISATEUR (DÉPLACÉ D'afficherInfosUtilisateur)
+// GESTION UTILISATEUR
 // ========================================
 
-// 🆕 Fonction de déconnexion pour le header
+// Fonction de déconnexion pour le header
 async function handleLogout() {
     try {
         const confirme = await confirmerAction({
@@ -301,7 +334,7 @@ async function handleLogout() {
             localStorage.removeItem('sav_auth');
             localStorage.removeItem('sav_user_permissions');
             
-            // Optionnel : notification de déconnexion
+            // Notification de déconnexion
             notify.success('Déconnexion réussie');
             
             // Redirection
@@ -315,7 +348,16 @@ async function handleLogout() {
     }
 }
 
-// 🆕 Mise à jour des statistiques (appelée depuis commandes.list.js)
+// 🆕 Mise à jour des informations utilisateur (si changement de magasin par exemple)
+export function updateUserInfo() {
+    if (appHeader) {
+        const userData = getUserData();
+        appHeader.setUser(userData);
+        console.log('🔄 Informations utilisateur mises à jour:', userData);
+    }
+}
+
+// Mise à jour des statistiques (appelée depuis commandes.list.js)
 export function updateStats(stats) {
     if (statsCards) {
         statsCards.updateAll({
@@ -334,10 +376,11 @@ export function updateStats(stats) {
 // Exposer modalManager globalement pour les autres modules
 window.modalManager = modalManager;
 
-// 🆕 Exposer les composants UI pour les autres modules
+// Exposer les composants UI pour les autres modules
 window.appHeader = () => appHeader;
 window.statsCards = () => statsCards;
 window.updateStats = updateStats;
+window.updateUserInfo = updateUserInfo; // 🆕 Fonction de mise à jour utilisateur
 
 // Toutes les fonctions utilisées dans le HTML avec onclick
 window.ouvrirNouvelleCommande = ouvrirNouvelleCommande;
@@ -358,7 +401,7 @@ window.validerCommande = validerCommande;
 window.voirDetailCommande = voirDetailCommande;
 window.changerStatutCommande = changerStatutCommande;
 window.fermerModal = fermerModal;
-window.logout = handleLogout; // 🆕 Pointer vers la nouvelle fonction
+window.logout = handleLogout; // Pointer vers la nouvelle fonction
 window.selectionnerCote = selectionnerCote;
 window.annulerSelectionCote = annulerSelectionCote;
 
@@ -370,7 +413,7 @@ function fermerModal(modalId) {
     modalManager.close(modalId);
 }
 
-// 🆕 Fonction logout legacy (pour compatibilité)
+// Fonction logout legacy (pour compatibilité)
 async function logout() {
     await handleLogout();
 }
@@ -396,7 +439,7 @@ function initEventListeners() {
 window.addEventListener('beforeunload', () => {
     modalManager.destroyAll();
     
-    // 🆕 Cleanup des composants UI
+    // Cleanup des composants UI
     if (appHeader) {
         appHeader.destroy();
     }
@@ -421,13 +464,18 @@ export function afficherErreur(message) {
     notify.error(message);
 }
 
-// 🆕 Getters pour les composants (pour les autres modules)
+// Getters pour les composants (pour les autres modules)
 export function getAppHeader() {
     return appHeader;
 }
 
 export function getStatsCards() {
     return statsCards;
+}
+
+// 🆕 Getter pour les données utilisateur actuelles
+export function getCurrentUser() {
+    return getUserData();
 }
 
 /* ========================================
@@ -446,15 +494,21 @@ export function getStatsCards() {
    - Cleanup des composants au beforeunload
    - Getters pour accès aux composants depuis autres modules
    
+   [30/01/2025] - Ajout gestion magasin utilisateur
+   Modification:
+   - Extension getUserData() pour inclure le magasin
+   - Support de plusieurs formats de champs magasin (magasin, magasin_nom, store, agence)
+   - Formatage automatique du nom de magasin
+   - Ajout callback onUserClick au header
+   - Export updateUserInfo() pour mise à jour dynamique
+   - Export getCurrentUser() pour accès aux données utilisateur
+   
    Impact: 
    - Header maintenant géré par composant (plus de HTML statique)
    - Stats cards avec animation et interactions
    - Déconnexion unifiée entre bouton header et fonction legacy
-   
-   [27/07/2025] - Ajout de la fonction supprimerCommande
-   Modification: Exposition de la fonction window.supprimerCommande
-   Raison: Permettre la suppression sécurisée depuis le tableau
-   Impact: La fonction est définie dans commandes.detail.js
+   - Affichage magasin utilisateur dans le header
+   - Possibilité de mise à jour dynamique des infos utilisateur
    
    NOTES POUR REPRISES FUTURES:
    - AppHeader remplace complètement le header HTML statique
@@ -462,4 +516,6 @@ export function getStatsCards() {
    - La fonction updateStats() doit être appelée depuis list.js
    - Les composants UI sont accessibles via getters pour autres modules
    - Cleanup automatique des composants au déchargement
+   - Le magasin est auto-détecté depuis plusieurs champs possibles
+   - Format final: "Magasin [nom]" affiché dans le header
    ======================================== */

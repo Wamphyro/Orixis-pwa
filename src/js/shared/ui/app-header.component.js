@@ -25,7 +25,7 @@
 //     title: '📦 Gestion des Commandes',
 //     subtitle: 'Commandes d\'appareils et accessoires',
 //     backUrl: 'home.html',
-//     user: { name: 'Cédric Korber' },
+//     user: { name: 'Cédric Korber', store: 'Magasin Marseille' },
 //     onLogout: () => console.log('Déconnexion')
 // });
 // ========================================
@@ -46,6 +46,7 @@ export class AppHeader {
             backText: '← Retour',       // Texte du bouton retour
             user: {                     // Données utilisateur
                 name: '',
+                store: '',              // 🆕 Magasin de l'utilisateur
                 avatar: '',             // URL avatar optionnel
                 showLogout: true        // Afficher bouton déconnexion
             },
@@ -71,7 +72,9 @@ export class AppHeader {
             title: null,
             subtitle: null,
             backButton: null,
-            userInfo: null,
+            userSection: null,
+            userName: null,
+            userStore: null,
             logoutButton: null
         };
         
@@ -161,7 +164,9 @@ export class AppHeader {
         this.elements.title = header.querySelector('.app-header-title');
         this.elements.subtitle = header.querySelector('.app-header-subtitle');
         this.elements.backButton = header.querySelector('.header-back-button');
-        this.elements.userInfo = header.querySelector('.header-user-info span');
+        this.elements.userSection = header.querySelector('.header-user-section');
+        this.elements.userName = header.querySelector('.user-name');
+        this.elements.userStore = header.querySelector('.user-store');
         this.elements.logoutButton = header.querySelector('.header-logout-button');
         
         // Injecter dans le container
@@ -244,17 +249,24 @@ export class AppHeader {
             `<img src="${this.config.user.avatar}" alt="Avatar" class="user-avatar">` : 
             '';
         
+        // 🆕 Section utilisateur réorganisée avec nom + magasin + déconnexion
+        const store = this.config.user.store ? 
+            `<div class="user-store">${this.config.user.store}</div>` : 
+            '';
+        
         const logoutButton = this.config.user.showLogout ? 
             `<button class="header-logout-button" data-action="logout">
                 🚪 Déconnexion
             </button>` : '';
         
         return `
-            <div class="header-user-info" data-action="user-click">
+            <div class="header-user-section" data-action="user-click">
                 ${avatar}
-                <span>${this.config.user.name}</span>
+                <div class="user-name">${this.config.user.name}</div>
+                ${store}
+                <div class="user-separator"></div>
+                ${logoutButton}
             </div>
-            ${logoutButton}
         `;
     }
     
@@ -277,7 +289,10 @@ export class AppHeader {
                     this.handleLogout(e);
                     break;
                 case 'user-click':
-                    this.handleUserClick(e);
+                    // Ne déclencher que si on clique sur le nom/avatar, pas sur déconnexion
+                    if (!e.target.closest('.header-logout-button')) {
+                        this.handleUserClick(e);
+                    }
                     break;
             }
         });
@@ -302,6 +317,7 @@ export class AppHeader {
     
     handleLogout(e) {
         e.preventDefault();
+        e.stopPropagation(); // Empêcher la propagation vers user-click
         
         if (this.config.onLogout) {
             this.config.onLogout();
@@ -383,14 +399,23 @@ export class AppHeader {
     }
     
     /**
-     * Met à jour les informations utilisateur
+     * 🆕 Met à jour les informations utilisateur (nom + magasin)
      * @param {Object} userData - Nouvelles données utilisateur
      */
     setUser(userData) {
         this.config.user = { ...this.config.user, ...userData };
         
-        if (this.elements.userInfo) {
-            this.elements.userInfo.textContent = userData.name || '';
+        if (this.elements.userName) {
+            this.elements.userName.textContent = userData.name || '';
+        }
+        
+        if (this.elements.userStore) {
+            if (userData.store) {
+                this.elements.userStore.textContent = userData.store;
+                this.elements.userStore.style.display = '';
+            } else {
+                this.elements.userStore.style.display = 'none';
+            }
         }
     }
     
@@ -482,10 +507,18 @@ export class AppHeader {
    - Support breadcrumb optionnel
    - Anti-FOUC intégré
    
+   [30/01/2025] - Réorganisation section utilisateur
+   - Modification createUserSection() pour layout horizontal
+   - Ajout support magasin utilisateur (user.store)
+   - Nouveau layout : nom | magasin | déconnexion sur même ligne
+   - Amélioration gestion événements (stopPropagation logout)
+   - Mise à jour setUser() pour gérer le magasin
+   
    NOTES POUR REPRISES FUTURES:
    - Le composant est complètement indépendant
    - Les callbacks sont optionnels avec fallbacks
    - Le CSS se charge automatiquement
    - Support de différents containers (body, div)
    - Délégation d'événements pour les performances
+   - Section utilisateur maintenant : [avatar] [nom] [magasin] | [déconnexion]
    ======================================== */
