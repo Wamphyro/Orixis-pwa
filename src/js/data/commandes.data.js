@@ -128,10 +128,10 @@ export const COMMANDES_CONFIG = {
             placeholder: 'Client, produit, n° commande...'
         },
         
-        statut: {
+        magasin: {  // ← CHANGÉ ICI
             type: 'select',
-            key: 'statut',
-            label: 'Statut',
+            key: 'magasin',
+            label: 'Magasin',
             options: [] // Généré dynamiquement
         },
         
@@ -320,25 +320,19 @@ export const COMMANDES_CONFIG = {
 export function genererOptionsFiltres() {
     const config = { ...COMMANDES_CONFIG.FILTRES_CONFIG };
     
-    // Générer les options de statut depuis STATUTS avec icônes séparées
-    config.statut.options = [
-        { value: '', label: 'Tous les statuts' },
-        ...Object.entries(COMMANDES_CONFIG.STATUTS)
-            .filter(([key]) => key !== 'supprime') // Exclure le statut supprimé
-            .map(([key, statut]) => ({
-                value: key,
-                label: statut.label,
-                icon: statut.icon  // Icône séparée
-            }))
+    // Les options de magasin seront générées dans commandes.list.js
+    // car elles viennent de Firebase
+    config.magasin.options = [
+        { value: '', label: 'Tous les magasins' }
     ];
     
-    // Générer les options d'urgence depuis NIVEAUX_URGENCE avec icônes séparées
+    // Générer les options d'urgence...
     config.urgence.options = [
         { value: '', label: 'Toutes' },
         ...Object.entries(COMMANDES_CONFIG.NIVEAUX_URGENCE).map(([key, urgence]) => ({
             value: key,
             label: urgence.label,
-            icon: urgence.icon  // Icône séparée
+            icon: urgence.icon
         }))
     ];
     
