@@ -1,0 +1,502 @@
+/* ========================================
+   STEPPER.CSS - Styles pour le composant Stepper
+   Chemin: src/css/shared/ui/stepper.css
+   
+   DESCRIPTION:
+   Styles extraits de commandes-custom.css pour le composant Stepper réutilisable
+   Maintient la compatibilité avec le design existant
+   
+   COMPOSANT:
+   - Indicateur d'étapes avec cercles numérotés
+   - États: inactif, actif, complété
+   - Animations et transitions fluides
+   - Responsive mobile
+   
+   UTILISÉ PAR:
+   - Stepper.component.js
+   - Module commandes (compatibilité)
+   - Tous futurs workflows multi-étapes
+   ======================================== */
+
+/* ========================================
+   STEPPER - CONTAINER PRINCIPAL
+   ======================================== */
+.stepper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+/* ========================================
+   STEP - CHAQUE ÉTAPE
+   ======================================== */
+.step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0.5;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+/* Hover effect pour les étapes accessibles */
+.step:hover {
+    opacity: 0.8;
+}
+
+/* État inactif (par défaut) */
+.step:not(.active):not(.completed) {
+    opacity: 0.5;
+}
+
+/* ========================================
+   STEP NUMBER - CERCLE NUMÉROTÉ
+   ======================================== */
+.step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 2;
+}
+
+/* ========================================
+   STEP LABEL - TEXTE DE L'ÉTAPE
+   ======================================== */
+.step-label {
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+/* ========================================
+   ÉTATS DES ÉTAPES
+   ======================================== */
+
+/* ÉTAPE ACTIVE */
+.step.active {
+    opacity: 1;
+}
+
+.step.active .step-number {
+    background: #667eea;
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.step.active .step-label {
+    color: #667eea;
+    font-weight: 600;
+}
+
+/* ÉTAPE COMPLÉTÉE */
+.step.completed {
+    opacity: 1;
+}
+
+.step.completed .step-number {
+    background: #4caf50;
+    color: white;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
+.step.completed .step-number::before {
+    content: '✓';
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.step.completed .step-label {
+    color: #4caf50;
+    font-weight: 500;
+}
+
+/* ========================================
+   ANIMATIONS ET TRANSITIONS
+   ======================================== */
+
+/* Animation d'apparition */
+@keyframes stepAppear {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.step {
+    animation: stepAppear 0.4s ease-out;
+}
+
+/* Animation de complétion */
+@keyframes stepComplete {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1.1);
+    }
+}
+
+.step.completed .step-number {
+    animation: stepComplete 0.5s ease-out;
+}
+
+/* Animation d'activation */
+@keyframes stepActivate {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+    }
+    70% {
+        transform: scale(1.1);
+        box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+    }
+    100% {
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+}
+
+.step.active .step-number {
+    animation: stepActivate 0.6s ease-out;
+}
+
+/* ========================================
+   CONNECTEURS ENTRE ÉTAPES (OPTIONNEL)
+   ======================================== */
+
+/* Ligne de connexion entre les étapes */
+.step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 2px;
+    background: #e0e0e0;
+    z-index: 1;
+    transition: background 0.3s ease;
+}
+
+/* Ligne active pour les étapes complétées */
+.step.completed:not(:last-child)::after {
+    background: #4caf50;
+}
+
+/* ========================================
+   STEP CONTENT - CONTENU DES ÉTAPES
+   ======================================== */
+.step-content {
+    min-height: 300px;
+    padding: 20px 0;
+    transition: all 0.3s ease;
+}
+
+.step-content.hidden {
+    display: none;
+}
+
+/* Animation d'apparition du contenu */
+.step-content:not(.hidden) {
+    animation: contentFadeIn 0.4s ease-out;
+}
+
+@keyframes contentFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* ========================================
+   VARIANTES DE DESIGN
+   ======================================== */
+
+/* Stepper compact */
+.stepper.compact {
+    padding: 16px 20px;
+    gap: 30px;
+}
+
+.stepper.compact .step-number {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+}
+
+.stepper.compact .step-label {
+    font-size: 13px;
+}
+
+/* Stepper sans labels */
+.stepper.numbers-only .step-label {
+    display: none;
+}
+
+/* Stepper vertical */
+.stepper.vertical {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 20px;
+}
+
+.stepper.vertical .step {
+    flex-direction: row;
+    width: 100%;
+}
+
+.stepper.vertical .step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 50px;
+    width: 2px;
+    height: 20px;
+    right: auto;
+    transform: none;
+}
+
+/* ========================================
+   ÉTATS SPÉCIAUX
+   ======================================== */
+
+/* Étape avec erreur */
+.step.error .step-number {
+    background: #f44336;
+    color: white;
+    animation: shake 0.5s ease-in-out;
+}
+
+.step.error .step-label {
+    color: #f44336;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Étape en cours de chargement */
+.step.loading .step-number {
+    background: #ff9800;
+    color: white;
+    position: relative;
+}
+
+.step.loading .step-number::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Étape désactivée */
+.step.disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.step.disabled:hover {
+    opacity: 0.3;
+}
+
+/* ========================================
+   THÈMES ALTERNATIFS
+   ======================================== */
+
+/* Thème sombre */
+.stepper.dark {
+    background: #2c3e50;
+    border-bottom-color: #34495e;
+}
+
+.stepper.dark .step-number {
+    background: #34495e;
+    color: #ecf0f1;
+}
+
+.stepper.dark .step-label {
+    color: #bdc3c7;
+}
+
+.stepper.dark .step.active .step-number {
+    background: #3498db;
+}
+
+.stepper.dark .step.active .step-label {
+    color: #3498db;
+}
+
+/* Thème minimal */
+.stepper.minimal {
+    background: transparent;
+    border: none;
+    padding: 20px;
+}
+
+.stepper.minimal .step-number {
+    background: transparent;
+    border: 2px solid #e0e0e0;
+    color: #666;
+}
+
+.stepper.minimal .step.active .step-number {
+    border-color: #667eea;
+    background: #667eea;
+}
+
+.stepper.minimal .step.completed .step-number {
+    border-color: #4caf50;
+    background: #4caf50;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+@media (max-width: 768px) {
+    .stepper {
+        gap: 20px;
+        padding: 16px;
+        overflow-x: auto;
+        justify-content: flex-start;
+    }
+    
+    .step-label {
+        display: none; /* Masquer les labels sur mobile */
+    }
+    
+    .step-number {
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+    }
+    
+    /* Connecteurs plus courts sur mobile */
+    .step:not(:last-child)::after {
+        width: 20px;
+        right: -10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stepper {
+        gap: 15px;
+        padding: 12px;
+    }
+    
+    .step-number {
+        width: 32px;
+        height: 32px;
+        font-size: 13px;
+    }
+    
+    .step:not(:last-child)::after {
+        width: 15px;
+        right: -7px;
+    }
+    
+    /* Stepper vertical sur très petit écran */
+    .stepper.responsive-vertical {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .stepper.responsive-vertical .step {
+        width: 100%;
+    }
+    
+    .stepper.responsive-vertical .step-label {
+        display: block;
+    }
+}
+
+/* ========================================
+   UTILITAIRES
+   ======================================== */
+
+/* Classes d'espacement */
+.stepper.spacing-sm { gap: 20px; }
+.stepper.spacing-md { gap: 40px; }
+.stepper.spacing-lg { gap: 60px; }
+
+/* Classes de taille */
+.stepper.size-sm .step-number {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+}
+
+.stepper.size-lg .step-number {
+    width: 48px;
+    height: 48px;
+    font-size: 18px;
+}
+
+/* Classes de couleur personnalisées */
+.stepper.color-primary .step.active .step-number { background: var(--primary-color, #667eea); }
+.stepper.color-success .step.active .step-number { background: #28a745; }
+.stepper.color-warning .step.active .step-number { background: #ffc107; color: #212529; }
+.stepper.color-danger .step.active .step-number { background: #dc3545; }
+
+/* ========================================
+   HISTORIQUE DES MODIFICATIONS
+   
+   EXTRACTION depuis commandes-custom.css:
+   - Styles .stepper, .step, .step-number, .step-label
+   - États .active, .completed
+   - Animations et transitions
+   - Responsive design
+   
+   AMÉLIORATIONS ajoutées:
+   - Connecteurs entre étapes
+   - Variantes de design (compact, vertical, minimal)
+   - États spéciaux (error, loading, disabled)
+   - Thèmes (dark, minimal)
+   - Classes utilitaires
+   - Animations plus fluides
+   
+   COMPATIBILITÉ:
+   - Maintient toutes les classes CSS existantes
+   - Fonctionne avec le HTML existant
+   - Extensible pour de nouveaux usages
+   ======================================== */
