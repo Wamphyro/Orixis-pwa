@@ -120,7 +120,7 @@ export class DataTableFilters {
         }
     });
     
-    // Ajouter le bouton reset dans la même ligne
+    // Le bouton est bien dans filtersRow
     if (this.config.resetButton && this.config.filters.length > 0) {
         const resetBtn = document.createElement('button');
         resetBtn.type = 'button';
@@ -128,7 +128,7 @@ export class DataTableFilters {
         resetBtn.innerHTML = '🔄 Réinitialiser';
         resetBtn.onclick = () => this.reset();
         
-        filtersRow.appendChild(resetBtn);
+        filtersRow.appendChild(resetBtn);  // ✅ Dans la même ligne
         this.elements.resetButton = resetBtn;
     }
     
