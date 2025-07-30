@@ -95,49 +95,52 @@ export class DataTableFilters {
      * Créer la structure HTML
      */
     render() {
-        // Créer le formulaire principal
-        const form = document.createElement('form');
-        form.className = 'filters-form';
-        form.id = `${this.id}-form`;
-        form.onsubmit = (e) => e.preventDefault(); // Empêcher la soumission
-        
-        // Créer la grille de filtres
-        const grid = document.createElement('div');
-        grid.className = 'filters-grid';
-        
-        // Ajouter chaque filtre
-        this.config.filters.forEach(filterConfig => {
-            const filterElement = this.createFilter(filterConfig);
-            if (filterElement) {
-                grid.appendChild(filterElement);
-            }
-        });
-        
-        form.appendChild(grid);
-        
-        // Ajouter les actions (bouton reset)
-        if (this.config.resetButton && this.config.filters.length > 0) {
-            const actions = document.createElement('div');
-            actions.className = 'filters-actions';
-            
-            const resetBtn = document.createElement('button');
-            resetBtn.type = 'button';
-            resetBtn.className = 'btn-reset-filters';
-            resetBtn.innerHTML = '🔄 Réinitialiser';
-            resetBtn.onclick = () => this.reset();
-            
-            actions.appendChild(resetBtn);
-            form.appendChild(actions);
-            
-            this.elements.resetButton = resetBtn;
+    // Container principal avec classe pour style
+    this.elements.container.className = 'filters-container';
+    
+    // Créer un wrapper pour tout
+    const wrapper = document.createElement('div');
+    wrapper.className = 'filters-wrapper';
+    
+    // Ligne des filtres
+    const filtersRow = document.createElement('div');
+    filtersRow.className = 'filters-row';
+    
+    // Créer le formulaire
+    const form = document.createElement('form');
+    form.className = 'filters-form';
+    form.id = `${this.id}-form`;
+    form.onsubmit = (e) => e.preventDefault();
+    
+    // Ajouter chaque filtre
+    this.config.filters.forEach(filterConfig => {
+        const filterElement = this.createFilter(filterConfig);
+        if (filterElement) {
+            filtersRow.appendChild(filterElement);
         }
+    });
+    
+    // Ajouter le bouton reset dans la même ligne
+    if (this.config.resetButton && this.config.filters.length > 0) {
+        const resetBtn = document.createElement('button');
+        resetBtn.type = 'button';
+        resetBtn.className = 'btn-reset-filters';
+        resetBtn.innerHTML = '🔄 Réinitialiser';
+        resetBtn.onclick = () => this.reset();
         
-        // Vider le container et ajouter le form
-        this.elements.container.innerHTML = '';
-        this.elements.container.appendChild(form);
-        
-        this.elements.form = form;
+        filtersRow.appendChild(resetBtn);
+        this.elements.resetButton = resetBtn;
     }
+    
+    form.appendChild(filtersRow);
+    wrapper.appendChild(form);
+    
+    // Vider et ajouter
+    this.elements.container.innerHTML = '';
+    this.elements.container.appendChild(wrapper);
+    
+    this.elements.form = form;
+}
     
     /**
      * Créer un filtre selon son type
