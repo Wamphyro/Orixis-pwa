@@ -56,15 +56,6 @@
 
 /* ⚠️ STYLES STEPPER SUPPRIMÉS - Voir stepper.css */
 
-/* CONTENU ÉTAPES */
-.step-content {
-    min-height: 300px;
-}
-
-.step-content.hidden {
-    display: none;
-}
-
 /* CLIENT SÉLECTIONNÉ */
 .client-selected {
     background: #e8f5e9;
