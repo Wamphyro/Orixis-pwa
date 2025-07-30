@@ -179,7 +179,8 @@ body.datatable-resizing {
     padding: 8px 15px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    white-space: nowrap; /* AJOUTER - Empêche le retour à la ligne */
+    white-space: nowrap; /* Empêche le retour à la ligne */
+    flex-shrink: 0; /* Empêche la compression */
 }
 
 .pagination-size label {
