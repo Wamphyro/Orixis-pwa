@@ -516,17 +516,25 @@ export class DropdownList {
     } else {
         // Desktop
         if (isInModal) {
-            // Dans un modal, utiliser position fixed
+            // Dans un modal, utiliser position fixed MAIS avec calcul ajusté
+            const modalBody = this.wrapper.closest('.modal-body');
+            const scrollTop = modalBody ? modalBody.scrollTop : 0;
+            
             this.panel.style.position = 'fixed';
-            this.panel.style.top = `${triggerRect.bottom}px`;
+            this.panel.style.top = `${triggerRect.bottom + 2}px`; // +2px pour un petit espace
             this.panel.style.left = `${triggerRect.left}px`;
             this.panel.style.width = `${triggerRect.width}px`;
+            
+            // Si le dropdown dépasse en bas, le mettre au-dessus
+            if (triggerRect.bottom + panelHeight > viewportHeight) {
+                this.panel.style.top = `${triggerRect.top - panelHeight - 2}px`;
+            }
         } else {
             // Hors modal, comportement normal
             this.panel.style.width = `${triggerRect.width}px`;
         }
         
-        // Décider si afficher en haut ou en bas
+        // Classes pour le style
         if (spaceBelow >= panelHeight || spaceBelow > spaceAbove) {
             this.panel.classList.remove('dropdown-up');
             this.panel.classList.add('dropdown-down');
