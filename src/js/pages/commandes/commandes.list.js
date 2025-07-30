@@ -251,7 +251,30 @@ async function initFiltres() {  // ← AJOUTER async
     container: '.commandes-filters',
     filters: filtresConfigAjustes,
     onFilter: (filters) => {
-        // Conserver statuts lors de la mise à jour des filtres
+    // Détecter si c'est un reset (tous les filtres sont vides)
+    const isReset = !filters.recherche && 
+                    !filters.magasin && 
+                    filters.periode === 'all' && 
+                    !filters.urgence;
+    
+    // Si c'est un reset, réinitialiser aussi les statuts
+    if (isReset) {
+        state.filtres = {
+            recherche: '',
+            magasin: '',
+            periode: 'all',
+            urgence: '',
+            statuts: []  // Reset les statuts
+        };
+        
+        // Désélectionner visuellement toutes les cartes
+        if (statsCards && statsCards.elements.cards) {
+            Object.values(statsCards.elements.cards).forEach(card => {
+                card.classList.remove('active');
+            });
+        }
+    } else {
+        // Sinon, conserver les statuts
         state.filtres = {
             recherche: filters.recherche || '',
             magasin: filters.magasin || '',  
@@ -259,10 +282,12 @@ async function initFiltres() {  // ← AJOUTER async
             urgence: filters.urgence || '',
             statuts: state.filtres.statuts || []
         };
-        
-        if (tableCommandes) {
-            afficherCommandes();
-        }
+    }
+    
+    if (tableCommandes) {
+        afficherCommandes();
+    }
+}
     },
     // 🆕 AJOUTER le callback onReset
     onReset: () => {
