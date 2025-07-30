@@ -870,58 +870,24 @@
 
 /* ========================================
    FIX DROPDOWNS DANS LES MODALS
-   [01/02/2025] - Correction position dropdowns dans modals
+   [01/02/2025] - Solution simple pour dropdowns dans modals
    ======================================== */
 
-/* Forcer position fixed pour les dropdowns dans les modals */
+/* Forcer position fixed avec z-index élevé */
 .modal .dropdown-list-panel {
     position: fixed !important;
     z-index: 10500 !important;
 }
 
-/* IMPORTANT: Override le top: 100% du dropdown-list.css */
-.modal .dropdown-list-panel {
-    top: auto !important;
-}
+/* Laisser le JS calculer la position, on ne touche à RIEN d'autre */
+/* Le composant DropdownList a déjà updatePosition() qui fait le travail */
 
-/* Le JS du composant calculera la bonne position avec updatePosition() */
+/* Juste s'assurer que le wrapper ne contraint pas le dropdown */
 .modal .dropdown-list-wrapper {
     position: static !important;
 }
 
-/* Empêcher le panel d'hériter du border-radius quand dans un modal */
-.modal .dropdown-list-wrapper.open .dropdown-list-trigger {
-    border-radius: 12px !important;
-}
-
-/* Panel avec border complet dans les modals */
-.modal .dropdown-list-panel {
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    border-radius: 12px !important;
-}
-
-/* CENTRAGE DU DROPDOWN */
-/* Si le dropdown est plus large que le bouton, le centrer */
-.modal .dropdown-list-panel {
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    max-width: calc(100vw - 80px) !important; /* Éviter débordement */
-}
-
-/* Fix pour que le dropdown ne soit pas trop large */
-.modal .pack-selector .dropdown-list-panel {
-    width: min(808px, calc(100vw - 80px)) !important;
-}
-
-/* Sur petits écrans, ajuster la largeur */
-@media (max-width: 900px) {
-    .modal .dropdown-list-panel {
-        width: 100% !important;
-        left: 0 !important;
-        right: 0 !important;
-        transform: none !important;
-    }
-}
+/* C'est tout ! */
 
 /* ========================================
    HISTORIQUE DES DIFFICULTÉS
