@@ -318,29 +318,55 @@ export const COMMANDES_CONFIG = {
  * Générer les options de filtres dynamiquement
  */
 export function genererOptionsFiltres() {
-    const config = { ...COMMANDES_CONFIG.FILTRES_CONFIG };
-    
-    // Générer les options de statut depuis STATUTS
-    config.statut.options = [
-        { value: '', label: 'Tous les statuts' },
-        ...Object.entries(COMMANDES_CONFIG.STATUTS)
-            .filter(([key]) => key !== 'supprime') // Exclure le statut supprimé
-            .map(([key, statut]) => ({
-                value: key,
-                label: `${statut.icon} ${statut.label}`
-            }))
+    return [
+        {
+            id: 'recherche',
+            type: 'text',
+            label: 'Rechercher',
+            placeholder: 'Client, produit, n° commande...'
+        },
+        {
+            id: 'statut',
+            type: 'select',
+            label: 'Statut',
+            placeholder: 'Tous les statuts',
+            options: [
+                { value: '', label: 'Tous les statuts' },
+                ...Object.entries(COMMANDES_CONFIG.STATUTS)
+                    .filter(([key]) => key !== 'supprime')
+                    .map(([key, statut]) => ({
+                        value: key,
+                        label: `${statut.icon} ${statut.label}`
+                    }))
+            ]
+        },
+        {
+            id: 'periode',
+            type: 'select',
+            label: 'Période',
+            defaultValue: 'all',
+            options: [
+                { value: 'all', label: 'Toutes' },
+                { value: 'today', label: "Aujourd'hui" },
+                { value: 'week', label: 'Cette semaine' },
+                { value: 'month', label: 'Ce mois' }
+            ]
+        },
+        {
+            id: 'urgence',
+            type: 'select',
+            label: 'Urgence',
+            placeholder: 'Toutes les urgences',
+            options: [
+                { value: '', label: 'Toutes' },
+                ...Object.entries(COMMANDES_CONFIG.NIVEAUX_URGENCE)
+                    .map(([key, urgence]) => ({
+                        value: key,
+                        label: `${urgence.icon} ${urgence.label}`
+                    }))
+            ]
+        }
     ];
-    
-    // Générer les options d'urgence depuis NIVEAUX_URGENCE
-    config.urgence.options = [
-        { value: '', label: 'Toutes' },
-        ...Object.entries(COMMANDES_CONFIG.NIVEAUX_URGENCE).map(([key, urgence]) => ({
-            value: key,
-            label: `${urgence.icon} ${urgence.label}`
-        }))
-    ];
-    
-    return Object.values(config);
 }
 
 /**
