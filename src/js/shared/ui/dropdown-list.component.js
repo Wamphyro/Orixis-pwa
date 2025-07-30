@@ -516,21 +516,30 @@ export class DropdownList {
     } else {
         // Desktop
         if (isInModal) {
-            // Dans un modal, utiliser position fixed MAIS avec calcul ajusté
-            const modalBody = this.wrapper.closest('.modal-body');
-            const scrollTop = modalBody ? modalBody.scrollTop : 0;
+            // NOUVEAU : Déplacer le panel dans le body si on est dans un modal
+            if (this.panel.parentElement !== document.body) {
+                document.body.appendChild(this.panel);
+            }
             
+            // Position fixed avec calcul de la largeur maximale
             this.panel.style.position = 'fixed';
-            this.panel.style.top = `${triggerRect.bottom + 2}px`; // +2px pour un petit espace
+            this.panel.style.top = `${triggerRect.bottom + 2}px`;
             this.panel.style.left = `${triggerRect.left}px`;
-            this.panel.style.width = `${triggerRect.width}px`;
+            
+            // Calculer la largeur maximale disponible
+            const maxWidth = window.innerWidth - triggerRect.left - 20; // 20px de marge
+            const desiredWidth = triggerRect.width;
+            this.panel.style.width = `${Math.min(desiredWidth, maxWidth)}px`;
             
             // Si le dropdown dépasse en bas, le mettre au-dessus
             if (triggerRect.bottom + panelHeight > viewportHeight) {
                 this.panel.style.top = `${triggerRect.top - panelHeight - 2}px`;
             }
         } else {
-            // Hors modal, comportement normal
+            // Hors modal, remettre dans le wrapper si nécessaire
+            if (this.panel.parentElement === document.body) {
+                this.wrapper.appendChild(this.panel);
+            }
             this.panel.style.width = `${triggerRect.width}px`;
         }
         
@@ -580,50 +589,47 @@ export class DropdownList {
     }
     
     close() {
-        if (!this.isOpen) return;
+    if (!this.isOpen) return;
+    
+    this.isOpen = false;
+    this.wrapper.classList.remove('open');
+    this.panel.classList.remove('show');
+    
+    // Animation de fermeture
+    const transitionEnd = () => {
+        this.panel.style.display = 'none';
+        this.panel.removeEventListener('transitionend', transitionEnd);
         
-        this.isOpen = false;
-        this.wrapper.classList.remove('open');
-        this.panel.classList.remove('show');
-        
-        // Animation de fermeture
-        const transitionEnd = () => {
-            this.panel.style.display = 'none';
-            this.panel.removeEventListener('transitionend', transitionEnd);
-            
-            // Masquer le backdrop
-            if (this.backdrop) {
-                this.backdrop.style.display = 'none';
-            }
-        };
-        
-        this.panel.addEventListener('transitionend', transitionEnd);
-        
-        // Reset recherche
-        if (this.searchInput) {
-            this.searchInput.value = '';
-            this.searchQuery = '';
-            this.filterOptions();
+        // NOUVEAU : Remettre le panel dans le wrapper s'il était dans le body
+        if (this.panel.parentElement === document.body) {
+            this.wrapper.appendChild(this.panel);
         }
         
-        // Callback
-        if (this.options.onClose) {
-            this.options.onClose();
+        // Masquer le backdrop
+        if (this.backdrop) {
+            this.backdrop.style.display = 'none';
         }
-        
-        // Restaurer le scroll sur mobile
-        if (this.isMobile) {
-            document.body.style.overflow = '';
-        }
+    };
+    
+    this.panel.addEventListener('transitionend', transitionEnd);
+    
+    // Reset recherche
+    if (this.searchInput) {
+        this.searchInput.value = '';
+        this.searchQuery = '';
+        this.filterOptions();
     }
     
-    toggle() {
-        if (this.isOpen) {
-            this.close();
-        } else {
-            this.open();
-        }
+    // Callback
+    if (this.options.onClose) {
+        this.options.onClose();
     }
+    
+    // Restaurer le scroll sur mobile
+    if (this.isMobile) {
+        document.body.style.overflow = '';
+    }
+}
     
     // ========================================
     // API PUBLIQUE
