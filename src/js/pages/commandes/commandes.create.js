@@ -533,6 +533,8 @@ export async function appliquerPack() {
     const packId = dropdownPack ? dropdownPack.getValue() : '';
     if (!packId) return;
     
+    console.log('🔍 Application du pack:', packId);
+    
     try {
         const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
         
