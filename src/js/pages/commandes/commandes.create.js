@@ -188,13 +188,17 @@ function genererOptionsEtape3() {
     if (selectType) {
         const typesPreparation = genererOptionsTypesPreparation();
         
-        // 🆕 Ajouter une option vide en premier
+        // Ajouter une option vide en premier
         selectType.innerHTML = '<option value="">-- Sélectionner un type --</option>' + 
             typesPreparation.map(type => 
                 `<option value="${type.value}">${type.label}</option>`
             ).join('');
         
-        // Pas de restauration de valeur (laisser vide)
+        // 🆕 AJOUTER CE LISTENER
+        selectType.addEventListener('change', (e) => {
+            nouvelleCommande.typePreparation = e.target.value;
+            console.log('Type sélectionné:', nouvelleCommande.typePreparation);
+        });
     }
     
     // 2. Générer les boutons radio urgence
@@ -941,6 +945,7 @@ async function chargerMagasins() {
         // 🆕 Mise à jour pour gérer l'événement onchange
         select.addEventListener('change', (e) => {
             nouvelleCommande.magasinLivraison = e.target.value;
+            console.log('Magasin sélectionné:', nouvelleCommande.magasinLivraison);
         });
         
     } catch (error) {
@@ -987,8 +992,14 @@ function setDateLivraisonDefaut() {
     // Définir seulement la date minimum (aujourd'hui)
     dateInput.min = new Date().toISOString().split('T')[0];
     
-    // 🆕 NE PAS définir de valeur par défaut
+    // NE PAS définir de valeur par défaut
     dateInput.value = '';
+    
+    // 🆕 AJOUTER CE LISTENER
+    dateInput.addEventListener('change', (e) => {
+        nouvelleCommande.dateLivraison = new Date(e.target.value);
+        console.log('Date sélectionnée:', nouvelleCommande.dateLivraison);
+    });
 }
 
 // ========================================
