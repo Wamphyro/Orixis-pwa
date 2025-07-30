@@ -484,6 +484,9 @@ export class DropdownList {
     const spaceBelow = viewportHeight - triggerRect.bottom;
     const spaceAbove = triggerRect.top;
     
+    // Détecter si on est dans un modal
+    const isInModal = this.wrapper.closest('.modal');
+    
     // Reset styles
     this.panel.style.position = '';
     this.panel.style.top = '';
@@ -492,23 +495,17 @@ export class DropdownList {
     this.panel.style.right = '';
     this.panel.style.width = '';
     
-    // NOUVEAU : Détecter si on est dans un modal
-    const isInModal = this.wrapper.closest('.modal');
-    
     if (this.isMobile) {
-        // Sur mobile, position fixe centrée
+        // Code mobile inchangé...
         this.panel.style.position = 'fixed';
         this.panel.style.left = '50%';
         this.panel.style.transform = 'translateX(-50%)';
         this.panel.style.width = '90%';
         this.panel.style.maxWidth = '400px';
         this.panel.style.zIndex = '9999';
-        
-        // Au milieu de l'écran
         this.panel.style.top = '50%';
         this.panel.style.transform = 'translate(-50%, -50%)';
         
-        // Backdrop pour mobile
         if (!this.backdrop) {
             this.backdrop = document.createElement('div');
             this.backdrop.className = 'dropdown-list-backdrop';
@@ -517,20 +514,23 @@ export class DropdownList {
         this.backdrop.style.display = 'block';
         
     } else {
-        // Desktop : position absolue
-        // MODIFICATION : Ne pas définir la largeur si on est dans un modal
-        if (!isInModal) {
+        // Desktop
+        if (isInModal) {
+            // Dans un modal, utiliser position fixed
+            this.panel.style.position = 'fixed';
+            this.panel.style.top = `${triggerRect.bottom}px`;
+            this.panel.style.left = `${triggerRect.left}px`;
+            this.panel.style.width = `${triggerRect.width}px`;
+        } else {
+            // Hors modal, comportement normal
             this.panel.style.width = `${triggerRect.width}px`;
         }
-        // Si dans un modal, laisser le CSS gérer la largeur
         
         // Décider si afficher en haut ou en bas
         if (spaceBelow >= panelHeight || spaceBelow > spaceAbove) {
-            // En bas
             this.panel.classList.remove('dropdown-up');
             this.panel.classList.add('dropdown-down');
         } else {
-            // En haut
             this.panel.classList.remove('dropdown-down');
             this.panel.classList.add('dropdown-up');
         }
