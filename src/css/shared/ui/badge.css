@@ -118,6 +118,55 @@
     min-width: 30px;
 }
 
+/* ICÔNES URGENCE AVEC TOOLTIP */
+.urgence-icon-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.urgence-icon {
+    font-size: 20px;
+    cursor: help;
+    display: inline-block;
+    text-align: center;
+    min-width: 30px;
+}
+
+.urgence-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s;
+    margin-bottom: 5px;
+    z-index: 1000;
+}
+
+/* Petite flèche sous le tooltip */
+.urgence-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #333;
+}
+
+/* Afficher au survol */
+.urgence-icon-wrapper:hover .urgence-tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
 /* ========================================
    BADGES GÉNÉRIQUES (couleurs Bootstrap-like)
    ======================================== */

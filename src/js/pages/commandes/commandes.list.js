@@ -373,8 +373,13 @@ function afficherUrgence(urgence) {
     const config = COMMANDES_CONFIG.NIVEAUX_URGENCE[urgence];
     if (!config) return urgence;
     
-    // Juste l'icône avec un title pour le tooltip
-    return `<span class="urgence-icon" title="${config.label} (${config.delai})">${config.icon}</span>`;
+    // Structure avec tooltip CSS
+    return `
+        <span class="urgence-icon-wrapper">
+            <span class="urgence-icon">${config.icon}</span>
+            <span class="urgence-tooltip">${config.label} (${config.delai})</span>
+        </span>
+    `;
 }
 
 function afficherStatut(statut) {
