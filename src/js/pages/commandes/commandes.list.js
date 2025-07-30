@@ -248,63 +248,47 @@ async function initFiltres() {  // ← AJOUTER async
     });
     
     filtresCommandes = new DataTableFilters({
-    container: '.commandes-filters',
-    filters: filtresConfigAjustes,
-    onFilter: (filters) => {
-    // Détecter si c'est un reset (tous les filtres sont vides)
-    const isReset = !filters.recherche && 
-                    !filters.magasin && 
-                    filters.periode === 'all' && 
-                    !filters.urgence;
-    
-    // Si c'est un reset, réinitialiser aussi les statuts
-    if (isReset) {
-        state.filtres = {
-            recherche: '',
-            magasin: '',
-            periode: 'all',
-            urgence: '',
-            statuts: []  // Reset les statuts
-        };
-        
-        // Désélectionner visuellement toutes les cartes
-        if (statsCards && statsCards.elements.cards) {
-            Object.values(statsCards.elements.cards).forEach(card => {
-                card.classList.remove('active');
-            });
-        }
-    } else {
-        // Sinon, conserver les statuts
-        state.filtres = {
-            recherche: filters.recherche || '',
-            magasin: filters.magasin || '',  
-            periode: filters.periode || 'all',
-            urgence: filters.urgence || '',
-            statuts: state.filtres.statuts || []
-        };
-    }
-    
-    if (tableCommandes) {
-        afficherCommandes();
-    }
-}
-    },
-    // 🆕 AJOUTER le callback onReset
-    onReset: () => {
-        // Réinitialiser les statuts
-        state.filtres.statuts = [];
-        
-        // Retirer la classe active de toutes les cartes
-        if (statsCards && statsCards.elements.cards) {
-            Object.values(statsCards.elements.cards).forEach(card => {
-                card.classList.remove('active');
-            });
-        }
-        
-        // Réafficher les commandes
-        afficherCommandes();
-    }
-});
+        container: '.commandes-filters',
+        filters: filtresConfigAjustes,
+            onFilter: (filters) => {
+                // Détecter si c'est un reset (tous les filtres sont vides)
+                const isReset = !filters.recherche && 
+                                !filters.magasin && 
+                                filters.periode === 'all' && 
+                                !filters.urgence;
+                
+                // Si c'est un reset, réinitialiser aussi les statuts
+                if (isReset) {
+                    state.filtres = {
+                        recherche: '',
+                        magasin: '',
+                        periode: 'all',
+                        urgence: '',
+                        statuts: []  // Reset les statuts
+                    };
+                    
+                    // Désélectionner visuellement toutes les cartes
+                    if (statsCards && statsCards.elements.cards) {
+                        Object.values(statsCards.elements.cards).forEach(card => {
+                            card.classList.remove('active');
+                        });
+                    }
+                } else {
+                    // Sinon, conserver les statuts
+                    state.filtres = {
+                        recherche: filters.recherche || '',
+                        magasin: filters.magasin || '',  
+                        periode: filters.periode || 'all',
+                        urgence: filters.urgence || '',
+                        statuts: state.filtres.statuts || []
+                    };
+                }
+                
+                if (tableCommandes) {
+                    afficherCommandes();
+                }
+            }
+    });
 }
 
 // ========================================
