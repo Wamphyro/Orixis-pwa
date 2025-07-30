@@ -67,7 +67,7 @@ export const state = {
         magasin: '',
         periode: 'all',
         urgence: '',
-        statut: ''  // 🆕 AJOUTER
+        statuts: []  // 🆕 Array pour multi-sélection
     }
 };
 

@@ -165,16 +165,23 @@ function initStatsCards() {
         cards: cardsConfig,
         animated: true,
         onClick: (cardId) => {
-            // Mise à jour directe du filtre statut dans l'état
-            state.filtres.statut = cardId;
+            // Toggle : ajouter ou retirer du filtre
+            const index = state.filtres.statuts.indexOf(cardId);
+            
+            if (index > -1) {
+                // Le statut est déjà sélectionné, on le retire
+                state.filtres.statuts.splice(index, 1);
+                // Retirer la classe active de la carte
+                statsCards.elements.cards[cardId]?.classList.remove('active');
+            } else {
+                // Le statut n'est pas sélectionné, on l'ajoute
+                state.filtres.statuts.push(cardId);
+                // Ajouter la classe active à la carte
+                statsCards.elements.cards[cardId]?.classList.add('active');
+            }
             
             // Réafficher les commandes avec le nouveau filtre
             afficherCommandes();
-            
-            // Optionnel : Si tu veux aussi réinitialiser les autres filtres
-            // if (filtresCommandes) {
-            //     filtresCommandes.reset();
-            // }
         }
     });
 }
@@ -371,8 +378,8 @@ function filtrerCommandesLocalement() {
             return false;
         }
         
-        // 🆕 AJOUTER ICI - Filtre statut (depuis les cartes)
-        if (state.filtres.statut && commande.statut !== state.filtres.statut) {
+        // 🆕 Filtre statuts multiples (depuis les cartes)
+        if (state.filtres.statuts.length > 0 && !state.filtres.statuts.includes(commande.statut)) {
             return false;
         }
         
