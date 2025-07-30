@@ -92,15 +92,25 @@ function checkAuth() {
     return authData.authenticated;
 }
 
-// 🆕 Récupérer les données utilisateur pour le header (avec magasin)
+// ========================================
+// CORRECTION FONCTION getUserData() 
+// Lignes 89-117 dans commandes.main.js
+// ========================================
+
+// 🔧 REMPLACE LA FONCTION getUserData() EXISTANTE PAR CELLE-CI :
+
 function getUserData() {
     const auth = JSON.parse(localStorage.getItem('sav_auth'));
     if (auth && auth.collaborateur) {
-        // 🆕 Gestion du magasin - plusieurs formats possibles
+        // ✅ CORRECTION : Chercher le magasin au bon endroit
         let storeName = '';
         
-        // Essayer différents champs possibles pour le magasin
-        if (auth.collaborateur.magasin) {
+        // 1. D'abord chercher dans auth.magasin (niveau principal)
+        if (auth.magasin) {
+            storeName = auth.magasin;  // ← 9DIJ sera récupéré ici !
+        }
+        // 2. Puis essayer dans collaborateur si pas trouvé
+        else if (auth.collaborateur.magasin) {
             storeName = auth.collaborateur.magasin;
         } else if (auth.collaborateur.magasin_nom) {
             storeName = auth.collaborateur.magasin_nom;
@@ -109,16 +119,33 @@ function getUserData() {
         } else if (auth.collaborateur.agence) {
             storeName = auth.collaborateur.agence;
         } else {
-            // Valeur par défaut si aucun magasin trouvé
-            storeName = 'Magasin principal';
+            // Valeur par défaut si vraiment aucun magasin trouvé
+            storeName = 'NON_DEFINI';
         }
         
-        // 🆕 Formater le nom du magasin
-        const formattedStore = storeName.startsWith('Magasin') ? storeName : `Magasin ${storeName}`;
+        // ✅ AMÉLIORATION : Formatage plus intelligent
+        let formattedStore = '';
+        
+        // Si c'est un code magasin (format 9XXX), on peut le garder tel quel ou le formater
+        if (/^9[A-Z]{3}$/.test(storeName)) {
+            // Option 1 : Garder le code tel quel
+            formattedStore = storeName;  // Affichera "9DIJ"
+            
+            // Option 2 : Formater avec "Magasin" (décommente si tu préfères)
+            // formattedStore = `Magasin ${storeName}`;  // Affichera "Magasin 9DIJ"
+        } 
+        // Si c'est déjà formaté ou un nom complet
+        else if (storeName.startsWith('Magasin')) {
+            formattedStore = storeName;
+        }
+        // Sinon, ajouter "Magasin" devant
+        else {
+            formattedStore = `Magasin ${storeName}`;
+        }
         
         return {
             name: `${auth.collaborateur.prenom} ${auth.collaborateur.nom}`,
-            store: formattedStore, // 🆕 Ajout du magasin
+            store: formattedStore,  // ✅ Maintenant affichera "9DIJ" ou "Magasin 9DIJ"
             showLogout: true
         };
     }
@@ -126,7 +153,7 @@ function getUserData() {
     // Fallback si pas d'auth
     return {
         name: 'Utilisateur',
-        store: 'Magasin non défini', // 🆕 Fallback magasin
+        store: 'Magasin non défini',
         showLogout: true
     };
 }
