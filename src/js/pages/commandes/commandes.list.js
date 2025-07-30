@@ -236,9 +236,9 @@ function initFiltres() {
                 label: 'Urgence',
                 options: [
                     { value: '', label: 'Toutes' },
-                    { value: 'normal', label: 'Normal' },
-                    { value: 'urgent', label: '🟡 Urgent' },
-                    { value: 'tres_urgent', label: '🔴 Très urgent' }
+                    { value: 'normal', label: '🍃 Normal' },
+                    { value: 'urgent', label: '💨 Urgent' },
+                    { value: 'tres_urgent', label: '🔥 Très urgent' }
                 ]
             }
         ],
