@@ -429,6 +429,19 @@ export function resetFiltres() {
     if (filtresCommandes) {
         filtresCommandes.reset();
     }
+    
+    // 🆕 Réinitialiser aussi les statuts sélectionnés
+    state.filtres.statuts = [];
+    
+    // 🆕 Retirer la classe active de toutes les cartes
+    if (statsCards && statsCards.elements.cards) {
+        Object.values(statsCards.elements.cards).forEach(card => {
+            card.classList.remove('active');
+        });
+    }
+    
+    // 🆕 Réafficher les commandes sans filtres
+    afficherCommandes();
 }
 
 // ========================================
