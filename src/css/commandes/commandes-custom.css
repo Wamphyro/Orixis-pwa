@@ -870,7 +870,7 @@
 
 /* ========================================
    FIX DROPDOWNS DANS LES MODALS
-   [01/02/2025] - Solution forcée pour dropdowns dans modals
+   [01/02/2025] - Solution simple pour dropdowns dans modals
    ======================================== */
 
 /* Forcer position fixed avec z-index élevé */
@@ -879,29 +879,10 @@
     z-index: 10500 !important;
 }
 
-/* FORCER la largeur à être celle du bouton parent */
-.modal .dropdown-list-panel[style*="width"] {
-    width: 100% !important;
-    max-width: 100% !important;
-}
-
-/* Alternative plus agressive si ça ne marche toujours pas */
-.modal .pack-selector .dropdown-list-panel,
-.modal #packTemplate .dropdown-list-panel {
-    width: 100% !important;
-    max-width: 400px !important; /* Largeur raisonnable */
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-}
-
 /* S'assurer que le wrapper ne contraint pas le dropdown */
 .modal .dropdown-list-wrapper {
     position: static !important;
 }
-
-/* C'est tout ! */
-
-/* C'est tout ! */
 
 /* ========================================
    HISTORIQUE DES DIFFICULTÉS
