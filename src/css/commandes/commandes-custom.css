@@ -900,10 +900,27 @@
     border-radius: 12px !important;
 }
 
-/* Fix spécifique pour Chrome/Safari */
+/* CENTRAGE DU DROPDOWN */
+/* Si le dropdown est plus large que le bouton, le centrer */
 .modal .dropdown-list-panel {
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    max-width: calc(100vw - 80px) !important; /* Éviter débordement */
+}
+
+/* Fix pour que le dropdown ne soit pas trop large */
+.modal .pack-selector .dropdown-list-panel {
+    width: min(808px, calc(100vw - 80px)) !important;
+}
+
+/* Sur petits écrans, ajuster la largeur */
+@media (max-width: 900px) {
+    .modal .dropdown-list-panel {
+        width: 100% !important;
+        left: 0 !important;
+        right: 0 !important;
+        transform: none !important;
+    }
 }
 
 /* ========================================
