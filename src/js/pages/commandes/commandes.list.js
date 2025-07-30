@@ -86,7 +86,11 @@ export async function initListeCommandes() {
                 sortable: true,
                 formatter: (value) => {
                     const config = COMMANDES_CONFIG.TYPES_PREPARATION[value];
-                    if (!config) return value || '-';
+                    if (!config) {
+                        // Si pas trouvé, afficher juste la valeur
+                        console.warn(`Type non trouvé dans COMMANDES_CONFIG: "${value}"`);
+                        return value || '-';
+                    }
                     return `<span class="badge badge-${value.replace(/_/g, '-')}">${config.icon} ${config.label}</span>`;
                 },
                 // 🆕 AJOUTER CETTE FONCTION DE TRI

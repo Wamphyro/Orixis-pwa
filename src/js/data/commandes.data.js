@@ -78,20 +78,23 @@ export const COMMANDES_CONFIG = {
     },
     
     // Types de préparation
-    TYPES_PREPARATION: {
-        livraison_premiere_paire: {
-            label: 'Livraison première paire',
-            description: 'Première adaptation du patient'
+        TYPES_PREPARATION: {
+            livraison_premiere_paire: {
+                label: 'Livraison première paire',
+                description: 'Première adaptation du patient',
+                icon: '1️⃣'  // 🆕 AJOUTER
+            },
+            livraison_deuxieme_paire: {
+                label: 'Livraison deuxième paire',
+                description: 'Paire de secours ou renouvellement',
+                icon: '2️⃣'  // 🆕 AJOUTER
+            },
+            livraison_accessoire: {
+                label: 'Livraison accessoire',
+                description: 'Accessoires et consommables uniquement',
+                icon: '🦾'  // 🆕 AJOUTER
+            }
         },
-        livraison_deuxieme_paire: {
-            label: 'Livraison deuxième paire',
-            description: 'Paire de secours ou renouvellement'
-        },
-        livraison_accessoire: {
-            label: 'Livraison accessoire',
-            description: 'Accessoires et consommables uniquement'
-        }
-    },
     
     // Niveaux d'urgence
     NIVEAUX_URGENCE: {
