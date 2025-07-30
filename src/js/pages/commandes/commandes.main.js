@@ -67,7 +67,7 @@ export const state = {
         magasin: '',
         periode: 'all',
         urgence: '',
-        statuts: []  // 🆕 Array pour multi-sélection
+        statuts: []  // 🔍 Vérifier : "statuts" (avec S) et array []
     }
 };
 
