@@ -6,15 +6,20 @@
 // Composant indépendant pour créer des filtres configurables
 // Compatible avec DataTable mais utilisable seul
 //
+// MODIFIÉ le 01/02/2025:
+// - Remplacement de TOUS les selects par DropdownList
+// - Extraction automatique des icônes depuis les labels
+// - Activation de la recherche sur tous les dropdowns
+//
 // TYPES SUPPORTÉS:
 // - search: Recherche textuelle
-// - select: Liste déroulante
+// - select: Liste déroulante (utilise DropdownList)
 // - daterange: Sélection de période
 // - checkbox: Cases à cocher multiples
 // (plus à venir...)
 // ========================================
 
-import { generateId } from '../index.js';
+import { generateId, DropdownList } from '../index.js';
 
 export class DataTableFilters {
     constructor(config) {
@@ -41,6 +46,9 @@ export class DataTableFilters {
             resetButton: null,
             filters: {} // Stockage des éléments de chaque filtre
         };
+        
+        // Stockage des instances DropdownList
+        this.dropdownInstances = [];
         
         // Timer pour le debounce
         this.debounceTimer = null;
@@ -88,59 +96,59 @@ export class DataTableFilters {
         // Attacher les événements globaux
         this.attachGlobalEvents();
         
-        console.log('✅ DataTableFilters initialisé');
+        console.log('✅ DataTableFilters initialisé avec DropdownList');
     }
     
     /**
      * Créer la structure HTML
      */
     render() {
-    // Container principal avec classe pour style
-    this.elements.container.className = 'filters-container';
-    
-    // Créer un wrapper pour tout
-    const wrapper = document.createElement('div');
-    wrapper.className = 'filters-wrapper';
-    
-    // Ligne des filtres
-    const filtersRow = document.createElement('div');
-    filtersRow.className = 'filters-row';
-    
-    // Créer le formulaire
-    const form = document.createElement('form');
-    form.className = 'filters-form';
-    form.id = `${this.id}-form`;
-    form.onsubmit = (e) => e.preventDefault();
-    
-    // Ajouter chaque filtre
-    this.config.filters.forEach(filterConfig => {
-        const filterElement = this.createFilter(filterConfig);
-        if (filterElement) {
-            filtersRow.appendChild(filterElement);
-        }
-    });
-    
-    // Le bouton est bien dans filtersRow
-    if (this.config.resetButton && this.config.filters.length > 0) {
-        const resetBtn = document.createElement('button');
-        resetBtn.type = 'button';
-        resetBtn.className = 'btn-reset-filters';
-        resetBtn.innerHTML = '🔄 Réinitialiser';
-        resetBtn.onclick = () => this.reset();
+        // Container principal avec classe pour style
+        this.elements.container.className = 'filters-container';
         
-        filtersRow.appendChild(resetBtn);  // ✅ Dans la même ligne
-        this.elements.resetButton = resetBtn;
+        // Créer un wrapper pour tout
+        const wrapper = document.createElement('div');
+        wrapper.className = 'filters-wrapper';
+        
+        // Ligne des filtres
+        const filtersRow = document.createElement('div');
+        filtersRow.className = 'filters-row';
+        
+        // Créer le formulaire
+        const form = document.createElement('form');
+        form.className = 'filters-form';
+        form.id = `${this.id}-form`;
+        form.onsubmit = (e) => e.preventDefault();
+        
+        // Ajouter chaque filtre
+        this.config.filters.forEach(filterConfig => {
+            const filterElement = this.createFilter(filterConfig);
+            if (filterElement) {
+                filtersRow.appendChild(filterElement);
+            }
+        });
+        
+        // Le bouton est bien dans filtersRow
+        if (this.config.resetButton && this.config.filters.length > 0) {
+            const resetBtn = document.createElement('button');
+            resetBtn.type = 'button';
+            resetBtn.className = 'btn-reset-filters';
+            resetBtn.innerHTML = '🔄 Réinitialiser';
+            resetBtn.onclick = () => this.reset();
+            
+            filtersRow.appendChild(resetBtn);
+            this.elements.resetButton = resetBtn;
+        }
+        
+        form.appendChild(filtersRow);
+        wrapper.appendChild(form);
+        
+        // Vider et ajouter
+        this.elements.container.innerHTML = '';
+        this.elements.container.appendChild(wrapper);
+        
+        this.elements.form = form;
     }
-    
-    form.appendChild(filtersRow);
-    wrapper.appendChild(form);
-    
-    // Vider et ajouter
-    this.elements.container.innerHTML = '';
-    this.elements.container.appendChild(wrapper);
-    
-    this.elements.form = form;
-}
     
     /**
      * Créer un filtre selon son type
@@ -159,8 +167,8 @@ export class DataTableFilters {
         group.className = `filter-group filter-${type}`;
         group.dataset.filterKey = key;
         
-        // Ajouter le label si présent
-        if (label) {
+        // Ajouter le label si présent (sauf pour select car DropdownList gère son propre placeholder)
+        if (label && type !== 'select') {
             const labelElement = document.createElement('label');
             labelElement.textContent = label;
             labelElement.htmlFor = `${this.id}-${key}`;
@@ -208,7 +216,10 @@ export class DataTableFilters {
         if (this.config.autoSubmit && this.elements.form) {
             this.elements.form.addEventListener('change', (e) => {
                 // Sauf pour les input text (ils ont leur propre debounce)
-                if (e.target.type !== 'text' && e.target.type !== 'search') {
+                // et sauf pour les dropdowns (ils ont leur propre onChange)
+                if (e.target.type !== 'text' && 
+                    e.target.type !== 'search' && 
+                    !e.target.closest('.dropdown-list-wrapper')) {
                     this.handleFilterChange();
                 }
             });
@@ -268,8 +279,23 @@ export class DataTableFilters {
             this.elements.form.reset();
         }
         
+        // Réinitialiser les dropdowns
+        this.dropdownInstances.forEach(dropdown => {
+            dropdown.setValue('');
+        });
+        
         // Réinitialiser les valeurs par défaut
         this.initDefaultValues();
+        
+        // Pour les valeurs par défaut des dropdowns
+        this.config.filters.forEach(filter => {
+            if (filter.type === 'select' && filter.defaultValue !== undefined) {
+                const dropdown = this.dropdownInstances.find(d => d.options.name === filter.key);
+                if (dropdown) {
+                    dropdown.setValue(filter.defaultValue);
+                }
+            }
+        });
         
         // Déclencher le callback
         this.triggerFilter();
@@ -290,7 +316,18 @@ export class DataTableFilters {
     setValue(key, value) {
         if (this.elements.filters[key]) {
             this.values[key] = value;
-            // TODO: Mettre à jour l'UI selon le type
+            
+            const filterData = this.elements.filters[key];
+            
+            // Si c'est un dropdown, utiliser la méthode setValue
+            if (filterData.type === 'select') {
+                const dropdown = this.dropdownInstances.find(d => d.options.name === key);
+                if (dropdown) {
+                    dropdown.setValue(value);
+                }
+            }
+            // TODO: Gérer les autres types
+            
             this.triggerFilter();
         }
     }
@@ -300,11 +337,24 @@ export class DataTableFilters {
      */
     setEnabled(key, enabled) {
         if (this.elements.filters[key]) {
-            const { group } = this.elements.filters[key];
+            const { group, type } = this.elements.filters[key];
+            
             if (enabled) {
                 group.classList.remove('disabled');
             } else {
                 group.classList.add('disabled');
+            }
+            
+            // Si c'est un dropdown, activer/désactiver
+            if (type === 'select') {
+                const dropdown = this.dropdownInstances.find(d => d.options.name === key);
+                if (dropdown) {
+                    if (enabled) {
+                        dropdown.enable();
+                    } else {
+                        dropdown.disable();
+                    }
+                }
             }
         }
     }
@@ -317,6 +367,12 @@ export class DataTableFilters {
         if (this.debounceTimer) {
             clearTimeout(this.debounceTimer);
         }
+        
+        // Détruire toutes les instances DropdownList
+        this.dropdownInstances.forEach(dropdown => {
+            dropdown.destroy();
+        });
+        this.dropdownInstances = [];
         
         // Vider le container
         if (this.elements.container) {
@@ -374,40 +430,79 @@ export class DataTableFilters {
     }
     
     /**
-     * Render Select
+     * Render Select - MODIFIÉ pour utiliser DropdownList
      */
     renderSelect(config) {
-        const select = document.createElement('select');
-        select.id = `${this.id}-${config.key}`;
-        select.className = 'filter-select-input';
+        // Créer un container pour le dropdown
+        const container = document.createElement('div');
+        container.className = 'filter-dropdown-container';
+        container.id = `${this.id}-${config.key}-container`;
         
-        // Ajouter les options
+        // Préparer les options avec extraction des icônes
+        let dropdownOptions = [];
+        
         if (config.options) {
-            config.options.forEach(option => {
-                const opt = document.createElement('option');
-                
+            dropdownOptions = config.options.map(option => {
                 if (typeof option === 'object') {
-                    opt.value = option.value;
-                    opt.textContent = option.label;
-                    
-                    // Sélection par défaut
-                    if (config.defaultValue !== undefined && option.value === config.defaultValue) {
-                        opt.selected = true;
+                    // Si l'option a déjà une icône, on la garde
+                    if (option.icon) {
+                        return option;
                     }
+                    
+                    // Sinon, on essaie d'extraire l'icône du label
+                    const iconMatch = option.label.match(/^([\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F000}-\u{1F02F}]|[\u{1F0A0}-\u{1F0FF}]|[\u{1F100}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]|[\u{1F900}-\u{1F9FF}]|[\u{2300}-\u{23FF}]|[\u{2B50}]|[\u{25A0}-\u{25FF}]|[\u{2190}-\u{21FF}]|[\u{3030}]|[\u{303D}]|[\u{3297}]|[\u{3299}]|[\u{1F004}]|[\u{1F170}-\u{1F251}]|[0-9]\u{FE0F}?\u{20E3})/u);
+                    
+                    if (iconMatch) {
+                        // Icône trouvée, on la sépare
+                        return {
+                            value: option.value,
+                            label: option.label.substring(iconMatch[0].length).trim(),
+                            icon: iconMatch[0]
+                        };
+                    }
+                    
+                    // Pas d'icône trouvée
+                    return option;
                 } else {
-                    opt.value = option;
-                    opt.textContent = option;
-                    
-                    if (config.defaultValue !== undefined && option === config.defaultValue) {
-                        opt.selected = true;
-                    }
+                    // Option simple (string)
+                    return {
+                        value: option,
+                        label: option
+                    };
                 }
-                
-                select.appendChild(opt);
             });
         }
         
-        return select;
+        // Déterminer le placeholder
+        let placeholder = '-- Sélectionner --';
+        if (config.label) {
+            placeholder = config.label;
+        } else if (dropdownOptions.length > 0 && dropdownOptions[0].value === '') {
+            // Si la première option est vide, l'utiliser comme placeholder
+            placeholder = dropdownOptions[0].label;
+            dropdownOptions.shift(); // Retirer cette option
+        }
+        
+        // Créer l'instance DropdownList
+        const dropdown = new DropdownList({
+            container: container,
+            name: config.key,
+            placeholder: placeholder,
+            options: dropdownOptions,
+            value: config.defaultValue || '',
+            searchable: true, // Toujours activé
+            showIcons: true,  // Toujours afficher les icônes
+            onChange: (value) => {
+                if (this.config.autoSubmit) {
+                    this.handleFilterChange();
+                }
+            }
+        });
+        
+        // Stocker l'instance pour pouvoir la détruire plus tard
+        this.dropdownInstances.push(dropdown);
+        
+        return container;
     }
     
     /**
@@ -614,10 +709,12 @@ export class DataTableFilters {
     }
     
     /**
-     * Get Value Select
+     * Get Value Select - MODIFIÉ pour DropdownList
      */
-    getValueSelect(element) {
-        return element.value;
+    getValueSelect(element, config) {
+        // Trouver l'instance dropdown correspondante
+        const dropdown = this.dropdownInstances.find(d => d.options.name === config.key);
+        return dropdown ? dropdown.getValue() : '';
     }
     
     /**
@@ -696,3 +793,26 @@ export class DataTableFilters {
         return null;
     }
 }
+
+/* ========================================
+   HISTORIQUE DES MODIFICATIONS
+   
+   [01/02/2025] - Intégration complète de DropdownList
+   - Remplacement de TOUS les <select> par DropdownList
+   - Extraction automatique des icônes depuis les labels (format "🍃 Normal")
+   - Activation de la recherche pour TOUS les dropdowns
+   - Stockage des instances pour destruction propre
+   - Gestion du reset et setValue pour les dropdowns
+   - Support des icônes séparées { value, label, icon }
+   
+   AVANTAGES:
+   - Thème glassmorphism uniforme sur tous les filtres
+   - Recherche disponible partout
+   - Icônes bien alignées et formatées
+   - Destruction propre des instances
+   
+   NOTES:
+   - Les options avec format "🍃 Normal" sont automatiquement parsées
+   - Si une icône est déjà fournie séparément, elle est conservée
+   - La recherche est activée par défaut sur tous les dropdowns
+   ======================================== */

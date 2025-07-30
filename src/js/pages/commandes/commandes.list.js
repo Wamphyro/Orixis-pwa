@@ -181,9 +181,33 @@ function initStatsCards() {
 function initFiltres() {
     const filtresConfig = genererOptionsFiltres();
     
+    // Ajuster la config pour séparer les icônes du label
+    const filtresConfigAjustes = filtresConfig.map(filtre => {
+        if (filtre.type === 'select' && filtre.options) {
+            filtre.options = filtre.options.map(option => {
+                // Si c'est déjà un objet avec value et label
+                if (typeof option === 'object' && option.label) {
+                    // Extraire l'icône du label si elle y est
+                    const iconMatch = option.label.match(/^([\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F000}-\u{1F02F}]|[\u{1F0A0}-\u{1F0FF}]|[\u{1F100}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]|[\u{1F900}-\u{1F9FF}]|[\u{2300}-\u{23FF}]|[\u{2B50}]|[\u{25A0}-\u{25FF}]|[\u{2190}-\u{21FF}]|[\u{3030}]|[\u{303D}]|[\u{3297}]|[\u{3299}]|[\u{1F004}]|[\u{1F170}-\u{1F251}]|[0-9]\u{FE0F}?\u{20E3})/u);
+                    
+                    if (iconMatch && !option.icon) {
+                        // Si une icône est trouvée et qu'il n'y a pas déjà d'icône séparée
+                        return {
+                            value: option.value,
+                            label: option.label.substring(iconMatch[0].length).trim(),
+                            icon: iconMatch[0]
+                        };
+                    }
+                }
+                return option;
+            });
+        }
+        return filtre;
+    });
+    
     filtresCommandes = new DataTableFilters({
         container: '.commandes-filters',
-        filters: filtresConfig,
+        filters: filtresConfigAjustes,
         onFilter: (filters) => {
             state.filtres = {
                 recherche: filters.recherche || '',
