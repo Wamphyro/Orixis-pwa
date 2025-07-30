@@ -18,67 +18,66 @@ import { generateId } from '../index.js';
 
 export class DataTableFilters {
     constructor(config) {
-    this.id = generateId('filters');
-    
-    // Configuration par défaut
-    this.config = {
-        container: null,
-        filters: [],
-        autoSubmit: true,
-        debounceDelay: 300,
-        onFilter: null,
-        resetButton: true,
-        ...config
-    };
-    
-    // État des filtres
-    this.values = {};
-    
-    // Éléments DOM
-    this.elements = {
-        container: null,
-        form: null,
-        resetButton: null,
-        filters: {}
-    };
-    
-    // Timer pour le debounce
-    this.debounceTimer = null;
-    
-    // SUPPRIMER CE BLOC ICI
-    // this.filterTypes = { ... }
-    
-    // Initialiser
-    this.init();
-}
-
-/**
- * Initialisation
- */
-init() {
-    // AJOUTER ICI - Définir les types de filtres disponibles
-    this.filterTypes = {
-        'search': this.renderSearch.bind(this),
-        'select': this.renderSelect.bind(this),
-        'date': this.renderDate.bind(this),
-        'daterange': this.renderDateRange.bind(this),
-        'checkbox': this.renderCheckbox.bind(this),
-        'radio': this.renderRadio.bind(this),
-        'range': this.renderRange.bind(this),
-        'tags': this.renderTags.bind(this),
-        'buttongroup': this.renderButtonGroup.bind(this),
-        'custom': this.renderCustom.bind(this)
-    };
-    
-    // Vérifier le container
-    if (typeof this.config.container === 'string') {
-        this.elements.container = document.querySelector(this.config.container);
-    } else {
-        this.elements.container = this.config.container;
+        this.id = generateId('filters');
+        
+        // Configuration par défaut
+        this.config = {
+            container: null,
+            filters: [],
+            autoSubmit: true,  // Filtrer automatiquement au changement
+            debounceDelay: 300, // Délai pour la recherche (ms)
+            onFilter: null,     // Callback quand les filtres changent
+            resetButton: true,  // Afficher le bouton reset
+            ...config
+        };
+        
+        // État des filtres
+        this.values = {};
+        
+        // Éléments DOM
+        this.elements = {
+            container: null,
+            form: null,
+            resetButton: null,
+            filters: {} // Stockage des éléments de chaque filtre
+        };
+        
+        // Timer pour le debounce
+        this.debounceTimer = null;
+        
+        // Initialiser
+        this.init();
     }
     
-    // ... reste du code init()
-}
+    /**
+     * Initialisation
+     */
+    init() {
+        // Définir les types de filtres disponibles
+        this.filterTypes = {
+            'search': this.renderSearch.bind(this),
+            'select': this.renderSelect.bind(this),
+            'date': this.renderDate.bind(this),
+            'daterange': this.renderDateRange.bind(this),
+            'checkbox': this.renderCheckbox.bind(this),
+            'radio': this.renderRadio.bind(this),
+            'range': this.renderRange.bind(this),
+            'tags': this.renderTags.bind(this),
+            'buttongroup': this.renderButtonGroup.bind(this),
+            'custom': this.renderCustom.bind(this)
+        };
+        
+        // Vérifier le container
+        if (typeof this.config.container === 'string') {
+            this.elements.container = document.querySelector(this.config.container);
+        } else {
+            this.elements.container = this.config.container;
+        }
+        
+        if (!this.elements.container) {
+            console.error('DataTableFilters: Container non trouvé');
+            return;
+        }
         
         // Créer la structure
         this.render();
@@ -370,7 +369,7 @@ init() {
         
         return wrapper;
     }
-
+    
     /**
      * Render Select
      */
@@ -387,14 +386,18 @@ init() {
                 if (typeof option === 'object') {
                     opt.value = option.value;
                     opt.textContent = option.label;
+                    
+                    // Sélection par défaut
+                    if (config.defaultValue !== undefined && option.value === config.defaultValue) {
+                        opt.selected = true;
+                    }
                 } else {
                     opt.value = option;
                     opt.textContent = option;
-                }
-                
-                // Sélection par défaut
-                if (config.defaultValue && option.value === config.defaultValue) {
-                    opt.selected = true;
+                    
+                    if (config.defaultValue !== undefined && option === config.defaultValue) {
+                        opt.selected = true;
+                    }
                 }
                 
                 select.appendChild(opt);
@@ -403,20 +406,196 @@ init() {
         
         return select;
     }
-
+    
     /**
-     * Get Value Search
+     * Render Date
      */
-    getValueSearch(element) {
-        const input = element.querySelector('input');
-        return input ? input.value.trim() : '';
+    renderDate(config) {
+        const input = document.createElement('input');
+        input.type = 'date';
+        input.id = `${this.id}-${config.key}`;
+        input.className = 'filter-date-input';
+        
+        if (config.defaultValue) {
+            input.value = config.defaultValue;
+        }
+        
+        return input;
     }
-
+    
     /**
-     * Get Value Select
+     * Render DateRange
      */
-    getValueSelect(element) {
-        return element.value;
+    renderDateRange(config) {
+        const container = document.createElement('div');
+        container.className = 'filter-daterange-container';
+        
+        // Date de début
+        const startInput = document.createElement('input');
+        startInput.type = 'date';
+        startInput.className = 'filter-daterange-start';
+        startInput.id = `${this.id}-${config.key}-start`;
+        
+        // Séparateur
+        const separator = document.createElement('span');
+        separator.className = 'filter-daterange-separator';
+        separator.textContent = 'à';
+        
+        // Date de fin
+        const endInput = document.createElement('input');
+        endInput.type = 'date';
+        endInput.className = 'filter-daterange-end';
+        endInput.id = `${this.id}-${config.key}-end`;
+        
+        container.appendChild(startInput);
+        container.appendChild(separator);
+        container.appendChild(endInput);
+        
+        return container;
+    }
+    
+    /**
+     * Render Checkbox
+     */
+    renderCheckbox(config) {
+        const container = document.createElement('div');
+        container.className = 'filter-checkbox-group';
+        
+        if (config.options) {
+            config.options.forEach((option, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'filter-checkbox';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `${this.id}-${config.key}-${index}`;
+                checkbox.value = typeof option === 'object' ? option.value : option;
+                
+                const label = document.createElement('label');
+                label.htmlFor = checkbox.id;
+                label.textContent = typeof option === 'object' ? option.label : option;
+                
+                wrapper.appendChild(checkbox);
+                wrapper.appendChild(label);
+                container.appendChild(wrapper);
+            });
+        }
+        
+        return container;
+    }
+    
+    /**
+     * Render Radio
+     */
+    renderRadio(config) {
+        const container = document.createElement('div');
+        container.className = 'filter-radio-group';
+        
+        if (config.options) {
+            config.options.forEach((option, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'filter-radio';
+                
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = `${this.id}-${config.key}`;
+                radio.id = `${this.id}-${config.key}-${index}`;
+                radio.value = typeof option === 'object' ? option.value : option;
+                
+                const label = document.createElement('label');
+                label.htmlFor = radio.id;
+                label.textContent = typeof option === 'object' ? option.label : option;
+                
+                wrapper.appendChild(radio);
+                wrapper.appendChild(label);
+                container.appendChild(wrapper);
+            });
+        }
+        
+        return container;
+    }
+    
+    /**
+     * Render Range
+     */
+    renderRange(config) {
+        const container = document.createElement('div');
+        container.className = 'filter-range-container';
+        
+        const input = document.createElement('input');
+        input.type = 'range';
+        input.min = config.min || 0;
+        input.max = config.max || 100;
+        input.step = config.step || 1;
+        input.value = config.defaultValue || config.min || 0;
+        
+        const valueDisplay = document.createElement('div');
+        valueDisplay.className = 'filter-range-value';
+        valueDisplay.textContent = input.value;
+        
+        input.addEventListener('input', () => {
+            valueDisplay.textContent = input.value;
+        });
+        
+        container.appendChild(input);
+        container.appendChild(valueDisplay);
+        
+        return container;
+    }
+    
+    /**
+     * Render Tags
+     */
+    renderTags(config) {
+        const container = document.createElement('div');
+        container.className = 'filter-tags-container';
+        container.innerHTML = '<div class="filter-tags-input">Tags non implémenté</div>';
+        return container;
+    }
+    
+    /**
+     * Render Button Group
+     */
+    renderButtonGroup(config) {
+        const container = document.createElement('div');
+        container.className = 'filter-buttongroup';
+        
+        if (config.options) {
+            config.options.forEach(option => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'filter-buttongroup-btn';
+                button.dataset.value = typeof option === 'object' ? option.value : option;
+                button.textContent = typeof option === 'object' ? option.label : option;
+                
+                button.addEventListener('click', () => {
+                    // Retirer active de tous
+                    container.querySelectorAll('button').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    // Ajouter active au cliqué
+                    button.classList.add('active');
+                    // Déclencher le changement
+                    this.handleFilterChange();
+                });
+                
+                container.appendChild(button);
+            });
+        }
+        
+        return container;
+    }
+    
+    /**
+     * Render Custom
+     */
+    renderCustom(config) {
+        if (config.render) {
+            const temp = document.createElement('div');
+            temp.innerHTML = config.render();
+            return temp.firstChild;
+        }
+        return null;
     }
     
     // ========================================
@@ -427,7 +606,8 @@ init() {
      * Get Value Search
      */
     getValueSearch(element) {
-        return element.value.trim();
+        const input = element.querySelector('input');
+        return input ? input.value.trim() : '';
     }
     
     /**
@@ -444,5 +624,72 @@ init() {
         return element.value;
     }
     
-    // TODO: Implémenter les autres getValueXXX
+    /**
+     * Get Value DateRange
+     */
+    getValueDaterange(element) {
+        const start = element.querySelector('.filter-daterange-start');
+        const end = element.querySelector('.filter-daterange-end');
+        
+        if (start && end && (start.value || end.value)) {
+            return {
+                start: start.value,
+                end: end.value
+            };
+        }
+        return null;
+    }
+    
+    /**
+     * Get Value Checkbox
+     */
+    getValueCheckbox(element) {
+        const checked = [];
+        element.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
+            checked.push(cb.value);
+        });
+        return checked.length > 0 ? checked : null;
+    }
+    
+    /**
+     * Get Value Radio
+     */
+    getValueRadio(element) {
+        const checked = element.querySelector('input[type="radio"]:checked');
+        return checked ? checked.value : null;
+    }
+    
+    /**
+     * Get Value Range
+     */
+    getValueRange(element) {
+        const input = element.querySelector('input[type="range"]');
+        return input ? parseFloat(input.value) : null;
+    }
+    
+    /**
+     * Get Value Tags
+     */
+    getValueTags(element) {
+        // TODO: Implémenter
+        return null;
+    }
+    
+    /**
+     * Get Value Button Group
+     */
+    getValueButtongroup(element) {
+        const active = element.querySelector('.active');
+        return active ? active.dataset.value : null;
+    }
+    
+    /**
+     * Get Value Custom
+     */
+    getValueCustom(element, config) {
+        if (config.getValue) {
+            return config.getValue(element);
+        }
+        return null;
+    }
 }
