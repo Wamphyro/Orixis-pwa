@@ -15,10 +15,14 @@ import { db } from '../../services/firebase.service.js';
 import { ClientsService } from '../../services/clients.service.js';
 import { ProduitsService } from '../../services/produits.service.js';
 import { CommandesService } from '../../services/commandes.service.js';
+
+// 🔧 CORRECTION : Importer SearchDropdown directement depuis son fichier
 import SearchDropdown from '../../shared/ui/search-dropdown.component.js';
-import { Stepper } from '../../shared/index.js';  // 🆕 Import du Stepper
+
+// Importer Stepper et autres depuis shared/index.js
+import { Stepper, Dialog, notify } from '../../shared/index.js';
+
 import { COMMANDES_CONFIG } from '../../data/commandes.data.js';
-import { Dialog, notify } from '../../shared/index.js';
 import { chargerDonnees } from './commandes.list.js';
 import { ouvrirModal, afficherSucces, afficherErreur } from './commandes.main.js';
 
@@ -53,6 +57,13 @@ window.commandeCreateState = { nouvelleCommande };
 // ========================================
 
 export function initCreationCommande() {
+    console.log('🚀 Init module création commande');
+    
+    // Vérifier les imports
+    console.log('SearchDropdown disponible ?', typeof SearchDropdown);
+    console.log('ClientsService disponible ?', typeof ClientsService);
+    console.log('Stepper disponible ?', typeof Stepper);
+    
     // Exposer les fonctions nécessaires
     window.resetNouvelleCommande = resetNouvelleCommande;
     window.setDateLivraisonDefaut = setDateLivraisonDefaut;
@@ -60,7 +71,7 @@ export function initCreationCommande() {
     // 🆕 Initialiser le stepper une seule fois
     initStepper();
     
-    console.log('Module création commande initialisé avec Stepper');
+    console.log('✅ Module création commande initialisé avec Stepper');
 }
 
 // ========================================
@@ -114,16 +125,35 @@ function initStepper() {
 // ========================================
 
 function executeStepActions(step) {
+    console.log(`🎯 Exécution actions étape ${step}`);
+    
     switch (step) {
         case 1:
+            console.log('📍 Étape 1 - Initialisation recherche client');
+            
             setTimeout(() => {
                 const clientSearchContainer = document.querySelector('.client-search');
+                console.log('Container client-search trouvé ?', !!clientSearchContainer);
+                
                 if (clientSearchContainer) {
+                    // Vérifier que SearchDropdown est disponible
+                    if (typeof SearchDropdown === 'undefined') {
+                        console.error('❌ SearchDropdown non défini !');
+                        return;
+                    }
+                    
                     initClientSearch();
                 } else {
-                    console.error('Container .client-search introuvable');
+                    console.error('❌ Container .client-search introuvable');
+                    
+                    // Lister tous les éléments pour debug
+                    console.log('Contenu du stepContent1:');
+                    const stepContent = document.getElementById('stepContent1');
+                    if (stepContent) {
+                        console.log(stepContent.innerHTML);
+                    }
                 }
-            }, 300);
+            }, 500); // Augmenté pour être sûr que le DOM est prêt
             break;
             
         case 2:
@@ -136,7 +166,7 @@ function executeStepActions(step) {
                 } else {
                     console.error('Container .product-search introuvable');
                 }
-            }, 300);
+            }, 500);
             break;
             
         case 3:
@@ -281,40 +311,65 @@ async function validerEtape(etape) {
 // ========================================
 
 function initClientSearch() {
+    console.log('🔍 Initialisation recherche client...');
+    
+    // Vérifier que le container existe
+    const container = document.querySelector('.client-search');
+    if (!container) {
+        console.error('❌ Container .client-search introuvable !');
+        return;
+    }
+    
+    console.log('✅ Container trouvé:', container);
+    console.log('SearchDropdown disponible ?', typeof SearchDropdown);
+    
     // Détruire l'instance précédente si elle existe
     if (clientSearchDropdown) {
+        console.log('🧹 Destruction instance précédente');
         clientSearchDropdown.destroy();
     }
     
-    // Créer la nouvelle instance avec le bon sélecteur ID
-    clientSearchDropdown = new SearchDropdown({
-        container: '.client-search',
-        placeholder: 'Rechercher un client (nom, prénom, téléphone...)',
-        minLength: 2,
-        noResultsText: 'Aucun client trouvé',
-        loadingText: 'Recherche en cours...',
-        onSearch: async (query) => {
-            try {
-                return await ClientsService.rechercherClients(query);
-            } catch (error) {
-                console.error('Erreur recherche client:', error);
-                throw error;
+    try {
+        // Créer la nouvelle instance avec le bon sélecteur
+        clientSearchDropdown = new SearchDropdown({
+            container: '.client-search',
+            placeholder: 'Rechercher un client (nom, prénom, téléphone...)',
+            minLength: 2,
+            noResultsText: 'Aucun client trouvé',
+            loadingText: 'Recherche en cours...',
+            onSearch: async (query) => {
+                console.log('🔎 Recherche client avec query:', query);
+                try {
+                    const results = await ClientsService.rechercherClients(query);
+                    console.log('📊 Résultats trouvés:', results?.length || 0);
+                    return results;
+                } catch (error) {
+                    console.error('❌ Erreur recherche client:', error);
+                    throw error;
+                }
+            },
+            onSelect: (client) => {
+                console.log('👤 Client sélectionné:', client);
+                selectionnerClient(client.id);
+            },
+            renderItem: (client) => {
+                return `
+                    <strong>${client.prenom} ${client.nom}</strong>
+                    <small>
+                        ${client.telephone || ''} 
+                        ${client.email ? '- ' + client.email : ''}
+                        ${client.magasinReference ? '- Magasin: ' + client.magasinReference : ''}
+                    </small>
+                `;
             }
-        },
-        onSelect: (client) => {
-            selectionnerClient(client.id);
-        },
-        renderItem: (client) => {
-            return `
-                <strong>${client.prenom} ${client.nom}</strong>
-                <small>
-                    ${client.telephone || ''} 
-                    ${client.email ? '- ' + client.email : ''}
-                    ${client.magasinReference ? '- Magasin: ' + client.magasinReference : ''}
-                </small>
-            `;
-        }
-    });
+        });
+        
+        console.log('✅ SearchDropdown client initialisé avec succès');
+        
+    } catch (error) {
+        console.error('❌ Erreur initialisation SearchDropdown:', error);
+        console.error('Stack:', error.stack);
+    }
 }
 
 export async function selectionnerClient(clientId) {
@@ -692,46 +747,70 @@ window.selectionnerCotePack = function(cote) {
 };
 
 function initProductSearch() {
+    console.log('🔍 Initialisation recherche produit...');
+    
+    // Vérifier que le container existe
+    const container = document.querySelector('.product-search');
+    if (!container) {
+        console.error('❌ Container .product-search introuvable !');
+        return;
+    }
+    
+    console.log('✅ Container produit trouvé:', container);
+    
     // Détruire l'instance précédente si elle existe
     if (productSearchDropdown) {
+        console.log('🧹 Destruction instance produit précédente');
         productSearchDropdown.destroy();
     }
     
-    // Créer la nouvelle instance avec le bon sélecteur ID
-    productSearchDropdown = new SearchDropdown({
-        container: '.product-search',
-        placeholder: 'Rechercher un produit...',
-        minLength: 2,
-        noResultsText: 'Aucun produit trouvé',
-        loadingText: 'Recherche en cours...',
-        onSearch: async (query) => {
-            try {
-                return await ProduitsService.rechercherProduits(query);
-            } catch (error) {
-                console.error('Erreur recherche produit:', error);
-                throw error;
+    try {
+        // Créer la nouvelle instance
+        productSearchDropdown = new SearchDropdown({
+            container: '.product-search',
+            placeholder: 'Rechercher un produit...',
+            minLength: 2,
+            noResultsText: 'Aucun produit trouvé',
+            loadingText: 'Recherche en cours...',
+            onSearch: async (query) => {
+                console.log('🔎 Recherche produit avec query:', query);
+                try {
+                    const results = await ProduitsService.rechercherProduits(query);
+                    console.log('📊 Produits trouvés:', results?.length || 0);
+                    return results;
+                } catch (error) {
+                    console.error('❌ Erreur recherche produit:', error);
+                    throw error;
+                }
+            },
+            onSelect: (produit) => {
+                console.log('📦 Produit sélectionné:', produit);
+                ajouterProduit(produit.id);
+            },
+            renderItem: (produit) => {
+                return `
+                    <div style="padding: 8px 0;">
+                        <div style="font-weight: 600; color: #2c3e50; margin-bottom: 4px;">
+                            ${produit.designation}
+                        </div>
+                        <div style="background: #e0e0e0; padding: 2px 8px; border-radius: 4px; 
+                                    font-size: 12px; display: inline-block; margin-bottom: 4px;">
+                            ${produit.reference}
+                        </div>
+                        <div style="font-size: 14px; color: #666;">
+                            ${produit.marque} - ${produit.categorie}
+                        </div>
+                    </div>
+                `;
             }
-        },
-        onSelect: (produit) => {
-            ajouterProduit(produit.id);
-        },
-        renderItem: (produit) => {
-            return `
-                <div style="padding: 8px 0;">
-                    <div style="font-weight: 600; color: #2c3e50; margin-bottom: 4px;">
-                        ${produit.designation}
-                    </div>
-                    <div style="background: #e0e0e0; padding: 2px 8px; border-radius: 4px; 
-                                font-size: 12px; display: inline-block; margin-bottom: 4px;">
-                        ${produit.reference}
-                    </div>
-                    <div style="font-size: 14px; color: #666;">
-                        ${produit.marque} - ${produit.categorie}
-                    </div>
-                </div>
-            `;
-        }
-    });
+        });
+        
+        console.log('✅ SearchDropdown produit initialisé avec succès');
+        
+    } catch (error) {
+        console.error('❌ Erreur initialisation SearchDropdown produit:', error);
+        console.error('Stack:', error.stack);
+    }
 }
 
 export async function ajouterProduit(produitId) {
