@@ -9,13 +9,14 @@
    TABLE DES MATIÈRES:
    1. Fix FOUC - Masquage initial des modales
    2. Personnalisation des modales commandes
-   3. Modal nouvelle commande (stepper, recherche, etc.)
+   3. Modal nouvelle commande (recherche, etc.)
    4. Modal détail commande
    5. Modal numéros de série
    6. Styles édition avec icônes stylo
    
    MODIFICATIONS:
    [28/01/2025] - Extraction des styles de recherche vers search-dropdown.css
+   [31/01/2025] - SUPPRESSION des styles stepper → stepper.css
    ======================================== */
 
 /* ========================================
@@ -53,77 +54,7 @@
    MODAL NOUVELLE COMMANDE
    ======================================== */
 
-/* STEPPER */
-.stepper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 24px 20px;
-    background: #f8f9fa;
-    border-bottom: 1px solid #e0e0e0;
-    gap: 40px;
-}
-
-.step {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    opacity: 0.5;
-    transition: all 0.3s ease;
-}
-
-.step-number {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: #e0e0e0;
-    color: #666;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 16px;
-    transition: all 0.3s ease;
-}
-
-.step-label {
-    font-size: 14px;
-    color: #666;
-    font-weight: 500;
-}
-
-.step.active {
-    opacity: 1;
-}
-
-.step.active .step-number {
-    background: #667eea;
-    color: white;
-    transform: scale(1.1);
-}
-
-.step.active .step-label {
-    color: #667eea;
-    font-weight: 600;
-}
-
-.step.completed {
-    opacity: 1;
-}
-
-.step.completed .step-number {
-    background: #4caf50;
-    color: white;
-}
-
-.step.completed .step-number::before {
-    content: '✓';
-    font-size: 20px;
-}
-
-.step.completed .step-label {
-    color: #4caf50;
-}
+/* ⚠️ STYLES STEPPER SUPPRIMÉS - Voir stepper.css */
 
 /* CONTENU ÉTAPES */
 .step-content {
@@ -928,14 +859,7 @@
         border-radius: 0;
     }
     
-    .stepper {
-        gap: 20px;
-        padding: 16px;
-    }
-    
-    .step-label {
-        display: none;
-    }
+    /* ⚠️ STYLES STEPPER RESPONSIVE SUPPRIMÉS - Voir stepper.css */
     
     .urgence-selector {
         flex-direction: column;
@@ -977,7 +901,13 @@
    - Le composant SearchDropdown gère maintenant l'UI de recherche
    - Plus besoin des classes .client-search, .product-search, .search-results
    
+   [31/01/2025] - Extraction des styles stepper
+   - TOUS les styles du stepper ont été déplacés vers stepper.css
+   - Suppression des doublons (lignes 75-151 et responsive)
+   - Le composant Stepper gère maintenant ses propres styles
+   
    NOTES POUR REPRISES FUTURES:
    - Les styles de recherche sont dans /shared/ui/search-dropdown.css
-   - Ne pas ajouter de styles de recherche ici
+   - Les styles du stepper sont dans /shared/ui/stepper.css
+   - Ne pas réintroduire ces styles ici
    ======================================== */
