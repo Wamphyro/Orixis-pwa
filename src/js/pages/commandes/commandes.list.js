@@ -30,15 +30,11 @@ let statsCards = null;
 export async function initListeCommandes() {
     console.log('Initialisation DataTable et Filtres pour les commandes...');
     
-    // Initialiser les filtres
-    initFiltres();
-    
-    // Créer l'instance DataTable
+    // 1. Créer d'abord l'instance DataTable
     tableCommandes = new DataTable({
         container: '.commandes-table-container',
         
-                columns: [
-
+        columns: [
             {
                 key: 'dates.commande',
                 label: 'Date',
@@ -46,7 +42,6 @@ export async function initListeCommandes() {
                 width: 100,
                 formatter: (value) => formatDate(value)
             },
-            // 🆕 NOUVELLE COLONNE MAGASIN
             {
                 key: 'magasinLivraison',
                 label: 'Magasin',
@@ -74,13 +69,11 @@ export async function initListeCommandes() {
                 formatter: (value) => {
                     const config = COMMANDES_CONFIG.TYPES_PREPARATION[value];
                     if (!config) {
-                        // Si pas trouvé, afficher juste la valeur
                         console.warn(`Type non trouvé dans COMMANDES_CONFIG: "${value}"`);
                         return value || '-';
                     }
                     return `<span class="badge badge-${value.replace(/_/g, '-')}">${config.icon} ${config.label}</span>`;
                 },
-                // 🆕 AJOUTER CETTE FONCTION DE TRI
                 sortFunction: (a, b, direction) => {
                     const valueA = a.typePreparation || '';
                     const valueB = b.typePreparation || '';
@@ -149,9 +142,12 @@ export async function initListeCommandes() {
         }
     });
     
+    // 2. PUIS initialiser les filtres (maintenant que tableCommandes existe)
+    initFiltres();
+    
     console.log('✅ DataTable et Filtres initialisés');
     
-    // Initialiser les cartes de statistiques
+    // 3. Enfin initialiser les cartes de statistiques
     initStatsCards();
 }
 
