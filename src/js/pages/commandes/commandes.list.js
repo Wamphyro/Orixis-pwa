@@ -9,12 +9,13 @@
 
 import { CommandesService } from '../../services/commandes.service.js';
 import { COMMANDES_CONFIG } from '../../data/commandes.data.js';
-import { DataTable, DataTableFilters, formatDate as formatDateUtil } from '../../shared/index.js';
+import { DataTable, DataTableFilters, StatsCards, formatDate as formatDateUtil } from '../../shared/index.js';
 import { state } from './commandes.main.js';
 
 // Variables pour les instances
 let tableCommandes = null;
 let filtresCommandes = null;
+let statsCards = null;
 
 // ========================================
 // INITIALISATION DU MODULE
@@ -128,6 +129,66 @@ export async function initListeCommandes() {
     });
     
     console.log('✅ DataTable et Filtres initialisés');
+    
+    // Initialiser les cartes de statistiques
+    initStatsCards();
+}
+
+/**
+ * Initialiser les cartes de statistiques
+ */
+function initStatsCards() {
+    statsCards = new StatsCards({
+        container: '.commandes-stats',
+        cards: [
+            { 
+                id: 'nouvelle', 
+                label: 'Nouvelles', 
+                value: 0, 
+                icon: '📋',
+                color: 'info'
+            },
+            { 
+                id: 'preparation', 
+                label: 'En préparation', 
+                value: 0,
+                icon: '🔧',
+                color: 'warning'
+            },
+            { 
+                id: 'expediee', 
+                label: 'Expédiées', 
+                value: 0,
+                icon: '📦',
+                color: 'primary'
+            },
+            { 
+                id: 'livree', 
+                label: 'Livrées', 
+                value: 0,
+                icon: '✅',
+                color: 'success'
+            }
+        ],
+        animated: true,
+        onClick: (cardId) => {
+            // Quand on clique sur une carte, filtrer par ce statut
+            if (filtresCommandes) {
+                // Mapper l'ID de la carte au statut
+                const statusMap = {
+                    'nouvelle': 'nouvelle',
+                    'preparation': 'preparation',
+                    'expediee': 'expediee',
+                    'livree': 'livree'
+                };
+                
+                const statut = statusMap[cardId];
+                if (statut) {
+                    filtresCommandes.setValue('statut', statut);
+                }
+            }
+        }
+    });
 }
 
 /**
@@ -245,10 +306,15 @@ export async function chargerDonnees() {
 // ========================================
 
 function afficherStatistiques(stats) {
-    document.getElementById('statNouvelles').textContent = stats.parStatut.nouvelle || 0;
-    document.getElementById('statPreparation').textContent = stats.parStatut.preparation || 0;
-    document.getElementById('statExpediees').textContent = stats.parStatut.expediee || 0;
-    document.getElementById('statLivrees').textContent = stats.parStatut.livree || 0;
+    // Utiliser le composant StatsCards pour mettre à jour
+    if (statsCards) {
+        statsCards.updateAll({
+            'nouvelle': stats.parStatut.nouvelle || 0,
+            'preparation': stats.parStatut.preparation || 0,
+            'expediee': stats.parStatut.expediee || 0,
+            'livree': stats.parStatut.livree || 0
+        });
+    }
 }
 
 function afficherCommandes() {

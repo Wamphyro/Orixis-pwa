@@ -1,0 +1,408 @@
+/* ========================================
+   STATS-CARDS.CSS - Styles pour le composant de cartes statistiques
+   Chemin: src/css/shared/ui/stats-cards.css
+   
+   STRUCTURE:
+   - Container et layout
+   - Carte de base
+   - Éléments internes (nombre, label, icône)
+   - Variantes de couleurs
+   - États et interactions
+   - Animations
+   - Thèmes
+   - Responsive
+   ======================================== */
+
+/* ========================================
+   CONTAINER ET LAYOUT
+   ======================================== */
+
+.stats-cards-wrapper {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+/* ========================================
+   CARTE DE BASE
+   ======================================== */
+
+.stat-card {
+    background: white;
+    border-radius: 15px;
+    padding: 20px 30px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    min-width: 140px;
+    flex: 1;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Effet de brillance au survol */
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.stat-card.hoverable:hover::before {
+    left: 100%;
+}
+
+/* États interactifs */
+.stat-card.hoverable:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.stat-card.clickable {
+    cursor: pointer;
+}
+
+.stat-card.clicked {
+    animation: cardClick 0.3s ease;
+}
+
+/* État désactivé */
+.stat-card.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.stat-card.disabled:hover {
+    transform: none;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* ========================================
+   ÉLÉMENTS INTERNES
+   ======================================== */
+
+/* Icône */
+.stat-icon {
+    font-size: 32px;
+    margin-bottom: 10px;
+    opacity: 0.8;
+}
+
+/* Contenu principal */
+.stat-content {
+    position: relative;
+}
+
+/* Nombre */
+.stat-number {
+    font-size: 32px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 5px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
+}
+
+/* Label principal */
+.stat-label {
+    font-size: 14px;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+/* Sous-label optionnel */
+.stat-sublabel {
+    font-size: 12px;
+    color: #adb5bd;
+    margin-top: 4px;
+}
+
+/* ========================================
+   TENDANCE (TREND)
+   ======================================== */
+
+.stat-trend {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-size: 13px;
+}
+
+.trend-icon {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.trend-value {
+    font-weight: 600;
+}
+
+.trend-label {
+    opacity: 0.8;
+}
+
+/* Couleurs de tendance */
+.trend-success {
+    color: #28a745;
+}
+
+.trend-danger {
+    color: #dc3545;
+}
+
+.trend-neutral {
+    color: #6c757d;
+}
+
+/* ========================================
+   VARIANTES DE COULEURS
+   ======================================== */
+
+/* Primary (défaut) */
+.stat-card-primary .stat-number {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Success */
+.stat-card-success .stat-number {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-card-success .stat-icon {
+    color: #28a745;
+}
+
+/* Warning */
+.stat-card-warning .stat-number {
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-card-warning .stat-icon {
+    color: #ffc107;
+}
+
+/* Danger */
+.stat-card-danger .stat-number {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-card-danger .stat-icon {
+    color: #dc3545;
+}
+
+/* Info */
+.stat-card-info .stat-number {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-card-info .stat-icon {
+    color: #17a2b8;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+@keyframes cardClick {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+}
+
+/* Animation d'apparition */
+.stats-cards-wrapper .stat-card {
+    animation: fadeInUp 0.5s ease forwards;
+    opacity: 0;
+}
+
+.stats-cards-wrapper .stat-card:nth-child(1) { animation-delay: 0.1s; }
+.stats-cards-wrapper .stat-card:nth-child(2) { animation-delay: 0.2s; }
+.stats-cards-wrapper .stat-card:nth-child(3) { animation-delay: 0.3s; }
+.stats-cards-wrapper .stat-card:nth-child(4) { animation-delay: 0.4s; }
+.stats-cards-wrapper .stat-card:nth-child(5) { animation-delay: 0.5s; }
+.stats-cards-wrapper .stat-card:nth-child(6) { animation-delay: 0.6s; }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========================================
+   THÈMES
+   ======================================== */
+
+/* Thème sombre */
+.theme-dark .stat-card {
+    background: #2c3e50;
+    color: white;
+}
+
+.theme-dark .stat-number {
+    background: linear-gradient(135deg, #74b9ff 0%, #a29bfe 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.theme-dark .stat-label {
+    color: #bdc3c7;
+}
+
+/* Thème compact */
+.theme-compact .stat-card {
+    padding: 15px 20px;
+    min-width: 120px;
+}
+
+.theme-compact .stat-number {
+    font-size: 24px;
+}
+
+.theme-compact .stat-label {
+    font-size: 13px;
+}
+
+/* Thème minimal */
+.theme-minimal .stat-card {
+    background: transparent;
+    box-shadow: none;
+    border: 2px solid #e9ecef;
+}
+
+.theme-minimal .stat-card:hover {
+    border-color: #667eea;
+    box-shadow: none;
+    transform: none;
+}
+
+/* ========================================
+   LAYOUTS SPÉCIAUX
+   ======================================== */
+
+/* Layout vertical */
+.stats-cards-wrapper.layout-vertical {
+    flex-direction: column;
+}
+
+.stats-cards-wrapper.layout-vertical .stat-card {
+    display: flex;
+    align-items: center;
+    text-align: left;
+    gap: 20px;
+}
+
+.stats-cards-wrapper.layout-vertical .stat-icon {
+    margin-bottom: 0;
+    font-size: 40px;
+}
+
+/* Layout grille */
+.stats-cards-wrapper.layout-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+    .stats-cards-wrapper {
+        gap: 15px;
+    }
+    
+    .stat-card {
+        min-width: calc(50% - 7.5px);
+        padding: 15px 20px;
+    }
+    
+    .stat-number {
+        font-size: 28px;
+    }
+    
+    .stat-label {
+        font-size: 13px;
+    }
+    
+    .stat-icon {
+        font-size: 28px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stat-card {
+        min-width: 100%;
+    }
+    
+    .stats-cards-wrapper.layout-vertical .stat-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+}
+
+/* ========================================
+   UTILITAIRES
+   ======================================== */
+
+/* Masquer sur mobile */
+@media (max-width: 768px) {
+    .stat-sublabel,
+    .trend-label {
+        display: none;
+    }
+}
+
+/* Impression */
+@media print {
+    .stat-card {
+        box-shadow: none;
+        border: 1px solid #dee2e6;
+        page-break-inside: avoid;
+    }
+    
+    .stat-card::before {
+        display: none;
+    }
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [29/01/2025] - Création initiale
+   - Styles extraits de commandes.css
+   - Ajout de variantes de couleurs
+   - Support des thèmes
+   - Animations optionnelles
+   
+   NOTES POUR REPRISES FUTURES:
+   - Les animations peuvent être désactivées avec .no-animation
+   - Les couleurs suivent les variables CSS globales
+   - Le gradient sur le texte nécessite -webkit-background-clip
+   ======================================== */

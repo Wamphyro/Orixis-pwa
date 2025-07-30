@@ -29,6 +29,10 @@ export { DataTable };
 import { DataTableFilters } from './ui/datatable-filters.component.js';
 export { DataTableFilters };
 
+// Cartes de statistiques
+import { StatsCards } from './ui/stats-cards.component.js';
+export { StatsCards };
+
 // Modal (déjà existant - à déplacer dans ui/)
 import { 
     Modal, 
@@ -267,6 +271,7 @@ export default {
     SearchDropdown: SearchDropdown,
     DataTable,
     DataTableFilters,
+    StatsCards,
     
     // Utils
     formatDate,
