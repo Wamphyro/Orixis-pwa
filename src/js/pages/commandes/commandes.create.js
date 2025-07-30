@@ -1067,29 +1067,7 @@ window.rechercherClient = () => {
 };
 window.rechercherProduit = () => {
     console.warn('rechercherProduit() est remplacé par SearchDropdown');
-};
-
-// ========================================
-// 🆕 EXPORTS DES FONCTIONS POUR LES AUTRES MODULES
-// ========================================
-export {
-    initCreationCommande,
-    ouvrirNouvelleCommande,
-    selectionnerClient,
-    changerClient,
-    ouvrirNouveauClient,
-    creerNouveauClient,
-    appliquerPack,
-    ajouterProduit,
-    retirerProduit,
-    etapePrecedente,
-    etapeSuivante,
-    validerCommande,
-    selectionnerCote,
-    annulerSelectionCote,
-    resetNouvelleCommande,
-    setDateLivraisonDefaut
-};
+}
 
 // ========================================
 // HISTORIQUE DES DIFFICULTÉS
