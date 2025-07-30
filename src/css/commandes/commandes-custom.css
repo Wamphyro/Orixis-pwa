@@ -877,6 +877,9 @@
 .modal .dropdown-list-panel {
     position: fixed !important;
     z-index: 10500 !important;
+    /* IMPORTANT: Annuler la largeur inline ajoutée par le JS */
+    width: auto !important;
+    min-width: 100% !important;
 }
 
 /* Laisser le JS calculer la position, on ne touche à RIEN d'autre */
@@ -886,6 +889,8 @@
 .modal .dropdown-list-wrapper {
     position: static !important;
 }
+
+/* C'est tout ! */
 
 /* C'est tout ! */
 
