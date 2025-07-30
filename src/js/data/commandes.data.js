@@ -342,17 +342,31 @@ export function genererOptionsFiltres() {
 /**
  * Générer la configuration des cartes de statistiques
  */
+/**
+ * Générer la configuration des cartes de statistiques
+ */
 export function genererConfigStatsCards() {
-    return COMMANDES_CONFIG.STATS_CARDS_CONFIG.cartes.map(carte => {
-        const statut = COMMANDES_CONFIG.STATUTS[carte.statut];
-        return {
-            id: carte.statut,
-            label: statut.label,
+    // Mapping des couleurs pour chaque statut
+    const statutColors = {
+        nouvelle: 'info',
+        preparation: 'warning', 
+        terminee: 'secondary',
+        expediee: 'primary',
+        receptionnee: 'info',
+        livree: 'success',
+        annulee: 'danger'
+    };
+    
+    // Générer une carte pour chaque statut (sauf supprime)
+    return Object.entries(COMMANDES_CONFIG.STATUTS)
+        .filter(([key]) => key !== 'supprime') // Exclure les commandes supprimées
+        .map(([key, config]) => ({
+            id: key,
+            label: config.label,
             value: 0,
-            icon: statut.icon,
-            color: carte.color
-        };
-    });
+            color: statutColors[key] || 'secondary',
+            icon: config.icon
+        }));
 }
 
 /**

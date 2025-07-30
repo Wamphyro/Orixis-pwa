@@ -165,8 +165,18 @@ function initStatsCards() {
         cards: cardsConfig,
         animated: true,
         onClick: (cardId) => {
+            // Mettre à jour le filtre statut
             if (filtresCommandes) {
-                filtresCommandes.setValue('statut', cardId);
+                // Si un filtre statut n'existe pas, on filtre directement
+                const hasStatutFilter = filtresCommandes.filters.some(f => f.key === 'statut');
+                
+                if (hasStatutFilter) {
+                    filtresCommandes.setValue('statut', cardId);
+                } else {
+                    // Filtrage direct si pas de filtre statut dans DataTableFilters
+                    state.filtres.statut = cardId;
+                    afficherCommandes();
+                }
             }
         }
     });
@@ -302,12 +312,17 @@ export async function chargerDonnees() {
 function afficherStatistiques(stats) {
     // Utiliser le composant StatsCards pour mettre à jour
     if (statsCards) {
-        statsCards.updateAll({
-            'nouvelle': stats.parStatut.nouvelle || 0,
-            'preparation': stats.parStatut.preparation || 0,
-            'expediee': stats.parStatut.expediee || 0,
-            'livree': stats.parStatut.livree || 0
+        // Créer un objet avec tous les statuts
+        const allStats = {};
+        
+        // Parcourir tous les statuts possibles (sauf supprime)
+        Object.keys(COMMANDES_CONFIG.STATUTS).forEach(statut => {
+            if (statut !== 'supprime') {
+                allStats[statut] = stats.parStatut[statut] || 0;
+            }
         });
+        
+        statsCards.updateAll(allStats);
     }
 }
 
@@ -359,29 +374,14 @@ function filtrerCommandesLocalement() {
             return false;
         }
         
+        // 🆕 AJOUTER ICI - Filtre statut (depuis les cartes)
+        if (state.filtres.statut && commande.statut !== state.filtres.statut) {
+            return false;
+        }
+        
         // Filtre période
         if (state.filtres.periode !== 'all') {
-            const dateCommande = commande.dates.commande?.toDate ? 
-                commande.dates.commande.toDate() : 
-                new Date(commande.dates.commande);
-            
-            const maintenant = new Date();
-            const debut = new Date();
-            
-            switch (state.filtres.periode) {
-                case 'today':
-                    debut.setHours(0, 0, 0, 0);
-                    if (dateCommande < debut) return false;
-                    break;
-                case 'week':
-                    debut.setDate(debut.getDate() - 7);
-                    if (dateCommande < debut) return false;
-                    break;
-                case 'month':
-                    debut.setMonth(debut.getMonth() - 1);
-                    if (dateCommande < debut) return false;
-                    break;
-            }
+            // ... code existant ...
         }
         
         return true;
