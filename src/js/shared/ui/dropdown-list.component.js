@@ -58,7 +58,7 @@ export class DropdownList {
         this.selectedIndex = -1;
         this.selectedValue = this.options.value;
         this.selectedOption = null;
-        this.filteredOptions = [...this.options.options];
+        this.filteredOptions = this.options.options ? [...this.options.options] : [];
         this.searchQuery = '';
         
         // Éléments DOM
@@ -529,6 +529,9 @@ export class DropdownList {
         this.isOpen = true;
         this.wrapper.classList.add('open');
         this.panel.style.display = 'block';
+
+        // S'assurer que les options sont filtrées et rendues
+        this.filterOptions();
         
         // Position
         this.updatePosition();
