@@ -211,7 +211,7 @@ function initFiltres() {
                     { value: '', label: 'Tous les statuts' },
                     { value: 'nouvelle', label: '📋 Nouvelle' },
                     { value: 'preparation', label: '🔧 En préparation' },
-                    { value: 'terminee', label: '🟢 Préparée' },
+                    { value: 'terminee', label: '🎯 Préparée' },
                     { value: 'expediee', label: '📦 Expédiée' },
                     { value: 'receptionnee', label: '📥 Réceptionnée' },
                     { value: 'livree', label: '✅ Livrée' },
