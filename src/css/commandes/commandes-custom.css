@@ -885,6 +885,83 @@
 }
 
 /* ========================================
+   FIX DROPDOWNS DANS LES MODALS
+   [01/02/2025] - Position fixed pour les dropdowns
+   ======================================== */
+
+/* Force position fixed pour tous les dropdowns dans les modals */
+.modal .dropdown-list-dropdown {
+    position: fixed !important;
+    z-index: 10050 !important; /* Au-dessus des modals (z-index: 9999) */
+}
+
+/* Fix pour le calcul de position dans les modals */
+.modal .dropdown-list-container {
+    position: relative;
+    z-index: inherit;
+}
+
+/* S'assurer que le dropdown ne déborde pas de l'écran */
+.dropdown-list-dropdown {
+    max-height: 300px !important;
+    overflow-y: auto !important;
+}
+
+/* Fix pour les dropdowns avec recherche dans les modals */
+.modal .dropdown-list-search-container {
+    position: sticky;
+    top: 0;
+    background: inherit;
+    z-index: 1;
+    padding: 10px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Ajustement pour le glassmorphism dans les modals */
+.modal .dropdown-list-dropdown.glassmorphism {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* Fix spécifique pour les dropdowns dans les formulaires d'édition */
+.edit-form .dropdown-list-dropdown {
+    position: fixed !important;
+    z-index: 10060 !important; /* Encore plus haut pour l'édition */
+}
+
+/* Animation d'ouverture adaptée pour position fixed */
+.modal .dropdown-list-dropdown {
+    animation: dropdownSlideIn 0.2s ease-out;
+}
+
+@keyframes dropdownSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========================================
+   RESPONSIVE POUR DROPDOWNS FIXED
+   ======================================== */
+@media (max-width: 768px) {
+    .modal .dropdown-list-dropdown {
+        max-width: calc(100vw - 40px);
+        left: 20px !important;
+        right: 20px !important;
+        width: auto !important;
+    }
+    
+    .dropdown-list-dropdown {
+        max-height: 50vh !important;
+    }
+}
+
+/* ========================================
    HISTORIQUE DES DIFFICULTÉS
    
    [28/01/2025] - Extraction des styles de recherche
