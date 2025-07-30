@@ -206,7 +206,7 @@ export class AppHeader {
         const tag = this.config.backUrl ? 'a' : 'button';
         
         return `
-            <${tag} class="header-back-button" ${href} data-action="back">
+            <${tag} class="btn btn-back on-dark" ${href} data-action="back">
                 ${this.config.backText}
             </${tag}>
         `;

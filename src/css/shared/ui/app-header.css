@@ -104,35 +104,21 @@
    ÉLÉMENTS DE NAVIGATION
    ======================================== */
 
-/* Bouton retour */
-.header-back-button {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    text-decoration: none;
-    padding: 10px 20px;
-    border-radius: 25px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s ease;
-    font-size: 14px;
-    font-weight: 500;
-    border: 2px solid transparent;
-    cursor: pointer;
-    font-family: inherit;
+/* ========================================
+   BOUTON RETOUR - Utilise maintenant les classes de button.css
+   ======================================== */
+
+/* Le bouton retour utilise maintenant la classe .btn-back de button.css */
+/* Ajustements spécifiques au contexte header si nécessaire */
+.app-header .btn-back {
+    /* Le style principal est dans button.css */
+    /* Ici uniquement les ajustements contextuels */
+    flex-shrink: 0;
 }
 
-.header-back-button:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateX(-2px);
-    border-color: rgba(255, 255, 255, 0.3);
-    text-decoration: none;
-    color: white;
-}
-
-.header-back-button:active {
-    transform: translateX(-1px) scale(0.98);
-}
+/* ========================================
+   SECTION UTILISATEUR - Adaptation glassmorphism amélioré
+   ======================================== */
 
 /* Breadcrumb */
 .header-breadcrumb {
@@ -204,7 +190,10 @@
 
 /* 🆕 Container principal pour utilisateur */
 .header-user-section {
-    background: rgba(255, 255, 255, 0.2);
+    /* Glassmorphism amélioré avec backdrop-filter */
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     padding: 10px 20px;
     border-radius: 25px;
     font-size: 14px;
@@ -212,14 +201,17 @@
     align-items: center;
     gap: 12px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-    white-space: nowrap; /* 🆕 Éviter le retour à la ligne */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    white-space: nowrap;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .header-user-section:hover {
-    background: rgba(255, 255, 255, 0.3);
-    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.35);
+    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
 }
 
 /* 🆕 Avatar utilisateur */
@@ -258,20 +250,13 @@
 
 /* 🆕 Bouton déconnexion dans la section */
 .header-user-section .header-logout-button {
-    background: rgba(220, 53, 69, 0.9);
-    color: white;
-    border: none;
-    padding: 6px 12px; /* 🆕 Plus compact */
-    border-radius: 15px; /* 🆕 Plus petit rayon */
-    font-size: 13px; /* 🆕 Police plus petite */
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 4px; /* 🆕 Gap plus petit */
-    font-family: inherit;
-    flex-shrink: 0; /* Ne pas rétrécir */
+    /* Utilise le style de button.css + ajustements contextuels */
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 15px;
+    flex-shrink: 0;
+    backdrop-filter: none; /* Pas de double blur */
+    /* Le reste du style vient de button.css via la classe .header-logout-button */
 }
 
 .header-user-section .header-logout-button:hover {
@@ -298,9 +283,11 @@
 }
 
 /* Effet de focus pour accessibilité */
-.header-back-button:focus,
+.btn-back:focus,
 .header-user-section:focus,
 .header-logout-button:focus {
+    /* Le focus du btn-back est géré dans button.css */
+    /* Focus spécifique pour la section utilisateur */
     outline: 2px solid rgba(255, 255, 255, 0.8);
     outline-offset: 2px;
 }
@@ -330,14 +317,17 @@
     background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
 }
 
-.app-header.theme-dark .header-back-button,
+.app-header.theme-dark .btn-back,
 .app-header.theme-dark .header-user-section {
-    background: rgba(255, 255, 255, 0.15);
+    /* btn-back géré par button.css avec .on-dark */
 }
 
-.app-header.theme-dark .header-back-button:hover,
+.app-header.theme-dark .header-user-section {
+    background: rgba(255, 255, 255, 0.12);
+}
+
 .app-header.theme-dark .header-user-section:hover {
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.2);
 }
 
 /* Thème success */
@@ -501,10 +491,8 @@
         padding: 6px 12px;
     }
     
-    .header-back-button {
-        font-size: 13px;
-        padding: 8px 16px;
-    }
+    /* Styles btn-back gérés dans button.css responsive */
+
     
     /* Breadcrumb sur mobile */
     .header-breadcrumb {

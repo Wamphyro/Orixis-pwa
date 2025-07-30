@@ -3,117 +3,236 @@
    Chemin: src/css/shared/ui/button.css
    
    DESCRIPTION:
-   Centralise tous les styles de boutons pour éviter la duplication.
-   Modifié le 27/01/2025 : Ajout des boutons de main.css et commandes.css
+   Design unifié glassmorphism pour tous les boutons.
+   Modifié le 31/01/2025 : Refonte complète avec style glassmorphism
    
    STRUCTURE:
-   1. Base button (.btn)
-   2. Variantes principales (primary, secondary, etc.)
-   3. Tailles
-   4. Boutons icône
-   5. Boutons d'action tableau
-   6. Boutons spéciaux (link, reset, logout)
-   7. États (loading, disabled)
-   8. Groupes de boutons
-   9. Responsive
+   1. Variables et mixins
+   2. Base button glassmorphism
+   3. Variantes principales (primary, secondary, etc.)
+   4. Contextes (on-dark, on-light)
+   5. Tailles
+   6. Boutons icône
+   7. Boutons d'action tableau
+   8. Boutons spéciaux (link, reset, logout, back)
+   9. États (loading, disabled, hover)
+   10. Groupes de boutons
+   11. Responsive
    ======================================== */
 
 /* ========================================
-   BASE BUTTON
+   VARIABLES LOCALES
+   ======================================== */
+:root {
+    /* Opacités pour glassmorphism */
+    --glass-bg-opacity: 0.1;
+    --glass-bg-hover-opacity: 0.15;
+    --glass-border-opacity: 0.2;
+    --glass-border-hover-opacity: 0.3;
+    --glass-shadow-opacity: 0.15;
+    --glass-shadow-hover-opacity: 0.25;
+    
+    /* Backdrop filter */
+    --glass-blur: 8px;
+}
+
+/* ========================================
+   BASE BUTTON GLASSMORPHISM
    ======================================== */
 .btn {
+    /* Layout */
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
-    padding: 15px 40px;
-    border: none;
-    border-radius: 10px;
-    font-size: 18px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
+    padding: 12px 24px;
+    
+    /* Glassmorphism base */
+    background: rgba(108, 117, 125, var(--glass-bg-opacity));
+    border: 2px solid rgba(108, 117, 125, var(--glass-border-opacity));
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    
+    /* Forme moderne pill */
+    border-radius: 25px;
+    
+    /* Typographie */
+    font-size: 16px;
+    font-weight: 500;
+    color: #6c757d;
     text-decoration: none;
     font-family: inherit;
+    
+    /* Interactivité */
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
-    background: #6c757d;
-    color: white;
+    
+    /* Ombre subtile */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
+/* Reflet lumineux (optionnel) */
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.1),
+        transparent
+    );
+    border-radius: 25px 25px 0 0;
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+/* État hover de base */
 .btn:hover {
+    background: rgba(108, 117, 125, var(--glass-bg-hover-opacity));
+    border-color: rgba(108, 117, 125, var(--glass-border-hover-opacity));
     transform: translateY(-2px);
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.12);
     text-decoration: none;
 }
 
 .btn:active {
     transform: translateY(0);
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
 }
 
 .btn:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
     transform: none !important;
     box-shadow: none !important;
+    backdrop-filter: none;
 }
 
 /* ========================================
-   VARIANTES PRINCIPALES
+   VARIANTES PRINCIPALES - GLASSMORPHISM COLORÉ
    ======================================== */
+
+/* Primary - Violet */
 .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: rgba(102, 126, 234, var(--glass-bg-opacity));
+    border-color: rgba(102, 126, 234, var(--glass-border-opacity));
+    color: #667eea;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, var(--glass-shadow-opacity));
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, #5a73e5 0%, #6b4199 100%);
-    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    background: rgba(102, 126, 234, var(--glass-bg-hover-opacity));
+    border-color: rgba(102, 126, 234, var(--glass-border-hover-opacity));
+    box-shadow: 0 6px 30px rgba(102, 126, 234, var(--glass-shadow-hover-opacity));
 }
 
+/* Secondary - Gris */
 .btn-secondary {
-    background: #6c757d;
-    color: white;
+    background: rgba(108, 117, 125, var(--glass-bg-opacity));
+    border-color: rgba(108, 117, 125, var(--glass-border-opacity));
+    color: #6c757d;
+    box-shadow: 0 4px 20px rgba(108, 117, 125, var(--glass-shadow-opacity));
 }
 
 .btn-secondary:hover {
-    background: #5a6268;
+    background: rgba(108, 117, 125, var(--glass-bg-hover-opacity));
+    border-color: rgba(108, 117, 125, var(--glass-border-hover-opacity));
+    box-shadow: 0 6px 30px rgba(108, 117, 125, var(--glass-shadow-hover-opacity));
 }
 
+/* Success - Vert */
 .btn-success {
-    background: #28a745;
-    color: white;
+    background: rgba(40, 167, 69, var(--glass-bg-opacity));
+    border-color: rgba(40, 167, 69, var(--glass-border-opacity));
+    color: #28a745;
+    box-shadow: 0 4px 20px rgba(40, 167, 69, var(--glass-shadow-opacity));
 }
 
 .btn-success:hover {
-    background: #218838;
+    background: rgba(40, 167, 69, var(--glass-bg-hover-opacity));
+    border-color: rgba(40, 167, 69, var(--glass-border-hover-opacity));
+    box-shadow: 0 6px 30px rgba(40, 167, 69, var(--glass-shadow-hover-opacity));
 }
 
+/* Danger - Rouge */
 .btn-danger {
-    background: #dc3545;
-    color: white;
+    background: rgba(220, 53, 69, var(--glass-bg-opacity));
+    border-color: rgba(220, 53, 69, var(--glass-border-opacity));
+    color: #dc3545;
+    box-shadow: 0 4px 20px rgba(220, 53, 69, var(--glass-shadow-opacity));
 }
 
 .btn-danger:hover {
-    background: #c82333;
+    background: rgba(220, 53, 69, var(--glass-bg-hover-opacity));
+    border-color: rgba(220, 53, 69, var(--glass-border-hover-opacity));
+    box-shadow: 0 6px 30px rgba(220, 53, 69, var(--glass-shadow-hover-opacity));
 }
 
+/* Warning - Jaune/Orange */
 .btn-warning {
-    background: #ffc107;
-    color: #212529;
+    background: rgba(255, 193, 7, var(--glass-bg-opacity));
+    border-color: rgba(255, 193, 7, var(--glass-border-opacity));
+    color: #ffa000;
+    box-shadow: 0 4px 20px rgba(255, 193, 7, var(--glass-shadow-opacity));
 }
 
 .btn-warning:hover {
-    background: #e0a800;
+    background: rgba(255, 193, 7, var(--glass-bg-hover-opacity));
+    border-color: rgba(255, 193, 7, var(--glass-border-hover-opacity));
+    box-shadow: 0 6px 30px rgba(255, 193, 7, var(--glass-shadow-hover-opacity));
 }
 
+/* Info - Bleu */
 .btn-info {
-    background: #17a2b8;
-    color: white;
+    background: rgba(23, 162, 184, var(--glass-bg-opacity));
+    border-color: rgba(23, 162, 184, var(--glass-border-opacity));
+    color: #17a2b8;
+    box-shadow: 0 4px 20px rgba(23, 162, 184, var(--glass-shadow-opacity));
 }
 
 .btn-info:hover {
-    background: #138496;
+    background: rgba(23, 162, 184, var(--glass-bg-hover-opacity));
+    border-color: rgba(23, 162, 184, var(--glass-border-hover-opacity));
+    box-shadow: 0 6px 30px rgba(23, 162, 184, var(--glass-shadow-hover-opacity));
+}
+
+/* ========================================
+   CONTEXTES - ADAPTATION AU FOND
+   ======================================== */
+
+/* Sur fond sombre/coloré */
+.on-dark .btn,
+.btn.on-dark {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: white;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.on-dark .btn:hover,
+.btn.on-dark:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Primary sur fond sombre */
+.on-dark .btn-primary,
+.btn-primary.on-dark {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.on-dark .btn-primary:hover,
+.btn-primary.on-dark:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.4);
 }
 
 /* ========================================
@@ -122,70 +241,71 @@
 .btn-sm {
     padding: 8px 16px;
     font-size: 14px;
+    gap: 6px;
 }
 
 .btn-lg {
     padding: 16px 32px;
     font-size: 18px;
+    gap: 12px;
 }
 
 /* ========================================
-   BOUTONS ICÔNE UNIQUEMENT
+   BOUTONS ICÔNE
    ======================================== */
 .btn-icon {
-    padding: 8px;
+    padding: 10px;
     width: 40px;
     height: 40px;
     border-radius: 50%;
+    gap: 0;
 }
 
 .btn-icon.btn-sm {
     width: 32px;
     height: 32px;
+    padding: 8px;
 }
 
 .btn-icon.btn-lg {
     width: 48px;
     height: 48px;
+    padding: 12px;
 }
 
 /* ========================================
-   BOUTONS D'ACTION (tableau)
+   BOUTONS D'ACTION TABLEAU - GLASSMORPHISM MINIMAL
    ======================================== */
 .btn-action {
-    background: none;
-    border: 2px solid #e9ecef;
-    border-radius: 8px;
+    background: rgba(248, 249, 250, 0.5);
+    border: 2px solid rgba(233, 236, 239, 0.8);
+    border-radius: 12px;
     padding: 6px 12px;
     cursor: pointer;
     font-size: 14px;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     color: #495057;
+    backdrop-filter: blur(4px);
 }
 
 .btn-action:hover {
-    background: #f8f9fa;
-    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.08);
+    border-color: rgba(102, 126, 234, 0.3);
     color: #667eea;
     transform: scale(1.05);
 }
 
 /* Bouton suppression */
 .btn-action.btn-delete {
-    border-color: #dc3545;
+    border-color: rgba(220, 53, 69, 0.3);
     color: #dc3545;
 }
 
 .btn-action.btn-delete:hover {
-    background: #dc3545;
-    border-color: #dc3545;
-    color: white;
+    background: rgba(220, 53, 69, 0.1);
+    border-color: rgba(220, 53, 69, 0.4);
     transform: scale(1.1) rotate(-5deg);
-    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
-}
-
-.btn-action.btn-delete:active {
-    transform: scale(0.95);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
 }
 
 /* ========================================
@@ -194,67 +314,91 @@
 
 /* Bouton lien */
 .btn-link {
-    background: none;
+    background: transparent;
     border: none;
     color: #667eea;
     padding: 0;
     text-decoration: underline;
     font-weight: 500;
+    backdrop-filter: none;
+    box-shadow: none;
 }
 
 .btn-link:hover {
     color: #5a73e5;
     transform: none;
     box-shadow: none;
+    background: transparent;
 }
 
 /* Bouton reset (filtres) */
 .btn-reset {
-    background: #f8f9fa;
+    background: rgba(248, 249, 250, 0.6);
     color: #6c757d;
-    border: 2px solid #e9ecef;
+    border: 2px solid rgba(233, 236, 239, 0.8);
     padding: 8px 20px;
-    border-radius: 10px;
+    border-radius: 20px;
     font-size: 14px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-weight: normal;
+    font-weight: 400;
 }
 
 .btn-reset:hover {
-    background: #e9ecef;
-    border-color: #dee2e6;
+    background: rgba(233, 236, 239, 0.8);
+    border-color: rgba(222, 226, 230, 1);
     transform: scale(1.05);
+}
+
+/* Bouton retour (migré depuis app-header.css) */
+.btn-back,
+.header-back-button {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: transparent;
+    color: white;
+    padding: 10px 20px;
+    font-size: 14px;
+}
+
+.btn-back:hover,
+.header-back-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateX(-2px);
+}
+
+/* Contexte fond clair pour bouton retour */
+.btn-back.on-light {
+    background: rgba(102, 126, 234, 0.08);
+    border-color: rgba(102, 126, 234, 0.2);
+    color: #667eea;
+}
+
+.btn-back.on-light:hover {
+    background: rgba(102, 126, 234, 0.15);
+    border-color: rgba(102, 126, 234, 0.3);
 }
 
 /* Bouton déconnexion */
 .btn-logout,
 .header-logout-button {
-    background: #e74c3c;
+    background: rgba(220, 53, 69, 0.9);
+    border-color: transparent;
     color: white;
-    border: none;
-    padding: 8px 20px;
+    padding: 8px 16px;
     border-radius: 20px;
-    cursor: pointer;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
+    backdrop-filter: none; /* Pas de blur pour garder la couleur forte */
 }
 
 .btn-logout:hover,
 .header-logout-button:hover {
-    background: #c0392b;
-    transform: scale(1.05);
+    background: rgba(220, 53, 69, 1);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
 }
 
 /* ========================================
-   ÉTAT LOADING
+   ÉTAT LOADING - ADAPTÉ AU GLASSMORPHISM
    ======================================== */
 .btn.loading {
     color: transparent;
@@ -269,20 +413,73 @@
     left: 50%;
     margin-left: -10px;
     margin-top: -10px;
-    border: 2px solid rgba(255, 255, 255, 0.6);
+    border: 2px solid currentColor;
     border-radius: 50%;
-    border-top-color: white;
+    border-top-color: transparent;
     animation: spinner 0.8s linear infinite;
+    z-index: 1;
 }
 
-.btn-secondary.loading::after,
-.btn-reset.loading::after {
-    border-color: rgba(108, 117, 125, 0.3);
-    border-top-color: #6c757d;
+/* Adaptation couleur spinner selon variante */
+.btn-primary.loading::after {
+    border-color: #667eea;
+    border-top-color: transparent;
+}
+
+.btn-success.loading::after {
+    border-color: #28a745;
+    border-top-color: transparent;
+}
+
+.btn-danger.loading::after {
+    border-color: #dc3545;
+    border-top-color: transparent;
 }
 
 @keyframes spinner {
     to { transform: rotate(360deg); }
+}
+
+/* ========================================
+   EFFETS SPÉCIAUX
+   ======================================== */
+
+/* Effet ripple au clic */
+.btn:not(.btn-link)::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+    pointer-events: none;
+    opacity: 0;
+}
+
+.btn:not(.btn-link):active::after {
+    width: 200px;
+    height: 200px;
+    opacity: 0;
+}
+
+/* ========================================
+   FOCUS - ACCESSIBILITÉ
+   ======================================== */
+.btn:focus {
+    outline: none;
+    box-shadow: 
+        0 0 0 3px rgba(255, 255, 255, 0.5),
+        0 0 0 5px rgba(102, 126, 234, 0.5);
+}
+
+.btn.on-dark:focus {
+    box-shadow: 
+        0 0 0 3px rgba(0, 0, 0, 0.2),
+        0 0 0 5px rgba(255, 255, 255, 0.5);
 }
 
 /* ========================================
@@ -304,13 +501,32 @@
     width: 100%;
 }
 
+/* Boutons connectés */
+.btn-group-connected {
+    gap: 0;
+}
+
+.btn-group-connected .btn {
+    border-radius: 0;
+    border-right: none;
+}
+
+.btn-group-connected .btn:first-child {
+    border-radius: 25px 0 0 25px;
+}
+
+.btn-group-connected .btn:last-child {
+    border-radius: 0 25px 25px 0;
+    border-right: 2px solid rgba(108, 117, 125, var(--glass-border-opacity));
+}
+
 /* ========================================
    RESPONSIVE
    ======================================== */
 @media (max-width: 768px) {
     .btn {
-        padding: 12px 20px;
-        font-size: 16px;
+        padding: 10px 20px;
+        font-size: 15px;
     }
     
     .btn-sm {
@@ -331,17 +547,30 @@
 
 @media (max-width: 480px) {
     .btn {
-        padding: 10px 16px;
+        padding: 8px 16px;
         font-size: 14px;
     }
     
-    .btn-group {
+    .btn-group:not(.btn-group-connected) {
         flex-direction: column;
         width: 100%;
     }
     
-    .btn-group .btn {
+    .btn-group:not(.btn-group-connected) .btn {
         width: 100%;
+    }
+}
+
+/* ========================================
+   PRINT
+   ======================================== */
+@media print {
+    .btn {
+        background: white !important;
+        color: black !important;
+        border: 1px solid black !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
     }
 }
 
@@ -349,11 +578,16 @@
    HISTORIQUE DES DIFFICULTÉS
    
    [27/01/2025] - Centralisation de tous les boutons
-   Ajout: Boutons de main.css et commandes.css
-   Impact: Évite la duplication entre fichiers CSS
+   [31/01/2025] - Refonte complète glassmorphism
+   - Tous les boutons adoptent le style glassmorphism
+   - Support fond clair (coloré transparent) et fond sombre (blanc transparent)
+   - Migration du bouton retour depuis app-header.css
+   - Ajout effets modernes (blur, reflets, ripple)
+   - Variables CSS pour personnalisation facile
    
    NOTES POUR REPRISES FUTURES:
-   - Tous les boutons sont maintenant centralisés ici
-   - Ne pas ajouter de styles de boutons ailleurs
-   - Pour ajouter un nouveau type, l'ajouter ici
+   - Utiliser classes .on-dark/.on-light selon le contexte
+   - Le backdrop-filter nécessite un support navigateur
+   - Les ombres colorées renforcent l'identité visuelle
+   - L'effet ripple est subtil mais moderne
    ======================================== */
