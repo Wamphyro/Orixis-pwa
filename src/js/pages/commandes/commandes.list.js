@@ -209,8 +209,8 @@ function initFiltres() {
                 label: 'Statut',
                 options: [
                     { value: '', label: 'Tous les statuts' },
-                    { value: 'nouvelle', label: '⚪ Nouvelle' },
-                    { value: 'preparation', label: '🔵 En préparation' },
+                    { value: 'nouvelle', label: '📋 Nouvelle' },
+                    { value: 'preparation', label: '🔧 En préparation' },
                     { value: 'terminee', label: '🟢 Préparée' },
                     { value: 'expediee', label: '📦 Expédiée' },
                     { value: 'receptionnee', label: '📥 Réceptionnée' },
