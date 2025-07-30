@@ -17,6 +17,7 @@ import {
 } from '../../data/commandes.data.js';
 import { DataTable, DataTableFilters, StatsCards, formatDate as formatDateUtil } from '../../shared/index.js';
 import { state } from './commandes.main.js';
+import { db } from '../../services/firebase.service.js';
 
 // Variables pour les instances
 let tableCommandes = null;
@@ -143,7 +144,8 @@ export async function initListeCommandes() {
     });
     
     // 2. PUIS initialiser les filtres (maintenant que tableCommandes existe)
-    initFiltres();
+    await initFiltres();  // ← AJOUTER await
+
     
     console.log('✅ DataTable et Filtres initialisés');
     
@@ -174,8 +176,38 @@ function initStatsCards() {
  * Initialiser les filtres
  * MODIFIÉ : Utilise genererOptionsFiltres() depuis commandes.data.js
  */
-function initFiltres() {
-    const filtresConfig = genererOptionsFiltres();
+async function initFiltres() {  // ← AJOUTER async
+    let filtresConfig = genererOptionsFiltres();
+    
+    // Charger les magasins depuis Firebase
+    try {
+        const { collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const magasinsSnapshot = await getDocs(collection(db, 'magasins'));
+        
+        const magasins = [];
+        magasinsSnapshot.forEach((doc) => {
+            const data = doc.data();
+            if (data.actif !== false) {
+                magasins.push({
+                    value: data.code || doc.id,
+                    label: data.nom || data.code || doc.id
+                });
+            }
+        });
+        
+        magasins.sort((a, b) => a.label.localeCompare(b.label));
+        
+        // Trouver le filtre magasin et ajouter les options
+        const magasinFilter = filtresConfig.find(f => f.key === 'magasin');
+        if (magasinFilter) {
+            magasinFilter.options = [
+                { value: '', label: 'Tous les magasins' },
+                ...magasins
+            ];
+        }
+    } catch (error) {
+        console.error('Erreur chargement magasins:', error);
+    }
     
     // Ajuster la config pour séparer les icônes du label
     const filtresConfigAjustes = filtresConfig.map(filtre => {
@@ -207,12 +239,14 @@ function initFiltres() {
         onFilter: (filters) => {
             state.filtres = {
                 recherche: filters.recherche || '',
-                statut: filters.statut || '',
+                magasin: filters.magasin || '',  // ← CHANGÉ ICI
                 periode: filters.periode || 'all',
                 urgence: filters.urgence || ''
             };
             
-            afficherCommandes();
+            if (tableCommandes) {
+                afficherCommandes();
+            }
         }
     });
 }
@@ -315,8 +349,8 @@ function filtrerCommandesLocalement() {
             }
         }
         
-        // Filtre statut
-        if (state.filtres.statut && commande.statut !== state.filtres.statut) {
+        // Filtre magasin
+        if (state.filtres.magasin && commande.magasinLivraison !== state.filtres.magasin) {
             return false;
         }
         

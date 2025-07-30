@@ -64,7 +64,7 @@ export const state = {
     itemsPerPage: 20,
     filtres: {
         recherche: '',
-        statut: '',
+        magasin: '',  // ← CHANGÉ ICI
         periode: 'all',
         urgence: ''
     }
