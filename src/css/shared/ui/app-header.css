@@ -56,12 +56,13 @@
    ======================================== */
 
 .app-header-content {
-    max-width: 1200px;
+    max-width: 2000px; /* Aligné avec le container principal */
     margin: 0 auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 20px;
+    position: relative; /* Pour le positionnement absolu du centre */
 }
 
 .app-header-left {
@@ -73,10 +74,13 @@
 }
 
 .app-header-center {
-    flex: 1;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
     text-align: center;
     padding: 0 20px;
     min-width: 0; /* Pour permettre le text-overflow */
+    z-index: 1; /* Pour s'assurer qu'il est au-dessus */
 }
 
 .app-header-right {
@@ -86,6 +90,14 @@
     justify-content: flex-end;
     gap: 15px;
     /* 🆕 SUPPRIMÉ flex-wrap: wrap pour garder tout sur une ligne */
+}
+
+/* Empêcher le chevauchement du centre avec les côtés */
+@media (min-width: 769px) {
+    .app-header-left,
+    .app-header-right {
+        z-index: 2; /* Au-dessus du centre pour éviter les chevauchements */
+    }
 }
 
 /* ========================================
@@ -432,11 +444,14 @@
         flex-direction: column;
         gap: 15px;
         align-items: stretch;
+        position: static; /* Retour au flow normal */
     }
     
     .app-header-left,
     .app-header-center,
     .app-header-right {
+        position: static; /* Retour au flow normal */
+        transform: none;
         flex: initial;
         width: 100%;
         justify-content: center;
