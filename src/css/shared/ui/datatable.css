@@ -179,6 +179,7 @@ body.datatable-resizing {
     padding: 8px 15px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    white-space: nowrap; /* AJOUTER - Empêche le retour à la ligne */
 }
 
 .pagination-size label {
@@ -186,8 +187,10 @@ body.datatable-resizing {
     font-weight: 500;
     color: #495057;
     font-size: 14px;
+    white-space: nowrap; /* AJOUTER - Force le label sur une ligne */
 }
 
+/* Si le problème persiste, ajouter aussi : */
 .page-size-select {
     padding: 6px 12px;
     border: 2px solid #e9ecef;
@@ -196,6 +199,7 @@ body.datatable-resizing {
     cursor: pointer;
     background: white;
     transition: all 0.2s;
+    flex-shrink: 0; /* AJOUTER - Empêche le select de rétrécir */
 }
 
 .page-size-select:hover {
