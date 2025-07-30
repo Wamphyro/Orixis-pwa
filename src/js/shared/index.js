@@ -62,6 +62,10 @@ export { Timeline, createTimeline, createOrderTimeline };
 import SearchDropdown from './ui/search-dropdown.component.js';
 export { SearchDropdown };
 
+// Dropdown list
+import DropdownList from './ui/dropdown-list.component.js';
+export { DropdownList };
+
 // 🆕 Stepper
 import { Stepper } from './ui/stepper.component.js';
 export { Stepper };
@@ -283,7 +287,9 @@ export default {
     DataTable,
     DataTableFilters,
     StatsCards,
-    Stepper,  // 🆕 Stepper ajouté
+    Stepper,
+    DropdownList,
+
     
     // Utils
     formatDate,

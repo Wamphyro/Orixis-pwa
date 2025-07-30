@@ -21,6 +21,7 @@
          
          MODIFIÉ le 31/01/2025:
          - Ajout de stepper.css après search-dropdown.css
+         - Ajout de dropdown-list.css pour le nouveau composant
          
          ORDRE IMPORTANT:
          1. main.css (variables, reset, layout)
@@ -41,9 +42,10 @@
     <link rel="stylesheet" href="../src/css/shared/ui/notification.css">
     <link rel="stylesheet" href="../src/css/shared/ui/timeline.css">
     <link rel="stylesheet" href="../src/css/shared/ui/search-dropdown.css">
-    <link rel="stylesheet" href="../src/css/shared/ui/stepper.css"> <!-- 🆕 AJOUT STEPPER CSS -->
+    <link rel="stylesheet" href="../src/css/shared/ui/stepper.css">
     <link rel="stylesheet" href="../src/css/shared/ui/datatable.css">
     <link rel="stylesheet" href="../src/css/shared/ui/datatable-filters.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/dropdown-list.css">
 
     <!-- 3. CSS spécifiques aux commandes -->
     <link rel="stylesheet" href="../src/css/commandes/commandes.css">
@@ -112,8 +114,7 @@
                     <h3>Sélection du client</h3>
                     
                     <div class="client-search">
-                        <input type="text" id="clientSearch" placeholder="Rechercher un client (nom, prénom, téléphone...)">
-                        <div class="search-results" id="clientSearchResults"></div>
+                        <!-- SearchDropdown sera initialisé ici -->
                     </div>
                     
                     <div class="client-selected" id="clientSelected" style="display: none;">
@@ -136,21 +137,17 @@
                 <div class="step-content hidden" id="stepContent2">
                     <h3>Sélection des produits</h3>
                     
-                    <!-- Packs prédéfinis -->
+                    <!-- 🔄 MODIFIÉ : Pack selector avec DropdownList -->
                     <div class="pack-selector">
                         <label>Utiliser un pack prédéfini</label>
-                        <select id="packTemplate" onchange="appliquerPack()">
-                            <option value="">-- Commande personnalisée --</option>
-                            <!-- Options chargées dynamiquement -->
-                        </select>
+                        <div id="packTemplate"></div>
                     </div>
                     
                     <div class="divider">OU</div>
                     
                     <!-- Recherche produits -->
                     <div class="product-search">
-                        <input type="text" id="productSearch" placeholder="Rechercher un produit...">
-                        <div class="search-results" id="productSearchResults"></div>
+                        <!-- SearchDropdown sera initialisé ici -->
                     </div>
                     
                     <!-- Panier temporaire -->
@@ -164,20 +161,13 @@
                 <div class="step-content hidden" id="stepContent3">
                     <h3>Informations de livraison</h3>
                     
+                    <!-- 🔄 MODIFIÉ : Type de préparation avec DropdownList -->
                     <div class="form-group">
                         <label>Type de préparation</label>
-                        <select id="typePreparation" required>
-                            <!-- Options générées dynamiquement -->
-                        </select>
+                        <div id="typePreparation"></div>
                     </div>
                     
-                    <div class="form-group">
-                        <label>Niveau d'urgence</label>
-                        <div class="urgence-selector">
-                            <!-- Boutons radio générés dynamiquement -->
-                        </div>
-                    </div>
-                    
+                    <!-- ✅ CORRIGÉ : Suppression de la duplication -->
                     <div class="form-group">
                         <label>Niveau d'urgence</label>
                         <div class="urgence-selector">
@@ -186,11 +176,10 @@
                     </div>
                     
                     <div class="form-row">
+                        <!-- 🔄 MODIFIÉ : Magasin de livraison avec DropdownList -->
                         <div class="form-group">
                             <label>Magasin de livraison</label>
-                            <select id="magasinLivraison" required>
-                                <!-- Options chargées dynamiquement -->
-                            </select>
+                            <div id="magasinLivraison"></div>
                         </div>
                         
                         <div class="form-group">
@@ -338,11 +327,10 @@
                         </div>
                     </div>
                     
+                    <!-- 🔄 MODIFIÉ : Magasin de référence avec DropdownList -->
                     <div class="form-group">
                         <label>Magasin de référence *</label>
-                        <select id="newClientMagasin" required>
-                            <!-- Options chargées dynamiquement -->
-                        </select>
+                        <div id="newClientMagasin"></div>
                     </div>
                 </form>
             </div>
@@ -375,6 +363,10 @@
          MODIFIÉ le 31/01/2025:
          - Le Stepper est maintenant géré par le composant JS
          - Le HTML reste identique pour la compatibilité
+         
+         MODIFIÉ le 01/02/2025:
+         - Remplacement des <select> par des <div> pour DropdownList
+         - Pack template, type préparation, magasins utilisent maintenant DropdownList
          ======================================== -->
     <script type="module" src="../src/js/pages/commandes/commandes.main.js"></script>
 </body>
