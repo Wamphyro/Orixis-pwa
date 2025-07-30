@@ -9,6 +9,7 @@
 // [28/01/2025] - Intégration de SearchDropdown pour remplacer les recherches natives
 // [28/01/2025] - Utilisation des bons sélecteurs ID (#clientSearch, #productSearch)
 // [31/01/2025] - Centralisation des types de préparation et urgences depuis commandes.data.js
+// [31/01/2025] - Champs vides par défaut (type, magasin, date)
 // ========================================
 
 import { db } from '../../services/firebase.service.js';
@@ -35,9 +36,9 @@ let nouvelleCommande = {
     clientId: null,
     client: null,
     produits: [],
-    typePreparation: 'livraison_accessoire',
+    typePreparation: '',  // 🆕 VIDE par défaut
     urgence: 'normal',
-    magasinLivraison: null,
+    magasinLivraison: '',  // 🆕 VIDE par défaut
     dateLivraison: null,
     commentaires: ''
 };
@@ -78,9 +79,9 @@ function resetNouvelleCommande() {
         clientId: null,
         client: null,
         produits: [],
-        typePreparation: 'livraison_accessoire',
+        typePreparation: '',  // 🆕 VIDE par défaut
         urgence: 'normal',
-        magasinLivraison: null,
+        magasinLivraison: '',  // 🆕 VIDE par défaut
         dateLivraison: null,
         commentaires: ''
     };
@@ -182,18 +183,18 @@ function afficherEtape(etape) {
 // 🆕 NOUVELLE FONCTION : Générer les options de l'étape 3
 // ========================================
 function genererOptionsEtape3() {
-    // 1. Générer le select type de préparation
+    // 1. Générer le select type de préparation avec option vide
     const selectType = document.getElementById('typePreparation');
     if (selectType) {
         const typesPreparation = genererOptionsTypesPreparation();
-        selectType.innerHTML = typesPreparation.map(type => 
-            `<option value="${type.value}">${type.label}</option>`
-        ).join('');
         
-        // Restaurer la valeur si elle existe
-        if (nouvelleCommande.typePreparation) {
-            selectType.value = nouvelleCommande.typePreparation;
-        }
+        // 🆕 Ajouter une option vide en premier
+        selectType.innerHTML = '<option value="">-- Sélectionner un type --</option>' + 
+            typesPreparation.map(type => 
+                `<option value="${type.value}">${type.label}</option>`
+            ).join('');
+        
+        // Pas de restauration de valeur (laisser vide)
     }
     
     // 2. Générer les boutons radio urgence
@@ -259,8 +260,17 @@ async function validerEtape(etape) {
             }
             break;
         case 3:
+            // 🆕 Vérifier que tous les champs sont remplis
+            if (!nouvelleCommande.typePreparation) {
+                await Dialog.alert('Veuillez sélectionner un type de préparation', 'Attention');
+                return false;
+            }
             if (!nouvelleCommande.magasinLivraison) {
                 await Dialog.alert('Veuillez sélectionner un magasin de livraison', 'Attention');
+                return false;
+            }
+            if (!document.getElementById('dateLivraison').value) {
+                await Dialog.alert('Veuillez sélectionner une date de livraison', 'Attention');
                 return false;
             }
             break;
@@ -882,6 +892,12 @@ async function chargerMagasins() {
         const select = document.getElementById('magasinLivraison');
         select.innerHTML = '';
         
+        // 🆕 Ajouter une option vide en premier
+        const firstOption = document.createElement('option');
+        firstOption.value = '';
+        firstOption.textContent = '-- Sélectionner un magasin --';
+        select.appendChild(firstOption);
+        
         const { collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
         const magasinsSnapshot = await getDocs(collection(db, 'magasins'));
         
@@ -916,28 +932,28 @@ async function chargerMagasins() {
             const option = document.createElement('option');
             option.value = magasin.code;
             option.textContent = magasin.nom;
-            
-            if (nouvelleCommande.client && 
-                (magasin.code === nouvelleCommande.client.magasinReference || 
-                 magasin.id === nouvelleCommande.client.magasinReference)) {
-                option.selected = true;
-            } else if (!nouvelleCommande.client && magasin.code === auth.magasin) {
-                option.selected = true;
-            }
-            
             select.appendChild(option);
         });
         
-        if (!select.value && magasins.length > 0) {
-            select.value = magasins[0].code;
-        }
+        // 🆕 NE PAS sélectionner automatiquement
+        select.value = ''; // Forcer la sélection vide
         
-        nouvelleCommande.magasinLivraison = select.value;
+        // 🆕 Mise à jour pour gérer l'événement onchange
+        select.addEventListener('change', (e) => {
+            nouvelleCommande.magasinLivraison = e.target.value;
+        });
         
     } catch (error) {
         console.error('Erreur chargement magasins:', error);
         const auth = JSON.parse(localStorage.getItem('sav_auth'));
         const select = document.getElementById('magasinLivraison');
+        
+        // 🆕 Option vide aussi en cas d'erreur
+        const firstOption = document.createElement('option');
+        firstOption.value = '';
+        firstOption.textContent = '-- Sélectionner un magasin --';
+        select.appendChild(firstOption);
+        
         let magasins = auth.magasins || [auth.magasin];
         
         if (nouvelleCommande.client && nouvelleCommande.client.magasinReference) {
@@ -951,46 +967,28 @@ async function chargerMagasins() {
             const option = document.createElement('option');
             option.value = magasin;
             option.textContent = magasin;
-            
-            if (nouvelleCommande.client && magasin === nouvelleCommande.client.magasinReference) {
-                option.selected = true;
-            } else if (!nouvelleCommande.client && magasin === auth.magasin) {
-                option.selected = true;
-            }
-            
             select.appendChild(option);
         });
         
-        nouvelleCommande.magasinLivraison = select.value;
+        // 🆕 Forcer la sélection vide
+        select.value = '';
+        
+        // 🆕 Gérer l'événement onchange
+        select.addEventListener('change', (e) => {
+            nouvelleCommande.magasinLivraison = e.target.value;
+        });
     }
 }
 
-// 🆕 MODIFIÉ : Utiliser calculerDelaiLivraison si disponible
+// 🆕 MODIFIÉ : Plus de date par défaut
 function setDateLivraisonDefaut() {
     const dateInput = document.getElementById('dateLivraison');
-    const urgence = document.querySelector('input[name="urgence"]:checked')?.value || 'normal';
     
-    // Utiliser calculerDelaiLivraison depuis commandes.data.js si disponible
-    let date;
-    if (calculerDelaiLivraison) {
-        date = calculerDelaiLivraison(urgence);
-    } else {
-        // Fallback si la fonction n'est pas importée
-        date = new Date();
-        switch (urgence) {
-            case 'tres_urgent':
-                date.setDate(date.getDate() + 1);
-                break;
-            case 'urgent':
-                date.setDate(date.getDate() + 2);
-                break;
-            default:
-                date.setDate(date.getDate() + 5);
-        }
-    }
-    
-    dateInput.value = date.toISOString().split('T')[0];
+    // Définir seulement la date minimum (aujourd'hui)
     dateInput.min = new Date().toISOString().split('T')[0];
+    
+    // 🆕 NE PAS définir de valeur par défaut
+    dateInput.value = '';
 }
 
 // ========================================
@@ -1037,6 +1035,7 @@ function afficherRecapitulatif() {
 }
 
 export async function validerCommande() {
+    // 🆕 Mise à jour avec les valeurs du formulaire
     nouvelleCommande.typePreparation = document.getElementById('typePreparation').value;
     nouvelleCommande.urgence = document.querySelector('input[name="urgence"]:checked')?.value || 'normal';
     nouvelleCommande.magasinLivraison = document.getElementById('magasinLivraison').value;
@@ -1067,7 +1066,7 @@ window.rechercherClient = () => {
 };
 window.rechercherProduit = () => {
     console.warn('rechercherProduit() est remplacé par SearchDropdown');
-}
+};
 
 // ========================================
 // HISTORIQUE DES DIFFICULTÉS
@@ -1087,9 +1086,16 @@ window.rechercherProduit = () => {
 // - Utilisation de calculerDelaiLivraison() si disponible
 // - Ajout des exports pour corriger l'erreur d'import dans commandes.main.js
 //
+// [31/01/2025] - Champs vides par défaut
+// - typePreparation et magasinLivraison initialisés à vide
+// - Ajout d'options vides "-- Sélectionner... --" 
+// - Pas de date par défaut
+// - Validation renforcée pour vérifier que tous les champs sont remplis
+//
 // NOTES POUR REPRISES FUTURES:
 // - Les instances de SearchDropdown doivent être détruites avant recréation
 // - Le timing d'init est important (d'où les setTimeout)
 // - Les containers doivent utiliser les IDs #clientSearch et #productSearch
 // - Les options de l'étape 3 sont maintenant générées dynamiquement
+// - Les champs sont vides par défaut pour forcer la sélection
 // ========================================
