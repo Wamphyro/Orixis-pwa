@@ -38,13 +38,7 @@ export async function initListeCommandes() {
         container: '.commandes-table-container',
         
                 columns: [
-            {
-                key: 'numeroCommande',
-                label: 'N° Commande',
-                sortable: true,
-                width: 150,
-                formatter: (value) => `<strong>${value}</strong>`
-            },
+                    
             {
                 key: 'dates.commande',
                 label: 'Date',
