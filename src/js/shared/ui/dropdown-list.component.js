@@ -334,6 +334,20 @@ export class DropdownList {
                 this.updatePosition();
             }
         });
+        
+        // NOUVEAU : Gérer le scroll dans les modals
+        const modal = this.wrapper.closest('.modal');
+        if (modal) {
+            const modalBody = modal.querySelector('.modal-body');
+            if (modalBody) {
+                modalBody.addEventListener('scroll', () => {
+                    if (this.isOpen) {
+                        // Mettre à jour la position pendant le scroll
+                        this.updatePosition();
+                    }
+                });
+            }
+        }
     }
     
     handleKeydown(e) {
@@ -476,83 +490,88 @@ export class DropdownList {
     }
     
     updatePosition() {
-    if (!this.panel || !this.trigger) return;
-    
-    const triggerRect = this.trigger.getBoundingClientRect();
-    const panelHeight = this.panel.offsetHeight;
-    const viewportHeight = window.innerHeight;
-    const spaceBelow = viewportHeight - triggerRect.bottom;
-    const spaceAbove = triggerRect.top;
-    
-    // Détecter si on est dans un modal
-    const isInModal = this.wrapper.closest('.modal');
-    
-    // Reset styles
-    this.panel.style.position = '';
-    this.panel.style.top = '';
-    this.panel.style.bottom = '';
-    this.panel.style.left = '';
-    this.panel.style.right = '';
-    this.panel.style.width = '';
-    
-    if (this.isMobile) {
-        // Code mobile inchangé...
-        this.panel.style.position = 'fixed';
-        this.panel.style.left = '50%';
-        this.panel.style.transform = 'translateX(-50%)';
-        this.panel.style.width = '90%';
-        this.panel.style.maxWidth = '400px';
-        this.panel.style.zIndex = '9999';
-        this.panel.style.top = '50%';
-        this.panel.style.transform = 'translate(-50%, -50%)';
+        if (!this.panel || !this.trigger) return;
         
-        if (!this.backdrop) {
-            this.backdrop = document.createElement('div');
-            this.backdrop.className = 'dropdown-list-backdrop';
-            this.wrapper.appendChild(this.backdrop);
-        }
-        this.backdrop.style.display = 'block';
+        const triggerRect = this.trigger.getBoundingClientRect();
+        const panelHeight = this.panel.offsetHeight;
+        const viewportHeight = window.innerHeight;
+        const spaceBelow = viewportHeight - triggerRect.bottom;
+        const spaceAbove = triggerRect.top;
         
-    } else {
-        // Desktop
-        if (isInModal) {
-            // NOUVEAU : Déplacer le panel dans le body si on est dans un modal
-            if (this.panel.parentElement !== document.body) {
-                document.body.appendChild(this.panel);
-            }
-            
-            // Position fixed avec calcul de la largeur maximale
+        // Détecter si on est dans un modal
+        const isInModal = this.wrapper.closest('.modal');
+        
+        // Reset styles
+        this.panel.style.position = '';
+        this.panel.style.top = '';
+        this.panel.style.bottom = '';
+        this.panel.style.left = '';
+        this.panel.style.right = '';
+        this.panel.style.width = '';
+        
+        if (this.isMobile) {
+            // Code mobile inchangé...
             this.panel.style.position = 'fixed';
-            this.panel.style.top = `${triggerRect.bottom + 2}px`;
-            this.panel.style.left = `${triggerRect.left}px`;
+            this.panel.style.left = '50%';
+            this.panel.style.transform = 'translateX(-50%)';
+            this.panel.style.width = '90%';
+            this.panel.style.maxWidth = '400px';
+            this.panel.style.zIndex = '9999';
+            this.panel.style.top = '50%';
+            this.panel.style.transform = 'translate(-50%, -50%)';
             
-            // Calculer la largeur maximale disponible
-            const maxWidth = window.innerWidth - triggerRect.left - 20; // 20px de marge
-            const desiredWidth = triggerRect.width;
-            this.panel.style.width = `${Math.min(desiredWidth, maxWidth)}px`;
+            if (!this.backdrop) {
+                this.backdrop = document.createElement('div');
+                this.backdrop.className = 'dropdown-list-backdrop';
+                this.wrapper.appendChild(this.backdrop);
+            }
+            this.backdrop.style.display = 'block';
             
-            // Si le dropdown dépasse en bas, le mettre au-dessus
-            if (triggerRect.bottom + panelHeight > viewportHeight) {
-                this.panel.style.top = `${triggerRect.top - panelHeight - 2}px`;
-            }
         } else {
-            // Hors modal, remettre dans le wrapper si nécessaire
-            if (this.panel.parentElement === document.body) {
-                this.wrapper.appendChild(this.panel);
+            // Desktop
+            if (isInModal) {
+                // Déplacer le panel dans le body si on est dans un modal
+                if (this.panel.parentElement !== document.body) {
+                    document.body.appendChild(this.panel);
+                }
+                
+                // Position fixed avec calcul de la largeur maximale
+                this.panel.style.position = 'fixed';
+                this.panel.style.zIndex = '10500';
+                
+                // NOUVEAU : Forcer le recalcul des dimensions
+                const computedWidth = window.getComputedStyle(this.trigger).width;
+                const actualWidth = parseFloat(computedWidth) || triggerRect.width;
+                
+                this.panel.style.top = `${triggerRect.bottom + 2}px`;
+                this.panel.style.left = `${triggerRect.left}px`;
+                
+                // Calculer la largeur maximale disponible
+                const maxWidth = window.innerWidth - triggerRect.left - 20;
+                this.panel.style.width = `${Math.min(actualWidth, maxWidth)}px`;
+                
+                // Si le dropdown dépasse en bas, le mettre au-dessus
+                if (triggerRect.bottom + panelHeight > viewportHeight) {
+                    this.panel.style.top = `${triggerRect.top - panelHeight - 2}px`;
+                }
+            } else {
+                // Hors modal, remettre dans le wrapper si nécessaire
+                if (this.panel.parentElement === document.body) {
+                    this.wrapper.appendChild(this.panel);
+                }
+                this.panel.style.width = `${triggerRect.width}px`;
             }
-            this.panel.style.width = `${triggerRect.width}px`;
-        }
-        
-        // Classes pour le style
-        if (spaceBelow >= panelHeight || spaceBelow > spaceAbove) {
-            this.panel.classList.remove('dropdown-up');
-            this.panel.classList.add('dropdown-down');
-        } else {
-            this.panel.classList.remove('dropdown-down');
-            this.panel.classList.add('dropdown-up');
+            
+            // Classes pour le style
+            if (spaceBelow >= panelHeight || spaceBelow > spaceAbove) {
+                this.panel.classList.remove('dropdown-up');
+                this.panel.classList.add('dropdown-down');
+            } else {
+                this.panel.classList.remove('dropdown-down');
+                this.panel.classList.add('dropdown-up');
+            }
         }
     }
-}
     
     open() {
         if (this.isOpen || this.options.disabled) return;
@@ -564,8 +583,10 @@ export class DropdownList {
         // S'assurer que les options sont filtrées et rendues
         this.filterOptions();
         
-        // Position
-        this.updatePosition();
+        // NOUVEAU : Forcer un recalcul après un court délai
+        setTimeout(() => {
+            this.updatePosition();
+        }, 50);
         
         // Focus sur la recherche si disponible
         if (this.searchInput) {
@@ -589,56 +610,56 @@ export class DropdownList {
     }
     
     close() {
-    if (!this.isOpen) return;
-    
-    this.isOpen = false;
-    this.wrapper.classList.remove('open');
-    this.panel.classList.remove('show');
-    
-    // Animation de fermeture
-    const transitionEnd = () => {
-        this.panel.style.display = 'none';
-        this.panel.removeEventListener('transitionend', transitionEnd);
+        if (!this.isOpen) return;
         
-        // NOUVEAU : Remettre le panel dans le wrapper s'il était dans le body
-        if (this.panel.parentElement === document.body) {
-            this.wrapper.appendChild(this.panel);
+        this.isOpen = false;
+        this.wrapper.classList.remove('open');
+        this.panel.classList.remove('show');
+        
+        // Animation de fermeture
+        const transitionEnd = () => {
+            this.panel.style.display = 'none';
+            this.panel.removeEventListener('transitionend', transitionEnd);
+            
+            // NOUVEAU : Remettre le panel dans le wrapper s'il était dans le body
+            if (this.panel.parentElement === document.body) {
+                this.wrapper.appendChild(this.panel);
+            }
+            
+            // Masquer le backdrop
+            if (this.backdrop) {
+                this.backdrop.style.display = 'none';
+            }
+        };
+        
+        this.panel.addEventListener('transitionend', transitionEnd);
+        
+        // Reset recherche
+        if (this.searchInput) {
+            this.searchInput.value = '';
+            this.searchQuery = '';
+            this.filterOptions();
         }
         
-        // Masquer le backdrop
-        if (this.backdrop) {
-            this.backdrop.style.display = 'none';
+        // Callback
+        if (this.options.onClose) {
+            this.options.onClose();
         }
-    };
-    
-    this.panel.addEventListener('transitionend', transitionEnd);
-    
-    // Reset recherche
-    if (this.searchInput) {
-        this.searchInput.value = '';
-        this.searchQuery = '';
-        this.filterOptions();
+        
+        // Restaurer le scroll sur mobile
+        if (this.isMobile) {
+            document.body.style.overflow = '';
+        }
     }
-    
-    // Callback
-    if (this.options.onClose) {
-        this.options.onClose();
-    }
-    
-    // Restaurer le scroll sur mobile
-    if (this.isMobile) {
-        document.body.style.overflow = '';
-    }
-}
 
-// AJOUTEZ CETTE MÉTHODE ICI
-toggle() {
-    if (this.isOpen) {
-        this.close();
-    } else {
-        this.open();
+    // AJOUTEZ CETTE MÉTHODE ICI
+    toggle() {
+        if (this.isOpen) {
+            this.close();
+        } else {
+            this.open();
+        }
     }
-}
     
     // ========================================
     // API PUBLIQUE
