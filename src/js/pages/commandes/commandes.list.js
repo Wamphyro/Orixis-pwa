@@ -29,7 +29,102 @@ export async function initListeCommandes() {
     // Créer l'instance DataTable
     tableCommandes = new DataTable({
         container: '.commandes-table-container',
-        // ... reste de la config inchangée ...
+        
+        columns: [
+            {
+                key: 'numeroCommande',
+                label: 'N° Commande',
+                sortable: true,
+                width: 150,
+                formatter: (value) => `<strong>${value}</strong>`
+            },
+            {
+                key: 'dates.commande',
+                label: 'Date',
+                sortable: true,
+                width: 100,
+                formatter: (value) => formatDate(value)
+            },
+            {
+                key: 'client',
+                label: 'Client',
+                sortable: true,
+                formatter: (client) => `${client.prenom} ${client.nom}`,
+                sortFunction: (a, b, direction) => {
+                    const nameA = `${a.prenom} ${a.nom}`.toLowerCase();
+                    const nameB = `${b.prenom} ${b.nom}`.toLowerCase();
+                    return direction === 'asc' 
+                        ? nameA.localeCompare(nameB, 'fr')
+                        : nameB.localeCompare(nameA, 'fr');
+                }
+            },
+            {
+                key: 'typePreparation',
+                label: 'Type',
+                sortable: false,
+                formatter: (value) => {
+                    const type = COMMANDES_CONFIG.TYPES_PREPARATION[value];
+                    return type?.label || value;
+                }
+            },
+            {
+                key: 'niveauUrgence',
+                label: 'Urgence',
+                sortable: true,
+                formatter: (value) => afficherUrgence(value)
+            },
+            {
+                key: 'statut',
+                label: 'Statut',
+                sortable: true,
+                formatter: (value) => afficherStatut(value)
+            },
+            {
+                key: 'actions',
+                label: 'Actions',
+                sortable: false,
+                resizable: false,
+                exportable: false,
+                formatter: (_, row) => `
+                    <button class="btn-action" onclick="voirDetailCommande('${row.id}')">
+                        👁️
+                    </button>
+                `
+            }
+        ],
+        
+        features: {
+            sort: true,
+            resize: true,
+            export: true,
+            selection: false,
+            pagination: true
+        },
+        
+        pagination: {
+            itemsPerPage: state.itemsPerPage || 20,
+            pageSizeOptions: [10, 20, 50, 100]
+        },
+        
+        export: {
+            csv: true,
+            excel: true,
+            filename: `commandes_${formatDateUtil(new Date(), 'YYYY-MM-DD')}`,
+            onBeforeExport: (data) => prepareExportData(data)
+        },
+        
+        messages: {
+            noData: 'Aucune commande trouvée',
+            loading: 'Chargement des commandes...',
+            itemsPerPage: 'Éléments par page',
+            page: 'Page',
+            of: 'sur',
+            items: 'éléments'
+        },
+        
+        onPageChange: (page) => {
+            state.currentPage = page;
+        }
     });
     
     console.log('✅ DataTable et Filtres initialisés');
@@ -100,21 +195,6 @@ function initFiltres() {
         }
     });
 }
-
-// SUPPRIMER ou ADAPTER ces fonctions qui ne sont plus nécessaires :
-export function filtrerCommandes() {
-    // Cette fonction n'est plus nécessaire car les filtres gèrent eux-mêmes
-    console.warn('filtrerCommandes() est obsolète, utilisez DataTableFilters');
-}
-
-export function resetFiltres() {
-    // Utiliser la méthode reset du composant
-    if (filtresCommandes) {
-        filtresCommandes.reset();
-    }
-}
-
-// ... reste du fichier inchangé ...
 
 // ========================================
 // CHARGEMENT DES DONNÉES
@@ -248,34 +328,21 @@ function filtrerCommandesLocalement() {
     });
 }
 
+// ========================================
+// FONCTIONS EXPORTÉES POUR COMPATIBILITÉ
+// ========================================
+
 export function filtrerCommandes() {
-    // Récupérer les valeurs des filtres
-    state.filtres.recherche = document.getElementById('searchInput').value;
-    state.filtres.statut = document.getElementById('filterStatut').value;
-    state.filtres.periode = document.getElementById('filterPeriode').value;
-    state.filtres.urgence = document.getElementById('filterUrgence').value;
-    
-    // Réafficher
-    afficherCommandes();
+    // Cette fonction est appelée par le HTML mais n'est plus nécessaire
+    // Les filtres sont gérés automatiquement par DataTableFilters
+    console.log('Filtrage géré automatiquement par DataTableFilters');
 }
 
 export function resetFiltres() {
-    // Réinitialiser les filtres
-    state.filtres = {
-        recherche: '',
-        statut: '',
-        periode: 'all',
-        urgence: ''
-    };
-    
-    // Réinitialiser les inputs
-    document.getElementById('searchInput').value = '';
-    document.getElementById('filterStatut').value = '';
-    document.getElementById('filterPeriode').value = 'all';
-    document.getElementById('filterUrgence').value = '';
-    
-    // Réafficher
-    afficherCommandes();
+    // Utiliser la méthode reset du composant
+    if (filtresCommandes) {
+        filtresCommandes.reset();
+    }
 }
 
 // ========================================
@@ -318,35 +385,23 @@ function prepareExportData(data) {
     }));
 }
 
-// ========================================
-// SUPPRESSION DES ANCIENNES FONCTIONS
-// ========================================
-
-// Les fonctions suivantes sont supprimées car gérées par DataTable :
-// - pagePrecedente()
-// - pageSuivante()
-// - updatePagination()
-// - afficherProduits() [non utilisée]
-// - peutSupprimer() [désactivée]
-
 /* ========================================
    HISTORIQUE DES MODIFICATIONS
    
-   [29/07/2025] - Migration complète vers DataTable
-   - Suppression de tout le code de pagination manuelle
-   - Suppression de la génération HTML du tableau
-   - Utilisation du composant DataTable shared
-   - Ajout de l'export CSV/Excel
-   - Conservation des filtres existants
+   [29/07/2025] - Migration complète vers DataTable + DataTableFilters
+   - Utilisation du composant DataTable pour le tableau
+   - Utilisation du composant DataTableFilters pour les filtres
+   - Suppression du code HTML en dur
+   - Les filtres sont maintenant générés dynamiquement
    
    AVANTAGES:
-   - Code réduit de 50%
-   - Fonctionnalités ajoutées : tri, export, redimensionnement
-   - Maintenance simplifiée
-   - Cohérence avec les autres pages
+   - Composants réutilisables
+   - Code plus maintenable
+   - Filtres configurables
+   - Export CSV/Excel intégré
    
-   NOTES POUR REPRISES FUTURES:
-   - La sélection multiple est désactivée mais peut être activée
-   - Les filtres restent côté client (peuvent passer côté serveur)
-   - L'export peut être personnalisé via onBeforeExport
+   NOTES:
+   - Les fonctions filtrerCommandes et resetFiltres sont conservées pour compatibilité
+   - Les IDs HTML (searchInput, etc.) ne sont plus utilisés
+   - Tout est géré par les composants
    ======================================== */
