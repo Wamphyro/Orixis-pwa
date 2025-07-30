@@ -29,12 +29,22 @@
     margin: 0;
 }
 
-/* Ligne de filtres - NOUVELLE APPROCHE */
+/* Ligne de filtres */
 .filters-row {
     display: flex;
-    align-items: flex-end;  /* IMPORTANT: Aligne tous les éléments en bas */
+    align-items: flex-end;
     gap: 15px;
-    min-height: 70px;  /* Hauteur minimale pour uniformité */
+    min-height: 70px;
+    width: 100%;  /* Important pour que margin-left: auto fonctionne */
+}
+
+/* Bouton reset aligné à droite */
+.btn-reset-filters {
+    flex: 0 0 auto;
+    height: 40px;
+    align-self: flex-end;
+    margin-left: auto;  /* ✅ Ceci pousse le bouton à droite */
+    /* ... reste du style ... */
 }
 
 /* Groupe de filtre */
