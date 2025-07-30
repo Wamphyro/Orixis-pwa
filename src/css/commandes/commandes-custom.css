@@ -891,25 +891,36 @@
    ======================================== */
 
 /* Force position fixed pour tous les dropdowns dans les modals */
-.modal .dropdown-list-dropdown {
+.modal .dropdown-list-panel {
     position: fixed !important;
-    z-index: 10050 !important; /* Au-dessus des modals (z-index: 9999) */
+    z-index: 10050 !important; /* Au-dessus des modals (z-index: 1000) */
 }
 
 /* Fix pour le calcul de position dans les modals */
-.modal .dropdown-list-container {
+.modal .dropdown-list-wrapper {
     position: relative;
     z-index: inherit;
 }
 
 /* S'assurer que le dropdown ne déborde pas de l'écran */
-.dropdown-list-dropdown {
+.modal .dropdown-list-panel {
     max-height: 300px !important;
     overflow-y: auto !important;
 }
 
+/* Empêcher le modal-body de couper les dropdowns */
+.modal-body {
+    overflow: visible !important;
+}
+
+/* S'assurer que le modal-footer ne passe pas au-dessus */
+.modal-footer {
+    position: relative;
+    z-index: 1;
+}
+
 /* Fix pour les dropdowns avec recherche dans les modals */
-.modal .dropdown-list-search-container {
+.modal .dropdown-list-search {
     position: sticky;
     top: 0;
     background: inherit;
@@ -919,19 +930,19 @@
 }
 
 /* Ajustement pour le glassmorphism dans les modals */
-.modal .dropdown-list-dropdown.glassmorphism {
+.modal .dropdown-list-panel.glassmorphism {
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
 }
 
 /* Fix spécifique pour les dropdowns dans les formulaires d'édition */
-.edit-form .dropdown-list-dropdown {
+.edit-form .dropdown-list-panel {
     position: fixed !important;
     z-index: 10060 !important; /* Encore plus haut pour l'édition */
 }
 
 /* Animation d'ouverture adaptée pour position fixed */
-.modal .dropdown-list-dropdown {
+.modal .dropdown-list-panel {
     animation: dropdownSlideIn 0.2s ease-out;
 }
 
