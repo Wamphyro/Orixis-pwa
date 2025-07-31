@@ -61,6 +61,11 @@ export class DropdownList {
         this.selectedOption = null;
         this.filteredOptions = this.options.options ? [...this.options.options] : [];
         this.searchQuery = '';
+
+        // Références aux event listeners pour pouvoir les retirer
+        this.boundHandleClickOutside = null;
+        this.boundHandleResize = null;
+        this.boundHandleModalScroll = null;
         
         // Éléments DOM
         this.container = null;
@@ -320,32 +325,35 @@ export class DropdownList {
         
         // Clic extérieur
         if (this.options.closeOnClickOutside) {
-            document.addEventListener('click', (e) => {
-                if (!this.wrapper.contains(e.target) && this.isOpen) {
+            this.boundHandleClickOutside = (e) => {
+                // Vérifier que les éléments existent encore
+                if (this.wrapper && !this.wrapper.contains(e.target) && this.isOpen) {
                     this.close();
                 }
-            });
+            };
+            document.addEventListener('click', this.boundHandleClickOutside);
         }
-        
+
         // Resize
-        window.addEventListener('resize', () => {
+        this.boundHandleResize = () => {
             this.isMobile = window.innerWidth <= 768;
-            if (this.isOpen) {
+            if (this.isOpen && this.panel) {
                 this.updatePosition();
             }
-        });
+        };
+        window.addEventListener('resize', this.boundHandleResize);
         
         // NOUVEAU : Gérer le scroll dans les modals
         const modal = this.wrapper.closest('.modal');
         if (modal) {
             const modalBody = modal.querySelector('.modal-body');
             if (modalBody) {
-                modalBody.addEventListener('scroll', () => {
-                    if (this.isOpen) {
-                        // Mettre à jour la position pendant le scroll
+                this.boundHandleModalScroll = () => {
+                    if (this.isOpen && this.panel) {
                         this.updatePosition();
                     }
-                });
+                };
+                modalBody.addEventListener('scroll', this.boundHandleModalScroll);
             }
         }
     }
@@ -736,13 +744,39 @@ export class DropdownList {
     }
     
     destroy() {
-        // Retirer les événements
-        document.removeEventListener('click', this.handleClickOutside);
-        window.removeEventListener('resize', this.updatePosition);
+        // Fermer d'abord si ouvert
+        if (this.isOpen) {
+            this.close();
+        }
+        
+        // Retirer TOUS les event listeners
+        if (this.boundHandleClickOutside) {
+            document.removeEventListener('click', this.boundHandleClickOutside);
+            this.boundHandleClickOutside = null;
+        }
+        
+        if (this.boundHandleResize) {
+            window.removeEventListener('resize', this.boundHandleResize);
+            this.boundHandleResize = null;
+        }
+        
+        if (this.boundHandleModalScroll) {
+            const modal = this.wrapper?.closest('.modal');
+            const modalBody = modal?.querySelector('.modal-body');
+            if (modalBody) {
+                modalBody.removeEventListener('scroll', this.boundHandleModalScroll);
+            }
+            this.boundHandleModalScroll = null;
+        }
         
         // Restaurer le select original si nécessaire
-        if (this.container.tagName === 'SELECT') {
+        if (this.container && this.container.tagName === 'SELECT') {
             this.container.style.display = '';
+        }
+        
+        // Retirer le panel du body s'il y est
+        if (this.panel && this.panel.parentElement === document.body) {
+            document.body.removeChild(this.panel);
         }
         
         // Nettoyer le DOM
@@ -758,6 +792,8 @@ export class DropdownList {
         this.hiddenInput = null;
         this.searchInput = null;
         this.backdrop = null;
+        this.selectedOption = null;
+        this.filteredOptions = [];
     }
 }
 
