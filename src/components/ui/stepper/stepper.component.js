@@ -33,7 +33,7 @@
 // });
 // ========================================
 
-import { generateId } from '../index.js';
+import { generateId } from '../../index.js';
 
 export class Stepper {
     constructor(config) {

@@ -19,7 +19,7 @@
 // (plus à venir...)
 // ========================================
 
-import { generateId, DropdownList } from '../index.js';
+import { generateId, DropdownList } from '../../index.js';
 
 export class DataTableFilters {
     constructor(config) {

@@ -30,7 +30,7 @@
 // });
 // ========================================
 
-import { generateId } from '../index.js';
+import { generateId } from '../../index.js';
 
 export class StatsCards {
     constructor(config) {
