@@ -575,8 +575,8 @@ export async function changerStatutCommande(commandeId) {
     }
 }
 
-window.changerStatutDetail = async function(commandeId, nouveauStatut) {
-    console.log('🔄 Début changement statut:', { commandeId, nouveauStatut });
+window.changerStatutDetail = async function(commandeId, nouveauStatut, skipConfirmation = false) {
+    console.log('🔄 Début changement statut:', { commandeId, nouveauStatut, skipConfirmation });
     
     try {
         if (!CommandesService || typeof CommandesService.changerStatut !== 'function') {
@@ -585,16 +585,21 @@ window.changerStatutDetail = async function(commandeId, nouveauStatut) {
         
         const labelStatut = COMMANDES_CONFIG.STATUTS[nouveauStatut]?.label || nouveauStatut;
         
-        const confirme = await confirmerAction({
-            titre: 'Confirmation du changement de statut',
-            message: `Êtes-vous sûr de vouloir passer la commande au statut "${labelStatut}" ?`,
-            boutonConfirmer: 'Confirmer',
-            boutonAnnuler: 'Annuler',
-            danger: false
-        });
+        // Si skipConfirmation est true, on passe directement au changement
+        let confirme = skipConfirmation;
+        
+        if (!skipConfirmation) {
+            confirme = await confirmerAction({
+                titre: 'Confirmation du changement de statut',
+                message: `Êtes-vous sûr de vouloir passer la commande au statut "${labelStatut}" ?`,
+                boutonConfirmer: 'Confirmer',
+                boutonAnnuler: 'Annuler',
+                danger: false
+            });
+        }
         
         if (confirme) {
-            console.log('✅ Confirmation reçue, appel au service...');
+            console.log('✅ Confirmation reçue ou skippée, appel au service...');
             
             await CommandesService.changerStatut(commandeId, nouveauStatut);
             
