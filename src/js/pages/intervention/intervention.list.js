@@ -4,17 +4,10 @@
 //
 // DESCRIPTION:
 // Gère l'affichage de la liste des interventions avec DataTable et DataTableFilters
-// Créé le 31/01/2025
-//
-// STRUCTURE:
-// 1. Imports et variables
-// 2. Initialisation du module
-// 3. Chargement des données
-// 4. Affichage et filtrage
-// 5. Actions sur les interventions
 // ========================================
 
 import { db } from '../../services/firebase.service.js';
+import { InterventionService } from '../../services/intervention.service.js';
 import { 
     INTERVENTION_CONFIG, 
     genererOptionsFiltres,
@@ -177,9 +170,10 @@ export async function initListeInterventions() {
     initStatsCards();
 }
 
-/**
- * Initialiser les cartes de statistiques
- */
+// ========================================
+// INITIALISATION DES STATS CARDS
+// ========================================
+
 function initStatsCards() {
     const cardsConfig = genererConfigStatsCards();
     
@@ -215,9 +209,10 @@ function initStatsCards() {
     });
 }
 
-/**
- * Initialiser les filtres
- */
+// ========================================
+// INITIALISATION DES FILTRES
+// ========================================
+
 async function initFiltres() {
     let filtresConfig = genererOptionsFiltres();
     
@@ -365,8 +360,8 @@ function calculerStatistiques() {
         sav_semaine: 0
     };
     
-    const aujourd'hui = new Date();
-    aujourd'hui.setHours(0, 0, 0, 0);
+    const aujourd_hui = new Date();
+    aujourd_hui.setHours(0, 0, 0, 0);
     
     const debutSemaine = new Date();
     debutSemaine.setDate(debutSemaine.getDate() - 7);
@@ -379,20 +374,26 @@ function calculerStatistiques() {
         
         // Terminées aujourd'hui
         if (intervention.statut === 'terminee' && intervention.dates?.cloture) {
-            const dateCloture = intervention.dates.cloture.toDate ? 
-                intervention.dates.cloture.toDate() : 
-                new Date(intervention.dates.cloture);
+            let dateCloture;
+            if (intervention.dates.cloture.toDate) {
+                dateCloture = intervention.dates.cloture.toDate();
+            } else {
+                dateCloture = new Date(intervention.dates.cloture);
+            }
             
-            if (dateCloture >= aujourd'hui) {
+            if (dateCloture >= aujourd_hui) {
                 stats.terminees_jour++;
             }
         }
         
         // SAV cette semaine
         if (intervention.resultat === 'SAV' && intervention.dates?.intervention) {
-            const dateIntervention = intervention.dates.intervention.toDate ? 
-                intervention.dates.intervention.toDate() : 
-                new Date(intervention.dates.intervention);
+            let dateIntervention;
+            if (intervention.dates.intervention.toDate) {
+                dateIntervention = intervention.dates.intervention.toDate();
+            } else {
+                dateIntervention = new Date(intervention.dates.intervention);
+            }
             
             if (dateIntervention >= debutSemaine) {
                 stats.sav_semaine++;
@@ -461,9 +462,19 @@ function filtrerInterventions() {
         
         // Filtre période
         if (state.filtres.periode !== 'all') {
-            const dateIntervention = intervention.dates.intervention?.toDate ? 
-                intervention.dates.intervention.toDate() : 
-                new Date(intervention.dates.intervention);
+            let dateIntervention;
+            
+            // Gestion correcte de la date Firebase
+            if (intervention.dates?.intervention) {
+                if (intervention.dates.intervention.toDate) {
+                    dateIntervention = intervention.dates.intervention.toDate();
+                } else {
+                    dateIntervention = new Date(intervention.dates.intervention);
+                }
+            } else {
+                // Si pas de date, on ignore cette intervention
+                return false;
+            }
             
             const maintenant = new Date();
             const debut = new Date();
@@ -552,18 +563,3 @@ export function resetFiltres() {
     
     afficherInterventions();
 }
-
-/* ========================================
-   HISTORIQUE DES DIFFICULTÉS
-   
-   [31/01/2025] - Création du module
-   - Architecture similaire à commandes.list.js
-   - Utilisation de DataTable et DataTableFilters
-   - Stats cards interactives
-   - Configuration centralisée depuis intervention.data.js
-   
-   NOTES POUR REPRISES FUTURES:
-   - Les fonctions sont exposées globalement dans intervention.main.js
-   - Les filtres spéciaux (today_completed, week_sav) sont gérés à part
-   - La configuration vient exclusivement de intervention.data.js
-   ======================================== */

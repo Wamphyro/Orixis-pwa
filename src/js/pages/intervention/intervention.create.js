@@ -4,14 +4,6 @@
 //
 // DESCRIPTION:
 // Module de création d'interventions avec stepper et gestion modale
-// Basé sur l'architecture de commandes.create.js
-//
-// STRUCTURE:
-// 1. Imports et configuration
-// 2. État local du module
-// 3. Gestion du stepper
-// 4. Gestion des étapes
-// 5. Validation et soumission
 // ========================================
 
 import { db } from '../../services/firebase.service.js';
@@ -24,7 +16,7 @@ import {
     genererNumeroIntervention
 } from '../../data/intervention.data.js';
 import { chargerDonnees } from './intervention.list.js';
-import { ouvrirModal, afficherSucces, afficherErreur } from './intervention.main.js';
+import { afficherSucces, afficherErreur } from './intervention.main.js';
 
 // ========================================
 // ÉTAT LOCAL DU MODULE
@@ -51,20 +43,11 @@ let nouvelleIntervention = {
 let clientSearchDropdown = null;
 let dropdownMarque = null;
 
-// Exposer l'état pour le module principal
-window.interventionCreateState = { nouvelleIntervention };
-
 // ========================================
 // INITIALISATION DU MODULE
 // ========================================
 
 export function initCreationIntervention() {
-    // Exposer les fonctions pour les onclick HTML
-    window.etapePrecedente = etapePrecedente;
-    window.etapeSuivante = etapeSuivante;
-    window.validerIntervention = validerIntervention;
-    window.changerClient = changerClient;
-    
     console.log('✅ Module création intervention initialisé');
 }
 
@@ -74,9 +57,8 @@ export function initCreationIntervention() {
 
 export function ouvrirNouvelleIntervention() {
     resetNouvelleIntervention();
-    creerModalSiNecessaire();
     afficherEtape(1);
-    ouvrirModal('modalNouvelleIntervention');
+    window.modalManager.open('modalNouvelleIntervention');
 }
 
 function resetNouvelleIntervention() {
@@ -101,8 +83,6 @@ function resetNouvelleIntervention() {
         magasin: auth.magasin || ''
     };
     
-    window.interventionCreateState.nouvelleIntervention = nouvelleIntervention;
-    
     // Réinitialiser les composants
     if (clientSearchDropdown) {
         clientSearchDropdown.clear();
@@ -124,14 +104,26 @@ function resetNouvelleIntervention() {
     }
     
     // Réinitialiser les checkboxes
-    document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    document.querySelectorAll('#modalNouvelleIntervention input[type="checkbox"]').forEach(cb => {
         cb.checked = false;
     });
     
     // Réinitialiser les radios
-    document.querySelectorAll('.device-card').forEach(card => {
+    document.querySelectorAll('#modalNouvelleIntervention .device-card').forEach(card => {
         card.classList.remove('selected');
     });
+    
+    // Réinitialiser le select résultat
+    const selectResultat = document.getElementById('resultat');
+    if (selectResultat) {
+        selectResultat.value = '';
+    }
+    
+    // Réinitialiser les observations
+    const textareaObservations = document.getElementById('observations');
+    if (textareaObservations) {
+        textareaObservations.value = '';
+    }
 }
 
 // ========================================
@@ -181,15 +173,6 @@ function afficherEtape(etape) {
             initDeviceSelection();
             initMarqueDropdown();
             break;
-            
-        case 2:
-            // Initialiser les checkboxes des problèmes
-            break;
-            
-        case 3:
-            // Initialiser les checkboxes des actions
-            break;
-            
         case 4:
             afficherRecapitulatif();
             break;
@@ -231,6 +214,10 @@ async function validerEtape(etape) {
                 await Dialog.alert('Veuillez sélectionner une marque', 'Attention');
                 return false;
             }
+            
+            // Collecter modèle et numéro de série
+            nouvelleIntervention.appareil.modele = document.getElementById('modele')?.value || '';
+            nouvelleIntervention.appareil.numeroSerie = document.getElementById('numeroSerie')?.value || '';
             break;
             
         case 2:
@@ -397,7 +384,7 @@ export function changerClient() {
 // ========================================
 
 function initDeviceSelection() {
-    const deviceCards = document.querySelectorAll('.device-card');
+    const deviceCards = document.querySelectorAll('#modalNouvelleIntervention .device-card');
     
     deviceCards.forEach(card => {
         card.addEventListener('click', function() {
@@ -510,10 +497,6 @@ function afficherRecapitulatif() {
 
 export async function validerIntervention() {
     try {
-        // Collecter les dernières valeurs
-        nouvelleIntervention.appareil.modele = document.getElementById('modele')?.value || '';
-        nouvelleIntervention.appareil.numeroSerie = document.getElementById('numeroSerie')?.value || '';
-        
         // Préparer les données pour le service
         const interventionData = {
             numeroIntervention: genererNumeroIntervention(nouvelleIntervention.magasin),
@@ -564,31 +547,3 @@ export async function validerIntervention() {
         afficherErreur('Erreur lors de la création de l\'intervention: ' + error.message);
     }
 }
-
-// ========================================
-// CRÉATION DYNAMIQUE DU MODAL
-// ========================================
-
-function creerModalSiNecessaire() {
-    if (document.getElementById('modalNouvelleIntervention')) {
-        return;
-    }
-    
-    // Le modal est maintenant créé depuis le HTML
-    console.warn('Modal nouvelle intervention devrait être dans le HTML');
-}
-
-/* ========================================
-   HISTORIQUE DES DIFFICULTÉS
-   
-   [02/02/2025] - Création du module
-   - Architecture basée sur commandes.create.js
-   - Gestion du stepper et des étapes
-   - Intégration SearchDropdown et DropdownList
-   - Utilisation du service InterventionService
-   
-   NOTES POUR REPRISES FUTURES:
-   - Le modal est dans le HTML (intervention.html)
-   - Les onclick sont exposés via window
-   - L'état est partagé via window.interventionCreateState
-   ======================================== */

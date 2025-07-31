@@ -4,14 +4,6 @@
 //
 // DESCRIPTION:
 // Gère l'affichage détaillé d'une intervention et les actions
-// Basé sur l'architecture de commandes.detail.js
-//
-// STRUCTURE:
-// 1. Imports et configuration
-// 2. Affichage du détail
-// 3. Actions selon le statut
-// 4. Édition des informations
-// 5. Changement de statut
 // ========================================
 
 import { InterventionService } from '../../services/intervention.service.js';
@@ -20,7 +12,7 @@ import {
     getProchainStatut,
     peutEtreAnnulee
 } from '../../data/intervention.data.js';
-import { Dialog, confirmerAction, createOrderTimeline, notify, DropdownList } from '../../shared/index.js';
+import { Dialog, confirmerAction, notify, DropdownList } from '../../shared/index.js';
 import { chargerDonnees } from './intervention.list.js';
 import { afficherSucces, afficherErreur } from './intervention.main.js';
 
@@ -28,7 +20,6 @@ import { afficherSucces, afficherErreur } from './intervention.main.js';
 let interventionActuelle = null;
 
 // Variables pour les dropdowns d'édition
-let dropdownEditMarque = null;
 let dropdownEditResultat = null;
 
 // ========================================
@@ -41,7 +32,6 @@ export async function voirDetailIntervention(interventionId) {
         if (!intervention) return;
         
         interventionActuelle = intervention;
-        creerModalSiNecessaire();
         afficherDetailIntervention(intervention);
         window.modalManager.open('modalDetailIntervention');
         
@@ -326,7 +316,7 @@ function afficherActionsIntervention(intervention) {
 // CHANGEMENT DE STATUT
 // ========================================
 
-window.demarrerIntervention = async function(interventionId) {
+export async function demarrerIntervention(interventionId) {
     try {
         const confirme = await confirmerAction({
             titre: 'Démarrer l\'intervention',
@@ -346,9 +336,9 @@ window.demarrerIntervention = async function(interventionId) {
         console.error('Erreur démarrage intervention:', error);
         afficherErreur('Erreur lors du démarrage de l\'intervention');
     }
-};
+}
 
-window.terminerIntervention = async function(interventionId) {
+export async function terminerIntervention(interventionId) {
     try {
         // Vérifier que le résultat est renseigné
         if (!interventionActuelle.resultat) {
@@ -378,9 +368,9 @@ window.terminerIntervention = async function(interventionId) {
         console.error('Erreur fin intervention:', error);
         afficherErreur('Erreur lors de la fin de l\'intervention');
     }
-};
+}
 
-window.annulerIntervention = async function(interventionId) {
+export async function annulerIntervention(interventionId) {
     try {
         const result = await new Promise((resolve) => {
             const dialogHtml = `
@@ -474,13 +464,13 @@ window.annulerIntervention = async function(interventionId) {
         console.error('Erreur annulation:', error);
         afficherErreur('Erreur lors de l\'annulation');
     }
-};
+}
 
 // ========================================
 // ÉDITION DU RÉSULTAT
 // ========================================
 
-window.editerResultat = function() {
+export function editerResultat() {
     const section = document.querySelector('#detailResultat').parentElement;
     section.classList.add('editing');
     
@@ -507,9 +497,9 @@ window.editerResultat = function() {
             }
         }
     });
-};
+}
 
-window.annulerEditionResultat = function() {
+export function annulerEditionResultat() {
     const section = document.querySelector('#detailResultat').parentElement;
     section.classList.remove('editing');
     
@@ -520,9 +510,9 @@ window.annulerEditionResultat = function() {
         dropdownEditResultat.destroy();
         dropdownEditResultat = null;
     }
-};
+}
 
-window.sauvegarderResultat = async function() {
+export async function sauvegarderResultat() {
     try {
         const updates = {
             resultat: dropdownEditResultat ? dropdownEditResultat.getValue() : '',
@@ -539,13 +529,13 @@ window.sauvegarderResultat = async function() {
         console.error('Erreur sauvegarde résultat:', error);
         notify.error('Erreur lors de la sauvegarde');
     }
-};
+}
 
 // ========================================
 // ACTIONS SPÉCIFIQUES
 // ========================================
 
-window.envoyerSAVDetail = async function(interventionId) {
+export async function envoyerSAVDetail(interventionId) {
     try {
         const intervention = await InterventionService.getIntervention(interventionId);
         if (!intervention) return;
@@ -557,7 +547,7 @@ window.envoyerSAVDetail = async function(interventionId) {
         
         if (!confirme) return;
         
-        // Utiliser EmailJS comme dans intervention.form.js
+        // Utiliser EmailJS
         const templateParams = {
             to_email: 'korber@BROKERAUDIOLOGIE88.onmicrosoft.com',
             reply_to: 'noreply@orixis.fr',
@@ -607,45 +597,9 @@ window.envoyerSAVDetail = async function(interventionId) {
         console.error('Erreur envoi SAV:', error);
         notify.error('Erreur lors de l\'envoi SAV');
     }
-};
-
-window.imprimerIntervention = function(interventionId) {
-    // Ouvrir la page d'impression avec l'ID de l'intervention
-    window.open(`print-preview.html?intervention=${interventionId}`, '_blank');
-};
-
-// ========================================
-// CRÉATION DYNAMIQUE DU MODAL
-// ========================================
-
-function creerModalSiNecessaire() {
-    if (document.getElementById('modalDetailIntervention')) {
-        return;
-    }
-    
-    // Le modal est maintenant créé depuis le HTML
-    console.warn('Modal détail intervention devrait être dans le HTML');
 }
 
-// ========================================
-// EXPOSITION GLOBALE
-// ========================================
-
-window.voirDetailIntervention = voirDetailIntervention;
-
-/* ========================================
-   HISTORIQUE DES DIFFICULTÉS
-   
-   [02/02/2025] - Création du module
-   - Architecture basée sur commandes.detail.js
-   - Gestion des actions selon le statut
-   - Édition du résultat avec DropdownList
-   - Envoi SAV avec EmailJS
-   - Redirection vers signatures
-   
-   NOTES POUR REPRISES FUTURES:
-   - Le modal est dans le HTML (intervention.html)
-   - Les signatures sont gérées dans signature-client.html
-   - L'envoi SAV utilise EmailJS comme dans form.js
-   - L'impression ouvre print-preview.html
-   ======================================== */
+export function imprimerIntervention(interventionId) {
+    // Ouvrir la page d'impression avec l'ID de l'intervention
+    window.open(`print-preview.html?intervention=${interventionId}`, '_blank');
+}
