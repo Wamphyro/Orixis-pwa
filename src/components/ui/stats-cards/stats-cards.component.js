@@ -30,11 +30,12 @@
 // });
 // ========================================
 
-import { generateId } from '../../index.js';
+// ❌ SUPPRIMÉ: import { generateId } from '../../index.js';
 
 export class StatsCards {
     constructor(config) {
-        this.id = generateId('stats');
+        // ✅ MODIFIÉ: Génération d'ID autonome
+        this.id = 'stats-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
         
         // Configuration par défaut
         this.config = {
@@ -494,9 +495,15 @@ export class StatsCards {
    - Méthodes show/hide améliorées
    - État loaded dans le state
    
+   [01/02/2025] - Autonomie complète
+   - Suppression de l'import generateId
+   - Génération d'ID inline autonome
+   - 100% indépendant
+   
    NOTES POUR REPRISES FUTURES:
    - Le CSS gère complètement l'opacité (.loaded)
    - Pas de style inline opacity pour éviter les conflits
    - Le chargement CSS est asynchrone avec Promise
    - L'état loaded est centralisé dans this.state
+   - Aucune dépendance externe
    ======================================== */

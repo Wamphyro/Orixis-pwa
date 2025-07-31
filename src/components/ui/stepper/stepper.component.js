@@ -33,11 +33,12 @@
 // });
 // ========================================
 
-import { generateId } from '../../index.js';
+// ❌ SUPPRIMÉ: import { generateId } from '../../index.js';
 
 export class Stepper {
     constructor(config) {
-        this.id = generateId('stepper');
+        // ✅ MODIFIÉ: Génération d'ID autonome
+        this.id = 'stepper-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
         
         // Configuration par défaut
         this.config = {

@@ -8,6 +8,7 @@
 // Modifié le 31/01/2025 : Utilisation complète de la config centralisée
 // Modifié le 01/02/2025 : Utilisation de chargerMagasins() au lieu de dupliquer le code
 // Modifié le 01/02/2025 : Mise à jour des chemins d'import pour la nouvelle structure
+// Modifié le 01/02/2025 v2 : Injection de DropdownList dans DataTableFilters
 // ========================================
 
 import { CommandesService } from '../../src/services/commandes.service.js';
@@ -17,7 +18,13 @@ import {
     genererConfigStatsCards,
     formaterDonneesExport 
 } from '../../src/data/commandes.data.js';
-import { DataTable, DataTableFilters, StatsCards, formatDate as formatDateUtil } from '../../src/components/index.js';
+import { 
+    DataTable, 
+    DataTableFilters, 
+    StatsCards, 
+    DropdownList,  // ✅ AJOUT: Import de DropdownList
+    formatDate as formatDateUtil 
+} from '../../src/components/index.js';
 import { state } from './commandes.main.js';
 import { db, chargerMagasins } from '../../src/services/firebase.service.js';
 
@@ -190,6 +197,7 @@ function initStatsCards() {
 /**
  * Initialiser les filtres
  * MODIFIÉ : Utilise chargerMagasins() du service au lieu de dupliquer le code
+ * MODIFIÉ v2 : Injecte DropdownList dans DataTableFilters
  */
 async function initFiltres() {
     let filtresConfig = genererOptionsFiltres();
@@ -262,6 +270,10 @@ async function initFiltres() {
     filtresCommandes = new DataTableFilters({
         container: '.commandes-filters',
         filters: filtresAvecKeepPlaceholder,
+        
+        // ✅ AJOUT: Injection de DropdownList
+        DropdownClass: DropdownList,
+        
         onFilter: (filters) => {
             // Détecter si c'est un reset (tous les filtres sont vides)
             const isReset = !filters.recherche && 
@@ -553,16 +565,20 @@ function prepareExportData(data) {
    - Chemins data: ../../src/js/data/ → ../../src/data/
    - Adaptation à la nouvelle structure modules/commandes/
    
+   [01/02/2025 v2] - Injection de DropdownList
+   - Import de DropdownList depuis components/index.js
+   - Passage de DropdownList à DataTableFilters via DropdownClass
+   - Les filtres select utilisent maintenant DropdownList
+   - Architecture 100% découplée entre composants UI
+   
    AVANTAGES:
-   - Composants réutilisables
+   - Composants réutilisables et autonomes
    - Code plus maintenable
-   - Filtres configurables
+   - Filtres configurables avec dropdowns avancés
    - Export CSV/Excel intégré
    - Configuration 100% centralisée
-   - Une seule source de vérité pour toutes les configs
-   - Pas de duplication de code Firebase
-   - Séparation des responsabilités (UI vs Services)
-   - Chemins simplifiés avec la nouvelle structure
+   - Zero couplage entre composants UI
+   - L'orchestrateur gère toutes les connexions
    
    NOTES:
    - Les fonctions filtrerCommandes et resetFiltres sont conservées pour compatibilité
@@ -570,5 +586,5 @@ function prepareExportData(data) {
    - Tout est géré par les composants
    - La configuration est maintenant uniquement dans commandes.data.js
    - Firebase est géré uniquement par les services
-   - Structure: modules/[module]/ pour les modules, src/ pour le code partagé
+   - DropdownList est injecté par l'orchestrateur
    ======================================== */

@@ -7,11 +7,11 @@ import { DataTableSort } from './datatable.sort.js';
 import { DataTableExport } from './datatable.export.js';
 import { DataTablePagination } from './datatable.pagination.js';
 import { DataTableResize } from './datatable.resize.js';
-import { generateId } from '../../index.js';
 
 export class DataTable {
     constructor(config) {
-        this.id = generateId('datatable');
+        // ✅ MODIFIÉ: Génération d'ID autonome
+        this.id = 'datatable-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
         
         // Configuration par défaut
         this.config = {

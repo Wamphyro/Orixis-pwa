@@ -11,6 +11,11 @@
 // - Extraction automatique des icônes depuis les labels
 // - Activation de la recherche sur tous les dropdowns
 //
+// MODIFIÉ le 01/02/2025 v2:
+// - Suppression de l'import de generateId et DropdownList
+// - DropdownList passé via config par l'orchestrateur
+// - 100% autonome
+//
 // TYPES SUPPORTÉS:
 // - search: Recherche textuelle
 // - select: Liste déroulante (utilise DropdownList)
@@ -19,11 +24,10 @@
 // (plus à venir...)
 // ========================================
 
-import { generateId, DropdownList } from '../../index.js';
-
 export class DataTableFilters {
     constructor(config) {
-        this.id = generateId('filters');
+        // ✅ MODIFIÉ: Génération d'ID autonome
+        this.id = 'filters-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
         
         // Configuration par défaut
         this.config = {
@@ -33,6 +37,10 @@ export class DataTableFilters {
             debounceDelay: 300, // Délai pour la recherche (ms)
             onFilter: null,     // Callback quand les filtres changent
             resetButton: true,  // Afficher le bouton reset
+            
+            // ✅ NOUVEAU: Classe DropdownList injectée par l'orchestrateur
+            DropdownClass: null,
+            
             ...config
         };
         
@@ -96,7 +104,7 @@ export class DataTableFilters {
         // Attacher les événements globaux
         this.attachGlobalEvents();
         
-        console.log('✅ DataTableFilters initialisé avec DropdownList');
+        console.log('✅ DataTableFilters initialisé' + (this.config.DropdownClass ? ' avec DropdownList' : ' sans DropdownList'));
     }
     
     /**
@@ -430,9 +438,37 @@ export class DataTableFilters {
     }
     
     /**
-     * Render Select - MODIFIÉ pour utiliser DropdownList
+     * Render Select - MODIFIÉ pour utiliser DropdownList injectable
      */
     renderSelect(config) {
+        // ✅ MODIFIÉ: Vérifier que DropdownClass est fourni
+        if (!this.config.DropdownClass) {
+            console.warn('DataTableFilters: DropdownClass non fourni pour le filtre select');
+            // Fallback : créer un select HTML basique
+            const select = document.createElement('select');
+            select.id = `${this.id}-${config.key}`;
+            select.className = 'filter-select-fallback';
+            
+            if (config.options) {
+                config.options.forEach(option => {
+                    const optionEl = document.createElement('option');
+                    if (typeof option === 'object') {
+                        optionEl.value = option.value;
+                        optionEl.textContent = option.label;
+                    } else {
+                        optionEl.value = option;
+                        optionEl.textContent = option;
+                    }
+                    select.appendChild(optionEl);
+                });
+            }
+            
+            return select;
+        }
+        
+        // ✅ Utiliser la classe DropdownList fournie
+        const DropdownList = this.config.DropdownClass;
+        
         // Créer un container pour le dropdown
         const container = document.createElement('div');
         container.className = 'filter-dropdown-container';
@@ -713,9 +749,15 @@ export class DataTableFilters {
      * Get Value Select - MODIFIÉ pour DropdownList
      */
     getValueSelect(element, config) {
-        // Trouver l'instance dropdown correspondante
+        // Si c'est un dropdown
         const dropdown = this.dropdownInstances.find(d => d.options.name === config.key);
-        return dropdown ? dropdown.getValue() : '';
+        if (dropdown) {
+            return dropdown.getValue();
+        }
+        
+        // Sinon fallback sur le select HTML
+        const select = element.querySelector('select');
+        return select ? select.value : '';
     }
     
     /**
@@ -806,14 +848,20 @@ export class DataTableFilters {
    - Gestion du reset et setValue pour les dropdowns
    - Support des icônes séparées { value, label, icon }
    
+   [01/02/2025 v2] - Autonomie complète
+   - Suppression imports generateId et DropdownList
+   - DropdownList passé via config.DropdownClass
+   - Fallback sur select HTML si DropdownClass non fourni
+   - 100% indépendant d'autres composants UI
+   
    AVANTAGES:
-   - Thème glassmorphism uniforme sur tous les filtres
-   - Recherche disponible partout
-   - Icônes bien alignées et formatées
+   - Zero couplage entre composants UI
+   - DropdownList injectable par l'orchestrateur
+   - Fallback gracieux si DropdownList non fourni
    - Destruction propre des instances
    
    NOTES:
-   - Les options avec format "🍃 Normal" sont automatiquement parsées
-   - Si une icône est déjà fournie séparément, elle est conservée
-   - La recherche est activée par défaut sur tous les dropdowns
+   - L'orchestrateur doit passer DropdownClass dans la config
+   - Si non fourni, utilise un select HTML basique
+   - La recherche n'est disponible qu'avec DropdownList
    ======================================== */
