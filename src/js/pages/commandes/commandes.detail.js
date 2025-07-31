@@ -1003,8 +1003,13 @@ window.validerReception = async function(commandeId) {
             afficherSucces('Réception validée');
         }
     } catch (error) {
-        console.error('Erreur validation réception:', error);
-        afficherErreur('Erreur lors de la validation de la réception');
+        // Ne pas logger les erreurs de validation métier (numéros de suivi)
+        if (!error.message.includes('Les numéros de suivi ne correspondent pas')) {
+            console.error('Erreur validation réception:', error);
+        }
+        
+        // Afficher le message d'erreur détaillé à l'utilisateur
+        afficherErreur(error.message || 'Erreur lors de la validation de la réception');
     }
 };
 
