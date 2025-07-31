@@ -712,7 +712,7 @@ window.saisirExpedition = async function(commandeId) {
             dialogContainer.classList.add('active');
             
             // Créer le dropdown pour le transporteur
-            const dropdownExpedition = new DropdownList({
+            let dropdownExpedition = new DropdownList({
                 container: '#expeditionTransporteurDropdown',
                 placeholder: 'Sélectionner un transporteur',
                 options: transporteurs.map(t => ({
