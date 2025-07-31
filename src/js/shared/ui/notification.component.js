@@ -154,7 +154,7 @@ export const notify = {
             type: 'success',
             message,
             title,
-            duration: 3000,
+            duration: 5000,
             ...options
         });
     },
@@ -174,7 +174,7 @@ export const notify = {
             type: 'warning',
             message,
             title,
-            duration: 4000,
+            duration: 5000,
             ...options
         });
     },
@@ -184,7 +184,7 @@ export const notify = {
             type: 'info',
             message,
             title,
-            duration: 3000,
+            duration: 5000,
             ...options
         });
     },
