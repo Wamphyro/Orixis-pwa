@@ -425,7 +425,10 @@ export class CommandesService {
             return true;
             
         } catch (error) {
-            console.error('❌ Erreur changement statut:', error);
+            // Ne pas logger les erreurs de validation métier (numéros de suivi)
+            if (!error.message.includes('Les numéros de suivi ne correspondent pas')) {
+                console.error('❌ Erreur changement statut:', error);
+            }
             throw error;
         }
     }
