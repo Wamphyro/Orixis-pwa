@@ -7,17 +7,20 @@
 // Modifié le 27/07/2025 : Ajout du statut "supprime"
 // Modifié le 31/01/2025 : Correction des icônes pour cohérence avec UI
 // Modifié le 31/01/2025 : Centralisation COMPLÈTE de toutes les configs UI
+// Modifié le 01/02/2025 : Ajout TIMELINE_CONFIG, DISPLAY_TEMPLATES et icônes manquantes
 //
 // STRUCTURE:
 // 1. Configuration générale (lignes 15-20)
 // 2. Statuts de commande (lignes 22-85)
-// 3. Types de préparation (lignes 87-110)
-// 4. Niveaux d'urgence (lignes 112-135)
-// 5. Configuration des filtres (lignes 137-180)
-// 6. Configuration des stats cards (lignes 182-200)
-// 7. Configuration des selects UI (lignes 202-250)
-// 8. Configuration des exports (lignes 252-280)
-// 9. Autres configurations (lignes 282+)
+// 3. Configuration Timeline (lignes 87-110)
+// 4. Types de préparation (lignes 112-135)
+// 5. Niveaux d'urgence (lignes 137-160)
+// 6. Templates d'affichage (lignes 162-180)
+// 7. Configuration des filtres (lignes 182-225)
+// 8. Configuration des stats cards (lignes 227-245)
+// 9. Configuration des selects UI (lignes 247-295)
+// 10. Configuration des exports (lignes 297-325)
+// 11. Autres configurations (lignes 327+)
 // ========================================
 
 export const COMMANDES_CONFIG = {
@@ -25,96 +28,169 @@ export const COMMANDES_CONFIG = {
     ITEMS_PAR_PAGE: 20,
     DELAI_RECHERCHE: 300, // ms pour debounce
     
+    // ========================================
     // Statuts de commande
+    // ========================================
     STATUTS: {
         nouvelle: {
             label: 'Nouvelle',
             icon: '📋',
             couleur: '#e9ecef',
-            suivant: 'preparation'
+            suivant: 'preparation',
+            description: 'Commande créée, en attente de traitement'
         },
         preparation: {
             label: 'En préparation',
             icon: '🔧',
             couleur: '#cfe2ff',
-            suivant: 'terminee'
+            suivant: 'terminee',
+            description: 'Commande en cours de préparation'
         },
         terminee: {
             label: 'Préparée',
             icon: '🎯',
             couleur: '#d1e7dd',
-            suivant: 'expediee'
+            suivant: 'expediee',
+            description: 'Préparation terminée, prête à expédier'
         },
         expediee: {
             label: 'Expédiée',
             icon: '📦',
             couleur: '#fff3cd',
-            suivant: 'receptionnee'
+            suivant: 'receptionnee',
+            description: 'Colis expédié vers le magasin'
         },
         receptionnee: {
             label: 'Réceptionnée',
             icon: '📥',
             couleur: '#e7f1ff',
-            suivant: 'livree'
+            suivant: 'livree',
+            description: 'Colis reçu au magasin'
         },
         livree: {
             label: 'Livrée',
             icon: '✅',
             couleur: '#d4edda',
-            suivant: null
+            suivant: null,
+            description: 'Commande remise au patient'
         },
         annulee: {
             label: 'Annulée',
             icon: '❌',
             couleur: '#f8d7da',
-            suivant: null
+            suivant: null,
+            description: 'Commande annulée'
         },
         supprime: {
             label: 'Supprimée',
             icon: '🗑️',
             couleur: '#dc3545',
-            suivant: null
+            suivant: null,
+            description: 'Commande supprimée (soft delete)'
         }
     },
     
-    // Types de préparation
-        TYPES_PREPARATION: {
-            livraison_premiere_paire: {
-                label: 'Livraison première paire',
-                description: 'Première adaptation du patient',
-                icon: '1️⃣'  // 🆕 AJOUTER
-            },
-            livraison_deuxieme_paire: {
-                label: 'Livraison deuxième paire',
-                description: 'Paire de secours ou renouvellement',
-                icon: '2️⃣'  // 🆕 AJOUTER
-            },
-            livraison_accessoire: {
-                label: 'Livraison accessoire',
-                description: 'Accessoires et consommables uniquement',
-                icon: '🦾'  // 🆕 AJOUTER
-            }
+    // ========================================
+    // Configuration de la Timeline
+    // ========================================
+    TIMELINE_CONFIG: {
+        // Ordre d'affichage des statuts dans la timeline
+        sequence: ['nouvelle', 'preparation', 'terminee', 'expediee', 'receptionnee', 'livree'],
+        
+        // Mapping statuts -> champs de dates dans l'objet commande
+        dateFields: {
+            nouvelle: 'commande',
+            preparation: 'preparationDebut',
+            terminee: 'preparationFin',
+            expediee: 'expeditionValidee',
+            receptionnee: 'receptionValidee',
+            livree: 'livraisonClient'
         },
+        
+        // Configuration par défaut pour Timeline
+        defaultOptions: {
+            theme: 'colorful',
+            orientation: 'horizontal',
+            animated: true,
+            showDates: true,
+            showLabels: true,
+            clickable: false
+        }
+    },
     
+    // ========================================
+    // Types de préparation
+    // ========================================
+    TYPES_PREPARATION: {
+        livraison_premiere_paire: {
+            label: 'Livraison première paire',
+            description: 'Première adaptation du patient',
+            icon: '1️⃣'
+        },
+        livraison_deuxieme_paire: {
+            label: 'Livraison deuxième paire',
+            description: 'Paire de secours ou renouvellement',
+            icon: '2️⃣'
+        },
+        livraison_accessoire: {
+            label: 'Livraison accessoire',
+            description: 'Accessoires et consommables uniquement',
+            icon: '🎧'
+        }
+    },
+    
+    // ========================================
     // Niveaux d'urgence
+    // ========================================
     NIVEAUX_URGENCE: {
         normal: {
             label: 'Normal',
             delai: '3-5 jours',
             couleur: '#28a745',
-            icon: '🍃'
+            icon: '🍃',
+            joursLivraison: 5
         },
         urgent: {
             label: 'Urgent',
             delai: '48h',
             couleur: '#ffc107',
-            icon: '💨'
+            icon: '💨',
+            joursLivraison: 2
         },
         tres_urgent: {
             label: 'Très urgent',
             delai: '24h',
             couleur: '#dc3545',
-            icon: '🔥'
+            icon: '🔥',
+            joursLivraison: 1
+        }
+    },
+    
+    // ========================================
+    // Templates d'affichage HTML
+    // ========================================
+    DISPLAY_TEMPLATES: {
+        urgence: {
+            wrapper: 'urgence-icon-wrapper',
+            className: 'urgence-icon',
+            tooltipClass: 'urgence-tooltip',
+            getHTML: (config) => `
+                <span class="urgence-icon-wrapper">
+                    <span class="urgence-icon">${config.icon}</span>
+                    <span class="urgence-tooltip">${config.label} (${config.delai})</span>
+                </span>
+            `
+        },
+        statut: {
+            wrapper: 'statut-icon-wrapper',
+            className: 'statut-icon',
+            tooltipClass: 'statut-tooltip',
+            getHTML: (config) => `
+                <span class="statut-icon-wrapper">
+                    <span class="statut-icon">${config.icon}</span>
+                    <span class="statut-tooltip">${config.label}</span>
+                </span>
+            `
         }
     },
     
@@ -128,10 +204,20 @@ export const COMMANDES_CONFIG = {
             placeholder: 'Client, produit, n° commande...'
         },
         
+        magasin: {
+            type: 'select',
+            key: 'magasin',
+            label: 'Magasin',
+            keepPlaceholder: true,
+            searchable: true,
+            options: [] // Chargé dynamiquement
+        },
+        
         statut: {
             type: 'select',
             key: 'statut',
             label: 'Statut',
+            keepPlaceholder: true,
             options: [] // Généré dynamiquement
         },
         
@@ -140,6 +226,7 @@ export const COMMANDES_CONFIG = {
             key: 'periode',
             label: 'Période',
             defaultValue: 'all',
+            keepPlaceholder: true,
             options: [
                 { value: 'all', label: 'Toutes' },
                 { value: 'today', label: "Aujourd'hui" },
@@ -152,6 +239,8 @@ export const COMMANDES_CONFIG = {
             type: 'select',
             key: 'urgence',
             label: 'Urgence',
+            keepPlaceholder: true,
+            showIcons: true,
             options: [] // Généré dynamiquement
         }
     },
@@ -200,7 +289,9 @@ export const COMMANDES_CONFIG = {
         ]
     },
     
+    // ========================================
     // Types de produits
+    // ========================================
     TYPES_PRODUITS: {
         appareil_auditif: {
             label: 'Appareil auditif',
@@ -219,7 +310,9 @@ export const COMMANDES_CONFIG = {
         }
     },
     
+    // ========================================
     // Catégories de produits
+    // ========================================
     CATEGORIES_PRODUITS: {
         // Appareils
         'contour': 'Contour d\'oreille',
@@ -238,7 +331,9 @@ export const COMMANDES_CONFIG = {
         'entretien': 'Produits d\'entretien'
     },
     
+    // ========================================
     // Transporteurs (config détaillée)
+    // ========================================
     TRANSPORTEURS: {
         colissimo: {
             nom: 'Colissimo',
@@ -262,7 +357,9 @@ export const COMMANDES_CONFIG = {
         }
     },
     
+    // ========================================
     // Messages et textes
+    // ========================================
     MESSAGES: {
         AUCUNE_COMMANDE: 'Aucune commande pour le moment',
         CHARGEMENT: 'Chargement des commandes...',
@@ -287,7 +384,9 @@ export const COMMANDES_CONFIG = {
         ERREUR_VALIDATION_NOM: 'Le nom et prénom saisis ne correspondent pas au client'
     },
     
+    // ========================================
     // Validations
+    // ========================================
     VALIDATIONS: {
         TELEPHONE: /^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$/,
         EMAIL: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
@@ -295,7 +394,9 @@ export const COMMANDES_CONFIG = {
         NUMERO_SERIE: /^[A-Z0-9-]{5,}$/
     },
     
+    // ========================================
     // Formats d'affichage
+    // ========================================
     FORMATS: {
         DATE: {
             jour: 'DD/MM/YYYY',
@@ -383,7 +484,8 @@ export function genererOptionsTypesPreparation() {
     return Object.entries(COMMANDES_CONFIG.TYPES_PREPARATION).map(([key, type]) => ({
         value: key,
         label: type.label,
-        description: type.description
+        description: type.description,
+        icon: type.icon
     }));
 }
 
@@ -488,13 +590,9 @@ export function peutEtreSupprimee(statut) {
 // Fonction helper pour calculer le délai de livraison
 export function calculerDelaiLivraison(urgence = 'normal') {
     const maintenant = new Date();
-    const delais = {
-        'normal': 5,
-        'urgent': 2,
-        'tres_urgent': 1
-    };
+    const config = COMMANDES_CONFIG.NIVEAUX_URGENCE[urgence];
+    const jours = config?.joursLivraison || 5;
     
-    const jours = delais[urgence] || 5;
     maintenant.setDate(maintenant.getDate() + jours);
     
     // Éviter les weekends
@@ -535,8 +633,19 @@ function formatDate(timestamp) {
    - EXPORT_CONFIG pour les colonnes d'export
    - Nouvelles fonctions de génération d'options
    
+   [01/02/2025] - Ajout TIMELINE_CONFIG et DISPLAY_TEMPLATES
+   Problème: Configuration timeline et templates éparpillés dans le code
+   Solution: Centralisation dans commandes.data.js
+   - TIMELINE_CONFIG avec séquence et mapping des dates
+   - DISPLAY_TEMPLATES pour les templates HTML d'urgence et statut
+   - Ajout des icônes manquantes dans TYPES_PREPARATION
+   - Description pour chaque statut
+   - joursLivraison dans NIVEAUX_URGENCE
+   
    NOTES POUR REPRISES FUTURES:
    - Toute configuration UI doit être dans ce fichier
    - Utiliser les fonctions de génération plutôt que dupliquer
    - Les icônes sont définies à UN SEUL endroit
+   - Les templates HTML sont dans DISPLAY_TEMPLATES
+   - La séquence des statuts est dans TIMELINE_CONFIG.sequence
    ======================================== */

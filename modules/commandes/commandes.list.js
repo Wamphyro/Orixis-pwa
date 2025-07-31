@@ -531,24 +531,16 @@ function afficherUrgence(urgence) {
     const config = COMMANDES_CONFIG.NIVEAUX_URGENCE[urgence];
     if (!config) return urgence;
     
-    return `
-        <span class="urgence-icon-wrapper">
-            <span class="urgence-icon">${config.icon}</span>
-            <span class="urgence-tooltip">${config.label} (${config.delai})</span>
-        </span>
-    `;
+    // Utiliser le template centralisé
+    return COMMANDES_CONFIG.DISPLAY_TEMPLATES.urgence.getHTML(config);
 }
 
 function afficherStatut(statut) {
     const config = COMMANDES_CONFIG.STATUTS[statut];
     if (!config) return statut;
     
-    return `
-        <span class="statut-icon-wrapper">
-            <span class="statut-icon">${config.icon}</span>
-            <span class="statut-tooltip">${config.label}</span>
-        </span>
-    `;
+    // Utiliser le template centralisé
+    return COMMANDES_CONFIG.DISPLAY_TEMPLATES.statut.getHTML(config);
 }
 
 /**
@@ -603,12 +595,18 @@ function ajusterIconesFiltres(filtresConfig) {
    - Interaction StatsCards/filtres gérée ICI, pas dans main.js
    - Fonctions handleFilterChange() et handleStatsCardClick()
    
+   [01/02/2025 v2] - Utilisation des templates centralisés
+   - DISPLAY_TEMPLATES.urgence.getHTML() pour l'affichage urgence
+   - DISPLAY_TEMPLATES.statut.getHTML() pour l'affichage statut
+   - Plus de HTML hardcodé dans les fonctions
+   
    POINTS CLÉS:
    - Les composants communiquent uniquement par callbacks
    - Aucun import entre composants UI
    - L'orchestrateur connaît tous les composants
    - L'orchestrateur connaît la logique métier
    - Les composants ne connaissent pas le métier
+   - Les templates d'affichage sont dans commandes.data.js
    
    ARCHITECTURE:
    commandes.list.js (orchestrateur)

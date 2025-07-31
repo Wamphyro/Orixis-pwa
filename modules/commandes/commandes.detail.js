@@ -77,8 +77,8 @@ export async function voirDetailCommande(commandeId) {
 // ========================================
 
 function createOrderTimeline(container, commande, options = {}) {
-    // Configuration spécifique aux commandes
-    const statuts = ['nouvelle', 'preparation', 'terminee', 'expediee', 'receptionnee', 'livree'];
+    // Utiliser la configuration centralisée
+    const statuts = COMMANDES_CONFIG.TIMELINE_CONFIG.sequence;
     
     // Transformer les données commande en items génériques pour Timeline
     const items = statuts.map(statut => {
@@ -106,30 +106,24 @@ function createOrderTimeline(container, commande, options = {}) {
         return item;
     });
     
-    // Créer l'instance Timeline avec les données transformées
-    return new Timeline({
+    // Fusionner les options par défaut avec celles fournies
+    const finalOptions = {
+        ...COMMANDES_CONFIG.TIMELINE_CONFIG.defaultOptions,
+        ...options,
         container,
-        items,
-        orientation: options.orientation || 'horizontal',
-        theme: options.theme || 'colorful',
-        animated: options.animated !== false,
-        showDates: options.showDates !== false,
-        showLabels: options.showLabels !== false,
-        clickable: false
-    });
+        items
+    };
+    
+    // Créer l'instance Timeline avec la configuration
+    return new Timeline(finalOptions);
 }
 
 function getDateForStatut(commande, statut) {
-    const dates = {
-        nouvelle: commande.dates?.commande,
-        preparation: commande.dates?.preparationDebut,
-        terminee: commande.dates?.preparationFin,
-        expediee: commande.dates?.expeditionValidee,
-        receptionnee: commande.dates?.receptionValidee,
-        livree: commande.dates?.livraisonClient
-    };
+    // Utiliser le mapping centralisé
+    const dateField = COMMANDES_CONFIG.TIMELINE_CONFIG.dateFields[statut];
+    if (!dateField) return '';
     
-    const date = dates[statut];
+    const date = commande.dates?.[dateField];
     if (!date) return '';
     
     const dateObj = date.toDate ? date.toDate() : new Date(date);
@@ -959,8 +953,15 @@ function formatDateForInput(timestamp) {
    - Fonction cleanupDropdowns() pour éviter les fuites mémoire
    - Architecture IoC : aucun composant ne se connaît
    
+   [01/02/2025 v2] - Utilisation de la configuration centralisée
+   - TIMELINE_CONFIG.sequence pour l'ordre des statuts
+   - TIMELINE_CONFIG.dateFields pour le mapping des dates
+   - TIMELINE_CONFIG.defaultOptions pour les options par défaut
+   - Fusion des options avec l'opérateur spread
+   
    NOTES POUR REPRISES FUTURES:
    - La logique métier est ICI, pas dans les composants
    - Toujours détruire les instances avant d'en créer de nouvelles
    - Les composants UI sont 100% génériques et réutilisables
+   - La configuration est dans commandes.data.js
    ======================================== */
