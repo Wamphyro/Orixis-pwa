@@ -1,81 +1,80 @@
 // ========================================
 // APP-HEADER.COMPONENT.JS - Composant header d'application réutilisable
-// Chemin: src/js/shared/ui/app-header.component.js
+// Chemin: src/components/ui/app-header/app-header.component.js
 //
 // DESCRIPTION:
-// Composant indépendant pour afficher l'en-tête d'application
-// Utilisable sur toutes les pages avec différentes configurations
+// Header d'application avec navigation, titre et informations utilisateur
+// Composant autonome et réutilisable dans n'importe quelle page
+//
+// MODIFIÉ le 01/02/2025:
+// - Suppression de l'import generateId
+// - Génération d'ID autonome
+// - 100% indépendant
 //
 // API PUBLIQUE:
 // - constructor(config)
 // - setTitle(title, subtitle)
 // - setUser(userData)
-// - updateBreadcrumb(items)
-// - show()
-// - hide()
+// - showLoading()
+// - hideLoading()
 // - destroy()
 //
 // CALLBACKS DISPONIBLES:
-// - onBack: () => void - Appelé au clic sur retour
-// - onLogout: () => void - Appelé à la déconnexion
-// - onUserClick: (userData) => void - Appelé au clic sur l'utilisateur
+// - onBack: () => void
+// - onLogout: () => void  
+// - onUserClick: (userData) => void
 //
 // EXEMPLE:
 // const header = new AppHeader({
-//     title: '📦 Gestion des Commandes',
-//     subtitle: 'Commandes d\'appareils et accessoires',
-//     backUrl: 'home.html',
-//     user: { name: 'Cédric Korber', store: 'Magasin Marseille' },
+//     container: 'body',
+//     title: 'Ma Page',
+//     user: { name: 'John Doe', store: 'Magasin Paris' },
 //     onLogout: () => console.log('Déconnexion')
 // });
 // ========================================
 
-import { generateId } from '../../index.js';
+// ❌ SUPPRIMÉ: import { generateId } from '../../index.js';
 
 export class AppHeader {
     constructor(config) {
-        this.id = generateId('header');
+        // ✅ MODIFIÉ: Génération d'ID autonome
+        this.id = 'app-header-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
         
         // Configuration par défaut
         this.config = {
-            container: 'body',           // Container où injecter
-            title: '',                   // Titre principal
-            subtitle: '',                // Sous-titre optionnel
-            icon: '',                    // Icône optionnelle
-            backUrl: null,              // URL de retour (null = pas de bouton)
-            backText: '← Retour',       // Texte du bouton retour
-            user: {                     // Données utilisateur
-                name: '',
-                store: '',              // 🆕 Magasin de l'utilisateur
-                avatar: '',             // URL avatar optionnel
-                showLogout: true        // Afficher bouton déconnexion
-            },
-            theme: 'default',           // Thème visuel
-            position: 'top',            // Position (top, fixed)
-            breadcrumb: [],             // Fil d'Ariane optionnel
-            onBack: null,               // Callback retour
-            onLogout: null,             // Callback déconnexion
-            onUserClick: null,          // Callback clic utilisateur
+            container: 'body',      // Où insérer le header
+            title: 'Application',   // Titre principal
+            subtitle: '',           // Sous-titre optionnel
+            backUrl: null,          // URL de retour (null = pas de bouton retour)
+            user: null,             // Données utilisateur { name, store, role }
+            showLogout: true,       // Afficher le bouton déconnexion
+            position: 'prepend',    // prepend ou append dans le container
+            theme: 'default',       // Thème visuel
+            
+            // Callbacks
+            onBack: null,           // Callback retour
+            onLogout: null,         // Callback déconnexion
+            onUserClick: null,      // Callback clic sur utilisateur
+            
             ...config
         };
         
         // État interne
         this.state = {
-            visible: true,
-            loaded: false
+            loading: false,
+            rendered: false
         };
         
         // Éléments DOM
         this.elements = {
             container: null,
             header: null,
-            title: null,
-            subtitle: null,
             backButton: null,
-            userSection: null,
-            userName: null,
-            userStore: null,
-            logoutButton: null
+            titleElement: null,
+            subtitleElement: null,
+            userInfo: null,
+            logoutButton: null,
+            loadingIndicator: null
         };
         
         // Initialiser
@@ -87,58 +86,49 @@ export class AppHeader {
     // ========================================
     
     init() {
-        // Charger les styles en premier
-        this.loadStyles().then(() => {
-            // Une fois le CSS chargé, continuer
-            this.setupContainer();
-            this.render();
-            this.attachEvents();
-            this.showWithDelay();
+        try {
+            // Charger les styles
+            this.loadStyles();
             
-            console.log('✅ AppHeader initialisé');
-        });
+            // Récupérer le container
+            if (typeof this.config.container === 'string') {
+                this.elements.container = document.querySelector(this.config.container);
+            } else {
+                this.elements.container = this.config.container;
+            }
+            
+            if (!this.elements.container) {
+                console.error('AppHeader: Container non trouvé');
+                return;
+            }
+            
+            // Créer et insérer le header
+            this.render();
+            
+            // Attacher les événements
+            this.attachEvents();
+            
+            // Marquer comme rendu
+            this.state.rendered = true;
+            
+            console.log('✅ AppHeader initialisé:', this.id);
+            
+        } catch (error) {
+            console.error('❌ Erreur initialisation AppHeader:', error);
+        }
     }
     
     loadStyles() {
-        return new Promise((resolve) => {
-            const styleId = 'app-header-styles';
-            
-            if (!document.getElementById(styleId)) {
-                const link = document.createElement('link');
-                link.id = styleId;
-                link.rel = 'stylesheet';
-                link.href = '../src/css/shared/ui/app-header.css';
-                
-                // Attendre que le CSS soit chargé
-                link.onload = () => {
-                    console.log('📦 CSS AppHeader chargé');
-                    resolve();
-                };
-                
-                link.onerror = () => {
-                    console.warn('⚠️ Erreur chargement CSS AppHeader');
-                    resolve(); // Continuer même en cas d'erreur
-                };
-                
-                document.head.appendChild(link);
-            } else {
-                // CSS déjà chargé
-                resolve();
-            }
-        });
-    }
-    
-    setupContainer() {
-        // Trouver le container
-        if (typeof this.config.container === 'string') {
-            this.elements.container = document.querySelector(this.config.container);
-        } else {
-            this.elements.container = this.config.container;
-        }
+        const styleId = 'app-header-styles';
         
-        if (!this.elements.container) {
-            console.error('AppHeader: Container non trouvé');
-            return;
+        if (!document.getElementById(styleId)) {
+            const link = document.createElement('link');
+            link.id = styleId;
+            link.rel = 'stylesheet';
+            link.href = '../src/components/ui/app-header/app-header.css';
+            document.head.appendChild(link);
+            
+            console.log('📦 CSS AppHeader chargé');
         }
     }
     
@@ -147,127 +137,100 @@ export class AppHeader {
     // ========================================
     
     render() {
-        // Créer l'élément header principal
-        const header = document.createElement('div');
+        // Créer l'élément header
+        const header = document.createElement('header');
         header.className = `app-header theme-${this.config.theme}`;
         header.id = this.id;
         
-        if (this.config.position === 'fixed') {
-            header.classList.add('fixed');
-        }
+        // Structure HTML
+        header.innerHTML = this.generateHTML();
         
-        // Structure principale
-        header.innerHTML = this.createHeaderStructure();
+        // Insérer dans le container
+        if (this.config.position === 'prepend') {
+            this.elements.container.insertBefore(header, this.elements.container.firstChild);
+        } else {
+            this.elements.container.appendChild(header);
+        }
         
         // Sauvegarder les références
         this.elements.header = header;
-        this.elements.title = header.querySelector('.app-header-title');
-        this.elements.subtitle = header.querySelector('.app-header-subtitle');
-        this.elements.backButton = header.querySelector('.header-back-button');
-        this.elements.userSection = header.querySelector('.header-user-section');
-        this.elements.userName = header.querySelector('.user-name');
-        this.elements.userStore = header.querySelector('.user-store');
-        this.elements.logoutButton = header.querySelector('.header-logout-button');
-        
-        // Injecter dans le container
-        if (this.elements.container === document.body) {
-            // Injecter en début de body
-            this.elements.container.insertBefore(header, this.elements.container.firstChild);
-        } else {
-            // Remplacer le contenu du container
-            this.elements.container.innerHTML = '';
-            this.elements.container.appendChild(header);
-        }
+        this.cacheElements();
     }
     
-    createHeaderStructure() {
+    generateHTML() {
+        const hasBackButton = this.config.backUrl || this.config.onBack;
+        const hasUser = this.config.user !== null;
+        
         return `
-            <div class="app-header-content">
-                <div class="app-header-left">
-                    ${this.createBackButton()}
-                    ${this.createBreadcrumb()}
+            <div class="header-container">
+                <!-- Section gauche -->
+                <div class="header-left">
+                    ${hasBackButton ? `
+                        <button class="btn-back" aria-label="Retour">
+                            <span class="back-icon">←</span>
+                            <span class="back-text">Retour</span>
+                        </button>
+                    ` : ''}
+                    
+                    <div class="header-title-section">
+                        <h1 class="header-title">${this.config.title}</h1>
+                        ${this.config.subtitle ? `
+                            <p class="header-subtitle">${this.config.subtitle}</p>
+                        ` : ''}
+                    </div>
                 </div>
-                <div class="app-header-center">
-                    ${this.createTitleSection()}
+                
+                <!-- Section droite -->
+                <div class="header-right">
+                    ${hasUser ? `
+                        <div class="user-info">
+                            <div class="user-details">
+                                <span class="user-name">${this.config.user.name || 'Utilisateur'}</span>
+                                ${this.config.user.store ? `
+                                    <span class="user-store">${this.config.user.store}</span>
+                                ` : ''}
+                            </div>
+                            <div class="user-avatar">
+                                ${this.getInitials(this.config.user.name)}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    ${hasUser && this.config.showLogout ? `
+                        <button class="btn-logout" aria-label="Déconnexion">
+                            <span class="logout-icon">⚡</span>
+                            <span class="logout-text">Déconnexion</span>
+                        </button>
+                    ` : ''}
                 </div>
-                <div class="app-header-right">
-                    ${this.createUserSection()}
+                
+                <!-- Indicateur de chargement -->
+                <div class="loading-indicator" style="display: none;">
+                    <div class="loading-spinner"></div>
                 </div>
             </div>
         `;
     }
     
-    createBackButton() {
-        if (!this.config.backUrl && !this.config.onBack) {
-            return '';
-        }
+    cacheElements() {
+        const header = this.elements.header;
         
-        const href = this.config.backUrl ? `href="${this.config.backUrl}"` : '';
-        const tag = this.config.backUrl ? 'a' : 'button';
-        
-        return `
-            <${tag} class="btn btn-back on-dark" ${href} data-action="back">
-                ${this.config.backText}
-            </${tag}>
-        `;
+        this.elements.backButton = header.querySelector('.btn-back');
+        this.elements.titleElement = header.querySelector('.header-title');
+        this.elements.subtitleElement = header.querySelector('.header-subtitle');
+        this.elements.userInfo = header.querySelector('.user-info');
+        this.elements.logoutButton = header.querySelector('.btn-logout');
+        this.elements.loadingIndicator = header.querySelector('.loading-indicator');
     }
     
-    createBreadcrumb() {
-        if (!this.config.breadcrumb || this.config.breadcrumb.length === 0) {
-            return '';
+    getInitials(name) {
+        if (!name) return '?';
+        
+        const parts = name.trim().split(' ');
+        if (parts.length >= 2) {
+            return parts[0][0].toUpperCase() + parts[parts.length - 1][0].toUpperCase();
         }
-        
-        const items = this.config.breadcrumb.map((item, index) => {
-            const isLast = index === this.config.breadcrumb.length - 1;
-            if (isLast) {
-                return `<span class="breadcrumb-current">${item.label}</span>`;
-            } else {
-                return `<a href="${item.url}" class="breadcrumb-link">${item.label}</a>`;
-            }
-        }).join('<span class="breadcrumb-separator">></span>');
-        
-        return `<nav class="header-breadcrumb">${items}</nav>`;
-    }
-    
-    createTitleSection() {
-        const icon = this.config.icon ? `<span class="app-header-icon">${this.config.icon}</span>` : '';
-        const subtitle = this.config.subtitle ? `<p class="app-header-subtitle">${this.config.subtitle}</p>` : '';
-        
-        return `
-            ${icon}
-            <h1 class="app-header-title">${this.config.title}</h1>
-            ${subtitle}
-        `;
-    }
-    
-    createUserSection() {
-        if (!this.config.user || !this.config.user.name) {
-            return '';
-        }
-        
-        const avatar = this.config.user.avatar ? 
-            `<img src="${this.config.user.avatar}" alt="Avatar" class="user-avatar">` : 
-            '';
-        
-        // 🆕 Section utilisateur réorganisée avec nom + magasin + déconnexion
-        const store = this.config.user.store ? 
-            `<div class="user-store">${this.config.user.store}</div>` : 
-            '';
-        
-        const logoutButton = this.config.user.showLogout ? 
-            `<button class="header-logout-button" data-action="logout">
-                🚪 Déconnexion
-            </button>` : '';
-        
-        return `
-            <div class="header-user-section" data-action="user-click">
-                ${avatar}
-                <div class="user-name">${this.config.user.name}</div>
-                ${store}
-                <div class="user-separator"></div>
-                ${logoutButton}
-            </div>
-        `;
+        return name.substring(0, 2).toUpperCase();
     }
     
     // ========================================
@@ -275,99 +238,48 @@ export class AppHeader {
     // ========================================
     
     attachEvents() {
-        if (!this.elements.header) return;
-        
-        // Délégation d'événements sur le header
-        this.elements.header.addEventListener('click', (e) => {
-            const action = e.target.closest('[data-action]')?.dataset.action;
-            
-            switch (action) {
-                case 'back':
-                    this.handleBack(e);
-                    break;
-                case 'logout':
-                    this.handleLogout(e);
-                    break;
-                case 'user-click':
-                    // Ne déclencher que si on clique sur le nom/avatar, pas sur déconnexion
-                    if (!e.target.closest('.header-logout-button')) {
-                        this.handleUserClick(e);
-                    }
-                    break;
-            }
-        });
-    }
-    
-    handleBack(e) {
-        // Si c'est un lien, laisser le comportement par défaut
-        if (this.config.backUrl && e.target.tagName === 'A') {
-            return;
+        // Bouton retour
+        if (this.elements.backButton) {
+            this.elements.backButton.addEventListener('click', () => {
+                this.handleBack();
+            });
         }
         
-        // Sinon, empêcher le comportement par défaut et appeler le callback
-        e.preventDefault();
+        // Info utilisateur
+        if (this.elements.userInfo) {
+            this.elements.userInfo.addEventListener('click', () => {
+                this.handleUserClick();
+            });
+        }
         
+        // Bouton déconnexion
+        if (this.elements.logoutButton) {
+            this.elements.logoutButton.addEventListener('click', () => {
+                this.handleLogout();
+            });
+        }
+    }
+    
+    handleBack() {
+        // Callback prioritaire
         if (this.config.onBack) {
             this.config.onBack();
-        } else if (this.config.backUrl) {
-            // Fallback : navigation manuelle
+        }
+        // Sinon navigation directe
+        else if (this.config.backUrl) {
             window.location.href = this.config.backUrl;
         }
     }
     
-    handleLogout(e) {
-        e.preventDefault();
-        e.stopPropagation(); // Empêcher la propagation vers user-click
-        
-        if (this.config.onLogout) {
-            this.config.onLogout();
-        } else {
-            // Fallback par défaut
-            if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-                console.log('Déconnexion demandée');
-                // Ici on pourrait rediriger vers une page de login
-            }
-        }
-    }
-    
-    handleUserClick(e) {
-        if (this.config.onUserClick) {
+    handleUserClick() {
+        if (this.config.onUserClick && this.config.user) {
             this.config.onUserClick(this.config.user);
         }
     }
     
-    // ========================================
-    // AFFICHAGE ET MASQUAGE
-    // ========================================
-    
-    /**
-     * Affiche le header avec délai pour éviter le FOUC
-     */
-    showWithDelay() {
-        setTimeout(() => {
-            this.show();
-        }, 50); // Délai plus court car le header doit apparaître rapidement
-    }
-    
-    /**
-     * Affiche le header immédiatement
-     */
-    show() {
-        if (this.elements.header) {
-            this.elements.header.classList.add('loaded');
-            this.state.visible = true;
-            this.state.loaded = true;
-            console.log('📦 AppHeader affiché');
-        }
-    }
-    
-    /**
-     * Masque le header
-     */
-    hide() {
-        if (this.elements.header) {
-            this.elements.header.classList.remove('loaded');
-            this.state.visible = false;
+    handleLogout() {
+        if (this.config.onLogout) {
+            this.config.onLogout();
         }
     }
     
@@ -376,149 +288,159 @@ export class AppHeader {
     // ========================================
     
     /**
-     * Met à jour le titre et sous-titre
-     * @param {string} title - Nouveau titre
-     * @param {string} subtitle - Nouveau sous-titre (optionnel)
+     * Mettre à jour le titre et sous-titre
      */
     setTitle(title, subtitle = '') {
         this.config.title = title;
         this.config.subtitle = subtitle;
         
-        if (this.elements.title) {
-            this.elements.title.textContent = title;
+        if (this.elements.titleElement) {
+            this.elements.titleElement.textContent = title;
         }
         
-        if (this.elements.subtitle) {
+        if (subtitle && !this.elements.subtitleElement) {
+            // Créer le sous-titre s'il n'existe pas
+            const subtitleEl = document.createElement('p');
+            subtitleEl.className = 'header-subtitle';
+            subtitleEl.textContent = subtitle;
+            this.elements.titleElement.parentNode.appendChild(subtitleEl);
+            this.elements.subtitleElement = subtitleEl;
+        } else if (this.elements.subtitleElement) {
             if (subtitle) {
-                this.elements.subtitle.textContent = subtitle;
-                this.elements.subtitle.style.display = '';
+                this.elements.subtitleElement.textContent = subtitle;
+                this.elements.subtitleElement.style.display = '';
             } else {
-                this.elements.subtitle.style.display = 'none';
+                this.elements.subtitleElement.style.display = 'none';
             }
         }
     }
     
     /**
-     * 🆕 Met à jour les informations utilisateur (nom + magasin)
-     * @param {Object} userData - Nouvelles données utilisateur
+     * Mettre à jour les informations utilisateur
      */
     setUser(userData) {
-        this.config.user = { ...this.config.user, ...userData };
+        this.config.user = userData;
         
-        if (this.elements.userName) {
-            this.elements.userName.textContent = userData.name || '';
-        }
-        
-        if (this.elements.userStore) {
-            if (userData.store) {
-                this.elements.userStore.textContent = userData.store;
-                this.elements.userStore.style.display = '';
-            } else {
-                this.elements.userStore.style.display = 'none';
+        if (!userData) {
+            // Masquer la section utilisateur
+            if (this.elements.userInfo) {
+                this.elements.userInfo.style.display = 'none';
             }
+            if (this.elements.logoutButton) {
+                this.elements.logoutButton.style.display = 'none';
+            }
+            return;
         }
-    }
-    
-    /**
-     * Met à jour le fil d'Ariane
-     * @param {Array} items - Éléments du breadcrumb [{label: '', url: ''}]
-     */
-    updateBreadcrumb(items) {
-        this.config.breadcrumb = items;
         
-        // Re-render la partie breadcrumb
-        const leftSection = this.elements.header?.querySelector('.app-header-left');
-        if (leftSection) {
-            const existingBreadcrumb = leftSection.querySelector('.header-breadcrumb');
-            const newBreadcrumb = this.createBreadcrumb();
+        // Mettre à jour ou créer la section utilisateur
+        if (this.elements.userInfo) {
+            const nameEl = this.elements.userInfo.querySelector('.user-name');
+            const storeEl = this.elements.userInfo.querySelector('.user-store');
+            const avatarEl = this.elements.userInfo.querySelector('.user-avatar');
             
-            if (existingBreadcrumb) {
-                existingBreadcrumb.outerHTML = newBreadcrumb;
-            } else if (newBreadcrumb) {
-                leftSection.insertAdjacentHTML('beforeend', newBreadcrumb);
+            if (nameEl) nameEl.textContent = userData.name || 'Utilisateur';
+            if (storeEl) {
+                if (userData.store) {
+                    storeEl.textContent = userData.store;
+                    storeEl.style.display = '';
+                } else {
+                    storeEl.style.display = 'none';
+                }
+            }
+            if (avatarEl) avatarEl.textContent = this.getInitials(userData.name);
+            
+            this.elements.userInfo.style.display = '';
+            if (this.elements.logoutButton && this.config.showLogout) {
+                this.elements.logoutButton.style.display = '';
             }
         }
     }
     
     /**
-     * Change le thème du header
-     * @param {string} theme - Nouveau thème
+     * Afficher l'indicateur de chargement
      */
-    setTheme(theme) {
-        if (this.elements.header) {
-            this.elements.header.classList.remove(`theme-${this.config.theme}`);
-            this.elements.header.classList.add(`theme-${theme}`);
-            this.config.theme = theme;
+    showLoading() {
+        this.state.loading = true;
+        if (this.elements.loadingIndicator) {
+            this.elements.loadingIndicator.style.display = 'flex';
         }
     }
     
     /**
-     * Récupère l'état actuel du composant
-     * @returns {Object} État du header
+     * Masquer l'indicateur de chargement
+     */
+    hideLoading() {
+        this.state.loading = false;
+        if (this.elements.loadingIndicator) {
+            this.elements.loadingIndicator.style.display = 'none';
+        }
+    }
+    
+    /**
+     * Obtenir l'état du composant
      */
     getState() {
         return {
-            visible: this.state.visible,
-            loaded: this.state.loaded,
-            config: { ...this.config }
+            ...this.state,
+            title: this.config.title,
+            subtitle: this.config.subtitle,
+            user: this.config.user
         };
     }
     
     /**
-     * Détruit le composant
+     * Détruire le composant
      */
     destroy() {
+        // Retirer du DOM
         if (this.elements.header) {
             this.elements.header.remove();
         }
         
         // Réinitialiser
-        this.state = { visible: false, loaded: false };
-        this.elements = { container: null, header: null };
-    }
-    
-    // ========================================
-    // MÉTHODES PRIVÉES
-    // ========================================
-    
-    /**
-     * Valide la configuration
-     * @param {Object} config - Configuration à valider
-     * @returns {boolean} Configuration valide
-     */
-    validateConfig(config) {
-        if (!config.title) {
-            console.warn('AppHeader: Titre requis');
-            return false;
-        }
+        this.state = {
+            loading: false,
+            rendered: false
+        };
         
-        return true;
+        this.elements = {
+            container: null,
+            header: null,
+            backButton: null,
+            titleElement: null,
+            subtitleElement: null,
+            userInfo: null,
+            logoutButton: null,
+            loadingIndicator: null
+        };
+        
+        console.log('🧹 AppHeader détruit:', this.id);
     }
 }
 
+// ========================================
+// EXPORT PAR DÉFAUT
+// ========================================
+
+export default AppHeader;
+
 /* ========================================
-   HISTORIQUE DES DIFFICULTÉS
+   HISTORIQUE DES MODIFICATIONS
    
    [30/01/2025] - Création initiale
-   - Composant créé en suivant le pattern IoC
-   - Auto-chargement du CSS avec Promise
-   - Gestion des événements par délégation
-   - API publique complète pour mise à jour
-   - Support breadcrumb optionnel
-   - Anti-FOUC intégré
+   - Composant header réutilisable
+   - Support navigation, titre et utilisateur
+   - Callbacks pour interactions
    
-   [30/01/2025] - Réorganisation section utilisateur
-   - Modification createUserSection() pour layout horizontal
-   - Ajout support magasin utilisateur (user.store)
-   - Nouveau layout : nom | magasin | déconnexion sur même ligne
-   - Amélioration gestion événements (stopPropagation logout)
-   - Mise à jour setUser() pour gérer le magasin
+   [01/02/2025] - Autonomie complète
+   - Suppression de l'import generateId
+   - Génération d'ID inline autonome
+   - 100% indépendant
    
    NOTES POUR REPRISES FUTURES:
-   - Le composant est complètement indépendant
-   - Les callbacks sont optionnels avec fallbacks
-   - Le CSS se charge automatiquement
-   - Support de différents containers (body, div)
-   - Délégation d'événements pour les performances
-   - Section utilisateur maintenant : [avatar] [nom] [magasin] | [déconnexion]
+   - Le header s'insère automatiquement dans le container
+   - Position configurable (prepend/append)
+   - Styles auto-chargés
+   - Support des thèmes via classe CSS
+   - Aucune dépendance externe
    ======================================== */

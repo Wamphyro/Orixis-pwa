@@ -30,7 +30,6 @@
 // });
 // ========================================
 
-// ❌ SUPPRIMÉ: import { generateId } from '../../index.js';
 
 export class StatsCards {
     constructor(config) {
