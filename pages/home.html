@@ -37,7 +37,6 @@
                 <p>Gérer les commandes d'appareils et accessoires</p>
             </a>
             
-            <!-- Remplacer dans le menu principal -->
             <a href="decompte-mutuelle.html" class="menu-card fade-in">
                 <span class="icon">💳</span>
                 <h3>Décompte Mutuelle</h3>
@@ -68,10 +67,8 @@
         <p>Orixis - © 2025</p>
     </div>
 
-    <!-- Script principal avec AppHeader -->
-    <script type="module">
-        import { AppHeader } from '../src/js/shared/ui/app-header.component.js';
-        
+    <!-- Script principal SANS module pour éviter les conflits -->
+    <script>
         // Variables globales
         let appHeader = null;
         
@@ -172,25 +169,41 @@
             }
         }
         
-        // Initialiser le header
-        function initHeader() {
+        // Créer le header manuellement sans import de module
+        function createHeader() {
             const userData = getUserDataWithMagasin();
             
-            appHeader = new AppHeader({
-                container: 'body',
-                title: '📊 Dashboard',
-                subtitle: 'Système de Gestion des Interventions',
-                user: userData,
-                onLogout: handleLogout,
-                theme: 'default'
-            });
+            // Créer le header HTML directement
+            const headerHtml = `
+                <div class="app-header theme-default loaded" id="app-header-home">
+                    <div class="app-header-content">
+                        <div class="app-header-left"></div>
+                        <div class="app-header-center">
+                            <h1 class="app-header-title">📊 Dashboard</h1>
+                            <p class="app-header-subtitle">Système de Gestion des Interventions</p>
+                        </div>
+                        <div class="app-header-right">
+                            <div class="header-user-section">
+                                <div class="user-name">${userData.name}</div>
+                                <div class="user-store">${userData.store}</div>
+                                <div class="user-separator"></div>
+                                <button class="header-logout-button" onclick="handleLogout()">
+                                    🚪 Déconnexion
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
             
-            // Si on a un sélecteur de magasin, attacher les événements après un court délai
+            // Injecter le header au début du body
+            document.body.insertAdjacentHTML('afterbegin', headerHtml);
+            
+            // Si on a un sélecteur de magasin, attacher les événements
             if (userData.store.includes('select')) {
                 setTimeout(() => {
                     const select = document.getElementById('magasinSelect');
                     if (select) {
-                        // Re-attacher l'événement onchange
                         select.onchange = (e) => window.changeMagasin(e.target.value);
                     }
                 }, 100);
@@ -202,7 +215,8 @@
             if (!checkAuth()) {
                 window.location.href = '../index.html';
             } else {
-                initHeader();
+                // Créer le header directement
+                createHeader();
                 
                 // Animation des cards
                 const cards = document.querySelectorAll('.menu-card');
@@ -212,7 +226,7 @@
             }
         });
         
-        // Exposer logout globalement pour compatibilité
+        // Exposer logout globalement
         window.logout = handleLogout;
     </script>
 </body>
