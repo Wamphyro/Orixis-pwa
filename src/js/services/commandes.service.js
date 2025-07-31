@@ -314,7 +314,13 @@ export class CommandesService {
             
             // Vérifier que le changement est valide
             const statutSuivantAttendu = getProchainStatut(commande.statut);
-            if (nouveauStatut !== 'annulee' && nouveauStatut !== statutSuivantAttendu) {
+
+            // Autoriser la livraison directe (terminee → livree)
+            const isLivraisonDirecte = commande.statut === 'terminee' && nouveauStatut === 'livree';
+
+            if (nouveauStatut !== 'annulee' && 
+                nouveauStatut !== statutSuivantAttendu && 
+                !isLivraisonDirecte) {
                 throw new Error(`Passage de ${commande.statut} à ${nouveauStatut} non autorisé`);
             }
             
