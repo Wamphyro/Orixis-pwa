@@ -748,41 +748,51 @@ window.saisirExpedition = async function(commandeId) {
                     return;
                 }
                 
-                // Détruire le dropdown AVANT de vider le dialog
+                // IMPORTANT: Capturer les valeurs AVANT de détruire
+                const resultData = {
+                    transporteur: transporteur,
+                    numeroSuivi: numeroSuivi
+                };
+                
+                // Détruire le dropdown IMMÉDIATEMENT
                 if (dropdownExpedition) {
                     try {
                         dropdownExpedition.destroy();
+                        dropdownExpedition = null; // Important: mettre à null
                     } catch (e) {
                         console.warn('Erreur destroy dropdown:', e);
                     }
                 }
                 
-                dialogContainer.classList.remove('active');
+                // Petit délai pour laisser le destroy se terminer
                 setTimeout(() => {
-                    dialogContainer.innerHTML = '';
-                }, 200);
-                
-                resolve({
-                    transporteur: transporteur,
-                    numeroSuivi: numeroSuivi
-                });
+                    dialogContainer.classList.remove('active');
+                    setTimeout(() => {
+                        dialogContainer.innerHTML = '';
+                        resolve(resultData);
+                    }, 200);
+                }, 50);
             };
 
             const handleCancel = () => {
-                // Détruire le dropdown AVANT de vider le dialog
+                // Détruire le dropdown IMMÉDIATEMENT
                 if (dropdownExpedition) {
                     try {
                         dropdownExpedition.destroy();
+                        dropdownExpedition = null; // Important: mettre à null
                     } catch (e) {
                         console.warn('Erreur destroy dropdown:', e);
                     }
                 }
                 
-                dialogContainer.classList.remove('active');
+                // Petit délai pour laisser le destroy se terminer
                 setTimeout(() => {
-                    dialogContainer.innerHTML = '';
-                }, 200);
-                resolve(null);
+                    dialogContainer.classList.remove('active');
+                    setTimeout(() => {
+                        dialogContainer.innerHTML = '';
+                        resolve(null);
+                    }, 200);
+                }, 50);
             };
             
             if (confirmBtn) {
