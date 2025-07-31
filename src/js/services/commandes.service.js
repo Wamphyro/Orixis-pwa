@@ -366,19 +366,28 @@ export class CommandesService {
                     break;
                     
                 case 'receptionnee':
+                    // Vérifier d'abord que les numéros correspondent
+                    const envoi = commande.expedition?.envoi;
+                    if (!envoi || !envoi.numeroSuivi) {
+                        throw new Error('Aucune expédition trouvée pour cette commande');
+                    }
+                    
+                    if (!donnees.numeroSuiviRecu) {
+                        throw new Error('Le numéro de suivi reçu est obligatoire');
+                    }
+                    
+                    // BLOQUER si les numéros ne correspondent pas
+                    if (envoi.numeroSuivi !== donnees.numeroSuiviRecu) {
+                        throw new Error(`Les numéros de suivi ne correspondent pas.\n\nEnvoyé : ${envoi.numeroSuivi}\nReçu : ${donnees.numeroSuiviRecu}`);
+                    }
+                    
+                    // Si tout est OK, continuer avec la mise à jour
                     updates['dates.receptionValidee'] = serverTimestamp();
                     updates['expedition.reception.dateReception'] = serverTimestamp();
                     updates['expedition.reception.recuPar'] = this.getUtilisateurActuel();
-                    updates['expedition.reception.numeroSuiviRecu'] = donnees.numeroSuiviRecu || '';
+                    updates['expedition.reception.numeroSuiviRecu'] = donnees.numeroSuiviRecu;
                     updates['expedition.reception.colisConforme'] = donnees.colisConforme !== false;
-                    
-                    // Vérifier que le numéro de suivi correspond
-                    if (donnees.numeroSuiviRecu && commande.expedition?.envoi?.numeroSuivi) {
-                        if (donnees.numeroSuiviRecu !== commande.expedition.envoi.numeroSuivi) {
-                            console.warn('⚠️ Les numéros de suivi ne correspondent pas');
-                            updates['expedition.reception.commentaires'] = 'Numéros de suivi différents';
-                        }
-                    }
+                    updates['expedition.reception.commentaires'] = donnees.commentairesReception || '';
                     break;
                     
                 case 'livree':
