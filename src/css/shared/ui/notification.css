@@ -151,22 +151,24 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
+    background: transparent;  /* Transparent */
+    /* backdrop-filter retiré */
+    /* -webkit-backdrop-filter retiré */
+    border: none;  /* Pas de bordure */
+    border-radius: 50%;  /* Rond pour le hover */
     cursor: pointer;
     transition: all 0.2s;
-    font-size: 18px;
+    font-size: 20px;  /* Un peu plus grand */
     padding: 0;
-    color: #333333;
+    color: #666666;  /* Gris plus doux */
+    opacity: 0.7;
 }
 
 .notification-close:hover {
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(0, 0, 0, 0.08);  /* Fond très léger au hover */
     transform: scale(1.1);
-    border-color: rgba(255, 255, 255, 0.4);
+    /* border-color retiré */
+    opacity: 1;
 }
 
 /* Barre de progression notification */
