@@ -106,8 +106,8 @@ function afficherDetailCommande(commande) {
                 </div>
             </div>
             <div class="edit-actions">
-                <button class="edit-btn edit-btn-cancel" onclick="annulerEditionClient()">Annuler</button>
-                <button class="edit-btn edit-btn-save" onclick="sauvegarderClient()">Sauvegarder</button>
+                <button class="btn btn-secondary" onclick="annulerEditionClient()">Annuler</button>
+                <button class="btn btn-primary" onclick="sauvegarderClient()">Sauvegarder</button>
             </div>
         </div>
     `;
@@ -159,8 +159,8 @@ function afficherDetailCommande(commande) {
                 </div>
             </div>
             <div class="edit-actions">
-                <button class="edit-btn edit-btn-cancel" onclick="annulerEditionProduits()">Annuler</button>
-                <button class="edit-btn edit-btn-save" onclick="sauvegarderProduits()">Sauvegarder</button>
+                <button class="btn btn-secondary" onclick="annulerEditionProduits()">Annuler</button>
+                <button class="btn btn-primary" onclick="sauvegarderProduits()">Sauvegarder</button>
             </div>
         </div>
     `;
@@ -216,8 +216,8 @@ function afficherDetailCommande(commande) {
                 <textarea id="editCommentaires" rows="3">${commande.commentaires || ''}</textarea>
             </div>
             <div class="edit-actions">
-                <button class="edit-btn edit-btn-cancel" onclick="annulerEditionLivraison()">Annuler</button>
-                <button class="edit-btn edit-btn-save" onclick="sauvegarderLivraison()">Sauvegarder</button>
+                <button class="btn btn-secondary" onclick="annulerEditionLivraison()">Annuler</button>
+                <button class="btn btn-primary" onclick="sauvegarderLivraison()">Sauvegarder</button>
             </div>
         </div>
     `;
@@ -294,8 +294,8 @@ function afficherDetailCommande(commande) {
                         </div>
                     ` : ''}
                     <div class="edit-actions">
-                        <button class="edit-btn edit-btn-cancel" onclick="annulerEditionExpedition()">Annuler</button>
-                        <button class="edit-btn edit-btn-save" onclick="sauvegarderExpedition()">Sauvegarder</button>
+                        <button class="btn btn-secondary" onclick="annulerEditionExpedition()">Annuler</button>
+                        <button class="btn btn-primary" onclick="sauvegarderExpedition()">Sauvegarder</button>
                     </div>
                 </div>
             `;
