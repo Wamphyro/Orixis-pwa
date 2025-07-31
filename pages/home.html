@@ -73,8 +73,8 @@
         import { DropdownList } from '../src/js/shared/ui/dropdown-list.component.js';
         
         // Variables globales
-        let appHeader = null;
         let magasinDropdown = null;
+        let isInitializing = true; // Flag pour éviter la boucle
         
         // Fonction de vérification d'authentification
         function checkAuth() {
@@ -128,8 +128,18 @@
         
         // Changer de magasin
         function changeMagasin(nouveauMagasin) {
+            // IMPORTANT : Ne pas recharger si on est en train d'initialiser
+            if (isInitializing) {
+                return;
+            }
+            
             const auth = JSON.parse(localStorage.getItem('sav_auth'));
             const permissions = JSON.parse(localStorage.getItem('sav_user_permissions') || '{}');
+            
+            // Vérifier que c'est bien un changement
+            if (nouveauMagasin === auth.magasin) {
+                return;
+            }
             
             if (permissions.autorisations && 
                 permissions.autorisations[nouveauMagasin] && 
@@ -208,6 +218,7 @@
             // Si plusieurs magasins, créer le DropdownList
             if (userData.magasins.length > 1) {
                 setTimeout(() => {
+                    // Créer le dropdown
                     magasinDropdown = new DropdownList({
                         container: '#magasinDropdownContainer',
                         options: userData.magasins.map(mag => ({
@@ -216,11 +227,24 @@
                             icon: '🏪'
                         })),
                         value: userData.magasin,
-                        searchable: userData.magasins.length > 5, // Recherche si plus de 5 magasins
-                        theme: 'header-compact', // Thème spécial pour le header
-                        onChange: (value) => changeMagasin(value)
+                        searchable: userData.magasins.length > 5,
+                        theme: 'header-compact',
+                        onChange: (value) => {
+                            // Ne déclencher que si l'initialisation est terminée
+                            if (!isInitializing) {
+                                changeMagasin(value);
+                            }
+                        }
                     });
+                    
+                    // Marquer la fin de l'initialisation après un court délai
+                    setTimeout(() => {
+                        isInitializing = false;
+                    }, 500);
                 }, 100);
+            } else {
+                // Pas de dropdown, initialisation terminée
+                isInitializing = false;
             }
         }
         
@@ -239,8 +263,7 @@
             }
         });
         
-        // Exposer logout globalement
-        window.logout = handleLogout;
+        // Exposer les fonctions globalement
         window.handleLogout = handleLogout;
     </script>
 </body>
