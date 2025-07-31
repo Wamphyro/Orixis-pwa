@@ -17,10 +17,11 @@
     <link rel="stylesheet" href="../src/css/main.css">
     <link rel="stylesheet" href="../src/css/shared/ui/button.css">
     <link rel="stylesheet" href="../src/css/shared/ui/app-header.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/dropdown-list.css">
     <link rel="stylesheet" href="../src/css/home.css">
 </head>
 <body>
-    <!-- Le header sera injecté ici par AppHeader component -->
+    <!-- Le header sera injecté ici -->
     
     <div class="container">
         <!-- Menu principal -->
@@ -67,10 +68,13 @@
         <p>Orixis - © 2025</p>
     </div>
 
-    <!-- Script principal SANS module pour éviter les conflits -->
-    <script>
+    <!-- Script principal avec module pour DropdownList -->
+    <script type="module">
+        import { DropdownList } from '../src/js/shared/ui/dropdown-list.component.js';
+        
         // Variables globales
         let appHeader = null;
+        let magasinDropdown = null;
         
         // Fonction de vérification d'authentification
         function checkAuth() {
@@ -88,15 +92,16 @@
             return authData.authenticated;
         }
         
-        // Obtenir les données utilisateur avec sélecteur de magasin
-        function getUserDataWithMagasin() {
+        // Obtenir les données utilisateur
+        function getUserData() {
             const auth = JSON.parse(localStorage.getItem('sav_auth'));
             const permissions = JSON.parse(localStorage.getItem('sav_user_permissions') || '{}');
             
             if (!auth || !auth.collaborateur) {
                 return {
                     name: 'Utilisateur',
-                    store: 'Magasin non défini',
+                    magasin: 'Non défini',
+                    magasins: [],
                     showLogout: true
                 };
             }
@@ -113,36 +118,16 @@
                 magasinsAutorises = [auth.magasin];
             }
             
-            // Créer le sélecteur de magasin si plusieurs magasins
-            let storeDisplay = '';
-            if (magasinsAutorises.length > 1) {
-                const options = magasinsAutorises.map(mag => 
-                    `<option value="${mag}" ${mag === auth.magasin ? 'selected' : ''}>${mag}</option>`
-                ).join('');
-                
-                storeDisplay = `
-                    <div class="magasin-selector">
-                        <label for="magasinSelect">Magasin:</label>
-                        <select id="magasinSelect" onchange="window.changeMagasin(this.value)">
-                            ${options}
-                        </select>
-                    </div>
-                `;
-            } else {
-                // Un seul magasin ou aucun, afficher en texte simple
-                const magasinActuel = auth.magasin || magasinsAutorises[0] || 'Non défini';
-                storeDisplay = `Magasin ${magasinActuel}`;
-            }
-            
             return {
                 name: `${auth.collaborateur.prenom} ${auth.collaborateur.nom}`,
-                store: storeDisplay,
+                magasin: auth.magasin || magasinsAutorises[0] || 'Non défini',
+                magasins: magasinsAutorises,
                 showLogout: true
             };
         }
         
         // Changer de magasin
-        window.changeMagasin = function(nouveauMagasin) {
+        function changeMagasin(nouveauMagasin) {
             const auth = JSON.parse(localStorage.getItem('sav_auth'));
             const permissions = JSON.parse(localStorage.getItem('sav_user_permissions') || '{}');
             
@@ -156,9 +141,11 @@
             } else {
                 alert('Vous n\'avez pas accès à ce magasin');
                 // Remettre la sélection précédente
-                document.getElementById('magasinSelect').value = auth.magasin;
+                if (magasinDropdown) {
+                    magasinDropdown.setValue(auth.magasin);
+                }
             }
-        };
+        }
         
         // Fonction de déconnexion
         async function handleLogout() {
@@ -169,11 +156,30 @@
             }
         }
         
-        // Créer le header manuellement sans import de module
+        // Créer le header avec DropdownList
         function createHeader() {
-            const userData = getUserDataWithMagasin();
+            const userData = getUserData();
             
-            // Créer le header HTML directement
+            // Créer le header HTML
+            let magasinContent = '';
+            
+            if (userData.magasins.length > 1) {
+                // Plusieurs magasins : créer un conteneur pour le dropdown
+                magasinContent = `
+                    <div class="header-magasin-section">
+                        <span class="magasin-label">Magasin :</span>
+                        <div id="magasinDropdownContainer"></div>
+                    </div>
+                `;
+            } else {
+                // Un seul magasin : afficher en texte simple
+                magasinContent = `
+                    <div class="header-magasin-section">
+                        <span class="magasin-single">Magasin ${userData.magasin}</span>
+                    </div>
+                `;
+            }
+            
             const headerHtml = `
                 <div class="app-header theme-default loaded" id="app-header-home">
                     <div class="app-header-content">
@@ -185,7 +191,7 @@
                         <div class="app-header-right">
                             <div class="header-user-section">
                                 <div class="user-name">${userData.name}</div>
-                                <div class="user-store">${userData.store}</div>
+                                ${magasinContent}
                                 <div class="user-separator"></div>
                                 <button class="header-logout-button" onclick="handleLogout()">
                                     🚪 Déconnexion
@@ -196,16 +202,24 @@
                 </div>
             `;
             
-            // Injecter le header au début du body
+            // Injecter le header
             document.body.insertAdjacentHTML('afterbegin', headerHtml);
             
-            // Si on a un sélecteur de magasin, attacher les événements
-            if (userData.store.includes('select')) {
+            // Si plusieurs magasins, créer le DropdownList
+            if (userData.magasins.length > 1) {
                 setTimeout(() => {
-                    const select = document.getElementById('magasinSelect');
-                    if (select) {
-                        select.onchange = (e) => window.changeMagasin(e.target.value);
-                    }
+                    magasinDropdown = new DropdownList({
+                        container: '#magasinDropdownContainer',
+                        options: userData.magasins.map(mag => ({
+                            value: mag,
+                            label: mag,
+                            icon: '🏪'
+                        })),
+                        value: userData.magasin,
+                        searchable: userData.magasins.length > 5, // Recherche si plus de 5 magasins
+                        theme: 'header-compact', // Thème spécial pour le header
+                        onChange: (value) => changeMagasin(value)
+                    });
                 }, 100);
             }
         }
@@ -215,7 +229,6 @@
             if (!checkAuth()) {
                 window.location.href = '../index.html';
             } else {
-                // Créer le header directement
                 createHeader();
                 
                 // Animation des cards
@@ -228,6 +241,7 @@
         
         // Exposer logout globalement
         window.logout = handleLogout;
+        window.handleLogout = handleLogout;
     </script>
 </body>
 </html>

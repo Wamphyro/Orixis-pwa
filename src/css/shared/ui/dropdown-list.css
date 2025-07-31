@@ -561,6 +561,116 @@
 }
 
 /* ========================================
+   THÈME HEADER COMPACT POUR LE SÉLECTEUR DE MAGASIN
+   ======================================== */
+.dropdown-list-header-compact {
+    display: inline-block;
+}
+
+.dropdown-list-header-compact .dropdown-list-wrapper {
+    min-width: 140px;
+}
+
+.dropdown-list-header-compact .dropdown-list-trigger {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 6px 12px;
+    font-size: 14px;
+    height: 32px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.dropdown-list-header-compact .dropdown-list-trigger:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.dropdown-list-header-compact .dropdown-list-arrow {
+    color: white;
+    opacity: 0.8;
+}
+
+.dropdown-list-header-compact .dropdown-value-icon {
+    font-size: 14px;
+    margin-right: 4px;
+}
+
+/* Panel du dropdown dans le header */
+.dropdown-list-header-compact .dropdown-list-panel {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    margin-top: 8px;
+}
+
+.dropdown-list-header-compact .dropdown-list-option {
+    color: #2c3e50;
+    padding: 10px 12px;
+    font-size: 14px;
+}
+
+.dropdown-list-header-compact .dropdown-list-option:hover {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.dropdown-list-header-compact .dropdown-list-option.selected {
+    background: rgba(102, 126, 234, 0.15);
+    color: #667eea;
+    font-weight: 600;
+}
+
+.dropdown-list-header-compact .dropdown-list-option-icon {
+    font-size: 16px;
+    margin-right: 8px;
+}
+
+/* Styles pour l'intégration dans le header */
+.header-magasin-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 15px;
+}
+
+.magasin-label {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.magasin-single {
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 0 10px;
+}
+
+/* Ajustements responsive */
+@media (max-width: 768px) {
+    .dropdown-list-header-compact .dropdown-list-wrapper {
+        min-width: 100px;
+    }
+    
+    .dropdown-list-header-compact .dropdown-list-trigger {
+        font-size: 13px;
+        padding: 4px 8px;
+        height: 28px;
+    }
+    
+    .header-magasin-section {
+        margin: 0 8px;
+    }
+}
+
+/* ========================================
    UTILISATION:
    
    Structure HTML générée par le composant :
