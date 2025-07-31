@@ -578,6 +578,32 @@ window.sauvegarderExpedition = async function() {
 // ACTIONS ET CHANGEMENT DE STATUT
 // ========================================
 
+// Export de la fonction pour commandes.main.js
+export async function changerStatutCommande(commandeId) {
+    try {
+        const commande = await CommandesService.getCommande(commandeId);
+        if (!commande) return;
+        
+        const prochainStatut = COMMANDES_CONFIG.STATUTS[commande.statut]?.suivant;
+        if (!prochainStatut) return;
+        
+        const confirme = await Dialog.confirm(
+            `Passer la commande au statut "${COMMANDES_CONFIG.STATUTS[prochainStatut].label}" ?`,
+            'Confirmation du changement de statut'
+        );
+        
+        if (confirme) {
+            await CommandesService.changerStatut(commandeId, prochainStatut);
+            await chargerDonnees();
+            afficherSucces('Statut mis à jour');
+        }
+        
+    } catch (error) {
+        console.error('Erreur changement statut:', error);
+        afficherErreur('Erreur lors du changement de statut');
+    }
+}
+
 function afficherActionsCommande(commande) {
     const detailActions = document.getElementById('detailActions');
     let actions = [];
@@ -890,6 +916,342 @@ window.changerStatutDetail = async function(commandeId, nouveauStatut, skipConfi
         console.error('❌ Erreur changement statut:', error);
         afficherErreur(error.message || 'Erreur lors du changement de statut');
     }
+};
+
+window.saisirNumerosSerie = async function(commandeId) {
+    console.log('🔍 Clic sur saisir NS, commande:', commandeId);
+    const { ouvrirSaisieNumerosSerie } = await import('./commandes.serial.js');
+    await ouvrirSaisieNumerosSerie(commandeId);
+};
+
+window.terminerPreparation = async function(commandeId) {
+    try {
+        const commande = await CommandesService.getCommande(commandeId);
+        if (!commande) return;
+        
+        const { verifierNumerosSerie } = await import('./commandes.serial.js');
+        
+        const nsValides = await verifierNumerosSerie(commande);
+        if (!nsValides) {
+            return;
+        }
+        
+        await changerStatutDetail(commandeId, 'terminee');
+        
+    } catch (error) {
+        console.error('Erreur terminer préparation:', error);
+        afficherErreur('Erreur lors de la finalisation de la préparation');
+    }
+};
+
+window.validerReception = async function(commandeId) {
+    try {
+        const result = await new Promise((resolve) => {
+            const dialogHtml = `
+                <div class="dialog-overlay"></div>
+                <div class="dialog-box">
+                    <div class="dialog-header">
+                        <div class="dialog-icon info">📥</div>
+                        <h3 class="dialog-title">Valider la réception</h3>
+                    </div>
+                    <div class="dialog-body">
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Numéro de suivi reçu *</label>
+                            <input type="text" id="numeroSuiviRecu" 
+                                   placeholder="Ex: RET123456" 
+                                   style="width: 100%; padding: 8px; border: 2px solid #e0e0e0; border-radius: 6px; box-sizing: border-box;"
+                                   required>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Le colis est-il conforme ?</label>
+                            <select id="colisConforme" 
+                                    style="width: 100%; padding: 8px; border: 2px solid #e0e0e0; border-radius: 6px;">
+                                <option value="true">✅ Oui, conforme</option>
+                                <option value="false">❌ Non, problème</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Commentaires (optionnel)</label>
+                            <textarea id="commentairesReception" 
+                                      placeholder="Précisions sur l'état du colis..." 
+                                      rows="3"
+                                      style="width: 100%; padding: 8px; border: 2px solid #e0e0e0; border-radius: 6px; box-sizing: border-box; resize: vertical;"></textarea>
+                        </div>
+                    </div>
+                    <div class="dialog-footer">
+                        <button class="dialog-btn secondary reception-cancel">Annuler</button>
+                        <button class="dialog-btn primary reception-confirm">Valider la réception</button>
+                    </div>
+                </div>
+            `;
+            
+            const dialogContainer = document.getElementById('dialog-container');
+            if (!dialogContainer) {
+                console.error('❌ Dialog container introuvable');
+                resolve(null);
+                return;
+            }
+            
+            dialogContainer.innerHTML = dialogHtml;
+            dialogContainer.classList.add('active');
+            
+            const numeroSuiviInput = document.getElementById('numeroSuiviRecu');
+            const colisConformeSelect = document.getElementById('colisConforme');
+            const commentairesTextarea = document.getElementById('commentairesReception');
+            const confirmBtn = document.querySelector('.reception-confirm');
+            const cancelBtn = document.querySelector('.reception-cancel');
+            const overlay = document.querySelector('.dialog-overlay');
+            
+            setTimeout(() => {
+                if (numeroSuiviInput) {
+                    numeroSuiviInput.focus();
+                }
+            }, 100);
+            
+            const handleConfirm = () => {
+                const numeroSuivi = numeroSuiviInput ? numeroSuiviInput.value.trim() : '';
+                
+                if (!numeroSuivi) {
+                    if (numeroSuiviInput) {
+                        numeroSuiviInput.style.borderColor = '#f44336';
+                        numeroSuiviInput.focus();
+                    }
+                    return;
+                }
+                
+                const result = {
+                    numeroSuiviRecu: numeroSuivi,
+                    colisConforme: colisConformeSelect.value,
+                    commentaires: commentairesTextarea.value.trim()
+                };
+                
+                dialogContainer.classList.remove('active');
+                setTimeout(() => {
+                    dialogContainer.innerHTML = '';
+                }, 200);
+                
+                resolve(result);
+            };
+            
+            const handleCancel = () => {
+                dialogContainer.classList.remove('active');
+                setTimeout(() => {
+                    dialogContainer.innerHTML = '';
+                }, 200);
+                resolve(null);
+            };
+            
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', handleConfirm);
+            }
+            
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', handleCancel);
+            }
+            
+            if (overlay) {
+                overlay.addEventListener('click', handleCancel);
+            }
+            
+            const handleKeydown = (e) => {
+                if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+                    e.preventDefault();
+                    handleConfirm();
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    handleCancel();
+                }
+            };
+            
+            document.addEventListener('keydown', handleKeydown);
+            
+            const originalResolve = resolve;
+            resolve = (value) => {
+                document.removeEventListener('keydown', handleKeydown);
+                originalResolve(value);
+            };
+        });
+        
+        if (result) {
+            await CommandesService.changerStatut(commandeId, 'receptionnee', {
+                numeroSuiviRecu: result.numeroSuiviRecu,
+                colisConforme: result.colisConforme === 'true',
+                commentairesReception: result.commentaires
+            });
+            
+            await chargerDonnees();
+            await voirDetailCommande(commandeId);
+            
+            afficherSucces('Réception validée');
+        }
+    } catch (error) {
+        // Ne pas logger les erreurs de validation métier (numéros de suivi)
+        if (!error.message.includes('Les numéros de suivi ne correspondent pas')) {
+            console.error('Erreur validation réception:', error);
+        }
+        
+        // Afficher le message d'erreur détaillé à l'utilisateur
+        afficherErreur(error.message || 'Erreur lors de la validation de la réception');
+    }
+};
+
+window.marquerPatientPrevenu = async function(commandeId) {
+    const confirme = await Dialog.confirm(
+        'Confirmer que le patient a été prévenu ?',
+        'Patient prévenu'
+    );
+    
+    if (confirme) {
+        try {
+            await CommandesService.mettreAJourCommande(commandeId, {
+                patientPrevenu: true,
+                'dates.patientPrevenu': new Date()
+            });
+            
+            await chargerDonnees();
+            await voirDetailCommande(commandeId);
+            
+            afficherSucces('Patient marqué comme prévenu');
+        } catch (error) {
+            console.error('Erreur mise à jour:', error);
+            afficherErreur('Erreur lors de la mise à jour');
+        }
+    }
+};
+
+window.livrerDirectement = async function(commandeId) {
+    const confirme = await Dialog.confirm(
+        'Confirmer la livraison directe au patient (sans expédition) ?',
+        'Livraison directe'
+    );
+    
+    if (confirme) {
+        // Passer true pour skipConfirmation afin d'éviter la double popup
+        await changerStatutDetail(commandeId, 'livree', true);
+    }
+};
+
+window.annulerCommande = async function(commandeId) {
+    const result = await new Promise((resolve) => {
+        const dialogHtml = `
+            <div class="dialog-overlay"></div>
+            <div class="dialog-box">
+                <div class="dialog-header">
+                    <div class="dialog-icon danger">❌</div>
+                    <h3 class="dialog-title">Annuler la commande</h3>
+                </div>
+                <div class="dialog-body">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Motif d'annulation *</label>
+                        <textarea id="motifAnnulation" 
+                                  placeholder="Précisez la raison de l'annulation..." 
+                                  rows="3"
+                                  style="width: 100%; padding: 8px; border: 2px solid #e0e0e0; border-radius: 6px; box-sizing: border-box; resize: vertical;"
+                                  required></textarea>
+                    </div>
+                </div>
+                <div class="dialog-footer">
+                    <button class="dialog-btn secondary annulation-cancel">Annuler</button>
+                    <button class="dialog-btn danger annulation-confirm">Confirmer l'annulation</button>
+                </div>
+            </div>
+        `;
+        
+        const dialogContainer = document.getElementById('dialog-container');
+        if (!dialogContainer) {
+            resolve(null);
+            return;
+        }
+        
+        dialogContainer.innerHTML = dialogHtml;
+        dialogContainer.classList.add('active');
+        
+        const motifTextarea = document.getElementById('motifAnnulation');
+        const confirmBtn = document.querySelector('.annulation-confirm');
+        const cancelBtn = document.querySelector('.annulation-cancel');
+        const overlay = document.querySelector('.dialog-overlay');
+        
+        setTimeout(() => {
+            if (motifTextarea) {
+                motifTextarea.focus();
+            }
+        }, 100);
+        
+        const handleConfirm = () => {
+            const motif = motifTextarea ? motifTextarea.value.trim() : '';
+            
+            if (!motif) {
+                if (motifTextarea) {
+                    motifTextarea.style.borderColor = '#f44336';
+                    motifTextarea.focus();
+                }
+                return;
+            }
+            
+            dialogContainer.classList.remove('active');
+            setTimeout(() => {
+                dialogContainer.innerHTML = '';
+            }, 200);
+            
+            resolve({ motif });
+        };
+        
+        const handleCancel = () => {
+            dialogContainer.classList.remove('active');
+            setTimeout(() => {
+                dialogContainer.innerHTML = '';
+            }, 200);
+            resolve(null);
+        };
+        
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', handleConfirm);
+        }
+        
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', handleCancel);
+        }
+        
+        if (overlay) {
+            overlay.addEventListener('click', handleCancel);
+        }
+        
+        const handleKeydown = (e) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                handleCancel();
+            }
+        };
+        
+        document.addEventListener('keydown', handleKeydown);
+        
+        const originalResolve = resolve;
+        resolve = (value) => {
+            document.removeEventListener('keydown', handleKeydown);
+            originalResolve(value);
+        };
+    });
+    
+    if (result && result.motif) {
+        try {
+            await CommandesService.changerStatut(commandeId, 'annulee', {
+                motifAnnulation: result.motif
+            });
+            
+            await chargerDonnees();
+            window.modalManager.close('modalDetailCommande');
+            
+            afficherSucces('Commande annulée');
+        } catch (error) {
+            console.error('Erreur annulation:', error);
+            afficherErreur('Erreur lors de l\'annulation');
+        }
+    }
+};
+
+window.editerProduits = function() {
+    // À implémenter si nécessaire
+    console.log('Édition des produits - À implémenter');
 };
 
 window.editerClient = function() {
