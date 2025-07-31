@@ -13,34 +13,15 @@
     <link rel="manifest" href="../manifest.json">
     <meta name="theme-color" content="#667eea">
     
-    <!-- CSS CORRIGÉ -->
+    <!-- CSS -->
     <link rel="stylesheet" href="../src/css/main.css">
     <link rel="stylesheet" href="../src/css/shared/ui/button.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/app-header.css">
     <link rel="stylesheet" href="../src/css/home.css">
 </head>
 <body>
-    <!-- Header uniforme -->
-    <div class="app-header">
-        <div class="app-header-content">
-            <div class="app-header-left"></div>
-            <div class="app-header-center">
-                <h1>📊 Dashboard</h1>
-                <p>Système de Gestion des Interventions</p>
-            </div>
-            <div class="app-header-right">
-                <div class="magasin-selector">
-                    <label for="magasinSelect">Magasin:</label>
-                    <select id="magasinSelect" onchange="changeMagasin(this.value)">
-                        <!-- Options générées dynamiquement -->
-                    </select>
-                </div>
-                <button class="header-logout-button" onclick="logout()">
-                    🚪 Déconnexion
-                </button>
-            </div>
-        </div>
-    </div>
-
+    <!-- Le header sera injecté ici par AppHeader component -->
+    
     <div class="container">
         <!-- Menu principal -->
         <div class="menu-grid">
@@ -79,13 +60,20 @@
                 <h3>Mon Compte</h3>
                 <p>Gérer mes informations personnelles</p>
             </a>
-</div>
+        </div>
+    </div>
 
     <div class="footer">
         <p>Orixis - © 2025</p>
     </div>
 
-    <script>
+    <!-- Script principal avec AppHeader -->
+    <script type="module">
+        import { AppHeader } from '../src/js/shared/ui/app-header.component.js';
+        
+        // Variables globales
+        let appHeader = null;
+        
         // Fonction de vérification d'authentification
         function checkAuth() {
             const auth = localStorage.getItem('sav_auth');
@@ -102,84 +90,80 @@
             return authData.authenticated;
         }
         
-        // Vérifier l'authentification au chargement
-        window.addEventListener('load', () => {
-            if (!checkAuth()) {
-                window.location.href = '../index.html';
-            } else {
-                setupMagasinSelector();
-            }
-        });
-        
-        // Configurer le sélecteur de magasin
-        function setupMagasinSelector() {
+        // Obtenir les données utilisateur avec sélecteur de magasin
+        function getUserDataWithMagasin() {
             const auth = JSON.parse(localStorage.getItem('sav_auth'));
             const permissions = JSON.parse(localStorage.getItem('sav_user_permissions') || '{}');
             
-            const select = document.getElementById('magasinSelect');
-            const selectorDiv = document.querySelector('.magasin-selector');
+            if (!auth || !auth.collaborateur) {
+                return {
+                    name: 'Utilisateur',
+                    store: 'Magasin non défini',
+                    showLogout: true
+                };
+            }
             
             // Récupérer les magasins autorisés
             let magasinsAutorises = auth.magasins || [];
             
-            // Si on a des autorisations spécifiques, les utiliser
             if (permissions.autorisations) {
                 magasinsAutorises = Object.keys(permissions.autorisations)
                     .filter(mag => permissions.autorisations[mag].acces === true);
             }
             
-            // S'assurer qu'on a au moins le magasin actuel
             if (magasinsAutorises.length === 0 && auth.magasin) {
                 magasinsAutorises = [auth.magasin];
             }
             
-            // Si un seul magasin ou moins, afficher juste le texte
-            if (magasinsAutorises.length <= 1) {
-                const magasinActuel = auth.magasin || magasinsAutorises[0] || 'Non défini';
-                selectorDiv.innerHTML = `
-                    <label style="color: white; font-weight: 600;">
-                        Magasin: <strong style="font-size: 16px;">${magasinActuel}</strong>
-                    </label>
+            // Créer le sélecteur de magasin si plusieurs magasins
+            let storeDisplay = '';
+            if (magasinsAutorises.length > 1) {
+                const options = magasinsAutorises.map(mag => 
+                    `<option value="${mag}" ${mag === auth.magasin ? 'selected' : ''}>${mag}</option>`
+                ).join('');
+                
+                storeDisplay = `
+                    <div class="magasin-selector">
+                        <label for="magasinSelect">Magasin:</label>
+                        <select id="magasinSelect" onchange="window.changeMagasin(this.value)">
+                            ${options}
+                        </select>
+                    </div>
                 `;
             } else {
-                // Plusieurs magasins, afficher le select
-                magasinsAutorises.forEach(magasin => {
-                    const option = document.createElement('option');
-                    option.value = magasin;
-                    option.textContent = magasin;
-                    if (magasin === auth.magasin) {
-                        option.selected = true;
-                    }
-                    select.appendChild(option);
-                });
+                // Un seul magasin ou aucun, afficher en texte simple
+                const magasinActuel = auth.magasin || magasinsAutorises[0] || 'Non défini';
+                storeDisplay = `Magasin ${magasinActuel}`;
             }
+            
+            return {
+                name: `${auth.collaborateur.prenom} ${auth.collaborateur.nom}`,
+                store: storeDisplay,
+                showLogout: true
+            };
         }
         
         // Changer de magasin
-        function changeMagasin(nouveauMagasin) {
+        window.changeMagasin = function(nouveauMagasin) {
             const auth = JSON.parse(localStorage.getItem('sav_auth'));
             const permissions = JSON.parse(localStorage.getItem('sav_user_permissions') || '{}');
             
-            // Vérifier l'autorisation
             if (permissions.autorisations && 
                 permissions.autorisations[nouveauMagasin] && 
                 permissions.autorisations[nouveauMagasin].acces) {
                 
-                // Mettre à jour le magasin actif
                 auth.magasin = nouveauMagasin;
                 localStorage.setItem('sav_auth', JSON.stringify(auth));
-                
-                // Recharger la page pour appliquer les changements
                 location.reload();
             } else {
                 alert('Vous n\'avez pas accès à ce magasin');
                 // Remettre la sélection précédente
                 document.getElementById('magasinSelect').value = auth.magasin;
             }
-        }
+        };
         
         // Fonction de déconnexion
-        function logout() {
+        async function handleLogout() {
             if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
                 localStorage.removeItem('sav_auth');
                 localStorage.removeItem('sav_user_permissions');
@@ -187,14 +171,48 @@
             }
         }
         
-        // Afficher les infos au chargement
-        document.addEventListener('DOMContentLoaded', function() {
-            // Animation des cards
-            const cards = document.querySelectorAll('.menu-card');
-            cards.forEach((card, index) => {
-                card.style.animationDelay = `${index * 0.1}s`;
+        // Initialiser le header
+        function initHeader() {
+            const userData = getUserDataWithMagasin();
+            
+            appHeader = new AppHeader({
+                container: 'body',
+                title: '📊 Dashboard',
+                subtitle: 'Système de Gestion des Interventions',
+                user: userData,
+                onLogout: handleLogout,
+                theme: 'default'
             });
+            
+            // Si on a un sélecteur de magasin, attacher les événements après un court délai
+            if (userData.store.includes('select')) {
+                setTimeout(() => {
+                    const select = document.getElementById('magasinSelect');
+                    if (select) {
+                        // Re-attacher l'événement onchange
+                        select.onchange = (e) => window.changeMagasin(e.target.value);
+                    }
+                }, 100);
+            }
+        }
+        
+        // Vérifier l'authentification au chargement
+        window.addEventListener('load', () => {
+            if (!checkAuth()) {
+                window.location.href = '../index.html';
+            } else {
+                initHeader();
+                
+                // Animation des cards
+                const cards = document.querySelectorAll('.menu-card');
+                cards.forEach((card, index) => {
+                    card.style.animationDelay = `${index * 0.1}s`;
+                });
+            }
         });
+        
+        // Exposer logout globalement pour compatibilité
+        window.logout = handleLogout;
     </script>
 </body>
 </html>

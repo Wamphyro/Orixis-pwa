@@ -78,55 +78,6 @@
 }
 
 /* ========================================
-   SÉLECTEUR DE MAGASIN DANS LE HEADER
-   ======================================== */
-.magasin-selector {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-right: 20px;
-}
-
-.magasin-selector label {
-    color: white;
-    font-weight: 600;
-    margin-bottom: 0;
-}
-
-.magasin-selector strong {
-    font-size: 16px;
-}
-
-.magasin-selector select {
-    padding: 8px 12px;
-    border-radius: 8px;
-    border: 2px solid rgba(255,255,255,0.3);
-    background: rgba(255,255,255,0.1);
-    color: white;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    min-width: 120px;
-}
-
-.magasin-selector select:hover {
-    background: rgba(255,255,255,0.2);
-    border-color: rgba(255,255,255,0.5);
-}
-
-.magasin-selector select:focus {
-    outline: none;
-    background: rgba(255,255,255,0.2);
-    border-color: white;
-    box-shadow: 0 0 0 3px rgba(255,255,255,0.2);
-}
-
-.magasin-selector select option {
-    background: #2c3e50;
-    color: white;
-}
-
-/* ========================================
    ANIMATIONS SPÉCIFIQUES
    ======================================== */
 @keyframes fadeInUp {
