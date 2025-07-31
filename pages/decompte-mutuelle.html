@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAV Audio - Décompte Mutuel</title>
+    <title>SAV Audio - Décompte Mutuelle</title>
     
     <!-- PWA Meta Tags -->
     <meta name="mobile-web-app-capable" content="yes">
@@ -35,9 +35,9 @@
     <link rel="stylesheet" href="../src/css/shared/ui/stats-cards.css">
     <link rel="stylesheet" href="../src/css/shared/ui/app-header.css">
 
-    <!-- 3. CSS spécifiques au décompte mutuel -->
-    <link rel="stylesheet" href="../src/css/decompte-mutuel/decompte-mutuel.css">
-    <link rel="stylesheet" href="../src/css/decompte-mutuel/decompte-mutuel-custom.css">
+    <!-- 3. CSS spécifiques au décompte mutuelle -->
+    <link rel="stylesheet" href="../src/css/decompte-mutuelle/decompte-mutuelle.css">
+    <link rel="stylesheet" href="../src/css/decompte-mutuelle/decompte-mutuelle-custom.css">
 </head>
 <body>
     <!-- Container pour le composant AppHeader -->
@@ -52,7 +52,7 @@
             
             <div class="decompte-actions">
                 <!-- ✅ Bouton avec glassmorphism -->
-                <button class="btn btn-primary btn-with-icon" onclick="ouvrirNouvelleSaisie()">
+                <button class="btn btn-primary btn-with-icon" onclick="window.ouvrirNouvelleSaisie()">
                     <span>➕</span> Nouvelle saisie
                 </button>
             </div>
@@ -73,7 +73,7 @@
     <div id="modalNouvelleSaisie" class="modal" style="display: none;">
         <div class="modal-content modal-large">
             <div class="modal-header">
-                <h2>Nouvelle Saisie Décompte Mutuel</h2>
+                <h2>Nouvelle Saisie Décompte Mutuelle</h2>
                 <button class="modal-close">&times;</button>
             </div>
             
@@ -92,7 +92,7 @@
                             <p><strong id="selectedClientName"></strong></p>
                             <p id="selectedClientInfo"></p>
                         </div>
-                        <button class="btn-link" onclick="changerClient()">Changer de client</button>
+                        <button class="btn-link" onclick="window.changerClient()">Changer de client</button>
                     </div>
                 </div>
                 
@@ -131,13 +131,13 @@
                         <div class="montant-card">
                             <label>Prix de vente TTC</label>
                             <input type="number" id="prixVente" step="0.01" min="0" 
-                                   placeholder="0,00 €" oninput="calculerMontants()">
+                                   placeholder="0,00 €" oninput="window.calculerMontants()">
                         </div>
                         
                         <div class="montant-card">
                             <label>Remboursement Sécu</label>
                             <input type="number" id="remboursementSecu" step="0.01" min="0" 
-                                   placeholder="0,00 €" oninput="calculerMontants()">
+                                   placeholder="0,00 €" oninput="window.calculerMontants()">
                         </div>
                         
                         <div class="montant-card highlight">
@@ -148,7 +148,7 @@
                         <div class="montant-card success">
                             <label>Prise en charge Mutuelle</label>
                             <input type="number" id="priseEnCharge" step="0.01" min="0" 
-                                   placeholder="0,00 €" oninput="calculerMontants()">
+                                   placeholder="0,00 €" oninput="window.calculerMontants()">
                         </div>
                     </div>
                     
@@ -163,10 +163,10 @@
                     <h3>Documents justificatifs</h3>
                     
                     <div class="documents-zone">
-                        <div class="upload-zone" id="uploadZone">
+                        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
                             <p>📎 Glissez vos fichiers ici ou cliquez pour sélectionner</p>
                             <input type="file" id="fileInput" multiple accept=".pdf,.jpg,.jpeg,.png" 
-                                   style="display: none;" onchange="gererFichiers(this.files)">
+                                   style="display: none;" onchange="window.gererFichiers(this.files)">
                         </div>
                         
                         <div class="documents-list" id="documentsList">
@@ -184,10 +184,10 @@
             </div>
             
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="fermerModal('modalNouvelleSaisie')">
+                <button class="btn btn-secondary" onclick="window.fermerModal('modalNouvelleSaisie')">
                     Annuler
                 </button>
-                <button class="btn btn-success" onclick="validerSaisie()">
+                <button class="btn btn-success" onclick="window.validerSaisie()">
                     ✓ Valider la saisie
                 </button>
             </div>
@@ -250,6 +250,6 @@
         <p>Orixis - © 2025</p>
     </div>
 
-    <script type="module" src="../src/js/pages/decompte-mutuel/decompte-mutuel.main.js"></script>
+    <script type="module" src="../src/js/pages/decompte-mutuelle/decompte-mutuelle.main.js"></script>
 </body>
 </html>
