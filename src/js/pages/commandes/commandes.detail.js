@@ -924,7 +924,8 @@ window.livrerDirectement = async function(commandeId) {
     });
     
     if (confirme) {
-        await changerStatutDetail(commandeId, 'livree');
+        // Passer true pour skipConfirmation afin d'éviter la double popup
+        await changerStatutDetail(commandeId, 'livree', true);
     }
 };
 
@@ -1155,9 +1156,15 @@ window.editerLivraison = async function() {
    - Gestion propre du destroy() sur tous les dropdowns
    - Import db géré avec fonction async getDb()
    
+   [31/01/2025] - Correction double popup livraison directe
+   - Problème: Double confirmation lors de "Livrer directement au patient"
+   - Solution: Ajout paramètre skipConfirmation dans changerStatutDetail
+   - Impact: Plus de double popup, passage direct au statut livré
+   
    NOTES POUR REPRISES FUTURES:
    - Tous les dropdowns d'édition utilisent DropdownList
    - La recherche est activée uniquement sur les magasins
    - Les icônes sont affichées pour l'urgence
    - Toujours détruire les dropdowns dans les fonctions annuler
+   - livrerDirectement utilise skipConfirmation = true
    ======================================== */
