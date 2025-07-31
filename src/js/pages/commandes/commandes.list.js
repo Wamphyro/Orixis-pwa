@@ -6,6 +6,7 @@
 // Gère l'affichage de la liste des commandes avec DataTable et DataTableFilters
 // Refactorisé le 29/07/2025 : Migration vers DataTable + DataTableFilters
 // Modifié le 31/01/2025 : Utilisation complète de la config centralisée
+// Modifié le 01/02/2025 : Utilisation de chargerMagasins() au lieu de dupliquer le code
 // ========================================
 
 import { CommandesService } from '../../services/commandes.service.js';
@@ -17,7 +18,7 @@ import {
 } from '../../data/commandes.data.js';
 import { DataTable, DataTableFilters, StatsCards, formatDate as formatDateUtil } from '../../shared/index.js';
 import { state } from './commandes.main.js';
-import { db } from '../../services/firebase.service.js';
+import { db, chargerMagasins } from '../../services/firebase.service.js';  // ← MODIFIÉ : ajout de chargerMagasins
 
 // Variables pour les instances
 let tableCommandes = null;
@@ -188,36 +189,36 @@ function initStatsCards() {
 
 /**
  * Initialiser les filtres
- * MODIFIÉ : Utilise genererOptionsFiltres() depuis commandes.data.js
+ * MODIFIÉ : Utilise chargerMagasins() du service au lieu de dupliquer le code
  */
-async function initFiltres() {  // ← AJOUTER async
+async function initFiltres() {
     let filtresConfig = genererOptionsFiltres();
     
-    // Charger les magasins depuis Firebase
+    // ========================================
+    // MODIFIÉ : Utiliser le service au lieu d'importer Firebase directement
+    // ========================================
     try {
-        const { collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-        const magasinsSnapshot = await getDocs(collection(db, 'magasins'));
+        // Utiliser la fonction existante du service
+        const magasinsData = await chargerMagasins();
         
-        const magasins = [];
-        magasinsSnapshot.forEach((doc) => {
-            const data = doc.data();
-            if (data.actif !== false) {
-                magasins.push({
-                    value: data.code || doc.id,
-                    label: data.nom || data.code || doc.id
-                });
+        if (magasinsData) {
+            // Transformer le format { id: {nom, code, actif} } en tableau d'options
+            const magasins = Object.entries(magasinsData)
+                .filter(([id, data]) => data.actif !== false)
+                .map(([id, data]) => ({
+                    value: data.code || id,
+                    label: data.nom || data.code || id
+                }))
+                .sort((a, b) => a.label.localeCompare(b.label));
+            
+            // Trouver le filtre magasin et ajouter les options
+            const magasinFilter = filtresConfig.find(f => f.key === 'magasin');
+            if (magasinFilter) {
+                magasinFilter.options = [
+                    { value: '', label: 'Tous les magasins' },
+                    ...magasins
+                ];
             }
-        });
-        
-        magasins.sort((a, b) => a.label.localeCompare(b.label));
-        
-        // Trouver le filtre magasin et ajouter les options
-        const magasinFilter = filtresConfig.find(f => f.key === 'magasin');
-        if (magasinFilter) {
-            magasinFilter.options = [
-                { value: '', label: 'Tous les magasins' },
-                ...magasins
-            ];
         }
     } catch (error) {
         console.error('Erreur chargement magasins:', error);
@@ -540,6 +541,12 @@ function prepareExportData(data) {
    - prepareExportData() utilise formaterDonneesExport()
    - Toute la config vient maintenant de commandes.data.js
    
+   [01/02/2025] - Découplage Firebase des composants
+   - Utilisation de chargerMagasins() depuis firebase.service.js
+   - Suppression de l'import direct de Firebase dans initFiltres()
+   - Transformation du format { id: {...} } en tableau d'options
+   - Réduction de la duplication de code
+   
    AVANTAGES:
    - Composants réutilisables
    - Code plus maintenable
@@ -547,10 +554,13 @@ function prepareExportData(data) {
    - Export CSV/Excel intégré
    - Configuration 100% centralisée
    - Une seule source de vérité pour toutes les configs
+   - Pas de duplication de code Firebase
+   - Séparation des responsabilités (UI vs Services)
    
    NOTES:
    - Les fonctions filtrerCommandes et resetFiltres sont conservées pour compatibilité
    - Les IDs HTML (searchInput, etc.) ne sont plus utilisés
    - Tout est géré par les composants
    - La configuration est maintenant uniquement dans commandes.data.js
+   - Firebase est géré uniquement par les services
    ======================================== */

@@ -1,0 +1,573 @@
+// ========================================
+// PAGE-BUILDER.JS - Constructeur de pages depuis configuration
+// Chemin: src/js/core/page-builder.js
+//
+// DESCRIPTION:
+// Lit une configuration et génère automatiquement l'interface
+// en utilisant les composants UI existants
+//
+// API PUBLIQUE:
+// - constructor()
+// - loadConfig(pageName)
+// - init()
+// - destroy()
+//
+// ÉVÉNEMENTS:
+// - page:ready - Page construite et prête
+// - data:load - Demande de chargement des données
+// - action:trigger - Une action a été déclenchée
+//
+// DÉPENDANCES:
+// - Tous les composants shared/ui
+// - ModuleLoader pour les modules additionnels
+// - Services Firebase si définis dans la config
+// ========================================
+
+import { 
+    AppHeader,
+    StatsCards,
+    DataTable,
+    DataTableFilters,
+    modalManager,
+    notify
+} from '../shared/index.js';
+import { ModuleLoader } from './module-loader.js';
+
+export class PageBuilder extends EventTarget {
+    constructor() {
+        super();
+        
+        // Configuration de la page
+        this.config = null;
+        
+        // Instances des composants
+        this.components = {
+            header: null,
+            statsCards: null,
+            filters: null,
+            table: null,
+            modules: []
+        };
+        
+        // Container principal
+        this.container = document.getElementById('app-container');
+        
+        // Hooks de logique métier
+        this.hooks = null;
+        
+        // Module loader
+        this.moduleLoader = new ModuleLoader();
+    }
+    
+    // ========================================
+    // CHARGEMENT DE LA CONFIGURATION
+    // ========================================
+    
+    async loadConfig(pageName) {
+        try {
+            // Charger la configuration
+            const module = await import(`../configs/${pageName}.config.js`);
+            this.config = module.default;
+            
+            // Valider la configuration
+            this.validateConfig();
+            
+            // Définir le titre de la page
+            if (this.config.page?.title) {
+                document.title = `SAV Audio - ${this.config.page.title}`;
+            }
+            
+            console.log(`✅ Configuration chargée pour ${pageName}`);
+            
+        } catch (error) {
+            console.error('❌ Erreur chargement config:', error);
+            throw new Error(`Impossible de charger la configuration pour ${pageName}`);
+        }
+    }
+    
+    validateConfig() {
+        if (!this.config) {
+            throw new Error('Configuration manquante');
+        }
+        
+        if (!this.config.page) {
+            throw new Error('Configuration de page manquante');
+        }
+    }
+    
+    // ========================================
+    // INITIALISATION
+    // ========================================
+    
+    async init() {
+        try {
+            // 1. Vérifier l'authentification
+            if (!this.checkAuth()) {
+                window.location.href = '../../index.html';
+                return;
+            }
+            
+            // 2. Initialiser Firebase si nécessaire
+            if (this.config.requiresFirebase !== false) {
+                await this.initFirebase();
+            }
+            
+            // 3. Construire l'interface
+            await this.buildUI();
+            
+            // 4. Charger les hooks métier si définis
+            if (this.config.handlers) {
+                await this.loadBusinessLogic();
+            }
+            
+            // 5. Initialiser les modales si définies
+            if (this.config.modals) {
+                this.initModals();
+            }
+            
+            // 6. Émettre l'événement ready
+            this.dispatchEvent(new CustomEvent('page:ready'));
+            
+            // 7. Charger les données initiales
+            await this.loadData();
+            
+        } catch (error) {
+            console.error('❌ Erreur initialisation:', error);
+            notify.error('Erreur lors de l\'initialisation de la page');
+            throw error;
+        }
+    }
+    
+    // ========================================
+    // CONSTRUCTION DE L'UI
+    // ========================================
+    
+    async buildUI() {
+        // Clear container
+        this.container.innerHTML = '';
+        
+        // 1. Header
+        if (this.config.header) {
+            await this.createHeader();
+        }
+        
+        // 2. Container principal avec padding
+        const mainContainer = document.createElement('div');
+        mainContainer.className = 'container';
+        this.container.appendChild(mainContainer);
+        
+        // 3. Section header (stats + actions)
+        if (this.config.statsCards || this.config.actions) {
+            await this.createHeaderSection(mainContainer);
+        }
+        
+        // 4. Filtres
+        if (this.config.filters) {
+            await this.createFilters(mainContainer);
+        }
+        
+        // 5. Table
+        if (this.config.table) {
+            await this.createDataTable(mainContainer);
+        }
+        
+        // 6. Modules additionnels
+        if (this.config.modules) {
+            await this.loadAdditionalModules(mainContainer);
+        }
+    }
+    
+    // ========================================
+    // CRÉATION DES COMPOSANTS
+    // ========================================
+    
+    async createHeader() {
+        const userData = this.getUserData();
+        
+        this.components.header = new AppHeader({
+            container: 'body',
+            title: this.config.page.title,
+            subtitle: this.config.page.subtitle,
+            backUrl: this.config.header.backUrl || 'home.html',
+            user: userData,
+            onLogout: () => this.handleLogout(),
+            onBack: this.config.header.onBack,
+            onUserClick: this.config.header.onUserClick
+        });
+    }
+    
+    async createHeaderSection(container) {
+        const headerDiv = document.createElement('div');
+        headerDiv.className = this.config.headerClass || 'page-header';
+        headerDiv.style.cssText = 'display: flex; justify-content: space-between; align-items: center; gap: 30px; margin-bottom: 30px; flex-wrap: wrap;';
+        
+        // Stats à gauche
+        if (this.config.statsCards) {
+            const statsDiv = document.createElement('div');
+            statsDiv.className = this.config.statsClass || 'page-stats';
+            statsDiv.style.cssText = 'display: flex; gap: 20px; flex: 1; flex-wrap: wrap;';
+            
+            this.components.statsCards = new StatsCards({
+                container: statsDiv,
+                cards: this.config.statsCards,
+                animated: true,
+                onClick: (cardId, cardData) => {
+                    this.dispatchEvent(new CustomEvent('stats:click', {
+                        detail: { cardId, cardData }
+                    }));
+                }
+            });
+            
+            headerDiv.appendChild(statsDiv);
+        }
+        
+        // Actions à droite
+        if (this.config.actions) {
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = this.config.actionsClass || 'page-actions';
+            actionsDiv.style.cssText = 'display: flex; gap: 15px; align-items: center;';
+            
+            this.config.actions.forEach(action => {
+                const btn = document.createElement('button');
+                btn.className = `btn ${action.class || 'btn-primary'} ${action.withIcon ? 'btn-with-icon' : ''}`;
+                btn.innerHTML = `${action.icon ? `<span>${action.icon}</span> ` : ''}${action.label}`;
+                btn.onclick = () => {
+                    this.triggerAction(action.handler || action.id, action.params);
+                };
+                actionsDiv.appendChild(btn);
+            });
+            
+            headerDiv.appendChild(actionsDiv);
+        }
+        
+        container.appendChild(headerDiv);
+    }
+    
+    async createFilters(container) {
+        const filtersDiv = document.createElement('div');
+        filtersDiv.className = `${this.config.filtersClass || 'page-filters'} section`;
+        
+        this.components.filters = new DataTableFilters({
+            container: filtersDiv,
+            filters: this.config.filters,
+            onFilter: (filters) => {
+                this.dispatchEvent(new CustomEvent('filters:change', {
+                    detail: filters
+                }));
+            }
+        });
+        
+        container.appendChild(filtersDiv);
+    }
+    
+    async createDataTable(container) {
+        const tableDiv = document.createElement('div');
+        tableDiv.className = `${this.config.tableClass || 'page-table-container'} section`;
+        
+        // Formatter les colonnes d'actions si nécessaire
+        const columns = this.config.table.columns.map(col => {
+            if (col.key === 'actions' && col.actions) {
+                col.formatter = (_, row) => {
+                    return col.actions.map(action => {
+                        const params = action.params ? 
+                            action.params.reduce((acc, param) => {
+                                acc[param] = row[param];
+                                return acc;
+                            }, {}) : 
+                            { row };
+                        
+                        return `<button class="btn-action" onclick="window.pageBuilder.triggerAction('${action.handler}', ${JSON.stringify(params).replace(/"/g, '&quot;')})">${action.icon}</button>`;
+                    }).join(' ');
+                };
+            }
+            return col;
+        });
+        
+        this.components.table = new DataTable({
+            container: tableDiv,
+            columns: columns,
+            features: this.config.table.features || {
+                sort: true,
+                resize: true,
+                export: true,
+                pagination: true
+            },
+            pagination: this.config.table.pagination || {
+                itemsPerPage: 20,
+                pageSizeOptions: [10, 20, 50, 100]
+            },
+            messages: this.config.table.messages || {
+                noData: 'Aucune donnée trouvée',
+                loading: 'Chargement...'
+            }
+        });
+        
+        container.appendChild(tableDiv);
+        
+        // Exposer globalement pour les onclick
+        window.pageBuilder = this;
+    }
+    
+    async loadAdditionalModules(container) {
+        for (const moduleConfig of this.config.modules) {
+            const moduleDiv = document.createElement('div');
+            moduleDiv.className = 'module-container';
+            container.appendChild(moduleDiv);
+            
+            const module = await this.moduleLoader.load(moduleConfig.type, {
+                container: moduleDiv,
+                ...moduleConfig.config
+            });
+            
+            this.components.modules.push(module);
+        }
+    }
+    
+    // ========================================
+    // GESTION DES MODALES
+    // ========================================
+    
+    initModals() {
+        this.config.modals.forEach(modalConfig => {
+            // Créer le HTML de la modale
+            const modalHtml = this.generateModalHtml(modalConfig);
+            document.getElementById('modals-container').insertAdjacentHTML('beforeend', modalHtml);
+            
+            // Enregistrer dans modalManager
+            modalManager.register(modalConfig.id, {
+                closeOnOverlayClick: modalConfig.closeOnOverlay || false,
+                closeOnEscape: modalConfig.closeOnEscape !== false,
+                onBeforeClose: modalConfig.onBeforeClose,
+                onClose: modalConfig.onClose
+            });
+        });
+    }
+    
+    generateModalHtml(config) {
+        // Générer le HTML de la modale selon la config
+        // Simplifié ici, peut être étendu selon les besoins
+        return `
+            <div id="${config.id}" class="modal" style="display: none;">
+                <div class="modal-content ${config.size || 'modal-md'}">
+                    <div class="modal-header">
+                        <h2>${config.title}</h2>
+                        <button class="modal-close">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        ${config.content || ''}
+                    </div>
+                    ${config.footer ? `
+                        <div class="modal-footer">
+                            ${config.footer}
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }
+    
+    // ========================================
+    // CHARGEMENT DES DONNÉES
+    // ========================================
+    
+    async loadData() {
+        try {
+            // Afficher le loader
+            if (this.components.table) {
+                this.components.table.state.loading = true;
+                this.components.table.refresh();
+            }
+            
+            // Émettre l'événement pour charger les données
+            const event = new CustomEvent('data:load', {
+                cancelable: true,
+                detail: {}
+            });
+            
+            this.dispatchEvent(event);
+            
+            // Si un handler a fourni des données
+            if (event.detail.data) {
+                this.updateData(event.detail.data);
+            }
+            // Sinon, utiliser le service défini dans la config
+            else if (this.config.table?.dataSource) {
+                const data = await this.fetchDataFromSource();
+                this.updateData(data);
+            }
+            
+        } catch (error) {
+            console.error('❌ Erreur chargement données:', error);
+            notify.error('Erreur lors du chargement des données');
+        } finally {
+            if (this.components.table) {
+                this.components.table.state.loading = false;
+            }
+        }
+    }
+    
+    async fetchDataFromSource() {
+        const source = this.config.table.dataSource;
+        
+        // Si c'est une fonction
+        if (typeof source === 'function') {
+            return await source();
+        }
+        
+        // Si c'est un string type "ServiceName.methodName"
+        if (typeof source === 'string' && source.includes('.')) {
+            const [serviceName, methodName] = source.split('.');
+            const service = await import(`../services/${serviceName.toLowerCase()}.service.js`);
+            return await service[serviceName][methodName]();
+        }
+        
+        return [];
+    }
+    
+    updateData(data) {
+        // Mettre à jour la table
+        if (this.components.table) {
+            this.components.table.setData(data);
+        }
+        
+        // Mettre à jour les stats si handler fourni
+        if (this.config.statsCards && this.config.statsHandler) {
+            const stats = this.config.statsHandler(data);
+            this.components.statsCards.updateAll(stats);
+        }
+    }
+    
+    // ========================================
+    // LOGIQUE MÉTIER
+    // ========================================
+    
+    async loadBusinessLogic() {
+        const pageName = this.config.handlers.page || window.location.pathname.split('/').pop().replace('.html', '');
+        
+        try {
+            const module = await import(`../pages/${pageName}/${pageName}.hooks.js`);
+            const HooksClass = module[`${this.capitalize(pageName)}Hooks`] || module.default;
+            this.hooks = new HooksClass(this);
+            console.log(`✅ Hooks métier chargés pour ${pageName}`);
+        } catch (error) {
+            console.warn(`⚠️ Pas de hooks trouvés pour ${pageName}, mode template pur`);
+        }
+    }
+    
+    triggerAction(actionId, params = {}) {
+        this.dispatchEvent(new CustomEvent('action:trigger', {
+            detail: { actionId, params }
+        }));
+    }
+    
+    // ========================================
+    // UTILITAIRES
+    // ========================================
+    
+    checkAuth() {
+        const auth = localStorage.getItem('sav_auth');
+        if (!auth) return false;
+        
+        const authData = JSON.parse(auth);
+        const now = Date.now();
+        
+        if (now - authData.timestamp > authData.expiry) {
+            localStorage.removeItem('sav_auth');
+            return false;
+        }
+        
+        return authData.authenticated;
+    }
+    
+    async initFirebase() {
+        const { initFirebase } = await import('../services/firebase.service.js');
+        await initFirebase();
+    }
+    
+    getUserData() {
+        const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
+        if (auth.collaborateur) {
+            const storeName = auth.magasin || 
+                            auth.collaborateur.magasin || 
+                            auth.collaborateur.magasin_nom || 
+                            'NON_DEFINI';
+            
+            return {
+                name: `${auth.collaborateur.prenom} ${auth.collaborateur.nom}`,
+                store: storeName.startsWith('Magasin') ? storeName : `Magasin ${storeName}`,
+                showLogout: true
+            };
+        }
+        
+        return {
+            name: 'Utilisateur',
+            store: 'Magasin non défini',
+            showLogout: true
+        };
+    }
+    
+    async handleLogout() {
+        const { confirmerAction } = await import('../shared/index.js');
+        
+        const confirme = await confirmerAction({
+            titre: 'Déconnexion',
+            message: 'Voulez-vous vraiment vous déconnecter ?',
+            boutonConfirmer: 'Déconnexion',
+            boutonAnnuler: 'Annuler',
+            danger: true
+        });
+        
+        if (confirme) {
+            localStorage.removeItem('sav_auth');
+            localStorage.removeItem('sav_user_permissions');
+            notify.success('Déconnexion réussie');
+            
+            setTimeout(() => {
+                window.location.href = '../../index.html';
+            }, 1000);
+        }
+    }
+    
+    capitalize(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+    
+    // ========================================
+    // DESTRUCTION
+    // ========================================
+    
+    destroy() {
+        // Détruire tous les composants
+        Object.values(this.components).forEach(component => {
+            if (component && typeof component.destroy === 'function') {
+                component.destroy();
+            }
+        });
+        
+        // Nettoyer les modules
+        this.components.modules.forEach(module => {
+            if (module && typeof module.destroy === 'function') {
+                module.destroy();
+            }
+        });
+        
+        // Nettoyer le container
+        if (this.container) {
+            this.container.innerHTML = '';
+        }
+        
+        // Retirer la référence globale
+        delete window.pageBuilder;
+    }
+}
+
+// ========================================
+// HISTORIQUE DES DIFFICULTÉS
+//
+// [Date] - Description du problème et solution
+//
+// NOTES POUR REPRISES FUTURES:
+// - Le PageBuilder est event-driven pour la communication
+// - Les hooks métier sont optionnels
+// - Tous les composants sont réutilisables
+// ========================================
