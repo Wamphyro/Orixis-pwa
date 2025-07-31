@@ -1,14 +1,44 @@
 // ========================================
 // MODAL.COMPONENT.JS - Composant Modal réutilisable
-// ========================================
-// Chemin: src/js/shared/ui/modal.component.js
+// Chemin: src/components/ui/modal/modal.component.js
 //
-// Version mise à jour : chemins CSS corrigés pour pages dans /pages/
-// Charge maintenant : ../src/css/shared/ui/modal.css
+// DESCRIPTION:
+// Système de modales avec gestionnaire pour multiple instances
+// Support des callbacks et animations fluides
+//
+// MODIFIÉ le 01/02/2025:
+// - Génération d'ID autonome harmonisée
+// - 100% indépendant
+//
+// API PUBLIQUE:
+// - constructor(modalId, options)
+// - open()
+// - close()
+// - toggle()
+// - setContent(selector, content)
+// - getElement(selector)
+// - destroy()
+//
+// CALLBACKS DISPONIBLES:
+// - onOpen: (modal) => void | Promise<boolean>
+// - onClose: (modal) => void
+// - onBeforeClose: (modal) => Promise<boolean>
+//
+// EXEMPLE:
+// const modal = new Modal('myModal', {
+//     closeOnOverlayClick: true,
+//     closeOnEscape: true,
+//     onOpen: () => console.log('Modal ouverte'),
+//     onClose: () => console.log('Modal fermée')
+// });
+// modal.open();
 // ========================================
 
 export class Modal {
     constructor(modalId, options = {}) {
+        // ✅ GÉNÉRATION D'ID HARMONISÉE
+        this.id = 'modal-instance-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
+        
         this.modalElement = document.getElementById(modalId);
         if (!this.modalElement) {
             console.error(`Modal avec l'ID "${modalId}" introuvable`);
@@ -30,6 +60,10 @@ export class Modal {
         this.init();
     }
     
+    // ========================================
+    // INITIALISATION ET CONFIGURATION
+    // ========================================
+    
     init() {
         // Charger les styles
         this.loadStyles();
@@ -42,6 +76,8 @@ export class Modal {
         
         // S'assurer que la modal est cachée au départ
         this.modalElement.classList.remove('active');
+        
+        console.log('✅ Modal initialisée:', this.id, 'pour element:', this.modalId);
     }
     
     loadStyles() {
@@ -54,11 +90,15 @@ export class Modal {
         const link = document.createElement('link');
         link.id = 'modal-styles';
         link.rel = 'stylesheet';
-        link.href = '../src/css/shared/ui/modal.css';
+        link.href = '../src/components/ui/modal/modal.css';
         document.head.appendChild(link);
         
-        console.log('✅ Modal styles chargés : ../src/css/shared/ui/modal.css');
+        console.log('📦 Modal styles chargés');
     }
+    
+    // ========================================
+    // GESTION DES ÉVÉNEMENTS
+    // ========================================
     
     attachEvents() {
         // Bouton de fermeture
@@ -84,6 +124,10 @@ export class Modal {
             };
         }
     }
+    
+    // ========================================
+    // API PUBLIQUE
+    // ========================================
     
     async open() {
         // Callback avant ouverture
@@ -174,6 +218,8 @@ export class Modal {
         if (this.isOpen) {
             this.close();
         }
+        
+        console.log('🧹 Modal détruite:', this.id);
     }
 }
 
@@ -183,7 +229,12 @@ export class Modal {
 
 export class ModalManager {
     constructor() {
+        // ✅ GÉNÉRATION D'ID HARMONISÉE
+        this.id = 'modal-manager-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
+        
         this.modals = new Map();
+        
+        console.log('✅ ModalManager initialisé:', this.id);
     }
     
     register(modalId, options = {}) {

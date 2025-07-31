@@ -1,10 +1,29 @@
 // ========================================
 // NOTIFICATION.COMPONENT.JS - Système de notifications toast
-// ========================================
-// Chemin: src/js/shared/ui/notification.component.js
+// Chemin: src/components/ui/notification/notification.component.js
 //
-// Version mise à jour : chemins CSS corrigés pour pages dans /pages/
-// Charge maintenant : ../src/css/shared/ui/notification.css
+// DESCRIPTION:
+// Système de notifications toast élégantes et animées
+// Support de différents types et durées personnalisables
+//
+// MODIFIÉ le 01/02/2025:
+// - Génération d'ID autonome harmonisée
+// - 100% indépendant
+//
+// API PUBLIQUE:
+// - success(message, title, options)
+// - error(message, title, options)
+// - warning(message, title, options)
+// - info(message, title, options)
+// - custom(options)
+// - hide(id)
+// - hideAll()
+//
+// EXEMPLE:
+// notify.success('Opération réussie !');
+// notify.error('Une erreur est survenue', 'Erreur');
+// const id = notify.info('Chargement...', '', { duration: 0 });
+// notify.hide(id);
 // ========================================
 
 export class NotificationManager {
@@ -15,11 +34,18 @@ export class NotificationManager {
             return NotificationManager.instance;
         }
         
+        // ✅ GÉNÉRATION D'ID HARMONISÉE
+        this.id = 'notif-manager-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
+        
         this.container = null;
         this.notifications = new Map();
         this.init();
         NotificationManager.instance = this;
     }
+    
+    // ========================================
+    // INITIALISATION ET CONFIGURATION
+    // ========================================
     
     init() {
         // Créer le conteneur si inexistant
@@ -34,7 +60,7 @@ export class NotificationManager {
         // Charger les styles
         this.loadStyles();
         
-        console.log('✅ NotificationManager initialisé avec styles autonomes');
+        console.log('✅ NotificationManager initialisé:', this.id);
     }
     
     loadStyles() {
@@ -47,11 +73,15 @@ export class NotificationManager {
         const link = document.createElement('link');
         link.id = 'notification-styles';
         link.rel = 'stylesheet';
-        link.href = '../src/css/shared/ui/notification.css';
+        link.href = '../src/components/ui/notification/notification.css';
         document.head.appendChild(link);
         
-        console.log('✅ Notification styles chargés : ../src/css/shared/ui/notification.css');
+        console.log('📦 Notification styles chargés');
     }
+    
+    // ========================================
+    // MÉTHODE PRINCIPALE SHOW
+    // ========================================
     
     show(options) {
         const {
@@ -64,10 +94,11 @@ export class NotificationManager {
             onClick = null
         } = options;
         
-        const id = Date.now() + Math.random();
+        // Générer un ID unique pour cette notification
+        const notifId = Date.now() + Math.random();
         const notificationEl = document.createElement('div');
         notificationEl.className = `notification ${type}`;
-        notificationEl.dataset.id = id;
+        notificationEl.dataset.id = notifId;
         
         const icon = this.getIcon(type);
         
@@ -83,14 +114,14 @@ export class NotificationManager {
         
         // Ajouter au conteneur
         this.container.appendChild(notificationEl);
-        this.notifications.set(id, notificationEl);
+        this.notifications.set(notifId, notificationEl);
         
         // Gérer le clic
         if (onClick) {
             notificationEl.addEventListener('click', (e) => {
                 if (!e.target.classList.contains('notification-close')) {
                     onClick();
-                    this.hide(id);
+                    this.hide(notifId);
                 }
             });
         }
@@ -100,33 +131,33 @@ export class NotificationManager {
         if (closeBtn) {
             closeBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                this.hide(id);
+                this.hide(notifId);
             });
         }
         
         // Auto-hide après duration
         if (duration) {
-            setTimeout(() => this.hide(id), duration);
+            setTimeout(() => this.hide(notifId), duration);
         }
         
-        return id;
+        return notifId;
     }
     
-    hide(id) {
-        const notification = this.notifications.get(id);
+    hide(notifId) {
+        const notification = this.notifications.get(notifId);
         if (!notification) return;
         
         notification.classList.add('hiding');
         
         setTimeout(() => {
             notification.remove();
-            this.notifications.delete(id);
+            this.notifications.delete(notifId);
         }, 300);
     }
     
     hideAll() {
-        this.notifications.forEach((notification, id) => {
-            this.hide(id);
+        this.notifications.forEach((notification, notifId) => {
+            this.hide(notifId);
         });
     }
     
@@ -193,8 +224,8 @@ export const notify = {
         return manager.show(options);
     },
     
-    hide: (id) => {
-        manager.hide(id);
+    hide: (notifId) => {
+        manager.hide(notifId);
     },
     
     hideAll: () => {

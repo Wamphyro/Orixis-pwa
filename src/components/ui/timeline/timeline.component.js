@@ -1,14 +1,47 @@
 // ========================================
 // TIMELINE.COMPONENT.JS - Composant Timeline réutilisable
-// ========================================
-// Chemin: src/js/shared/ui/timeline.component.js
+// Chemin: src/components/ui/timeline/timeline.component.js
 //
-// Version mise à jour : chemins CSS corrigés pour pages dans /pages/
-// Charge maintenant : ../src/css/shared/ui/timeline.css
+// DESCRIPTION:
+// Composant de timeline horizontal ou vertical pour visualiser des étapes
+// Support de différents états et animations
+//
+// MODIFIÉ le 01/02/2025:
+// - Génération d'ID autonome harmonisée
+// - 100% indépendant
+//
+// API PUBLIQUE:
+// - constructor(options)
+// - updateItem(id, updates)
+// - setActiveItem(id)
+// - getActiveItem()
+// - addItem(item, position)
+// - removeItem(id)
+// - reset()
+// - getItems()
+// - updateOptions(newOptions)
+// - destroy()
+//
+// CALLBACKS DISPONIBLES:
+// - onClick: (item, index) => void
+//
+// EXEMPLE:
+// const timeline = new Timeline({
+//     container: '.timeline-container',
+//     orientation: 'horizontal',
+//     items: [
+//         { id: 'step1', label: 'Étape 1', status: 'completed' },
+//         { id: 'step2', label: 'Étape 2', status: 'active' }
+//     ],
+//     onClick: (item) => console.log('Clicked:', item)
+// });
 // ========================================
 
 export class Timeline {
     constructor(options = {}) {
+        // ✅ GÉNÉRATION D'ID HARMONISÉE
+        this.id = 'timeline-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
+        
         this.options = {
             container: null,
             orientation: 'horizontal', // 'horizontal' ou 'vertical'
@@ -32,6 +65,10 @@ export class Timeline {
         }
     }
     
+    // ========================================
+    // INITIALISATION ET CONFIGURATION
+    // ========================================
+    
     init() {
         // Trouver le conteneur
         this.container = typeof this.options.container === 'string' 
@@ -51,6 +88,8 @@ export class Timeline {
         
         // Rendre les items
         this.render();
+        
+        console.log('✅ Timeline initialisée:', this.id);
     }
     
     loadStyles() {
@@ -63,10 +102,10 @@ export class Timeline {
         const link = document.createElement('link');
         link.id = 'timeline-styles';
         link.rel = 'stylesheet';
-        link.href = '../src/css/shared/ui/timeline.css';
+        link.href = '../src/components/ui/timeline/timeline.css';
         document.head.appendChild(link);
         
-        console.log('✅ Timeline styles chargés : ../src/css/shared/ui/timeline.css');
+        console.log('📦 Timeline styles chargés');
     }
     
     setupContainer() {
@@ -75,6 +114,7 @@ export class Timeline {
         
         // Ajouter les classes
         this.container.className = `timeline timeline-${this.options.orientation} timeline-${this.options.theme} timeline-${this.options.size}`;
+        this.container.id = this.id;
         
         if (this.options.animated) {
             this.container.classList.add('timeline-animated');
@@ -84,6 +124,10 @@ export class Timeline {
             this.container.classList.add('timeline-clickable');
         }
     }
+    
+    // ========================================
+    // RENDU ET DOM
+    // ========================================
     
     render() {
         if (!this.container || !this.options.items.length) return;
@@ -320,6 +364,14 @@ export class Timeline {
     }
     
     /**
+     * Mettre à jour les options
+     */
+    updateOptions(newOptions) {
+        this.options = { ...this.options, ...newOptions };
+        this.render();
+    }
+    
+    /**
      * Détruire le composant
      */
     destroy() {
@@ -329,14 +381,8 @@ export class Timeline {
         }
         this.items.clear();
         this.activeItem = null;
-    }
-    
-    /**
-     * Mettre à jour les options
-     */
-    updateOptions(newOptions) {
-        this.options = { ...this.options, ...newOptions };
-        this.render();
+        
+        console.log('🧹 Timeline détruite:', this.id);
     }
 }
 

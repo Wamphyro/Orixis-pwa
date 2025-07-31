@@ -1,16 +1,22 @@
 // ========================================
 // STATS-CARDS.COMPONENT.JS - Composant de cartes statistiques réutilisable
-// Chemin: src/js/shared/ui/stats-cards.component.js
+// Chemin: src/components/ui/stats-cards/stats-cards.component.js
 //
 // DESCRIPTION:
 // Composant indépendant pour afficher des cartes de statistiques
 // Utilisable dans n'importe quel contexte avec différentes configurations
 //
+// MODIFIÉ le 01/02/2025:
+// - Génération d'ID autonome harmonisée
+// - 100% indépendant
+//
 // API PUBLIQUE:
 // - constructor(config)
-// - updateCard(cardId, value)
-// - updateAll(values)
+// - updateCard(cardId, value, animate)
+// - updateAll(values, animate)
 // - setEnabled(cardId, enabled)
+// - getCardData(cardId)
+// - getState()
 // - show()
 // - hide()
 // - destroy()
@@ -30,10 +36,9 @@
 // });
 // ========================================
 
-
 export class StatsCards {
     constructor(config) {
-        // ✅ MODIFIÉ: Génération d'ID autonome
+        // ✅ GÉNÉRATION D'ID HARMONISÉE
         this.id = 'stats-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
         
         // Configuration par défaut
@@ -83,7 +88,7 @@ export class StatsCards {
             this.attachEvents();
             this.showWithDelay();
             
-            console.log('✅ StatsCards initialisé');
+            console.log('✅ StatsCards initialisé:', this.id);
         });
     }
     
@@ -95,7 +100,7 @@ export class StatsCards {
                 const link = document.createElement('link');
                 link.id = styleId;
                 link.rel = 'stylesheet';
-                link.href = '../src/css/shared/ui/stats-cards.css';
+                link.href = '../src/components/ui/stats-cards/stats-cards.css';
                 
                 // Attendre que le CSS soit chargé
                 link.onload = () => {
@@ -148,7 +153,6 @@ export class StatsCards {
         wrapper.className = `stats-cards-wrapper theme-${this.config.theme}`;
         wrapper.id = this.id;
         
-        // 🆕 PAS de style inline opacity - Laisser le CSS gérer
         // Le CSS définit opacity: 0 par défaut, puis .loaded met opacity: 1
         
         // Créer chaque carte
@@ -308,7 +312,7 @@ export class StatsCards {
     // ========================================
     
     /**
-     * 🆕 Affiche le composant avec délai pour éviter le FOUC
+     * Affiche le composant avec délai pour éviter le FOUC
      */
     showWithDelay() {
         // Attendre un court délai pour s'assurer que tout est en place
@@ -441,6 +445,8 @@ export class StatsCards {
         // Réinitialiser
         this.state = { values: {}, enabled: {}, loaded: false };
         this.elements = { container: null, wrapper: null, cards: {} };
+        
+        console.log('🧹 StatsCards détruit:', this.id);
     }
     
     // ========================================
@@ -474,35 +480,3 @@ export class StatsCards {
         }, stepDuration);
     }
 }
-
-/* ========================================
-   HISTORIQUE DES DIFFICULTÉS
-   
-   [29/01/2025] - Création initiale
-   - Composant créé en suivant le pattern IoC
-   - Animation des nombres optionnelle
-   - Support de différents formats de nombres
-   
-   [30/01/2025] - Correction FOUC v1
-   - Tentative avec opacité inline
-   - Conflit entre style inline et classe CSS
-   
-   [30/01/2025] - Correction FOUC v2
-   - Suppression des styles inline opacity
-   - Chargement CSS en Promise
-   - Référence directe au wrapper
-   - Méthodes show/hide améliorées
-   - État loaded dans le state
-   
-   [01/02/2025] - Autonomie complète
-   - Suppression de l'import generateId
-   - Génération d'ID inline autonome
-   - 100% indépendant
-   
-   NOTES POUR REPRISES FUTURES:
-   - Le CSS gère complètement l'opacité (.loaded)
-   - Pas de style inline opacity pour éviter les conflits
-   - Le chargement CSS est asynchrone avec Promise
-   - L'état loaded est centralisé dans this.state
-   - Aucune dépendance externe
-   ======================================== */

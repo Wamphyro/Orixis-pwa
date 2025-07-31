@@ -1,26 +1,35 @@
 // ========================================
 // STEPPER.COMPONENT.JS - Composant stepper réutilisable
-// Chemin: src/js/shared/ui/stepper.component.js
+// Chemin: src/components/ui/stepper/stepper.component.js
 //
 // DESCRIPTION:
 // Composant stepper (indicateur d'étapes) réutilisable avec navigation
 // Extrait du module commandes pour réutilisation
 //
+// MODIFIÉ le 01/02/2025:
+// - Génération d'ID autonome harmonisée
+// - 100% indépendant
+//
 // API PUBLIQUE:
 // - constructor(config)
-// - goToStep(step)
+// - goToStep(step, force)
 // - nextStep()
 // - prevStep()
 // - getCurrentStep()
-// - setStepCompleted(step)
+// - setStepCompleted(step, completed)
 // - setStepActive(step)
 // - updateStepContent(step, content)
+// - getCompletedSteps()
+// - getState()
+// - reset()
+// - isStepAccessible(step)
 // - destroy()
 //
 // CALLBACKS:
-// - onStepChange: (step, direction) => void
+// - onStepChange: (step, direction, previousStep) => void
 // - onValidateStep: (step) => Promise<boolean>
 // - onStepCompleted: (step) => void
+// - onInit: (stepper) => void
 //
 // EXEMPLE:
 // const stepper = new Stepper({
@@ -33,10 +42,9 @@
 // });
 // ========================================
 
-
 export class Stepper {
     constructor(config) {
-        // ✅ MODIFIÉ: Génération d'ID autonome
+        // ✅ GÉNÉRATION D'ID HARMONISÉE
         this.id = 'stepper-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
         
         // Configuration par défaut
@@ -93,9 +101,10 @@ export class Stepper {
         this.init();
     }
     
-    /**
-     * Initialisation du composant
-     */
+    // ========================================
+    // INITIALISATION ET CONFIGURATION
+    // ========================================
+    
     init() {
         try {
             // Récupérer le container
@@ -149,7 +158,7 @@ export class Stepper {
         if (!existingLink) {
             const link = document.createElement('link');
             link.rel = 'stylesheet';
-            link.href = '../src/css/shared/ui/stepper.css';
+            link.href = '../src/components/ui/stepper/stepper.css';
             document.head.appendChild(link);
             console.log('📦 CSS Stepper chargé');
         }
@@ -253,6 +262,10 @@ export class Stepper {
         
         console.log(`🎨 Affichage mis à jour pour l'étape ${currentStep}`);
     }
+    
+    // ========================================
+    // API PUBLIQUE
+    // ========================================
     
     /**
      * Aller à une étape spécifique

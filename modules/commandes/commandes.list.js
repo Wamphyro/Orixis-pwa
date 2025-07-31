@@ -1,14 +1,21 @@
 // ========================================
-// COMMANDES.LIST.JS - Gestion de la liste avec DataTable
+// COMMANDES.LIST.JS - Orchestrateur de la liste des commandes
 // Chemin: modules/commandes/commandes.list.js
 //
 // DESCRIPTION:
-// Gère l'affichage de la liste des commandes avec DataTable et DataTableFilters
-// Refactorisé le 29/07/2025 : Migration vers DataTable + DataTableFilters
-// Modifié le 31/01/2025 : Utilisation complète de la config centralisée
-// Modifié le 01/02/2025 : Utilisation de chargerMagasins() au lieu de dupliquer le code
-// Modifié le 01/02/2025 : Mise à jour des chemins d'import pour la nouvelle structure
-// Modifié le 01/02/2025 v2 : Injection de DropdownList dans DataTableFilters
+// Orchestre DataTable, DataTableFilters et StatsCards
+// Gère toutes les interactions entre les composants
+//
+// MODIFIÉ le 01/02/2025:
+// - Architecture IoC stricte : aucun composant ne se connaît
+// - Injection de DropdownList dans DataTableFilters
+// - Gestion de l'interaction StatsCards/filtres ICI
+// - Les composants sont 100% autonomes
+//
+// DÉPENDANCES:
+// - CommandesService (logique métier)
+// - DataTable, DataTableFilters, DropdownList, StatsCards (composants UI)
+// - COMMANDES_CONFIG (configuration)
 // ========================================
 
 import { CommandesService } from '../../src/services/commandes.service.js';
@@ -22,13 +29,16 @@ import {
     DataTable, 
     DataTableFilters, 
     StatsCards, 
-    DropdownList,  // ✅ AJOUT: Import de DropdownList
+    DropdownList,
     formatDate as formatDateUtil 
 } from '../../src/components/index.js';
 import { state } from './commandes.main.js';
-import { db, chargerMagasins } from '../../src/services/firebase.service.js';
+import { chargerMagasins } from '../../src/services/firebase.service.js';
 
-// Variables pour les instances
+// ========================================
+// INSTANCES DES COMPOSANTS
+// ========================================
+
 let tableCommandes = null;
 let filtresCommandes = null;
 let statsCards = null;
@@ -38,9 +48,28 @@ let statsCards = null;
 // ========================================
 
 export async function initListeCommandes() {
-    console.log('Initialisation DataTable et Filtres pour les commandes...');
+    console.log('🚀 Initialisation orchestrateur liste commandes...');
     
-    // 1. Créer d'abord l'instance DataTable
+    // 1. Créer l'instance DataTable
+    initDataTable();
+    
+    // 2. Créer les filtres avec injection de DropdownList
+    await initFiltres();
+    
+    // 3. Créer les cartes de statistiques
+    initStatsCards();
+    
+    // 4. Connecter les composants entre eux
+    connectComponents();
+    
+    console.log('✅ Orchestrateur liste initialisé');
+}
+
+// ========================================
+// INITIALISATION DATATABLE
+// ========================================
+
+function initDataTable() {
     tableCommandes = new DataTable({
         container: '.commandes-table-container',
         
@@ -79,17 +108,10 @@ export async function initListeCommandes() {
                 formatter: (value) => {
                     const config = COMMANDES_CONFIG.TYPES_PREPARATION[value];
                     if (!config) {
-                        console.warn(`Type non trouvé dans COMMANDES_CONFIG: "${value}"`);
+                        console.warn(`Type non trouvé: "${value}"`);
                         return value || '-';
                     }
                     return `<span class="badge badge-${value.replace(/_/g, '-')}">${config.icon} ${config.label}</span>`;
-                },
-                sortFunction: (a, b, direction) => {
-                    const valueA = a.typePreparation || '';
-                    const valueB = b.typePreparation || '';
-                    return direction === 'asc' 
-                        ? valueA.localeCompare(valueB)
-                        : valueB.localeCompare(valueA);
                 }
             },
             {
@@ -147,70 +169,29 @@ export async function initListeCommandes() {
             items: 'éléments'
         },
         
+        // Callback pour gérer le changement de page
         onPageChange: (page) => {
             state.currentPage = page;
         }
     });
     
-    // 2. PUIS initialiser les filtres (maintenant que tableCommandes existe)
-    await initFiltres();
-
-    console.log('✅ DataTable et Filtres initialisés');
-    
-    // 3. Enfin initialiser les cartes de statistiques
-    initStatsCards();
+    console.log('📊 DataTable créée');
 }
 
-/**
- * Initialiser les cartes de statistiques
- * MODIFIÉ : Utilise la config centralisée
- */
-function initStatsCards() {
-    const cardsConfig = genererConfigStatsCards();
-    
-    statsCards = new StatsCards({
-        container: '.commandes-stats',
-        cards: cardsConfig,
-        animated: true,
-        onClick: (cardId) => {
-            // Toggle : ajouter ou retirer du filtre
-            const index = state.filtres.statuts.indexOf(cardId);
-            
-            if (index > -1) {
-                // Le statut est déjà sélectionné, on le retire
-                state.filtres.statuts.splice(index, 1);
-                // Retirer la classe active de la carte
-                statsCards.elements.cards[cardId]?.classList.remove('active');
-            } else {
-                // Le statut n'est pas sélectionné, on l'ajoute
-                state.filtres.statuts.push(cardId);
-                // Ajouter la classe active à la carte
-                statsCards.elements.cards[cardId]?.classList.add('active');
-            }
-            
-            // Réafficher les commandes avec le nouveau filtre
-            afficherCommandes();
-        }
-    });
-}
+// ========================================
+// INITIALISATION FILTRES AVEC DROPDOWN
+// ========================================
 
-/**
- * Initialiser les filtres
- * MODIFIÉ : Utilise chargerMagasins() du service au lieu de dupliquer le code
- * MODIFIÉ v2 : Injecte DropdownList dans DataTableFilters
- */
 async function initFiltres() {
+    // Récupérer la configuration des filtres
     let filtresConfig = genererOptionsFiltres();
     
-    // ========================================
-    // MODIFIÉ : Utiliser le service au lieu d'importer Firebase directement
-    // ========================================
+    // Charger dynamiquement les magasins
     try {
-        // Utiliser la fonction existante du service
         const magasinsData = await chargerMagasins();
         
         if (magasinsData) {
-            // Transformer le format { id: {nom, code, actif} } en tableau d'options
+            // Transformer en tableau d'options
             const magasins = Object.entries(magasinsData)
                 .filter(([id, data]) => data.actif !== false)
                 .map(([id, data]) => ({
@@ -232,87 +213,131 @@ async function initFiltres() {
         console.error('Erreur chargement magasins:', error);
     }
     
-    // Ajuster la config pour séparer les icônes du label
-    const filtresConfigAjustes = filtresConfig.map(filtre => {
-        if (filtre.type === 'select' && filtre.options) {
-            filtre.options = filtre.options.map(option => {
-                // Si c'est déjà un objet avec value et label
-                if (typeof option === 'object' && option.label) {
-                    // Extraire l'icône du label si elle y est
-                    const iconMatch = option.label.match(/^([\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F000}-\u{1F02F}]|[\u{1F0A0}-\u{1F0FF}]|[\u{1F100}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]|[\u{1F900}-\u{1F9FF}]|[\u{2300}-\u{23FF}]|[\u{2B50}]|[\u{25A0}-\u{25FF}]|[\u{2190}-\u{21FF}]|[\u{3030}]|[\u{303D}]|[\u{3297}]|[\u{3299}]|[\u{1F004}]|[\u{1F170}-\u{1F251}]|[0-9]\u{FE0F}?\u{20E3})/u);
-                    
-                    if (iconMatch && !option.icon) {
-                        // Si une icône est trouvée et qu'il n'y a pas déjà d'icône séparée
-                        return {
-                            value: option.value,
-                            label: option.label.substring(iconMatch[0].length).trim(),
-                            icon: iconMatch[0]
-                        };
-                    }
-                }
-                return option;
-            });
-        }
-        return filtre;
-    });
+    // Ajuster pour séparer les icônes
+    const filtresAjustes = ajusterIconesFiltres(filtresConfig);
     
-    // Activer keepPlaceholder sur tous les filtres select
-    const filtresAvecKeepPlaceholder = filtresConfigAjustes.map(filtre => {
-        if (filtre.type === 'select') {
-            return {
-                ...filtre,
-                keepPlaceholder: true  // Garder le label fixe
-            };
-        }
-        return filtre;
-    });
-    
+    // Créer l'instance DataTableFilters avec DropdownList injecté
     filtresCommandes = new DataTableFilters({
         container: '.commandes-filters',
-        filters: filtresAvecKeepPlaceholder,
+        filters: filtresAjustes,
         
-        // ✅ AJOUT: Injection de DropdownList
+        // 🔑 INJECTION DE DROPDOWNLIST
         DropdownClass: DropdownList,
         
+        // Callback appelé quand les filtres changent
         onFilter: (filters) => {
-            // Détecter si c'est un reset (tous les filtres sont vides)
-            const isReset = !filters.recherche && 
-                            !filters.magasin && 
-                            filters.periode === 'all' && 
-                            !filters.urgence;
-            
-            // Si c'est un reset, réinitialiser aussi les statuts
-            if (isReset) {
-                state.filtres = {
-                    recherche: '',
-                    magasin: '',
-                    periode: 'all',
-                    urgence: '',
-                    statuts: []  // Reset les statuts
-                };
-                
-                // Désélectionner visuellement toutes les cartes
-                if (statsCards && statsCards.elements.cards) {
-                    Object.values(statsCards.elements.cards).forEach(card => {
-                        card.classList.remove('active');
-                    });
-                }
-            } else {
-                // Sinon, conserver les statuts
-                state.filtres = {
-                    recherche: filters.recherche || '',
-                    magasin: filters.magasin || '',  
-                    periode: filters.periode || 'all',
-                    urgence: filters.urgence || '',
-                    statuts: state.filtres.statuts || []
-                };
-            }
-            
-            if (tableCommandes) {
-                afficherCommandes();
-            }
+            handleFilterChange(filters);
         }
     });
+    
+    console.log('🔍 Filtres créés avec DropdownList injecté');
+}
+
+// ========================================
+// INITIALISATION STATS CARDS
+// ========================================
+
+function initStatsCards() {
+    const cardsConfig = genererConfigStatsCards();
+    
+    statsCards = new StatsCards({
+        container: '.commandes-stats',
+        cards: cardsConfig,
+        animated: true,
+        
+        // 🔑 GESTION DU CLIC ICI DANS L'ORCHESTRATEUR
+        onClick: (cardId) => {
+            handleStatsCardClick(cardId);
+        }
+    });
+    
+    console.log('📈 StatsCards créées');
+}
+
+// ========================================
+// CONNEXION DES COMPOSANTS
+// ========================================
+
+function connectComponents() {
+    // Les composants sont déjà connectés via leurs callbacks
+    // Cette fonction pourrait servir pour des connexions additionnelles
+    console.log('🔗 Composants connectés via callbacks');
+}
+
+// ========================================
+// GESTION DES INTERACTIONS
+// ========================================
+
+/**
+ * Gestion du changement de filtres
+ * Appelé par DataTableFilters via callback
+ */
+function handleFilterChange(filters) {
+    // Détecter si c'est un reset
+    const isReset = !filters.recherche && 
+                    !filters.magasin && 
+                    filters.periode === 'all' && 
+                    !filters.urgence;
+    
+    if (isReset) {
+        // Reset complet incluant les statuts
+        state.filtres = {
+            recherche: '',
+            magasin: '',
+            periode: 'all',
+            urgence: '',
+            statuts: []  // Reset les statuts
+        };
+        
+        // Désélectionner visuellement toutes les cartes
+        if (statsCards && statsCards.elements.cards) {
+            Object.values(statsCards.elements.cards).forEach(card => {
+                card.classList.remove('active');
+            });
+        }
+    } else {
+        // Mise à jour partielle, conserver les statuts
+        state.filtres = {
+            ...state.filtres,  // Conserver les statuts existants
+            recherche: filters.recherche || '',
+            magasin: filters.magasin || '',  
+            periode: filters.periode || 'all',
+            urgence: filters.urgence || ''
+        };
+    }
+    
+    // Rafraîchir l'affichage
+    if (tableCommandes) {
+        afficherCommandes();
+    }
+}
+
+/**
+ * Gestion du clic sur une carte de statistiques
+ * Toggle le filtre par statut
+ */
+function handleStatsCardClick(cardId) {
+    // Toggle : ajouter ou retirer du filtre
+    const index = state.filtres.statuts.indexOf(cardId);
+    
+    if (index > -1) {
+        // Le statut est déjà sélectionné, on le retire
+        state.filtres.statuts.splice(index, 1);
+        // Retirer la classe active de la carte
+        if (statsCards.elements.cards[cardId]) {
+            statsCards.elements.cards[cardId].classList.remove('active');
+        }
+    } else {
+        // Le statut n'est pas sélectionné, on l'ajoute
+        state.filtres.statuts.push(cardId);
+        // Ajouter la classe active à la carte
+        if (statsCards.elements.cards[cardId]) {
+            statsCards.elements.cards[cardId].classList.add('active');
+        }
+    }
+    
+    // Réafficher les commandes avec le nouveau filtre
+    afficherCommandes();
 }
 
 // ========================================
@@ -364,7 +389,6 @@ export async function chargerDonnees() {
 // ========================================
 
 function afficherStatistiques(stats) {
-    // Utiliser le composant StatsCards pour mettre à jour
     if (statsCards) {
         // Créer un objet avec tous les statuts
         const allStats = {};
@@ -394,7 +418,7 @@ function afficherCommandes() {
 }
 
 // ========================================
-// FILTRES
+// FILTRAGE LOCAL
 // ========================================
 
 function filtrerCommandesLocalement() {
@@ -428,7 +452,7 @@ function filtrerCommandesLocalement() {
             return false;
         }
         
-        // 🆕 Filtre statuts multiples (depuis les cartes)
+        // 🔑 Filtre statuts multiples (depuis les cartes)
         if (state.filtres.statuts.length > 0 && !state.filtres.statuts.includes(commande.statut)) {
             return false;
         }
@@ -463,7 +487,7 @@ function filtrerCommandesLocalement() {
 }
 
 // ========================================
-// FONCTIONS EXPORTÉES POUR COMPATIBILITÉ
+// FONCTIONS EXPOSÉES POUR COMPATIBILITÉ
 // ========================================
 
 export function filtrerCommandes() {
@@ -478,17 +502,17 @@ export function resetFiltres() {
         filtresCommandes.reset();
     }
     
-    // 🆕 Réinitialiser aussi les statuts sélectionnés
+    // Réinitialiser aussi les statuts sélectionnés
     state.filtres.statuts = [];
     
-    // 🆕 Retirer la classe active de toutes les cartes
+    // Retirer la classe active de toutes les cartes
     if (statsCards && statsCards.elements.cards) {
         Object.values(statsCards.elements.cards).forEach(card => {
             card.classList.remove('active');
         });
     }
     
-    // 🆕 Réafficher les commandes sans filtres
+    // Réafficher les commandes sans filtres
     afficherCommandes();
 }
 
@@ -507,7 +531,6 @@ function afficherUrgence(urgence) {
     const config = COMMANDES_CONFIG.NIVEAUX_URGENCE[urgence];
     if (!config) return urgence;
     
-    // Structure avec tooltip CSS
     return `
         <span class="urgence-icon-wrapper">
             <span class="urgence-icon">${config.icon}</span>
@@ -520,7 +543,6 @@ function afficherStatut(statut) {
     const config = COMMANDES_CONFIG.STATUTS[statut];
     if (!config) return statut;
     
-    // Structure identique avec tooltip CSS
     return `
         <span class="statut-icon-wrapper">
             <span class="statut-icon">${config.icon}</span>
@@ -531,60 +553,73 @@ function afficherStatut(statut) {
 
 /**
  * Préparer les données pour l'export
- * MODIFIÉ : Utilise formaterDonneesExport() centralisé
  */
 function prepareExportData(data) {
     return formaterDonneesExport(data);
 }
 
+/**
+ * Ajuster les options pour séparer les icônes du label
+ */
+function ajusterIconesFiltres(filtresConfig) {
+    return filtresConfig.map(filtre => {
+        if (filtre.type === 'select' && filtre.options) {
+            filtre.options = filtre.options.map(option => {
+                if (typeof option === 'object' && option.label) {
+                    // Extraire l'icône du label si présente
+                    const iconMatch = option.label.match(/^([\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}])/u);
+                    
+                    if (iconMatch && !option.icon) {
+                        return {
+                            value: option.value,
+                            label: option.label.substring(iconMatch[0].length).trim(),
+                            icon: iconMatch[0]
+                        };
+                    }
+                }
+                return option;
+            });
+        }
+        
+        // Activer keepPlaceholder sur tous les filtres select
+        if (filtre.type === 'select') {
+            return {
+                ...filtre,
+                keepPlaceholder: true
+            };
+        }
+        
+        return filtre;
+    });
+}
+
 /* ========================================
    HISTORIQUE DES MODIFICATIONS
    
-   [29/07/2025] - Migration complète vers DataTable + DataTableFilters
-   - Utilisation du composant DataTable pour le tableau
-   - Utilisation du composant DataTableFilters pour les filtres
-   - Suppression du code HTML en dur
-   - Les filtres sont maintenant générés dynamiquement
+   [01/02/2025] - Architecture harmonisée complète
+   - Architecture IoC stricte : aucun composant ne se connaît
+   - L'orchestrateur (ce fichier) gère TOUTES les connexions
+   - DropdownList injecté dans DataTableFilters
+   - Interaction StatsCards/filtres gérée ICI, pas dans main.js
+   - Fonctions handleFilterChange() et handleStatsCardClick()
    
-   [31/01/2025] - Centralisation complète de la configuration
-   - Import de genererOptionsFiltres, genererConfigStatsCards, formaterDonneesExport
-   - initStatsCards() utilise genererConfigStatsCards()
-   - initFiltres() utilise genererOptionsFiltres()
-   - prepareExportData() utilise formaterDonneesExport()
-   - Toute la config vient maintenant de commandes.data.js
+   POINTS CLÉS:
+   - Les composants communiquent uniquement par callbacks
+   - Aucun import entre composants UI
+   - L'orchestrateur connaît tous les composants
+   - L'orchestrateur connaît la logique métier
+   - Les composants ne connaissent pas le métier
    
-   [01/02/2025] - Découplage Firebase des composants
-   - Utilisation de chargerMagasins() depuis firebase.service.js
-   - Suppression de l'import direct de Firebase dans initFiltres()
-   - Transformation du format { id: {...} } en tableau d'options
-   - Réduction de la duplication de code
+   ARCHITECTURE:
+   commandes.list.js (orchestrateur)
+       ├── DataTable (présentation)
+       ├── DataTableFilters (avec DropdownList injecté)
+       └── StatsCards (cartes cliquables)
    
-   [01/02/2025] - Mise à jour des chemins d'import
-   - Chemins services: ../../src/js/services/ → ../../src/services/
-   - Chemins components: ../../src/js/shared/ → ../../src/components/
-   - Chemins data: ../../src/js/data/ → ../../src/data/
-   - Adaptation à la nouvelle structure modules/commandes/
-   
-   [01/02/2025 v2] - Injection de DropdownList
-   - Import de DropdownList depuis components/index.js
-   - Passage de DropdownList à DataTableFilters via DropdownClass
-   - Les filtres select utilisent maintenant DropdownList
-   - Architecture 100% découplée entre composants UI
-   
-   AVANTAGES:
-   - Composants réutilisables et autonomes
-   - Code plus maintenable
-   - Filtres configurables avec dropdowns avancés
-   - Export CSV/Excel intégré
-   - Configuration 100% centralisée
-   - Zero couplage entre composants UI
-   - L'orchestrateur gère toutes les connexions
-   
-   NOTES:
-   - Les fonctions filtrerCommandes et resetFiltres sont conservées pour compatibilité
-   - Les IDs HTML (searchInput, etc.) ne sont plus utilisés
-   - Tout est géré par les composants
-   - La configuration est maintenant uniquement dans commandes.data.js
-   - Firebase est géré uniquement par les services
-   - DropdownList est injecté par l'orchestrateur
+   FLUX:
+   1. User clique sur StatsCard → handleStatsCardClick()
+   2. User change un filtre → handleFilterChange()
+   3. Les deux mettent à jour state.filtres
+   4. Les deux appellent afficherCommandes()
+   5. afficherCommandes() filtre et met à jour DataTable
    ======================================== */

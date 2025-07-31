@@ -1,6 +1,44 @@
 // ========================================
 // DATATABLE.COMPONENT.JS - Composant tableau réutilisable
-// Chemin: src/js/shared/ui/datatable/datatable.component.js
+// Chemin: src/components/ui/datatable/datatable.component.js
+//
+// DESCRIPTION:
+// Tableau de données avancé avec tri, pagination, export et sélection
+// Composant autonome et modulaire
+//
+// MODIFIÉ le 01/02/2025:
+// - Génération d'ID autonome harmonisée
+// - 100% indépendant
+//
+// API PUBLIQUE:
+// - constructor(config)
+// - setData(data)
+// - refresh()
+// - getSelectedRows()
+// - clearSelection()
+// - goToPage(page)
+// - sort(column)
+// - export(format)
+// - updateConfig(newConfig)
+// - destroy()
+//
+// CALLBACKS DISPONIBLES:
+// - onRowClick: (rowData, index, event) => void
+// - onSort: (column, direction) => void
+// - onPageChange: (page, pageSize) => void
+// - onExport: (format, data) => void
+// - onSelectionChange: (selectedRows) => void
+//
+// EXEMPLE:
+// const table = new DataTable({
+//     container: '.table-container',
+//     columns: [
+//         { key: 'id', label: 'ID', sortable: true },
+//         { key: 'nom', label: 'Nom', sortable: true }
+//     ],
+//     data: myData,
+//     onRowClick: (row) => console.log('Clicked:', row)
+// });
 // ========================================
 
 import { DataTableSort } from './datatable.sort.js';
@@ -10,7 +48,7 @@ import { DataTableResize } from './datatable.resize.js';
 
 export class DataTable {
     constructor(config) {
-        // ✅ MODIFIÉ: Génération d'ID autonome
+        // ✅ GÉNÉRATION D'ID HARMONISÉE
         this.id = 'datatable-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
         
         // Configuration par défaut
@@ -109,51 +147,55 @@ export class DataTable {
         this.init();
     }
     
-    /**
- * Initialisation du composant
- */
-init() {
-    // Vérifier le container
-    if (typeof this.config.container === 'string') {
-        this.elements.container = document.querySelector(this.config.container);
-    } else {
-        this.elements.container = this.config.container;
+    // ========================================
+    // INITIALISATION ET CONFIGURATION
+    // ========================================
+    
+    init() {
+        // Vérifier le container
+        if (typeof this.config.container === 'string') {
+            this.elements.container = document.querySelector(this.config.container);
+        } else {
+            this.elements.container = this.config.container;
+        }
+        
+        if (!this.elements.container) {
+            console.error('DataTable: Container non trouvé');
+            return;
+        }
+        
+        // Créer la structure AVANT d'initialiser les modules
+        this.render();
+        
+        // Initialiser les modules APRÈS la création du DOM
+        if (this.config.features.sort) {
+            this.modules.sort = new DataTableSort(this);
+        }
+        
+        if (this.config.features.export) {
+            this.modules.export = new DataTableExport(this);
+        }
+        
+        if (this.config.features.pagination) {
+            this.modules.pagination = new DataTablePagination(this);
+        }
+        
+        if (this.config.features.resize) {
+            this.modules.resize = new DataTableResize(this);
+        }
+        
+        // Charger les données si fournies
+        if (this.config.data && this.config.data.length > 0) {
+            this.setData(this.config.data);
+        }
+        
+        console.log('✅ DataTable initialisé:', this.id);
     }
     
-    if (!this.elements.container) {
-        console.error('DataTable: Container non trouvé');
-        return;
-    }
+    // ========================================
+    // RENDU ET DOM
+    // ========================================
     
-    // Créer la structure AVANT d'initialiser les modules
-    this.render();
-    
-    // Initialiser les modules APRÈS la création du DOM
-    if (this.config.features.sort) {
-        this.modules.sort = new DataTableSort(this);
-    }
-    
-    if (this.config.features.export) {
-        this.modules.export = new DataTableExport(this);
-    }
-    
-    if (this.config.features.pagination) {
-        this.modules.pagination = new DataTablePagination(this);
-    }
-    
-    if (this.config.features.resize) {
-        this.modules.resize = new DataTableResize(this);
-    }
-    
-    // Charger les données si fournies
-    if (this.config.data && this.config.data.length > 0) {
-        this.setData(this.config.data);
-    }
-}
-    
-    /**
-     * Créer la structure HTML
-     */
     render() {
         const html = `
             <div class="datatable-wrapper" id="${this.id}">
@@ -189,9 +231,6 @@ init() {
         this.attachEvents();
     }
     
-    /**
-     * Générer les classes CSS du tableau
-     */
     getTableClasses() {
         const classes = ['datatable-table'];
         
@@ -203,9 +242,6 @@ init() {
         return classes.join(' ');
     }
     
-    /**
-     * Générer les boutons d'export
-     */
     renderExportButtons() {
         const buttons = [];
         
@@ -220,9 +256,6 @@ init() {
         return `<div class="datatable-export-buttons">${buttons.join('')}</div>`;
     }
     
-    /**
-     * Générer l'en-tête du tableau
-     */
     renderHeader() {
         let html = '<tr>';
         
@@ -259,9 +292,6 @@ init() {
         return html;
     }
     
-    /**
-     * Générer le message "Aucune donnée"
-     */
     renderNoData() {
         const colspan = this.config.columns.length + (this.config.features.selection ? 1 : 0);
         return `
@@ -273,9 +303,10 @@ init() {
         `;
     }
     
-    /**
-     * Attacher les événements
-     */
+    // ========================================
+    // GESTION DES ÉVÉNEMENTS
+    // ========================================
+    
     attachEvents() {
         // Sélection globale
         if (this.config.features.selection) {
@@ -325,9 +356,10 @@ init() {
         });
     }
     
-    /**
-     * Définir les données
-     */
+    // ========================================
+    // MÉTHODES DE DONNÉES
+    // ========================================
+    
     setData(data) {
         this.state.data = data;
         this.state.filteredData = data;
@@ -337,17 +369,11 @@ init() {
         this.refresh();
     }
     
-    /**
-     * Obtenir les données d'une ligne
-     */
     getRowData(index) {
         const pageData = this.getPageData();
         return pageData[index];
     }
     
-    /**
-     * Obtenir les données de la page actuelle
-     */
     getPageData() {
         if (!this.config.features.pagination) {
             return this.state.filteredData;
@@ -359,9 +385,6 @@ init() {
         return this.state.filteredData.slice(start, end);
     }
     
-    /**
-     * Rafraîchir l'affichage
-     */
     refresh() {
         this.renderBody();
         
@@ -372,9 +395,6 @@ init() {
         this.updateSelectionUI();
     }
     
-    /**
-     * Générer le corps du tableau
-     */
     renderBody() {
         const pageData = this.getPageData();
         
@@ -414,16 +434,10 @@ init() {
         this.elements.tbody.innerHTML = html;
     }
     
-    /**
-     * Obtenir une valeur imbriquée (ex: "client.nom")
-     */
     getNestedValue(obj, path) {
         return path.split('.').reduce((curr, prop) => curr?.[prop], obj);
     }
     
-    /**
-     * Obtenir l'index global d'une ligne
-     */
     getGlobalIndex(pageIndex) {
         if (!this.config.features.pagination) {
             return pageIndex;
@@ -433,9 +447,10 @@ init() {
         return start + pageIndex;
     }
     
-    /**
-     * Basculer la sélection de toutes les lignes
-     */
+    // ========================================
+    // GESTION DE LA SÉLECTION
+    // ========================================
+    
     toggleSelectAll() {
         const checked = this.elements.selectAllCheckbox.checked;
         const pageData = this.getPageData();
@@ -453,9 +468,6 @@ init() {
         this.triggerSelectionChange();
     }
     
-    /**
-     * Basculer la sélection d'une ligne
-     */
     toggleRowSelection(index) {
         const globalIndex = this.getGlobalIndex(index);
         
@@ -469,9 +481,6 @@ init() {
         this.triggerSelectionChange();
     }
     
-    /**
-     * Mettre à jour l'UI de sélection
-     */
     updateSelectionUI() {
         if (!this.config.features.selection) return;
         
@@ -493,9 +502,6 @@ init() {
         this.elements.selectAllCheckbox.indeterminate = pageSelected > 0 && pageSelected < pageData.length;
     }
     
-    /**
-     * Déclencher l'événement de changement de sélection
-     */
     triggerSelectionChange() {
         if (this.config.onSelectionChange) {
             const selectedData = Array.from(this.state.selectedRows).map(index => 
@@ -504,6 +510,10 @@ init() {
             this.config.onSelectionChange(selectedData);
         }
     }
+    
+    // ========================================
+    // API PUBLIQUE
+    // ========================================
     
     /**
      * Trier les données
@@ -581,5 +591,7 @@ init() {
             sortDirection: 'asc',
             selectedRows: new Set()
         };
+        
+        console.log('🧹 DataTable détruit:', this.id);
     }
 }

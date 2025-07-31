@@ -1,13 +1,36 @@
 // ========================================
 // DROPDOWN-LIST.COMPONENT.JS - Composant de liste déroulante custom
-// ========================================
-// Chemin: src/js/shared/ui/dropdown-list.component.js
+// Chemin: src/components/ui/dropdown-list/dropdown-list.component.js
 //
 // DESCRIPTION:
-// Remplace les <select> natifs par un dropdown entièrement personnalisable.
+// Remplace les <select> natifs par un dropdown entièrement personnalisable
 // Permet d'appliquer des styles complexes (glassmorphism, animations, etc.)
 //
-// UTILISATION:
+// MODIFIÉ le 01/02/2025:
+// - Génération d'ID autonome harmonisée
+// - 100% indépendant
+//
+// API PUBLIQUE:
+// - constructor(options)
+// - getValue()
+// - setValue(value)
+// - getSelectedOption()
+// - setOptions(options)
+// - addOption(option)
+// - removeOption(value)
+// - enable()
+// - disable()
+// - open()
+// - close()
+// - toggle()
+// - destroy()
+//
+// CALLBACKS DISPONIBLES:
+// - onChange: (value, option) => void
+// - onOpen: () => void
+// - onClose: () => void
+//
+// EXEMPLE:
 // const dropdown = new DropdownList({
 //     container: '#statusFilter',
 //     options: [
@@ -20,6 +43,9 @@
 
 export class DropdownList {
     constructor(options = {}) {
+        // ✅ GÉNÉRATION D'ID HARMONISÉE
+        this.id = 'dropdown-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
+        
         this.options = {
             container: null,
             name: '',                    // Nom du champ (pour les formulaires)
@@ -83,6 +109,10 @@ export class DropdownList {
         }
     }
     
+    // ========================================
+    // INITIALISATION ET CONFIGURATION
+    // ========================================
+    
     init() {
         // Trouver le conteneur
         this.container = typeof this.options.container === 'string'
@@ -112,6 +142,8 @@ export class DropdownList {
         if (this.selectedValue) {
             this.setValue(this.selectedValue);
         }
+        
+        console.log('✅ DropdownList initialisé:', this.id);
     }
     
     loadStyles() {
@@ -124,8 +156,10 @@ export class DropdownList {
         const link = document.createElement('link');
         link.id = 'dropdown-list-styles';
         link.rel = 'stylesheet';
-        link.href = '../src/css/shared/ui/dropdown-list.css';
+        link.href = '../src/components/ui/dropdown-list/dropdown-list.css';
         document.head.appendChild(link);
+        
+        console.log('📦 DropdownList styles chargés');
     }
     
     initFromSelect() {
@@ -153,10 +187,15 @@ export class DropdownList {
         }
     }
     
+    // ========================================
+    // CRÉATION DES ÉLÉMENTS DOM
+    // ========================================
+    
     createElements() {
         // Créer le wrapper
         this.wrapper = document.createElement('div');
         this.wrapper.className = 'dropdown-list-wrapper';
+        this.wrapper.id = this.id;
         
         // Ajouter les classes
         if (this.options.className) {
@@ -291,6 +330,10 @@ export class DropdownList {
         });
     }
     
+    // ========================================
+    // GESTION DES ÉVÉNEMENTS
+    // ========================================
+    
     attachEvents() {
         // Trigger
         this.trigger.addEventListener('click', this.toggle.bind(this));
@@ -343,7 +386,7 @@ export class DropdownList {
         };
         window.addEventListener('resize', this.boundHandleResize);
         
-        // NOUVEAU : Gérer le scroll dans les modals
+        // Gérer le scroll dans les modals
         const modal = this.wrapper.closest('.modal');
         if (modal) {
             const modalBody = modal.querySelector('.modal-body');
@@ -518,7 +561,7 @@ export class DropdownList {
         this.panel.style.width = '';
         
         if (this.isMobile) {
-            // Code mobile inchangé...
+            // Mobile
             this.panel.style.position = 'fixed';
             this.panel.style.left = '50%';
             this.panel.style.transform = 'translateX(-50%)';
@@ -547,7 +590,7 @@ export class DropdownList {
                 this.panel.style.position = 'fixed';
                 this.panel.style.zIndex = '10500';
                 
-                // NOUVEAU : Forcer le recalcul des dimensions
+                // Forcer le recalcul des dimensions
                 const computedWidth = window.getComputedStyle(this.trigger).width;
                 const actualWidth = parseFloat(computedWidth) || triggerRect.width;
                 
@@ -581,6 +624,10 @@ export class DropdownList {
         }
     }
     
+    // ========================================
+    // API PUBLIQUE
+    // ========================================
+    
     open() {
         if (this.isOpen || this.options.disabled) return;
         
@@ -591,7 +638,7 @@ export class DropdownList {
         // S'assurer que les options sont filtrées et rendues
         this.filterOptions();
         
-        // NOUVEAU : Forcer un recalcul après un court délai
+        // Forcer un recalcul après un court délai
         setTimeout(() => {
             this.updatePosition();
         }, 50);
@@ -629,7 +676,7 @@ export class DropdownList {
             this.panel.style.display = 'none';
             this.panel.removeEventListener('transitionend', transitionEnd);
             
-            // NOUVEAU : Remettre le panel dans le wrapper s'il était dans le body
+            // Remettre le panel dans le wrapper s'il était dans le body
             if (this.panel.parentElement === document.body) {
                 this.wrapper.appendChild(this.panel);
             }
@@ -660,7 +707,6 @@ export class DropdownList {
         }
     }
 
-    // AJOUTEZ CETTE MÉTHODE ICI
     toggle() {
         if (this.isOpen) {
             this.close();
@@ -668,10 +714,6 @@ export class DropdownList {
             this.open();
         }
     }
-    
-    // ========================================
-    // API PUBLIQUE
-    // ========================================
     
     getValue() {
         return this.selectedValue;
@@ -794,28 +836,10 @@ export class DropdownList {
         this.backdrop = null;
         this.selectedOption = null;
         this.filteredOptions = [];
+        
+        console.log('🧹 DropdownList détruit:', this.id);
     }
 }
 
 // Export par défaut
 export default DropdownList;
-
-// ========================================
-// UTILISATION SIMPLE
-// ========================================
-// 
-// // Remplacer un select existant
-// new DropdownList({
-//     container: '#monSelect'
-// });
-// 
-// // Créer depuis zéro
-// new DropdownList({
-//     container: '#conteneur',
-//     options: [
-//         { value: 'fr', label: 'Français', icon: '🇫🇷' },
-//         { value: 'en', label: 'English', icon: '🇬🇧' }
-//     ],
-//     onChange: (value) => console.log('Sélectionné:', value)
-// });
-// ========================================

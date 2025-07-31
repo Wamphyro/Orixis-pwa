@@ -7,8 +7,7 @@
 // Composant autonome et réutilisable dans n'importe quelle page
 //
 // MODIFIÉ le 01/02/2025:
-// - Suppression de l'import generateId
-// - Génération d'ID autonome
+// - Génération d'ID autonome harmonisée
 // - 100% indépendant
 //
 // API PUBLIQUE:
@@ -33,11 +32,9 @@
 // });
 // ========================================
 
-// ❌ SUPPRIMÉ: import { generateId } from '../../index.js';
-
 export class AppHeader {
     constructor(config) {
-        // ✅ MODIFIÉ: Génération d'ID autonome
+        // ✅ GÉNÉRATION D'ID HARMONISÉE
         this.id = 'app-header-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
         
         // Configuration par défaut
@@ -423,24 +420,3 @@ export class AppHeader {
 // ========================================
 
 export default AppHeader;
-
-/* ========================================
-   HISTORIQUE DES MODIFICATIONS
-   
-   [30/01/2025] - Création initiale
-   - Composant header réutilisable
-   - Support navigation, titre et utilisateur
-   - Callbacks pour interactions
-   
-   [01/02/2025] - Autonomie complète
-   - Suppression de l'import generateId
-   - Génération d'ID inline autonome
-   - 100% indépendant
-   
-   NOTES POUR REPRISES FUTURES:
-   - Le header s'insère automatiquement dans le container
-   - Position configurable (prepend/append)
-   - Styles auto-chargés
-   - Support des thèmes via classe CSS
-   - Aucune dépendance externe
-   ======================================== */

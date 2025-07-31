@@ -7,8 +7,7 @@
 // Utilisable pour saisie de numéros, codes PIN, montants, etc.
 //
 // MODIFIÉ le 01/02/2025:
-// - Suppression de l'import generateId (si présent)
-// - Génération d'ID autonome
+// - Génération d'ID autonome harmonisée
 // - 100% indépendant
 //
 // API PUBLIQUE:
@@ -37,7 +36,7 @@
 
 export class Numpad {
     constructor(config) {
-        // ✅ Génération d'ID autonome
+        // ✅ GÉNÉRATION D'ID HARMONISÉE
         this.id = 'numpad-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
         
         // Configuration par défaut
@@ -502,18 +501,3 @@ export class Numpad {
 
 // Export par défaut
 export default Numpad;
-
-/* ========================================
-   HISTORIQUE DES MODIFICATIONS
-   
-   [01/02/2025] - Création version autonome
-   - Suppression de toute dépendance externe
-   - Génération d'ID autonome
-   - Composant 100% réutilisable
-   
-   NOTES:
-   - Le numpad s'affiche en overlay modal
-   - Support clavier physique
-   - Personnalisable via config
-   - Callbacks pour toutes les interactions
-   ======================================== */

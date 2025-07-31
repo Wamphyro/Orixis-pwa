@@ -1,32 +1,54 @@
 // ========================================
 // DATATABLE-FILTERS.COMPONENT.JS - Composant de filtres pour DataTable
-// Chemin: src/js/shared/ui/datatable-filters.component.js
+// Chemin: src/components/ui/datatable-filters/datatable-filters.component.js
 //
 // DESCRIPTION:
 // Composant indépendant pour créer des filtres configurables
 // Compatible avec DataTable mais utilisable seul
 //
 // MODIFIÉ le 01/02/2025:
-// - Remplacement de TOUS les selects par DropdownList
-// - Extraction automatique des icônes depuis les labels
-// - Activation de la recherche sur tous les dropdowns
-//
-// MODIFIÉ le 01/02/2025 v2:
-// - Suppression de l'import de generateId et DropdownList
+// - Génération d'ID autonome harmonisée
 // - DropdownList passé via config par l'orchestrateur
 // - 100% autonome
+//
+// API PUBLIQUE:
+// - constructor(config)
+// - getValues()
+// - reset()
+// - setValue(key, value)
+// - setEnabled(key, enabled)
+// - destroy()
+//
+// CALLBACKS DISPONIBLES:
+// - onFilter: (values) => void
 //
 // TYPES SUPPORTÉS:
 // - search: Recherche textuelle
 // - select: Liste déroulante (utilise DropdownList)
 // - daterange: Sélection de période
 // - checkbox: Cases à cocher multiples
-// (plus à venir...)
+// - date: Sélection de date
+// - radio: Boutons radio
+// - range: Curseur de plage
+// - tags: Tags (non implémenté)
+// - buttongroup: Groupe de boutons
+// - custom: Personnalisé
+//
+// EXEMPLE:
+// const filters = new DataTableFilters({
+//     container: '.filters-container',
+//     DropdownClass: DropdownList, // Injection du composant
+//     filters: [
+//         { type: 'search', key: 'search', placeholder: 'Rechercher...' },
+//         { type: 'select', key: 'status', options: [...] }
+//     ],
+//     onFilter: (values) => console.log('Filtres:', values)
+// });
 // ========================================
 
 export class DataTableFilters {
     constructor(config) {
-        // ✅ MODIFIÉ: Génération d'ID autonome
+        // ✅ GÉNÉRATION D'ID HARMONISÉE
         this.id = 'filters-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
         
         // Configuration par défaut
@@ -38,7 +60,7 @@ export class DataTableFilters {
             onFilter: null,     // Callback quand les filtres changent
             resetButton: true,  // Afficher le bouton reset
             
-            // ✅ NOUVEAU: Classe DropdownList injectée par l'orchestrateur
+            // Classe DropdownList injectée par l'orchestrateur
             DropdownClass: null,
             
             ...config
@@ -65,9 +87,10 @@ export class DataTableFilters {
         this.init();
     }
     
-    /**
-     * Initialisation
-     */
+    // ========================================
+    // INITIALISATION ET CONFIGURATION
+    // ========================================
+    
     init() {
         // Définir les types de filtres disponibles
         this.filterTypes = {
@@ -104,12 +127,14 @@ export class DataTableFilters {
         // Attacher les événements globaux
         this.attachGlobalEvents();
         
-        console.log('✅ DataTableFilters initialisé' + (this.config.DropdownClass ? ' avec DropdownList' : ' sans DropdownList'));
+        console.log('✅ DataTableFilters initialisé:', this.id, 
+            this.config.DropdownClass ? 'avec DropdownList' : 'sans DropdownList');
     }
     
-    /**
-     * Créer la structure HTML
-     */
+    // ========================================
+    // RENDU ET DOM
+    // ========================================
+    
     render() {
         // Container principal avec classe pour style
         this.elements.container.className = 'filters-container';
@@ -158,9 +183,6 @@ export class DataTableFilters {
         this.elements.form = form;
     }
     
-    /**
-     * Créer un filtre selon son type
-     */
     createFilter(filterConfig) {
         const { type, key, label, ...options } = filterConfig;
         
@@ -205,9 +227,6 @@ export class DataTableFilters {
         return group;
     }
     
-    /**
-     * Initialiser les valeurs par défaut
-     */
     initDefaultValues() {
         this.config.filters.forEach(filter => {
             if (filter.defaultValue !== undefined) {
@@ -216,9 +235,10 @@ export class DataTableFilters {
         });
     }
     
-    /**
-     * Attacher les événements globaux
-     */
+    // ========================================
+    // GESTION DES ÉVÉNEMENTS
+    // ========================================
+    
     attachGlobalEvents() {
         // Écouter les changements de formulaire si autoSubmit
         if (this.config.autoSubmit && this.elements.form) {
@@ -234,9 +254,6 @@ export class DataTableFilters {
         }
     }
     
-    /**
-     * Gérer le changement d'un filtre
-     */
     handleFilterChange() {
         // Collecter toutes les valeurs
         this.collectValues();
@@ -245,9 +262,6 @@ export class DataTableFilters {
         this.triggerFilter();
     }
     
-    /**
-     * Collecter les valeurs de tous les filtres
-     */
     collectValues() {
         const newValues = {};
         
@@ -267,6 +281,16 @@ export class DataTableFilters {
         
         this.values = newValues;
     }
+    
+    triggerFilter() {
+        if (this.config.onFilter) {
+            this.config.onFilter(this.getValues());
+        }
+    }
+    
+    // ========================================
+    // API PUBLIQUE
+    // ========================================
     
     /**
      * Obtenir les valeurs actuelles des filtres
@@ -307,15 +331,6 @@ export class DataTableFilters {
         
         // Déclencher le callback
         this.triggerFilter();
-    }
-    
-    /**
-     * Déclencher le callback de filtre
-     */
-    triggerFilter() {
-        if (this.config.onFilter) {
-            this.config.onFilter(this.getValues());
-        }
     }
     
     /**
@@ -395,6 +410,8 @@ export class DataTableFilters {
             resetButton: null,
             filters: {}
         };
+        
+        console.log('🧹 DataTableFilters détruit:', this.id);
     }
     
     // ========================================
@@ -438,10 +455,10 @@ export class DataTableFilters {
     }
     
     /**
-     * Render Select - MODIFIÉ pour utiliser DropdownList injectable
+     * Render Select - Utilise DropdownList injectable
      */
     renderSelect(config) {
-        // ✅ MODIFIÉ: Vérifier que DropdownClass est fourni
+        // Vérifier que DropdownClass est fourni
         if (!this.config.DropdownClass) {
             console.warn('DataTableFilters: DropdownClass non fourni pour le filtre select');
             // Fallback : créer un select HTML basique
@@ -466,7 +483,7 @@ export class DataTableFilters {
             return select;
         }
         
-        // ✅ Utiliser la classe DropdownList fournie
+        // Utiliser la classe DropdownList fournie
         const DropdownList = this.config.DropdownClass;
         
         // Créer un container pour le dropdown
@@ -528,7 +545,7 @@ export class DataTableFilters {
             value: config.defaultValue || '',
             searchable: true, // Toujours activé
             showIcons: true,  // Toujours afficher les icônes
-            keepPlaceholder: config.keepPlaceholder || false, // Transmettre l'option
+            keepPlaceholder: config.keepPlaceholder || false,
             onChange: (value) => {
                 if (this.config.autoSubmit) {
                     this.handleFilterChange();
@@ -746,7 +763,7 @@ export class DataTableFilters {
     }
     
     /**
-     * Get Value Select - MODIFIÉ pour DropdownList
+     * Get Value Select
      */
     getValueSelect(element, config) {
         // Si c'est un dropdown
@@ -836,32 +853,3 @@ export class DataTableFilters {
         return null;
     }
 }
-
-/* ========================================
-   HISTORIQUE DES MODIFICATIONS
-   
-   [01/02/2025] - Intégration complète de DropdownList
-   - Remplacement de TOUS les <select> par DropdownList
-   - Extraction automatique des icônes depuis les labels (format "🍃 Normal")
-   - Activation de la recherche pour TOUS les dropdowns
-   - Stockage des instances pour destruction propre
-   - Gestion du reset et setValue pour les dropdowns
-   - Support des icônes séparées { value, label, icon }
-   
-   [01/02/2025 v2] - Autonomie complète
-   - Suppression imports generateId et DropdownList
-   - DropdownList passé via config.DropdownClass
-   - Fallback sur select HTML si DropdownClass non fourni
-   - 100% indépendant d'autres composants UI
-   
-   AVANTAGES:
-   - Zero couplage entre composants UI
-   - DropdownList injectable par l'orchestrateur
-   - Fallback gracieux si DropdownList non fourni
-   - Destruction propre des instances
-   
-   NOTES:
-   - L'orchestrateur doit passer DropdownClass dans la config
-   - Si non fourni, utilise un select HTML basique
-   - La recherche n'est disponible qu'avec DropdownList
-   ======================================== */

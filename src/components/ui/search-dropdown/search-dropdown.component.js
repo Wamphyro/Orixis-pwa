@@ -1,17 +1,33 @@
 // ========================================
 // SEARCH-DROPDOWN.COMPONENT.JS - Composant de recherche avec dropdown
-// ========================================
-// Chemin: src/js/shared/ui/search-dropdown.component.js
+// Chemin: src/components/ui/search-dropdown/search-dropdown.component.js
 //
 // DESCRIPTION:
-// Composant générique de recherche avec résultats en dropdown.
-// Réutilisable pour clients, produits, ou toute autre recherche.
+// Composant générique de recherche avec résultats en dropdown
+// Réutilisable pour clients, produits, ou toute autre recherche
 //
-// MODIFICATIONS:
-// [28/01/2025] - Ajout de protections contre les éléments null
-// [28/01/2025] - Améliorations pour mobile (position, clavier, scroll)
+// MODIFIÉ le 01/02/2025:
+// - Génération d'ID autonome harmonisée
+// - 100% indépendant
 //
-// UTILISATION:
+// API PUBLIQUE:
+// - constructor(options)
+// - getValue()
+// - setValue(value)
+// - getSelectedItem()
+// - setSelectedItem(item)
+// - setEnabled(enabled)
+// - clear()
+// - focus()
+// - destroy()
+//
+// CALLBACKS DISPONIBLES:
+// - onSearch: (query) => Promise<results>
+// - onSelect: (item) => void
+// - renderItem: (item) => string
+// - getValue: (item) => string
+//
+// EXEMPLE:
 // const searchClient = new SearchDropdown({
 //     container: '#clientSearchContainer',
 //     placeholder: 'Rechercher un client...',
@@ -22,6 +38,9 @@
 
 export class SearchDropdown {
     constructor(options = {}) {
+        // ✅ GÉNÉRATION D'ID HARMONISÉE
+        this.id = 'search-dropdown-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
+        
         this.options = {
             container: null,
             placeholder: 'Rechercher...',
@@ -61,6 +80,10 @@ export class SearchDropdown {
         }
     }
     
+    // ========================================
+    // INITIALISATION ET CONFIGURATION
+    // ========================================
+    
     init() {
         // Trouver ou créer le conteneur
         this.container = typeof this.options.container === 'string'
@@ -85,6 +108,8 @@ export class SearchDropdown {
         if (this.options.autoFocus) {
             setTimeout(() => this.input.focus(), 100);
         }
+        
+        console.log('✅ SearchDropdown initialisé:', this.id);
     }
     
     loadStyles() {
@@ -97,16 +122,17 @@ export class SearchDropdown {
         const link = document.createElement('link');
         link.id = 'search-dropdown-styles';
         link.rel = 'stylesheet';
-        link.href = '../src/css/shared/ui/search-dropdown.css';
+        link.href = '../src/components/ui/search-dropdown/search-dropdown.css';
         document.head.appendChild(link);
         
-        console.log('✅ SearchDropdown styles chargés');
+        console.log('📦 SearchDropdown styles chargés');
     }
     
     createElements() {
         // Nettoyer le conteneur
         this.container.innerHTML = '';
         this.container.className = 'search-dropdown-container';
+        this.container.id = this.id;
         
         // Créer le wrapper de l'input
         const inputWrapper = document.createElement('div');
@@ -143,6 +169,10 @@ export class SearchDropdown {
         this.container.appendChild(inputWrapper);
         this.container.appendChild(this.resultsContainer);
     }
+    
+    // ========================================
+    // GESTION DES ÉVÉNEMENTS
+    // ========================================
     
     attachEvents() {
         // Input events
@@ -257,6 +287,10 @@ export class SearchDropdown {
             this.hideResults();
         }
     }
+    
+    // ========================================
+    // MÉTHODES DE RECHERCHE ET AFFICHAGE
+    // ========================================
     
     async search(query) {
         if (!this.options.onSearch) {
@@ -473,23 +507,6 @@ export class SearchDropdown {
         }
     }
     
-    clear() {
-        this.input.value = '';
-        this.selectedItem = null;
-        this.results = [];
-        this.hideResults();
-        
-        if (this.clearButton) {
-            this.clearButton.style.display = 'none';
-        }
-        
-        // Focus sur l'input
-        this.input.focus();
-        
-        // Déclencher un événement
-        this.container.dispatchEvent(new Event('clear'));
-    }
-    
     // ========================================
     // API PUBLIQUE
     // ========================================
@@ -546,6 +563,26 @@ export class SearchDropdown {
     }
     
     /**
+     * Effacer
+     */
+    clear() {
+        this.input.value = '';
+        this.selectedItem = null;
+        this.results = [];
+        this.hideResults();
+        
+        if (this.clearButton) {
+            this.clearButton.style.display = 'none';
+        }
+        
+        // Focus sur l'input
+        this.input.focus();
+        
+        // Déclencher un événement
+        this.container.dispatchEvent(new Event('clear'));
+    }
+    
+    /**
      * Détruire le composant
      */
     destroy() {
@@ -580,6 +617,8 @@ export class SearchDropdown {
         this.clearButton = null;
         this.results = [];
         this.selectedItem = null;
+        
+        console.log('🧹 SearchDropdown détruit:', this.id);
     }
     
     // ========================================
@@ -598,25 +637,3 @@ export class SearchDropdown {
 // ========================================
 
 export default SearchDropdown;
-
-// ========================================
-// HISTORIQUE DES DIFFICULTÉS
-//
-// [28/01/2025] - Protection contre les éléments null
-// - Ajout de vérifications dans handleClickOutside
-// - Protection dans showResults/hideResults
-// - Protection dans destroy
-//
-// [28/01/2025] - Améliorations mobile
-// - Détection mobile et ajustement position
-// - Fermeture clavier après sélection
-// - Touch events pour éviter delay 300ms
-// - Scroll automatique vers résultats
-// - Gestion overflow body sur mobile
-// - Position intelligente (haut/bas selon espace)
-//
-// NOTES POUR REPRISES FUTURES:
-// - Toujours vérifier l'existence des éléments DOM
-// - Le composant peut être détruit avant que tous les events soient terminés
-// - Sur mobile, penser à l'UX (clavier, position, scroll)
-// ========================================

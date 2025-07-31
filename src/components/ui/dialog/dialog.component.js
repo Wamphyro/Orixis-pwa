@@ -1,10 +1,29 @@
 // ========================================
 // DIALOG.COMPONENT.JS - Dialogues modernes et élégants
-// ========================================
-// Chemin: src/js/shared/ui/dialog.component.js
+// Chemin: src/components/ui/dialog/dialog.component.js
 //
-// Version mise à jour : chemins CSS corrigés pour pages dans /pages/
-// Charge maintenant : ../src/css/shared/ui/dialog.css
+// DESCRIPTION:
+// Système de dialogues modaux remplaçant alert/confirm/prompt natifs
+// Composant singleton avec file d'attente
+//
+// MODIFIÉ le 01/02/2025:
+// - Génération d'ID autonome harmonisée
+// - 100% indépendant
+//
+// API PUBLIQUE:
+// - alert(message, title)
+// - confirm(message, title)
+// - prompt(message, defaultValue, title)
+// - success(message, title)
+// - error(message, title)
+// - warning(message, title)
+// - confirmDanger(message, title)
+// - custom(options)
+//
+// EXEMPLE:
+// Dialog.alert('Opération réussie !');
+// const confirmed = await Dialog.confirm('Êtes-vous sûr ?');
+// const name = await Dialog.prompt('Votre nom ?', 'John');
 // ========================================
 
 export class Dialog {
@@ -17,11 +36,18 @@ export class Dialog {
             return Dialog.instance;
         }
         
+        // ✅ GÉNÉRATION D'ID HARMONISÉE
+        this.id = 'dialog-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
+        
         this.container = null;
         this.currentDialog = null;
         this.init();
         Dialog.instance = this;
     }
+    
+    // ========================================
+    // INITIALISATION ET CONFIGURATION
+    // ========================================
     
     init() {
         // Créer le conteneur si inexistant
@@ -36,7 +62,7 @@ export class Dialog {
         // Charger les styles
         this.loadStyles();
         
-        console.log('✅ Dialog initialisé avec styles autonomes');
+        console.log('✅ Dialog initialisé:', this.id);
     }
     
     loadStyles() {
@@ -49,11 +75,15 @@ export class Dialog {
         const link = document.createElement('link');
         link.id = 'dialog-styles';
         link.rel = 'stylesheet';
-        link.href = '../src/css/shared/ui/dialog.css';
+        link.href = '../src/components/ui/dialog/dialog.css';
         document.head.appendChild(link);
         
-        console.log('✅ Dialog styles chargés : ../src/css/shared/ui/dialog.css');
+        console.log('📦 Dialog styles chargés');
     }
+    
+    // ========================================
+    // MÉTHODE PRINCIPALE SHOW
+    // ========================================
     
     show(options) {
         return new Promise((resolve) => {
@@ -173,6 +203,10 @@ export class Dialog {
         document.addEventListener('keydown', handleKeydown);
         this.currentDialog = { handleKeydown };
     }
+    
+    // ========================================
+    // FERMETURE ET NETTOYAGE
+    // ========================================
     
     close(resolve, result) {
         // Retirer les event listeners
