@@ -3,21 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fiche Intervention SAV Audio</title>
+    <title>SAV Audio - Interventions</title>
     
     <!-- PWA Meta Tags -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="SAV Audio">
-    <meta name="theme-color" content="#667eea">
     <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#667eea">
     
-    <!-- CSS -->
+    <!-- ========================================
+         CSS - Ordre de chargement optimisé
+         ======================================== -->
+    
+    <!-- 1. Base et layout -->
     <link rel="stylesheet" href="../src/css/main.css">
-    <link rel="stylesheet" href="../src/css/shared/ui/button.css">
+
+    <!-- 2. Composants UI partagés -->
+    <link rel="stylesheet" href="../src/css/shared/ui/animation.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/badge.css">
     <link rel="stylesheet" href="../src/css/shared/ui/form.css">
-    <link rel="stylesheet" href="../src/css/intervention.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/modal.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/dialog.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/notification.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/timeline.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/search-dropdown.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/stepper.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/datatable.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/datatable-filters.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/dropdown-list.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/button.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/stats-cards.css">
+
+    <!-- 3. CSS spécifiques aux interventions -->
+    <link rel="stylesheet" href="../src/css/intervention/intervention.css">
+    <link rel="stylesheet" href="../src/css/intervention/intervention-custom.css">
     
     <!-- EmailJS -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
@@ -33,198 +54,332 @@
     </script>
 </head>
 <body>
-    <!-- Header uniforme -->
-    <div class="app-header">
-        <div class="app-header-content">
-            <div class="app-header-left">
-                <a href="home.html" class="header-back-button no-print">
-                    ← Retour
-                </a>
-            </div>
-            <div class="app-header-center">
-                <h1>🔧 Fiche d'Intervention SAV Audio</h1>
-                <p>Contrôle / Nettoyage / Maintenance Niveau 1</p>
-            </div>
-            <div class="app-header-right"></div>
-        </div>
-    </div>
+    <!-- Container pour le composant AppHeader -->
+    <!-- AppHeader sera injecté ici par JavaScript -->
     
     <div class="container">
-        <form id="interventionForm">
-            <!-- Informations Client -->
-            <div class="section">
-                <h2 class="section-title">📋 Informations Client</h2>
-                <div class="date-time-row">
+        <!-- Barre d'actions et statistiques -->
+        <div class="interventions-header">
+            <div class="interventions-stats">
+                <!-- StatsCards va générer le contenu ici -->
+            </div>
+            
+            <div class="interventions-actions">
+                <button class="btn btn-primary btn-with-icon" onclick="ouvrirNouvelleIntervention()">
+                    <span>➕</span> Nouvelle intervention
+                </button>
+            </div>
+        </div>
+
+        <!-- Filtres -->
+        <div class="interventions-filters section">
+            <!-- DataTableFilters va générer le contenu ici -->
+        </div>
+
+        <!-- Container pour DataTable -->
+        <div class="interventions-table-container section">
+            <!-- DataTable sera généré ici -->
+        </div>
+    </div>
+
+    <!-- Modal Nouvelle Intervention -->
+    <div id="modalNouvelleIntervention" class="modal" style="display: none;">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>🔧 Nouvelle Intervention SAV</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            
+            <!-- Indicateur d'étapes -->
+            <div class="stepper">
+                <div class="step active" id="step1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Client & Appareil</div>
+                </div>
+                <div class="step" id="step2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Diagnostic</div>
+                </div>
+                <div class="step" id="step3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Actions & Résultat</div>
+                </div>
+                <div class="step" id="step4">
+                    <div class="step-number">4</div>
+                    <div class="step-label">Validation</div>
+                </div>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Étape 1 : Client & Appareil -->
+                <div class="step-content" id="stepContent1">
+                    <h3>📋 Informations Client</h3>
+                    
+                    <div class="client-search-container form-group">
+                        <label for="nom">Nom du client <span style="color: #dc3545;">*</span></label>
+                        <div class="client-search-wrapper">
+                            <!-- SearchDropdown sera initialisé ici -->
+                        </div>
+                    </div>
+                    
+                    <div class="client-selected" id="clientSelected" style="display: none;">
+                        <h4>Client sélectionné :</h4>
+                        <div class="client-info">
+                            <p><strong id="selectedClientName"></strong></p>
+                            <p id="selectedClientInfo"></p>
+                        </div>
+                        <button class="btn-link" onclick="changerClient()">Changer de client</button>
+                    </div>
+                    
+                    <div class="form-group" id="telephoneGroup" style="display: none;">
+                        <label for="telephone">Téléphone</label>
+                        <input type="tel" id="telephone" name="telephone" readonly>
+                    </div>
+                    
+                    <h3 style="margin-top: 30px;">🎧 Type d'Appareil</h3>
+                    
+                    <div class="device-selection">
+                        <label class="device-card">
+                            <input type="radio" name="type_appareil" value="BTE" required>
+                            <div class="icon">🔵</div>
+                            <div>BTE Classique</div>
+                        </label>
+                        <label class="device-card">
+                            <input type="radio" name="type_appareil" value="RIC" required>
+                            <div class="icon">🔴</div>
+                            <div>RIC/RITE</div>
+                        </label>
+                        <label class="device-card">
+                            <input type="radio" name="type_appareil" value="ITE" required>
+                            <div class="icon">🟢</div>
+                            <div>Intra (ITE/CIC)</div>
+                        </label>
+                    </div>
+                    
                     <div class="form-group">
-    <label for="date">Date 📅</label>
-    <input type="text" id="date" name="date" required readonly>
-</div>
-<div class="form-group">
-    <label for="heure">Heure 🕐</label>
-    <input type="text" id="heure" name="heure" required readonly>
-</div>
-                </div>
-                <div class="form-group">
-                    <label for="nom">Nom du client</label>
-                    <input type="text" id="nom" name="nom" required>
-                </div>
-                <div class="form-group">
-                    <label for="telephone">Téléphone</label>
-                    <input type="tel" id="telephone" name="telephone" required>
-                </div>
-            </div>
-            
-            <!-- Type d'appareil -->
-            <div class="section">
-                <h2 class="section-title">🎧 Type d'Appareil</h2>
-                <div class="device-selection">
-                    <label class="device-card">
-                        <input type="radio" name="type_appareil" value="BTE" required>
-                        <div class="icon">🔵</div>
-                        <div>BTE Classique</div>
-                    </label>
-                    <label class="device-card">
-                        <input type="radio" name="type_appareil" value="RIC" required>
-                        <div class="icon">🔴</div>
-                        <div>RIC/RITE</div>
-                    </label>
-                    <label class="device-card">
-                        <input type="radio" name="type_appareil" value="ITE" required>
-                        <div class="icon">🟢</div>
-                        <div>Intra (ITE/CIC)</div>
-                    </label>
-                </div>
-                <div class="form-group">
-                    <label for="marque">Marque</label>
-                    <select id="marque" name="marque" required>
-                        <option value="">Sélectionner une marque</option>
-                        <option value="Phonak">Phonak</option>
-                        <option value="Oticon">Oticon</option>
-                        <option value="Signia">Signia/Siemens</option>
-                        <option value="Widex">Widex</option>
-                        <option value="Starkey">Starkey</option>
-                        <option value="Autre">Autre</option>
-                    </select>
-                </div>
-            </div>
-            
-            <!-- Problème décrit -->
-            <div class="section">
-                <h2 class="section-title">❓ Problème Décrit</h2>
-                <div class="checkbox-group">
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="pb1" name="probleme" value="Pas de son">
-                        <label for="pb1">🔇 Pas de son / Muet</label>
+                        <label for="marque">Marque</label>
+                        <div id="marqueAppareil"></div>
                     </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="pb2" name="probleme" value="Son faible">
-                        <label for="pb2">🔉 Son faible</label>
+                    
+                    <div class="form-group">
+                        <label for="modele">Modèle (optionnel)</label>
+                        <input type="text" id="modele" name="modele" placeholder="Ex: Audeo Paradise">
                     </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="pb3" name="probleme" value="Sifflement">
-                        <label for="pb3">📢 Sifflement (Larsen)</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="pb4" name="probleme" value="Son intermittent">
-                        <label for="pb4">〰️ Son intermittent</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="pb5" name="probleme" value="Grésille">
-                        <label for="pb5">📡 Grésille / Parasite</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="pb6" name="probleme" value="Humidité">
-                        <label for="pb6">💧 Humidité / Condensation</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="pb7" name="probleme" value="Inconfort">
-                        <label for="pb7">😣 Inconfort / Douleur</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="pb8" name="probleme" value="Contrôle routine">
-                        <label for="pb8">🔧 Contrôle routine</label>
+                    
+                    <div class="form-group">
+                        <label for="numeroSerie">Numéro de série (optionnel)</label>
+                        <input type="text" id="numeroSerie" name="numeroSerie" placeholder="Ex: PH123456789">
                     </div>
                 </div>
-            </div>
-            
-            <!-- Actions réalisées -->
-            <div class="section">
-                <h2 class="section-title">✅ Actions Réalisées</h2>
-                <div class="checkbox-group">
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="act1" name="actions" value="Pile changée">
-                        <label for="act1">🔋 Pile testée / changée</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="act2" name="actions" value="Nettoyage complet">
-                        <label for="act2">🧹 Nettoyage complet</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="act3" name="actions" value="Filtre changé">
-                        <label for="act3">🔄 Filtre pare-cérumen changé</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="act4" name="actions" value="Dôme remplacé">
-                        <label for="act4">🔵 Dôme remplacé</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="act5" name="actions" value="Tube changé">
-                        <label for="act5">📏 Tube changé</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="act6" name="actions" value="Séchage">
-                        <label for="act6">☀️ Séchage effectué</label>
+                
+                <!-- Étape 2 : Diagnostic -->
+                <div class="step-content hidden" id="stepContent2">
+                    <h3>❓ Problème(s) Décrit(s)</h3>
+                    
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="pb1" name="probleme" value="Pas de son">
+                            <label for="pb1">🔇 Pas de son / Muet</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="pb2" name="probleme" value="Son faible">
+                            <label for="pb2">🔉 Son faible</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="pb3" name="probleme" value="Sifflement">
+                            <label for="pb3">📢 Sifflement (Larsen)</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="pb4" name="probleme" value="Son intermittent">
+                            <label for="pb4">〰️ Son intermittent</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="pb5" name="probleme" value="Grésille">
+                            <label for="pb5">📡 Grésille / Parasite</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="pb6" name="probleme" value="Humidité">
+                            <label for="pb6">💧 Humidité / Condensation</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="pb7" name="probleme" value="Inconfort">
+                            <label for="pb7">😣 Inconfort / Douleur</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="pb8" name="probleme" value="Contrôle routine">
+                            <label for="pb8">🔧 Contrôle routine</label>
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Résultat -->
-            <div class="section">
-                <h2 class="section-title">📊 Résultat de l'Intervention</h2>
-                <div class="form-group">
-                    <select id="resultat" name="resultat" required>
-                        <option value="">Sélectionner le résultat</option>
-                        <option value="Résolu">✅ Problème résolu</option>
-                        <option value="Partiel">⚠️ Amélioration partielle</option>
-                        <option value="SAV">❌ Sans effet - Escalade SAV</option>
-                        <option value="OK">🔧 Contrôle OK</option>
-                    </select>
+                
+                <!-- Étape 3 : Actions & Résultat -->
+                <div class="step-content hidden" id="stepContent3">
+                    <h3>✅ Actions Réalisées</h3>
+                    
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="act1" name="actions" value="Pile changée">
+                            <label for="act1">🔋 Pile testée / changée</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="act2" name="actions" value="Nettoyage complet">
+                            <label for="act2">🧹 Nettoyage complet</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="act3" name="actions" value="Filtre changé">
+                            <label for="act3">🔄 Filtre pare-cérumen changé</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="act4" name="actions" value="Dôme remplacé">
+                            <label for="act4">🔵 Dôme remplacé</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="act5" name="actions" value="Tube changé">
+                            <label for="act5">📏 Tube changé</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="act6" name="actions" value="Séchage">
+                            <label for="act6">☀️ Séchage effectué</label>
+                        </div>
+                    </div>
+                    
+                    <h3 style="margin-top: 30px;">📊 Résultat de l'Intervention</h3>
+                    
+                    <div class="form-group">
+                        <select id="resultat" name="resultat" required>
+                            <option value="">Sélectionner le résultat</option>
+                            <option value="Résolu">✅ Problème résolu</option>
+                            <option value="Partiel">⚠️ Amélioration partielle</option>
+                            <option value="SAV">❌ Sans effet - Escalade SAV</option>
+                            <option value="OK">🔧 Contrôle OK</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="observations">💬 Observations (optionnel)</label>
+                        <textarea id="observations" name="observations" rows="3" 
+                                  placeholder="Commentaires additionnels..."></textarea>
+                    </div>
+                </div>
+                
+                <!-- Étape 4 : Validation -->
+                <div class="step-content hidden" id="stepContent4">
+                    <h3>Récapitulatif de l'intervention</h3>
+                    
+                    <div class="recap-section">
+                        <h4>Client</h4>
+                        <div id="recapClient"></div>
+                    </div>
+                    
+                    <div class="recap-section">
+                        <h4>Appareil</h4>
+                        <div id="recapAppareil"></div>
+                    </div>
+                    
+                    <div class="recap-section">
+                        <h4>Diagnostic</h4>
+                        <div id="recapDiagnostic"></div>
+                    </div>
+                    
+                    <div class="recap-section">
+                        <h4>Résultat</h4>
+                        <div id="recapResultat"></div>
+                    </div>
                 </div>
             </div>
             
-            <!-- Observations -->
-            <div class="section">
-                <h2 class="section-title">💬 Observations</h2>
-                <div class="form-group">
-                    <textarea id="observations" name="observations" rows="3" placeholder="Commentaires additionnels..."></textarea>
-                </div>
-            </div>
-            
-            <!-- Boutons d'action -->
-            <div class="action-buttons no-print">
-                <button type="button" class="btn btn-secondary" onclick="resetForm()">
-                    Effacer
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btnPrevStep" onclick="etapePrecedente()" disabled>
+                    ← Précédent
                 </button>
-                <button type="submit" class="btn btn-primary">
-                    ✅ Valider l'intervention
+                <button class="btn btn-primary" id="btnNextStep" onclick="etapeSuivante()">
+                    Suivant →
                 </button>
-                <!-- Bouton SAV caché par défaut -->
-                <button type="button" class="btn btn-warning" id="btnSAV" style="display: none;" onclick="envoyerSAV()">
-                    📧 Envoyer au SAV
+                <button class="btn btn-success hidden" id="btnValiderIntervention" onclick="validerIntervention()">
+                    ✓ Démarrer l'intervention
                 </button>
             </div>
-        </form>
+        </div>
     </div>
-    
-    <!-- Message de succès -->
-    <div class="overlay" id="overlay"></div>
-    <div class="success-message" id="successMessage">
-        <div class="success-icon">✅</div>
-        <h2>Fiche prête !</h2>
-        <p>Ouverture de l'aperçu...</p>
+
+    <!-- Modal Détail Intervention -->
+    <div id="modalDetailIntervention" class="modal" style="display: none;">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>Détail de l'intervention <span id="detailNumIntervention"></span></h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Timeline du statut -->
+                <div class="timeline-container">
+                    <div class="timeline" id="timeline">
+                        <!-- Timeline générée dynamiquement -->
+                    </div>
+                </div>
+                
+                <!-- Sections détail -->
+                <div class="detail-sections">
+                    <!-- Colonne de gauche -->
+                    <div class="detail-column-left">
+                        <!-- Section Client -->
+                        <div class="detail-section">
+                            <h3>Informations client</h3>
+                            <div id="detailClient">
+                                <!-- Contenu généré dynamiquement -->
+                            </div>
+                        </div>
+                        
+                        <!-- Section Appareil -->
+                        <div class="detail-section">
+                            <h3>Appareil</h3>
+                            <div id="detailAppareil">
+                                <!-- Contenu généré dynamiquement -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Colonne de droite -->
+                    <div class="detail-column-right">
+                        <!-- Section Diagnostic -->
+                        <div class="detail-section">
+                            <h3>Diagnostic & Actions</h3>
+                            <div id="detailDiagnostic">
+                                <!-- Contenu généré dynamiquement -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Section Résultat sur toute la largeur -->
+                <div class="detail-section full-width">
+                    <h3>Résultat & Observations</h3>
+                    <div id="detailResultat">
+                        <!-- Contenu généré dynamiquement -->
+                    </div>
+                </div>
+                
+                <!-- Section Signatures si terminée -->
+                <div class="detail-section full-width" id="sectionSignatures" style="display: none;">
+                    <h3>Signatures</h3>
+                    <div id="detailSignatures">
+                        <!-- Contenu généré dynamiquement -->
+                    </div>
+                </div>
+                
+                <!-- Actions selon le statut -->
+                <div class="detail-actions" id="detailActions">
+                    <!-- Boutons d'action générés selon le statut -->
+                </div>
+            </div>
+        </div>
     </div>
-    
-    <!-- Scripts -->
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Orixis - © 2025</p>
+    </div>
+
     <script type="module" src="../src/js/pages/intervention/intervention.main.js"></script>
 </body>
 </html>

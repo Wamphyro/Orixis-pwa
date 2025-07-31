@@ -864,34 +864,130 @@ window.saisirExpedition = async function(commandeId) {
 
 window.validerReception = async function(commandeId) {
     try {
-        const result = await Dialog.form({
-            titre: 'Valider la réception',
-            fields: [
-                {
-                    type: 'text',
-                    name: 'numeroSuiviRecu',
-                    label: 'Numéro de suivi reçu',
-                    placeholder: 'Ex: RET123456',
-                    required: true
-                },
-                {
-                    type: 'select',
-                    name: 'colisConforme',
-                    label: 'Le colis est-il conforme ?',
-                    options: [
-                        { value: 'true', label: '✅ Oui, conforme' },
-                        { value: 'false', label: '❌ Non, problème' }
-                    ],
-                    required: true
-                },
-                {
-                    type: 'textarea',
-                    name: 'commentaires',
-                    label: 'Commentaires (optionnel)',
-                    placeholder: 'Précisions sur l\'état du colis...',
-                    rows: 3
+        const result = await new Promise((resolve) => {
+            const dialogHtml = `
+                <div class="dialog-overlay"></div>
+                <div class="dialog-box">
+                    <div class="dialog-header">
+                        <div class="dialog-icon info">📥</div>
+                        <h3 class="dialog-title">Valider la réception</h3>
+                    </div>
+                    <div class="dialog-body">
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Numéro de suivi reçu *</label>
+                            <input type="text" id="numeroSuiviRecu" 
+                                   placeholder="Ex: RET123456" 
+                                   style="width: 100%; padding: 8px; border: 2px solid #e0e0e0; border-radius: 6px; box-sizing: border-box;"
+                                   required>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Le colis est-il conforme ?</label>
+                            <select id="colisConforme" 
+                                    style="width: 100%; padding: 8px; border: 2px solid #e0e0e0; border-radius: 6px;">
+                                <option value="true">✅ Oui, conforme</option>
+                                <option value="false">❌ Non, problème</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Commentaires (optionnel)</label>
+                            <textarea id="commentairesReception" 
+                                      placeholder="Précisions sur l'état du colis..." 
+                                      rows="3"
+                                      style="width: 100%; padding: 8px; border: 2px solid #e0e0e0; border-radius: 6px; box-sizing: border-box; resize: vertical;"></textarea>
+                        </div>
+                    </div>
+                    <div class="dialog-footer">
+                        <button class="dialog-btn secondary reception-cancel">Annuler</button>
+                        <button class="dialog-btn primary reception-confirm">Valider la réception</button>
+                    </div>
+                </div>
+            `;
+            
+            const dialogContainer = document.getElementById('dialog-container');
+            if (!dialogContainer) {
+                console.error('❌ Dialog container introuvable');
+                resolve(null);
+                return;
+            }
+            
+            dialogContainer.innerHTML = dialogHtml;
+            dialogContainer.classList.add('active');
+            
+            const numeroSuiviInput = document.getElementById('numeroSuiviRecu');
+            const colisConformeSelect = document.getElementById('colisConforme');
+            const commentairesTextarea = document.getElementById('commentairesReception');
+            const confirmBtn = document.querySelector('.reception-confirm');
+            const cancelBtn = document.querySelector('.reception-cancel');
+            const overlay = document.querySelector('.dialog-overlay');
+            
+            setTimeout(() => {
+                if (numeroSuiviInput) {
+                    numeroSuiviInput.focus();
                 }
-            ]
+            }, 100);
+            
+            const handleConfirm = () => {
+                const numeroSuivi = numeroSuiviInput ? numeroSuiviInput.value.trim() : '';
+                
+                if (!numeroSuivi) {
+                    if (numeroSuiviInput) {
+                        numeroSuiviInput.style.borderColor = '#f44336';
+                        numeroSuiviInput.focus();
+                    }
+                    return;
+                }
+                
+                const result = {
+                    numeroSuiviRecu: numeroSuivi,
+                    colisConforme: colisConformeSelect.value,
+                    commentaires: commentairesTextarea.value.trim()
+                };
+                
+                dialogContainer.classList.remove('active');
+                setTimeout(() => {
+                    dialogContainer.innerHTML = '';
+                }, 200);
+                
+                resolve(result);
+            };
+            
+            const handleCancel = () => {
+                dialogContainer.classList.remove('active');
+                setTimeout(() => {
+                    dialogContainer.innerHTML = '';
+                }, 200);
+                resolve(null);
+            };
+            
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', handleConfirm);
+            }
+            
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', handleCancel);
+            }
+            
+            if (overlay) {
+                overlay.addEventListener('click', handleCancel);
+            }
+            
+            const handleKeydown = (e) => {
+                if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+                    e.preventDefault();
+                    handleConfirm();
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    handleCancel();
+                }
+            };
+            
+            document.addEventListener('keydown', handleKeydown);
+            
+            const originalResolve = resolve;
+            resolve = (value) => {
+                document.removeEventListener('keydown', handleKeydown);
+                originalResolve(value);
+            };
         });
         
         if (result) {
@@ -909,80 +1005,6 @@ window.validerReception = async function(commandeId) {
     } catch (error) {
         console.error('Erreur validation réception:', error);
         afficherErreur('Erreur lors de la validation de la réception');
-    }
-};
-
-window.marquerPatientPrevenu = async function(commandeId) {
-    const confirme = await confirmerAction({
-        titre: 'Patient prévenu',
-        message: 'Confirmer que le patient a été prévenu ?',
-        boutonConfirmer: 'Oui, patient prévenu',
-        boutonAnnuler: 'Annuler',
-        danger: false
-    });
-    
-    if (confirme) {
-        try {
-            await CommandesService.mettreAJourCommande(commandeId, {
-                patientPrevenu: true,
-                'dates.patientPrevenu': new Date()
-            });
-            
-            await chargerDonnees();
-            await voirDetailCommande(commandeId);
-            
-            afficherSucces('Patient marqué comme prévenu');
-        } catch (error) {
-            console.error('Erreur mise à jour:', error);
-            afficherErreur('Erreur lors de la mise à jour');
-        }
-    }
-};
-
-window.livrerDirectement = async function(commandeId) {
-    const confirme = await confirmerAction({
-        titre: 'Livraison directe',
-        message: 'Confirmer la livraison directe au patient (sans expédition) ?',
-        boutonConfirmer: 'Confirmer la livraison',
-        boutonAnnuler: 'Annuler',
-        danger: false
-    });
-    
-    if (confirme) {
-        // Passer true pour skipConfirmation afin d'éviter la double popup
-        await changerStatutDetail(commandeId, 'livree', true);
-    }
-};
-
-window.annulerCommande = async function(commandeId) {
-    const result = await Dialog.form({
-        titre: '❌ Annuler la commande',
-        fields: [
-            {
-                type: 'textarea',
-                name: 'motif',
-                label: 'Motif d\'annulation',
-                placeholder: 'Précisez la raison de l\'annulation...',
-                required: true,
-                rows: 3
-            }
-        ]
-    });
-    
-    if (result && result.motif) {
-        try {
-            await CommandesService.changerStatut(commandeId, 'annulee', {
-                motifAnnulation: result.motif
-            });
-            
-            await chargerDonnees();
-            window.modalManager.close('modalDetailCommande');
-            
-            afficherSucces('Commande annulée');
-        } catch (error) {
-            console.error('Erreur annulation:', error);
-            afficherErreur('Erreur lors de l\'annulation');
-        }
     }
 };
 
@@ -1149,24 +1171,164 @@ async function getDb() {
 }
 
 // Utiliser getDb() dans les fonctions qui en ont besoin
-window.editerLivraison = async function() {
-    const section = document.querySelector('#detailLivraison').parentElement;
-    section.classList.add('editing');
+
+window.marquerPatientPrevenu = async function(commandeId) {
+    const confirme = await confirmerAction({
+        titre: 'Patient prévenu',
+        message: 'Confirmer que le patient a été prévenu ?',
+        boutonConfirmer: 'Oui, patient prévenu',
+        boutonAnnuler: 'Annuler',
+        danger: false
+    });
     
-    document.getElementById('livraisonReadOnly').style.display = 'none';
-    document.getElementById('livraisonEditForm').classList.add('active');
+    if (confirme) {
+        try {
+            await CommandesService.mettreAJourCommande(commandeId, {
+                patientPrevenu: true,
+                'dates.patientPrevenu': new Date()
+            });
+            
+            await chargerDonnees();
+            await voirDetailCommande(commandeId);
+            
+            afficherSucces('Patient marqué comme prévenu');
+        } catch (error) {
+            console.error('Erreur mise à jour:', error);
+            afficherErreur('Erreur lors de la mise à jour');
+        }
+    }
+};
+
+window.livrerDirectement = async function(commandeId) {
+    const confirme = await confirmerAction({
+        titre: 'Livraison directe',
+        message: 'Confirmer la livraison directe au patient (sans expédition) ?',
+        boutonConfirmer: 'Confirmer la livraison',
+        boutonAnnuler: 'Annuler',
+        danger: false
+    });
     
-    // Obtenir db avant utilisation
-    const database = await getDb();
-    
-    try {
-        const { collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-        const magasinsSnapshot = await getDocs(collection(database, 'magasins'));
+    if (confirme) {
+        // Passer true pour skipConfirmation afin d'éviter la double popup
+        await changerStatutDetail(commandeId, 'livree', true);
+    }
+};
+
+window.annulerCommande = async function(commandeId) {
+    const result = await new Promise((resolve) => {
+        const dialogHtml = `
+            <div class="dialog-overlay"></div>
+            <div class="dialog-box">
+                <div class="dialog-header">
+                    <div class="dialog-icon danger">❌</div>
+                    <h3 class="dialog-title">Annuler la commande</h3>
+                </div>
+                <div class="dialog-body">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Motif d'annulation *</label>
+                        <textarea id="motifAnnulation" 
+                                  placeholder="Précisez la raison de l'annulation..." 
+                                  rows="3"
+                                  style="width: 100%; padding: 8px; border: 2px solid #e0e0e0; border-radius: 6px; box-sizing: border-box; resize: vertical;"
+                                  required></textarea>
+                    </div>
+                </div>
+                <div class="dialog-footer">
+                    <button class="dialog-btn secondary annulation-cancel">Annuler</button>
+                    <button class="dialog-btn danger annulation-confirm">Confirmer l'annulation</button>
+                </div>
+            </div>
+        `;
         
-        // ... reste du code
-    } catch (error) {
-        console.error('Erreur chargement dropdowns:', error);
-        notify.error('Erreur lors du chargement des options');
+        const dialogContainer = document.getElementById('dialog-container');
+        if (!dialogContainer) {
+            resolve(null);
+            return;
+        }
+        
+        dialogContainer.innerHTML = dialogHtml;
+        dialogContainer.classList.add('active');
+        
+        const motifTextarea = document.getElementById('motifAnnulation');
+        const confirmBtn = document.querySelector('.annulation-confirm');
+        const cancelBtn = document.querySelector('.annulation-cancel');
+        const overlay = document.querySelector('.dialog-overlay');
+        
+        setTimeout(() => {
+            if (motifTextarea) {
+                motifTextarea.focus();
+            }
+        }, 100);
+        
+        const handleConfirm = () => {
+            const motif = motifTextarea ? motifTextarea.value.trim() : '';
+            
+            if (!motif) {
+                if (motifTextarea) {
+                    motifTextarea.style.borderColor = '#f44336';
+                    motifTextarea.focus();
+                }
+                return;
+            }
+            
+            dialogContainer.classList.remove('active');
+            setTimeout(() => {
+                dialogContainer.innerHTML = '';
+            }, 200);
+            
+            resolve({ motif });
+        };
+        
+        const handleCancel = () => {
+            dialogContainer.classList.remove('active');
+            setTimeout(() => {
+                dialogContainer.innerHTML = '';
+            }, 200);
+            resolve(null);
+        };
+        
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', handleConfirm);
+        }
+        
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', handleCancel);
+        }
+        
+        if (overlay) {
+            overlay.addEventListener('click', handleCancel);
+        }
+        
+        const handleKeydown = (e) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                handleCancel();
+            }
+        };
+        
+        document.addEventListener('keydown', handleKeydown);
+        
+        const originalResolve = resolve;
+        resolve = (value) => {
+            document.removeEventListener('keydown', handleKeydown);
+            originalResolve(value);
+        };
+    });
+    
+    if (result && result.motif) {
+        try {
+            await CommandesService.changerStatut(commandeId, 'annulee', {
+                motifAnnulation: result.motif
+            });
+            
+            await chargerDonnees();
+            window.modalManager.close('modalDetailCommande');
+            
+            afficherSucces('Commande annulée');
+        } catch (error) {
+            console.error('Erreur annulation:', error);
+            afficherErreur('Erreur lors de l\'annulation');
+        }
     }
 };
 
