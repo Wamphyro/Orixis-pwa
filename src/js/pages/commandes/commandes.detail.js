@@ -63,9 +63,9 @@ function afficherDetailCommande(commande) {
     // Informations client
     const detailClient = document.getElementById('detailClient');
     detailClient.innerHTML = `
-        <button class="section-edit-icon" onclick="editerClient()" title="Modifier les informations client">
-            ✏️
-        </button>
+        <button class="btn btn-icon btn-sm btn-primary section-edit-icon" onclick="editerClient()" title="Modifier les informations client">
+    ✏️
+</button>
         <div class="detail-info-compact" id="clientReadOnly">
             <div class="info-row">
                 <span class="detail-label">Nom :</span>
@@ -118,9 +118,9 @@ function afficherDetailCommande(commande) {
     
     detailProduits.innerHTML = `
         ${peutModifierProduits ? `
-            <button class="section-edit-icon" onclick="editerProduits()" title="Modifier les produits">
-                ✏️
-            </button>
+            <button class="btn btn-icon btn-sm btn-primary section-edit-icon" onclick="editerClient()" title="Modifier les informations client">
+    ✏️
+</button>
         ` : ''}
         <div class="produits-list" id="produitsReadOnly">
             ${commande.produits.map((p, index) => `
@@ -169,9 +169,9 @@ function afficherDetailCommande(commande) {
     const detailLivraison = document.getElementById('detailLivraison');
     
     detailLivraison.innerHTML = `
-        <button class="section-edit-icon" onclick="editerLivraison()" title="Modifier la livraison">
-            ✏️
-        </button>
+        <button class="btn btn-icon btn-sm btn-primary section-edit-icon" onclick="editerClient()" title="Modifier les informations client">
+    ✏️
+</button>
         <div class="detail-info-compact" id="livraisonReadOnly">
             <div class="info-row">
                 <span class="detail-label">Type :</span>
@@ -231,9 +231,9 @@ function afficherDetailCommande(commande) {
         
         if (commande.expedition.envoi?.numeroSuivi) {
             detailExpedition.innerHTML = `
-                <button class="section-edit-icon" onclick="editerExpedition()" title="Modifier l'expédition">
-                    ✏️
-                </button>
+                <button class="btn btn-icon btn-sm btn-primary section-edit-icon" onclick="editerClient()" title="Modifier les informations client">
+    ✏️
+</button>
                 <div id="expeditionReadOnly">
                     <div class="detail-info">
                         <span class="detail-label">Transporteur :</span>
