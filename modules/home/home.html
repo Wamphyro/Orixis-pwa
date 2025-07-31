@@ -10,15 +10,16 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="SAV Audio">
-    <link rel="manifest" href="../manifest.json">
+    <link rel="manifest" href="../../manifest.json">
     <meta name="theme-color" content="#667eea">
     
     <!-- CSS -->
-    <link rel="stylesheet" href="../src/css/main.css">
-    <link rel="stylesheet" href="../src/css/shared/ui/button.css">
-    <link rel="stylesheet" href="../src/css/shared/ui/app-header.css">
-    <link rel="stylesheet" href="../src/css/shared/ui/dropdown-list.css">
-    <link rel="stylesheet" href="../src/css/home.css">
+    <link rel="stylesheet" href="../../src/css/main.css">
+    <link rel="stylesheet" href="../../src/components/ui/common/button.css">
+    <link rel="stylesheet" href="../../src/components/ui/app-header/app-header.css">
+    <link rel="stylesheet" href="../../src/components/ui/dropdown-list/dropdown-list.css">
+    <!-- CSS local au module home -->
+    <link rel="stylesheet" href="./home.css">
 </head>
 <body>
     <!-- Le header sera injecté ici -->
@@ -26,37 +27,37 @@
     <div class="container">
         <!-- Menu principal -->
         <div class="menu-grid">
-            <a href="intervention.html" class="menu-card fade-in">
+            <a href="../intervention/intervention.html" class="menu-card fade-in">
                 <span class="icon">📝</span>
                 <h3>Nouvelle Intervention</h3>
                 <p>Créer une fiche d'intervention pour un client</p>
             </a>
             
-            <a href="../modules/commandes/commandes.html" class="menu-card fade-in">
+            <a href="../commandes/commandes.html" class="menu-card fade-in">
                 <span class="icon">📦</span>
                 <h3>Commandes</h3>
                 <p>Gérer les commandes d'appareils et accessoires</p>
             </a>
             
-            <a href="decompte-mutuelle.html" class="menu-card fade-in">
+            <a href="../decompte-mutuelle/decompte-mutuelle.html" class="menu-card fade-in">
                 <span class="icon">💳</span>
                 <h3>Décompte Mutuelle</h3>
                 <p>Gérer les décomptes mutuelles et remboursements</p>
             </a>
             
-            <a href="guide.html" class="menu-card fade-in">
+            <a href="../../pages/guide.html" class="menu-card fade-in">
                 <span class="icon">📚</span>
                 <h3>Guide SAV</h3>
                 <p>Consulter les procédures et protocoles</p>
             </a>
             
-            <a href="contacts.html" class="menu-card fade-in">
+            <a href="../../pages/contacts.html" class="menu-card fade-in">
                 <span class="icon">📞</span>
                 <h3>Contacts SAV</h3>
                 <p>Numéros et contacts importants</p>
             </a>
             
-            <a href="compte.html" class="menu-card fade-in">
+            <a href="../../pages/compte.html" class="menu-card fade-in">
                 <span class="icon">🔧</span>
                 <h3>Mon Compte</h3>
                 <p>Gérer mes informations personnelles</p>
@@ -70,7 +71,7 @@
 
     <!-- Script principal avec module pour DropdownList -->
     <script type="module">
-        import { DropdownList } from '../src/js/shared/ui/dropdown-list.component.js';
+        import { DropdownList } from '../../src/components/ui/dropdown-list/dropdown-list.component.js';
         
         // Variables globales
         let magasinDropdown = null;
@@ -162,7 +163,7 @@
             if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
                 localStorage.removeItem('sav_auth');
                 localStorage.removeItem('sav_user_permissions');
-                window.location.href = '../index.html';
+                window.location.href = '../../index.html';
             }
         }
         
@@ -251,7 +252,7 @@
         // Vérifier l'authentification au chargement
         window.addEventListener('load', () => {
             if (!checkAuth()) {
-                window.location.href = '../index.html';
+                window.location.href = '../../index.html';
             } else {
                 createHeader();
                 

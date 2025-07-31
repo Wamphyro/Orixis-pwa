@@ -1,0 +1,176 @@
+/* ========================================
+   LOGIN.CSS - Styles SPÉCIFIQUES au login uniquement
+   
+   Utilise les composants globaux pour :
+   - Animations (animation.css)
+   - Boutons (button.css)
+   - Formulaires (form.css)
+   - Notifications (notification.css)
+   ======================================== */
+
+/* ========================================
+   BODY SPÉCIFIQUE LOGIN
+   ======================================== */
+body.login-page {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    margin: 0;
+    min-height: 100vh;
+}
+
+/* ========================================
+   CONTAINER DE LOGIN
+   ======================================== */
+.login-container {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.login-container .logo {
+    font-size: 60px;
+    margin-bottom: 20px;
+}
+
+.login-container h1 {
+    color: #2c3e50;
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.login-container .subtitle {
+    color: #7f8c8d;
+    margin-bottom: 30px;
+    font-size: 16px;
+}
+
+/* ========================================
+   AFFICHAGE PIN (spécifique)
+   ======================================== */
+.pin-display {
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.pin-dot {
+    width: 50px;
+    height: 60px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.pin-dot.filled {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+    transform: scale(1.1);
+}
+
+/* ========================================
+   REMEMBER DEVICE (spécifique)
+   ======================================== */
+.remember-device {
+    display: flex;
+    align-items: center;
+    margin: 20px 0;
+    font-size: 14px;
+    justify-content: center;
+    gap: 8px;
+}
+
+.remember-device input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.remember-device label {
+    margin: 0;
+    cursor: pointer;
+    color: #495057;
+}
+
+/* ========================================
+   RESPONSIVE LOGIN
+   ======================================== */
+@media (max-width: 480px) {
+    .login-container {
+        padding: 30px 20px;
+        margin: 10px;
+    }
+    
+    .login-container .logo {
+        font-size: 48px;
+    }
+    
+    .login-container h1 {
+        font-size: 24px;
+    }
+    
+    .pin-dot {
+        width: 45px;
+        height: 55px;
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 360px) {
+    .login-container {
+        padding: 25px 15px;
+    }
+    
+    .pin-dot {
+        width: 40px;
+        height: 50px;
+        font-size: 18px;
+    }
+}
+
+/* ========================================
+   DARK MODE (optionnel mais spécifique)
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+    body.login-page {
+        background: linear-gradient(135deg, #4a5bc0 0%, #5a3a82 100%);
+    }
+    
+    .login-container {
+        background: #1a1a1a;
+        color: #e0e0e0;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    
+    .login-container h1 {
+        color: #e0e0e0;
+    }
+    
+    .login-container .subtitle {
+        color: #b0b0b0;
+    }
+    
+    .pin-dot {
+        background: #2a2a2a;
+        border-color: #444;
+    }
+    
+    .pin-dot.filled {
+        background: #667eea;
+        border-color: #667eea;
+    }
+}

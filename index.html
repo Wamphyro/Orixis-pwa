@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAV Audio - Connexion</title>
+    <title>SAV Audio</title>
     
     <!-- PWA Meta Tags -->
     <meta name="mobile-web-app-capable" content="yes">
@@ -15,376 +15,60 @@
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>">
     
-    <!-- CSS - ORDRE IMPORTANT : login.css EN DERNIER pour override -->
-    <link rel="stylesheet" href="src/css/main.css">
-    <link rel="stylesheet" href="src/css/login.css">
-    
-    <!-- Fix pour override les conflits -->
     <style>
-        /* Override le main.css pour la page login */
-        body.login-page {
-            display: flex !important;
-            flex-direction: row !important;
-            align-items: center !important;
-            justify-content: center !important;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
         }
-        
-        /* Forcer l'affichage du container */
-        .login-container {
-            opacity: 1 !important;
-            display: block !important;
-            visibility: visible !important;
+        .loading {
+            text-align: center;
         }
-        
-        /* Cacher le loading par défaut */
-        .loading-overlay {
-            display: none !important;
+        .spinner {
+            font-size: 48px;
+            animation: spin 2s linear infinite;
         }
-        
-        .loading-overlay:not(.hidden) {
-            display: flex !important;
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
-<body class="login-page">
-    <!-- Loading overlay -->
-    <div class="loading-overlay hidden" id="loadingOverlay">
-        <div class="loading-spinner">
-            <p>Chargement des données...</p>
-        </div>
+<body>
+    <div class="loading">
+        <div class="spinner">⚙️</div>
+        <p>Redirection en cours...</p>
     </div>
 
-    <div class="login-container">
-        <div class="logo">🔧</div>
-        <h1>SAV Audio</h1>
-        <p class="subtitle">Connexion sécurisée</p>
-        
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="utilisateur">Sélectionnez votre nom</label>
-                <select id="utilisateur" required>
-                    <option value="">-- Choisir un utilisateur --</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label>Code d'accès à 4 chiffres</label>
-                <div class="pin-display">
-                    <div class="pin-dot" id="pin1"></div>
-                    <div class="pin-dot" id="pin2"></div>
-                    <div class="pin-dot" id="pin3"></div>
-                    <div class="pin-dot" id="pin4"></div>
-                </div>
-            </div>
-            
-            <div class="numpad">
-                <button type="button" class="numpad-btn" onclick="addDigit(1)">1</button>
-                <button type="button" class="numpad-btn" onclick="addDigit(2)">2</button>
-                <button type="button" class="numpad-btn" onclick="addDigit(3)">3</button>
-                <button type="button" class="numpad-btn" onclick="addDigit(4)">4</button>
-                <button type="button" class="numpad-btn" onclick="addDigit(5)">5</button>
-                <button type="button" class="numpad-btn" onclick="addDigit(6)">6</button>
-                <button type="button" class="numpad-btn" onclick="addDigit(7)">7</button>
-                <button type="button" class="numpad-btn" onclick="addDigit(8)">8</button>
-                <button type="button" class="numpad-btn" onclick="addDigit(9)">9</button>
-                <button type="button" class="numpad-btn delete" onclick="deleteDigit()">←</button>
-                <button type="button" class="numpad-btn zero" onclick="addDigit(0)">0</button>
-                <button type="button" class="numpad-btn validate" onclick="validatePin()">✓</button>
-            </div>
-            
-            <div class="remember-device">
-                <input type="checkbox" id="remember">
-                <label for="remember">Mémoriser cet appareil pendant 30 jours</label>
-            </div>
-            
-            <div id="errorMsg" style="display: none;">
-                Code incorrect. Veuillez réessayer.
-            </div>
-            
-            <div id="successMsg" style="display: none;">
-                Connexion réussie ! Redirection...
-            </div>
-        </form>
-        
-        <div class="info-box">
-            ℹ️ Contactez votre responsable si vous avez oublié votre code
-        </div>
-    </div>
-
-    <script type="module">
-        // Test visuel immédiat
-        console.log('🎨 Page login chargée');
-        
-        // Import Firebase Auth Service
-        import { initFirebase, chargerTousLesUtilisateurs, verifierCodePinUtilisateur, getUtilisateurDetails } from './src/js/services/firebase.service.js';
-        
-        // Variables globales
-        let pinCode = '';
-        let attempts = 0;
-        const MAX_ATTEMPTS = 3;
-        let utilisateursData = [];
-        
-        // Fonctions globales pour le numpad
-        window.addDigit = function(digit) {
-            if (pinCode.length < 4) {
-                pinCode += digit;
-                updatePinDisplay();
-                
-                if (pinCode.length === 4) {
-                    setTimeout(validatePin, 200);
-                }
-            }
-        }
-        
-        window.deleteDigit = function() {
-            if (pinCode.length > 0) {
-                pinCode = pinCode.slice(0, -1);
-                updatePinDisplay();
-            }
-        }
-        
-        window.validatePin = validatePin;
-        
-        // Initialisation au chargement
-        window.addEventListener('DOMContentLoaded', async () => {
-            console.log('📄 DOM prêt');
-            
-            // Vérifier si déjà connecté
-            if (checkAuth()) {
-                window.location.href = 'pages/home.html';
-                return;
-            }
-            
-            // Charger tous les utilisateurs
-            try {
-                showLoading(true);
-                
-                // Initialiser Firebase
-                await initFirebase();
-                
-                // Charger TOUS les utilisateurs actifs
-                utilisateursData = await chargerTousLesUtilisateurs();
-                
-                if (utilisateursData && utilisateursData.length > 0) {
-                    console.log('✅ Utilisateurs chargés:', utilisateursData.length);
-                    populateUtilisateurs();
-                } else {
-                    throw new Error('Aucun utilisateur trouvé');
-                }
-                
-            } catch (error) {
-                console.error('❌ Erreur:', error);
-                showError('Erreur de chargement des données');
-            } finally {
-                showLoading(false);
-            }
-        });
-        
-        // Afficher/cacher le chargement
-        function showLoading(show) {
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) {
-                if (show) {
-                    overlay.classList.remove('hidden');
-                } else {
-                    overlay.classList.add('hidden');
-                }
-            }
-        }
-        
-        // Remplir le select avec les utilisateurs
-        function populateUtilisateurs() {
-            const select = document.getElementById('utilisateur');
-            select.innerHTML = '<option value="">-- Choisir un utilisateur --</option>';
-            
-            // Trier par nom/prénom
-            const utilisateursSorted = utilisateursData.sort((a, b) => {
-                const nameA = `${a.prenom} ${a.nom}`.toLowerCase();
-                const nameB = `${b.prenom} ${b.nom}`.toLowerCase();
-                return nameA.localeCompare(nameB);
-            });
-            
-            utilisateursSorted.forEach(user => {
-                const option = document.createElement('option');
-                option.value = user.id;
-                option.textContent = `${user.prenom} ${user.nom}`;
-                option.dataset.magasins = JSON.stringify(user.magasins || []);
-                select.appendChild(option);
-            });
-        }
-        
-        // Mettre à jour l'affichage des points
-        function updatePinDisplay() {
-            for (let i = 1; i <= 4; i++) {
-                const dot = document.getElementById(`pin${i}`);
-                if (i <= pinCode.length) {
-                    dot.textContent = '•';
-                    dot.classList.add('filled');
-                } else {
-                    dot.textContent = '';
-                    dot.classList.remove('filled');
-                }
-            }
-        }
-        
-        // Valider le code PIN
-        async function validatePin() {
-            if (pinCode.length !== 4) {
-                showError('Veuillez entrer un code à 4 chiffres');
-                pinCode = '';
-                updatePinDisplay();
-                return;
-            }
-            
-            const utilisateurId = document.getElementById('utilisateur').value;
-            
-            if (!utilisateurId) {
-                showError('Veuillez sélectionner votre nom');
-                pinCode = '';
-                updatePinDisplay();
-                return;
-            }
-            
-            const errorMsg = document.getElementById('errorMsg');
-            const successMsg = document.getElementById('successMsg');
-            
-            // Reset messages
-            errorMsg.style.display = 'none';
-            successMsg.style.display = 'none';
-            
-            let isValid = false;
-            
-            try {
-                showLoading(true);
-                // Vérifier le code personnel de l'utilisateur
-                isValid = await verifierCodePinUtilisateur(utilisateurId, pinCode);
-            } catch (error) {
-                console.error('Erreur vérification:', error);
-                showError('Erreur de vérification');
-                pinCode = '';
-                updatePinDisplay();
-                return;
-            } finally {
-                showLoading(false);
-            }
-            
-            if (isValid) {
-                // Connexion réussie
-                successMsg.style.display = 'block';
-                
-                // Récupérer les infos complètes
-                const userData = utilisateursData.find(u => u.id === utilisateurId);
-                
-                if (userData) {
-                    // Récupérer les détails complets si possible
-                    try {
-                        const userDetails = await getUtilisateurDetails(utilisateurId);
-                        if (userDetails) {
-                            // Sauvegarder les permissions et autorisations
-                            localStorage.setItem('sav_user_permissions', JSON.stringify({
-                                id: userDetails.id,
-                                nom: userDetails.nom,
-                                prenom: userDetails.prenom,
-                                role: userDetails.role || 'technicien',
-                                pagesInterdites: userDetails.pagesInterdites || [],
-                                autorisations: userDetails.autorisations || {}
-                            }));
-                        }
-                    } catch (error) {
-                        console.error('Erreur récupération détails:', error);
-                    }
-                    
-                    // Sauvegarder l'authentification
-                    const remember = document.getElementById('remember').checked;
-                    const expiry = remember ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
-                    
-                    // Déterminer le magasin par défaut
-                    let magasinParDefaut = userData.magasinParDefaut || userData.magasins[0];
-                    
-                    const authData = {
-                        authenticated: true,
-                        magasin: magasinParDefaut,
-                        magasins: userData.magasins || [],
-                        timestamp: Date.now(),
-                        expiry: expiry,
-                        collaborateur: {
-                            id: userData.id,
-                            prenom: userData.prenom,
-                            nom: userData.nom,
-                            role: userData.role || 'technicien'
-                        }
-                    };
-                    
-                    localStorage.setItem('sav_auth', JSON.stringify(authData));
-                    
-                    // Redirection
-                    setTimeout(() => {
-                        window.location.href = 'pages/home.html';
-                    }, 1000);
-                }
-                
-            } else {
-                // Échec
-                attempts++;
-                
-                showError(`Code incorrect. ${MAX_ATTEMPTS - attempts} tentatives restantes.`);
-                
-                if (attempts >= MAX_ATTEMPTS) {
-                    showError(`Trop de tentatives. Veuillez attendre ${MAX_ATTEMPTS} minutes.`);
-                    disableNumpad(true);
-                    setTimeout(() => {
-                        attempts = 0;
-                        disableNumpad(false);
-                    }, MAX_ATTEMPTS * 60 * 1000);
-                }
-                
-                // Reset le code
-                pinCode = '';
-                updatePinDisplay();
-                
-                // Animation shake
-                const container = document.querySelector('.login-container');
-                container.classList.add('shake');
-                setTimeout(() => {
-                    container.classList.remove('shake');
-                }, 500);
-            }
-        }
-        
-        // Afficher une erreur
-        function showError(message) {
-            const errorMsg = document.getElementById('errorMsg');
-            errorMsg.textContent = message;
-            errorMsg.style.display = 'block';
-            
-            // Masquer après 5 secondes
-            setTimeout(() => {
-                errorMsg.style.display = 'none';
-            }, 5000);
-        }
-        
-        // Activer/désactiver le clavier
-        function disableNumpad(disabled) {
-            const buttons = document.querySelectorAll('.numpad-btn');
-            buttons.forEach(btn => btn.disabled = disabled);
-        }
-        
-        // Fonction de vérification d'authentification
-        function checkAuth() {
+    <script>
+        // Vérification de l'authentification et redirection
+        (function() {
             const auth = localStorage.getItem('sav_auth');
-            if (!auth) return false;
             
-            const authData = JSON.parse(auth);
-            const now = Date.now();
-            
-            if (now - authData.timestamp > authData.expiry) {
-                localStorage.removeItem('sav_auth');
-                return false;
+            if (auth) {
+                try {
+                    const authData = JSON.parse(auth);
+                    const now = Date.now();
+                    
+                    // Vérifier si l'authentification est valide
+                    if (authData.authenticated && (now - authData.timestamp <= authData.expiry)) {
+                        // Utilisateur connecté - aller vers home
+                        window.location.replace('modules/home/home.html');
+                        return;
+                    }
+                } catch (e) {
+                    console.error('Erreur parsing auth:', e);
+                }
             }
             
-            return authData.authenticated;
-        }
+            // Pas connecté ou session expirée - aller vers login
+            window.location.replace('modules/login/login.html');
+        })();
     </script>
 </body>
 </html>
