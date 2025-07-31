@@ -1,0 +1,142 @@
+/* ========================================
+   NUMPAD.CSS - Styles du composant Numpad
+   Chemin: src/components/ui/numpad/numpad.css
+   
+   DESCRIPTION:
+   Styles pour le composant clavier numérique
+   ======================================== */
+
+/* Conteneur numpad */
+.numpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 24px;
+    max-width: 320px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Boutons numpad */
+.numpad-button {
+    width: 100%;
+    height: 64px;
+    font-size: 24px;
+    font-weight: 600;
+    background-color: var(--surface-color, #f8f9fa);
+    border: 2px solid var(--border-color, #e9ecef);
+    border-radius: 12px;
+    color: var(--text-color, #495057);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.numpad-button:hover {
+    background-color: var(--hover-bg, #e9ecef);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.numpad-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Effet ripple au clic */
+.numpad-button::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.1);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.numpad-button:active::after {
+    width: 200px;
+    height: 200px;
+}
+
+/* Boutons spéciaux */
+.numpad-button.numpad-action {
+    background-color: var(--primary-color, #007bff);
+    color: white;
+    border-color: var(--primary-color, #007bff);
+}
+
+.numpad-button.numpad-action:hover {
+    background-color: var(--primary-hover, #0056b3);
+    border-color: var(--primary-hover, #0056b3);
+}
+
+.numpad-button.numpad-delete {
+    color: var(--danger-color, #dc3545);
+    font-size: 18px;
+}
+
+.numpad-button.numpad-delete:hover {
+    background-color: #fee;
+    border-color: var(--danger-color, #dc3545);
+}
+
+/* Icônes dans les boutons */
+.numpad-button i {
+    font-size: 20px;
+}
+
+/* Désactivé */
+.numpad-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.numpad-button:disabled:hover {
+    transform: none;
+    box-shadow: none;
+    background-color: var(--surface-color, #f8f9fa);
+}
+
+/* Variante compacte */
+.numpad.numpad-compact {
+    gap: 8px;
+    max-width: 240px;
+}
+
+.numpad.numpad-compact .numpad-button {
+    height: 48px;
+    font-size: 18px;
+    border-radius: 8px;
+}
+
+/* Mode sombre */
+@media (prefers-color-scheme: dark) {
+    .numpad-button {
+        --surface-color: #2d3748;
+        --border-color: #4a5568;
+        --text-color: #e2e8f0;
+        --hover-bg: #4a5568;
+    }
+    
+    .numpad-button::after {
+        background: rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .numpad {
+        max-width: 100%;
+        gap: 8px;
+    }
+    
+    .numpad-button {
+        height: 56px;
+        font-size: 20px;
+    }
+}

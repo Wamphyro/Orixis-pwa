@@ -52,7 +52,7 @@ import {
     voirDetailCommande, 
     changerStatutCommande 
 } from './commandes.detail.js';
-import { genererConfigStatsCards } from '../../src/data/commandes.data.js';
+import { genererConfigStatsCards } from '../../src/js/data/commandes.data.js';
 import './commandes.serial.js'; // Import du module de gestion des NS
 
 // ========================================
@@ -503,6 +503,11 @@ export function getCurrentUser() {
    - Chemins data: ../../src/js/data/ → ../../src/data/
    - Adaptation à la nouvelle structure modules/commandes/
    
+   [01/02/2025] - Correction du chemin de commandes.data.js
+   Modification:
+   - Chemin corrigé: ../../src/data/ → ../../src/js/data/
+   - Le fichier est resté dans src/js/data/ et non src/data/
+   
    Impact: 
    - Header maintenant géré par composant (plus de HTML statique)
    - Stats cards avec animation et interactions
@@ -522,4 +527,5 @@ export function getCurrentUser() {
    - Format final: "Magasin [nom]" affiché dans le header
    - Les stats cards sont maintenant générées depuis commandes.data.js
    - Structure: modules/[module]/ pour les modules, src/ pour le code partagé
+   - ATTENTION: commandes.data.js est dans src/js/data/ et non src/data/
    ======================================== */
