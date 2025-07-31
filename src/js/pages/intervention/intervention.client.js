@@ -1,10 +1,10 @@
 // ========================================
-// INTERVENTION.CLIENT.JS - Gestion de la recherche client
+// INTERVENTION.CLIENT.JS - Gestion de la recherche client (VERSION CORRIGÉE)
 // Chemin: src/js/pages/intervention/intervention.client.js
 //
 // DESCRIPTION:
 // Module de gestion de la recherche et sélection client
-// Utilise SearchDropdown pour l'interface
+// CORRIGÉ pour gérer l'absence du champ nom
 //
 // STRUCTURE:
 // 1. Imports et variables
@@ -30,28 +30,59 @@ let clientSelectionne = null;
 export async function initClientSearch() {
     console.log('🔍 Initialisation recherche client');
     
-    // Remplacer la structure HTML existante
-    const nomGroup = document.querySelector('#nom')?.parentElement;
-    if (!nomGroup) {
-        console.error('❌ Champ nom introuvable');
-        return;
+    // Chercher différents emplacements possibles pour le champ client
+    let container = null;
+    
+    // Option 1 : Chercher le champ nom
+    const nomField = document.querySelector('#nom');
+    if (nomField) {
+        container = nomField.parentElement;
     }
     
-    // Créer le nouveau conteneur
-    const searchContainer = document.createElement('div');
-    searchContainer.className = 'form-group client-search-container';
-    searchContainer.innerHTML = `
-        <label for="nom">Nom du client <span style="color: #dc3545;">*</span></label>
-        <div class="client-search-wrapper"></div>
-    `;
+    // Option 2 : Chercher un conteneur de recherche client
+    if (!container) {
+        container = document.querySelector('.client-search-container') || 
+                   document.querySelector('.client-search') ||
+                   document.querySelector('.form-group');
+    }
     
-    // Remplacer l'ancien form-group
-    nomGroup.replaceWith(searchContainer);
+    if (!container) {
+        console.error('❌ Aucun conteneur trouvé pour la recherche client');
+        console.log('HTML actuel:', document.body.innerHTML.substring(0, 500));
+        
+        // Créer un conteneur temporaire si aucun n'existe
+        const firstFormGroup = document.querySelector('.form-group');
+        if (firstFormGroup) {
+            const searchContainer = document.createElement('div');
+            searchContainer.className = 'form-group client-search-container';
+            searchContainer.innerHTML = `
+                <label for="client-search">Rechercher un client <span style="color: #dc3545;">*</span></label>
+                <div class="client-search-wrapper"></div>
+            `;
+            firstFormGroup.parentNode.insertBefore(searchContainer, firstFormGroup);
+            container = searchContainer;
+        } else {
+            console.error('❌ Impossible de créer le conteneur de recherche');
+            return;
+        }
+    }
+    
+    // Si on a trouvé un champ nom, le remplacer par SearchDropdown
+    if (nomField) {
+        const searchContainer = document.createElement('div');
+        searchContainer.className = 'form-group client-search-container';
+        searchContainer.innerHTML = `
+            <label for="client-search">Nom du client <span style="color: #dc3545;">*</span></label>
+            <div class="client-search-wrapper"></div>
+        `;
+        container.replaceWith(searchContainer);
+        container = searchContainer;
+    }
     
     // Initialiser SearchDropdown
     try {
         clientSearchDropdown = new SearchDropdown({
-            container: '.client-search-wrapper',
+            container: container.querySelector('.client-search-wrapper') || container,
             placeholder: 'Rechercher un client (nom, prénom, téléphone...)',
             minLength: 2,
             noResultsText: 'Aucun client trouvé',
@@ -100,20 +131,18 @@ export async function initClientSearch() {
 function selectionnerClient(client) {
     clientSelectionne = client;
     
-    // Remplir automatiquement le téléphone ET LE BLOQUER
+    // Remplir automatiquement le téléphone
     const telInput = document.getElementById('telephone');
     if (telInput) {
         telInput.value = client.telephone || '';
         
-        // BLOQUER la modification
+        // Bloquer la modification
         telInput.readOnly = true;
-        
-        // Style visuel directement (pas besoin de CSS)
         telInput.style.backgroundColor = '#f8f9fa';
         telInput.style.cursor = 'not-allowed';
         telInput.style.opacity = '0.8';
         
-        // Petit texte d'aide simple
+        // Texte d'aide
         const helpText = document.createElement('small');
         helpText.style.color = '#6c757d';
         helpText.style.fontSize = '0.875rem';
@@ -125,11 +154,44 @@ function selectionnerClient(client) {
         const oldHelp = telInput.parentElement.querySelector('.phone-help');
         if (oldHelp) oldHelp.remove();
         
-        helpText.className = 'phone-help'; // juste pour pouvoir le retrouver
+        helpText.className = 'phone-help';
         telInput.parentElement.appendChild(helpText);
     }
     
     console.log('✅ Client sélectionné:', client);
+    
+    // Afficher les infos du client sélectionné
+    showClientInfo(client);
+}
+
+function showClientInfo(client) {
+    // Chercher ou créer un conteneur pour afficher les infos
+    let infoContainer = document.querySelector('.client-info-display');
+    
+    if (!infoContainer) {
+        const searchContainer = document.querySelector('.client-search-container');
+        if (searchContainer) {
+            infoContainer = document.createElement('div');
+            infoContainer.className = 'client-info-display';
+            infoContainer.style.cssText = `
+                background: #e8f5e9;
+                border: 2px solid #4caf50;
+                border-radius: 8px;
+                padding: 12px;
+                margin-top: 10px;
+                font-size: 14px;
+            `;
+            searchContainer.appendChild(infoContainer);
+        }
+    }
+    
+    if (infoContainer) {
+        infoContainer.innerHTML = `
+            <strong>Client sélectionné :</strong> ${client.prenom} ${client.nom}<br>
+            ${client.telephone ? `<small>Tél: ${client.telephone}</small><br>` : ''}
+            ${client.magasinReference ? `<small>Magasin: ${client.magasinReference}</small>` : ''}
+        `;
+    }
 }
 
 // ========================================
@@ -165,6 +227,12 @@ export function resetClientSelection() {
         const helpText = telInput.parentElement.querySelector('.phone-help');
         if (helpText) helpText.remove();
     }
+    
+    // Retirer l'affichage des infos client
+    const infoContainer = document.querySelector('.client-info-display');
+    if (infoContainer) {
+        infoContainer.remove();
+    }
 }
 
 /**
@@ -187,11 +255,12 @@ export function setClient(client) {
 // HISTORIQUE DES DIFFICULTÉS
 //
 // [28/01/2025] - Création du module
-// - Gestion de la recherche client avec SearchDropdown
-// - Auto-remplissage du téléphone
-// - API publique pour accéder au client sélectionné
+// [02/02/2025] - Correction pour gérer l'absence du champ nom
+// - Ajout de recherche dans plusieurs emplacements possibles
+// - Création automatique du conteneur si nécessaire
+// - Meilleure gestion des erreurs
 //
 // NOTES POUR REPRISES FUTURES:
-// - Le style auto-filled pourrait être dans le CSS
-// - L'animation backgroundColor pourrait utiliser une classe CSS
+// - Ce module est temporaire, migrer vers intervention.create.js
+// - La nouvelle architecture utilise des modals au lieu d'un formulaire
 // ========================================
