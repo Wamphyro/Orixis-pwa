@@ -52,7 +52,7 @@ import {
     voirDetailCommande, 
     changerStatutCommande 
 } from './commandes.detail.js';
-import { genererConfigStatsCards } from '../../src/js/data/commandes.data.js';
+import { genererConfigStatsCards } from '../../src/data/commandes.data.js';
 import './commandes.serial.js'; // Import du module de gestion des NS
 
 // ========================================
@@ -505,8 +505,8 @@ export function getCurrentUser() {
    
    [01/02/2025] - Correction du chemin de commandes.data.js
    Modification:
-   - Chemin corrigé: ../../src/data/ → ../../src/js/data/
-   - Le fichier est resté dans src/js/data/ et non src/data/
+   - Chemin corrigé: ../../src/js/data/ → ../../src/data/
+   - Le fichier est dans src/data/ selon la nouvelle structure
    
    Impact: 
    - Header maintenant géré par composant (plus de HTML statique)
