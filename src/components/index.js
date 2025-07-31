@@ -1,14 +1,10 @@
 // ========================================
-// INDEX.JS - Point d'entrée centralisé pour shared
+// INDEX.JS - Point d'entrée centralisé pour les composants
 // ========================================
-// Chemin: src/js/shared/index.js
+// Chemin: src/components/index.js
 //
 // MODIFICATIONS:
-// [28/01/2025] - Ajout de l'export SearchDropdown
-// [29/01/2025] - Ajout de l'export DataTableFilters
-// [29/01/2025] - Correction export generateId
-// [30/01/2025] - Ajout de l'export AppHeader
-// [31/01/2025] - Ajout de l'export Stepper
+// [01/02/2025] - Correction de tous les chemins d'import
 // ========================================
 
 // ========================================
@@ -16,7 +12,7 @@
 // ========================================
 
 // 🆕 Header d'application réutilisable
-import { AppHeader } from './ui/app-header.component.js';
+import { AppHeader } from './ui/app-header/app-header.component.js';
 export { AppHeader };
 
 // Dialog (remplace alert, confirm, prompt)
@@ -32,14 +28,14 @@ import { DataTable } from './ui/datatable/datatable.component.js';
 export { DataTable };
 
 // Filtres pour DataTable
-import { DataTableFilters } from './ui/datatable-filters.component.js';
+import { DataTableFilters } from './ui/datatable-filters/datatable-filters.component.js';
 export { DataTableFilters };
 
 // Cartes de statistiques
-import { StatsCards } from './ui/stats-cards.component.js';
+import { StatsCards } from './ui/stats-cards/stats-cards.component.js';
 export { StatsCards };
 
-// Modal (déjà existant - à déplacer dans ui/)
+// Modal
 import { 
     Modal, 
     ModalManager, 
@@ -67,8 +63,12 @@ import DropdownList from './ui/dropdown-list/dropdown-list.component.js';
 export { DropdownList };
 
 // 🆕 Stepper
-import { Stepper } from './ui/stepper.component.js';
+import { Stepper } from './ui/stepper/stepper.component.js';
 export { Stepper };
+
+// 🆕 Numpad
+import { NumpadComponent } from './ui/numpad/numpad.component.js';
+export { NumpadComponent };
 
 // ========================================
 // UTILITAIRES
@@ -274,7 +274,7 @@ export const retry = async (fn, retries = 3, delay = 1000) => {
 
 export default {
     // UI Components
-    AppHeader: AppHeader,         // 🆕 Header d'application
+    AppHeader: AppHeader,
     Dialog: Dialog,
     notify: notify,
     Modal: Modal,
@@ -289,7 +289,7 @@ export default {
     StatsCards,
     Stepper,
     DropdownList,
-
+    NumpadComponent,
     
     // Utils
     formatDate,
@@ -310,31 +310,8 @@ export default {
 // ========================================
 // HISTORIQUE DES DIFFICULTÉS
 //
-// [28/01/2025] - Ajout SearchDropdown
-// - Import et export du composant SearchDropdown
-// - Ajouté dans l'export par défaut pour cohérence
-//
-// [29/01/2025] - Ajout DataTableFilters
-// - Import et export du composant DataTableFilters
-// - Composant de filtres réutilisable pour DataTable
-//
-// [29/01/2025] - Correction export generateId
-// - Ajout de l'export nommé pour generateId
-// - Utilisé par les composants DataTable et DataTableFilters
-//
-// [30/01/2025] - Ajout AppHeader
-// - Import et export du composant AppHeader
-// - Composant header d'application réutilisable
-// - Ajouté en première position pour l'ordre logique
-//
-// [31/01/2025] - Ajout Stepper
-// - Import et export du composant Stepper
-// - Composant stepper réutilisable pour workflows multi-étapes
-// - Ajouté après SearchDropdown pour l'ordre logique
-//
-// NOTES POUR REPRISES FUTURES:
-// - Tous les composants UI sont dans ./ui/
-// - Les utils sont directement dans ce fichier
-// - Toujours exporter à la fois en named export et dans le default
-// - Stepper est maintenant disponible partout via l'import shared
+// [01/02/2025] - Correction de tous les chemins
+// - Tous les composants sont dans des sous-dossiers
+// - Ajout de NumpadComponent
+// - Correction du chemin du fichier lui-même
 // ========================================

@@ -13,6 +13,8 @@ import {
     getUtilisateurDetails 
 } from '../../src/services/firebase.service.js';
 
+import { NumpadComponent } from '../../src/components/ui/numpad/numpad.component.js';
+
 // ========================================
 // VARIABLES GLOBALES
 // ========================================
@@ -21,30 +23,7 @@ let pinCode = '';
 let attempts = 0;
 const MAX_ATTEMPTS = 3;
 let utilisateursData = [];
-
-// ========================================
-// FONCTIONS GLOBALES POUR LE NUMPAD
-// ========================================
-
-window.addDigit = function(digit) {
-    if (pinCode.length < 4) {
-        pinCode += digit;
-        updatePinDisplay();
-        
-        if (pinCode.length === 4) {
-            setTimeout(validatePin, 200);
-        }
-    }
-}
-
-window.deleteDigit = function() {
-    if (pinCode.length > 0) {
-        pinCode = pinCode.slice(0, -1);
-        updatePinDisplay();
-    }
-}
-
-window.validatePin = validatePin;
+let numpad = null;
 
 // ========================================
 // INITIALISATION
@@ -57,6 +36,26 @@ window.addEventListener('DOMContentLoaded', async () => {
     if (checkAuth()) {
         window.location.href = '../home/home.html';
         return;
+    }
+    
+    // Initialiser le numpad
+    const numpadContainer = document.querySelector('.numpad');
+    if (numpadContainer) {
+        numpad = new NumpadComponent(numpadContainer, {
+            maxLength: 4,
+            onInput: (value) => {
+                pinCode = value;
+                updatePinDisplay();
+            },
+            onComplete: (value) => {
+                pinCode = value;
+                validatePin();
+            },
+            onDelete: (value) => {
+                pinCode = value;
+                updatePinDisplay();
+            }
+        });
     }
     
     // Charger tous les utilisateurs
@@ -143,6 +142,7 @@ async function validatePin() {
     if (pinCode.length !== 4) {
         showError('Veuillez entrer un code à 4 chiffres');
         pinCode = '';
+        if (numpad) numpad.clear();
         updatePinDisplay();
         return;
     }
@@ -152,6 +152,7 @@ async function validatePin() {
     if (!utilisateurId) {
         showError('Veuillez sélectionner votre nom');
         pinCode = '';
+        if (numpad) numpad.clear();
         updatePinDisplay();
         return;
     }
@@ -173,6 +174,7 @@ async function validatePin() {
         console.error('Erreur vérification:', error);
         showError('Erreur de vérification');
         pinCode = '';
+        if (numpad) numpad.clear();
         updatePinDisplay();
         return;
     } finally {
@@ -251,6 +253,7 @@ async function validatePin() {
         
         // Reset le code
         pinCode = '';
+        if (numpad) numpad.clear();
         updatePinDisplay();
         
         // Animation shake
@@ -280,8 +283,13 @@ function showError(message) {
 
 // Activer/désactiver le clavier
 function disableNumpad(disabled) {
-    const buttons = document.querySelectorAll('.numpad-btn');
-    buttons.forEach(btn => btn.disabled = disabled);
+    if (numpad) {
+        if (disabled) {
+            numpad.disable();
+        } else {
+            numpad.enable();
+        }
+    }
 }
 
 // Fonction de vérification d'authentification
