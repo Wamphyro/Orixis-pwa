@@ -942,6 +942,9 @@ export async function validerCommande() {
     try {
         const commandeId = await CommandesService.creerCommande(nouvelleCommande);
         
+        // AJOUT : Empêcher la confirmation de fermeture car on vient de sauvegarder
+        window.skipConfirmation = true;
+        
         window.fermerModal('modalNouvelleCommande');
         
         await chargerDonnees();
