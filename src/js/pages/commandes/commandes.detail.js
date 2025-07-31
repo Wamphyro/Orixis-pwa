@@ -748,7 +748,14 @@ window.saisirExpedition = async function(commandeId) {
                     return;
                 }
                 
-                dropdownExpedition.destroy();
+                // Détruire le dropdown AVANT de vider le dialog
+                if (dropdownExpedition) {
+                    try {
+                        dropdownExpedition.destroy();
+                    } catch (e) {
+                        console.warn('Erreur destroy dropdown:', e);
+                    }
+                }
                 
                 dialogContainer.classList.remove('active');
                 setTimeout(() => {
@@ -760,9 +767,17 @@ window.saisirExpedition = async function(commandeId) {
                     numeroSuivi: numeroSuivi
                 });
             };
-            
+
             const handleCancel = () => {
-                dropdownExpedition.destroy();
+                // Détruire le dropdown AVANT de vider le dialog
+                if (dropdownExpedition) {
+                    try {
+                        dropdownExpedition.destroy();
+                    } catch (e) {
+                        console.warn('Erreur destroy dropdown:', e);
+                    }
+                }
+                
                 dialogContainer.classList.remove('active');
                 setTimeout(() => {
                     dialogContainer.innerHTML = '';
