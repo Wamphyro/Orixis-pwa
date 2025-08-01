@@ -40,11 +40,12 @@ body.login-page {
     width: 100%;
     max-width: 460px;
     padding: 0;
-    overflow: visible; /* Changé pour permettre au dropdown de déborder */
+    overflow: visible; /* Permettre le débordement */
     opacity: 0;
     transform: translateY(20px);
     animation: fadeInUp 0.6s ease forwards;
-    position: relative; /* Pour contenir les éléments absolus */
+    position: relative;
+    z-index: 1; /* Base z-index */
 }
 
 /* Header */
@@ -106,24 +107,16 @@ body.login-page {
     min-height: 48px; /* Hauteur fixe pour éviter le décalage */
 }
 
-/* Override pour le dropdown list ouvert */
-#userDropdown .dropdown-list-container {
-    position: absolute !important;
-    z-index: 1000;
+/* Dropdown utilisateur */
+#userDropdown {
     width: 100%;
-    top: 100%;
-    left: 0;
-    max-height: 240px;
-    overflow-y: auto;
+    position: relative;
 }
 
-/* Empêcher le dropdown de pousser le contenu */
-#userDropdown .dropdown-list-options {
-    position: absolute;
-    width: 100%;
-    top: 100%;
-    left: 0;
-    z-index: 1001;
+/* S'assurer que le dropdown est visible */
+#userDropdown .dropdown-list {
+    position: relative;
+    z-index: 10;
 }
 
 /* Affichage PIN */
