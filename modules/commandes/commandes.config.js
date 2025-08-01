@@ -39,6 +39,12 @@ export function createCommandesHeader(userData) {
         subtitle: 'Commandes d\'appareils et accessoires',
         backUrl: '../../home/index.html',
         user: userData,
+        // Ajouter les classes pour les boutons
+        buttonClasses: {
+            back: 'btn on-dark btn-pill',
+            logout: 'btn btn-danger btn-sm',  // ← Classes pour le bouton rouge
+            userSection: 'header-user-section'
+        },
         onLogout: async () => {
             const confirme = await Dialog.confirm(
                 'Voulez-vous vraiment vous déconnecter ?',
@@ -277,28 +283,21 @@ export const HTML_TEMPLATES = {
 // ========================================
 
 export function registerCommandesModals() {
-    // Modal nouvelle commande
-    modalManager.register('modalNouvelleCommande', {
-        closeOnOverlayClick: false,
-        closeOnEscape: true
-    });
+    // Vérifier l'existence de chaque modal avant de l'enregistrer
+    const modalsConfig = [
+        { id: 'modalNouvelleCommande', options: { closeOnOverlayClick: false, closeOnEscape: true } },
+        { id: 'modalDetailCommande', options: { closeOnOverlayClick: false, closeOnEscape: true } },
+        { id: 'modalNouveauClient', options: { closeOnOverlayClick: false, closeOnEscape: true } },
+        { id: 'modalNumerosSerie', options: { closeOnOverlayClick: false, closeOnEscape: true } }
+    ];
     
-    // Modal détail commande
-    modalManager.register('modalDetailCommande', {
-        closeOnOverlayClick: false,
-        closeOnEscape: true
-    });
-    
-    // Modal nouveau client
-    modalManager.register('modalNouveauClient', {
-        closeOnOverlayClick: false,
-        closeOnEscape: true
-    });
-    
-    // Modal numéros de série
-    modalManager.register('modalNumerosSerie', {
-        closeOnOverlayClick: false,
-        closeOnEscape: true
+    modalsConfig.forEach(({ id, options }) => {
+        const modalElement = document.getElementById(id);
+        if (modalElement) {
+            modalManager.register(id, options);
+        } else {
+            console.warn(`⚠️ Modal "${id}" non trouvé, enregistrement ignoré`);
+        }
     });
 }
 

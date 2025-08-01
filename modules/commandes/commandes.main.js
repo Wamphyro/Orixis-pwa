@@ -226,6 +226,16 @@ function initModales() {
     // Enregistrer toutes les modales via la config
     config.registerCommandesModals();
     
+    // Vérifier que les modals existent avant de les utiliser
+    const modalIds = ['modalNouvelleCommande', 'modalDetailCommande', 'modalNouveauClient', 'modalNumerosSerie'];
+    
+    modalIds.forEach(modalId => {
+        const modalElement = document.getElementById(modalId);
+        if (!modalElement) {
+            console.warn(`⚠️ Modal HTML "${modalId}" non trouvé dans le DOM`);
+        }
+    });
+    
     // Ajouter les callbacks spécifiques pour la modal nouvelle commande
     const modalNouvelleCommande = config.modalManager.get('modalNouvelleCommande');
     if (modalNouvelleCommande) {
