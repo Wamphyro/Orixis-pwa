@@ -17,6 +17,7 @@ import {
     DropdownList,
     SearchDropdown,
     Modal,
+    modalManager,
     Dialog,
     notify
 } from '../../src/components/index.js';
@@ -277,25 +278,25 @@ export const HTML_TEMPLATES = {
 
 export function registerCommandesModals() {
     // Modal nouvelle commande
-    Modal.modalManager.register('modalNouvelleCommande', {
+    modalManager.register('modalNouvelleCommande', {
         closeOnOverlayClick: false,
         closeOnEscape: true
     });
     
     // Modal détail commande
-    Modal.modalManager.register('modalDetailCommande', {
+    modalManager.register('modalDetailCommande', {
         closeOnOverlayClick: false,
         closeOnEscape: true
     });
     
     // Modal nouveau client
-    Modal.modalManager.register('modalNouveauClient', {
+    modalManager.register('modalNouveauClient', {
         closeOnOverlayClick: false,
         closeOnEscape: true
     });
     
     // Modal numéros de série
-    Modal.modalManager.register('modalNumerosSerie', {
+    modalManager.register('modalNumerosSerie', {
         closeOnOverlayClick: false,
         closeOnEscape: true
     });

@@ -146,16 +146,6 @@ async function initUIComponents() {
         
         // 1. Créer le header d'application avec la config locale
         appHeader = config.createCommandesHeader(userData);
-        appHeader.setOptions({
-            onLogout: handleLogout,
-            onBack: () => {
-                console.log('Retour vers l\'accueil');
-            },
-            onUserClick: (user) => {
-                console.log('Clic sur utilisateur:', user);
-                // Possibilité d'ouvrir un menu utilisateur ou profil
-            }
-        });
         
         // 2. Les stats cards sont maintenant créées et gérées par commandes.list.js
         // selon la nouvelle architecture où l'orchestrateur contrôle toute l'UI
@@ -224,7 +214,7 @@ window.addEventListener('load', async () => {
         
     } catch (error) {
         console.error('❌ Erreur lors de l\'initialisation:', error);
-        notify.error('Erreur lors du chargement de la page');
+        config.notify.error('Erreur lors du chargement de la page');
     }
 });
 
@@ -239,7 +229,8 @@ function initModales() {
     // Ajouter les callbacks spécifiques pour la modal nouvelle commande
     const modalNouvelleCommande = config.modalManager.get('modalNouvelleCommande');
     if (modalNouvelleCommande) {
-        modalNouvelleCommande.setOptions({
+        modalNouvelleCommande.options = {
+            ...modalNouvelleCommande.options,
             onBeforeClose: async () => {
                 // Si on est en train d'ouvrir une autre modal, ne pas demander confirmation
                 if (window.skipConfirmation) {
@@ -259,13 +250,14 @@ function initModales() {
                     window.resetNouvelleCommande();
                 }
             }
-        });
+        };
     }
     
     // Ajouter les callbacks spécifiques pour la modal nouveau client
     const modalNouveauClient = config.modalManager.get('modalNouveauClient');
     if (modalNouveauClient) {
-        modalNouveauClient.setOptions({
+        modalNouveauClient.options = {
+            ...modalNouveauClient.options,
             onClose: () => {
                 const formClient = document.getElementById('formNouveauClient');
                 if (formClient) formClient.reset();
@@ -275,7 +267,7 @@ function initModales() {
                     config.modalManager.open('modalNouvelleCommande');
                 }, 300);
             }
-        });
+        };
     }
 }
 
