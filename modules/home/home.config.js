@@ -32,6 +32,18 @@ export function createHomeHeader(userData) {
             back: 'btn on-dark btn-pill',
             logout: 'btn btn-danger btn-sm',  // ← Classes pour le bouton rouge
             userSection: 'header-user-section'
+        },
+        // Ajouter le callback onLogout
+        onLogout: async () => {
+            const confirme = await Dialog.confirm(
+                'Voulez-vous vraiment vous déconnecter ?',
+                'Déconnexion'
+            );
+            if (confirme) {
+                localStorage.removeItem('sav_auth');
+                localStorage.removeItem('sav_user_permissions');
+                window.location.href = '../../index.html';
+            }
         }
     };
     
