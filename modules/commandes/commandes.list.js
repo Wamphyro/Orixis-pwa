@@ -256,7 +256,7 @@ function initDataTable() {
             ResizeClass: DataTableResize
         },
         
-        / 🔑 UTILISATION DE LA CONFIG UI
+        // 🔑 UTILISATION DE LA CONFIG UI
         ...COMPONENT_CONFIG.dataTable,
         
         columns: [
@@ -361,7 +361,7 @@ function initDataTable() {
         }
     });
     
-    console.log('📊 DataTable créée avec modules injectés');
+    console.log('📊 DataTable créée avec modules et config UI injectés');
 }
 
 // ========================================
