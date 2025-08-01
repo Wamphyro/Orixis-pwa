@@ -158,7 +158,7 @@ export class Stepper {
         if (!existingLink) {
             const link = document.createElement('link');
             link.rel = 'stylesheet';
-            link.href = '../src/components/ui/stepper/stepper.css';
+            link.href = '../../src/components/ui/stepper/stepper.css';
             document.head.appendChild(link);
             console.log('📦 CSS Stepper chargé');
         }

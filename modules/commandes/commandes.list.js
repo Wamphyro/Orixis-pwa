@@ -390,17 +390,15 @@ export async function chargerDonnees() {
 
 function afficherStatistiques(stats) {
     if (statsCards) {
-        // Créer un objet avec tous les statuts
-        const allStats = {};
+        // Ne mettre à jour que les statuts qui ont des cartes
+        const statsToUpdate = {};
         
-        // Parcourir tous les statuts possibles (sauf supprime)
-        Object.keys(COMMANDES_CONFIG.STATUTS).forEach(statut => {
-            if (statut !== 'supprime') {
-                allStats[statut] = stats.parStatut[statut] || 0;
-            }
+        // Utiliser la même config que genererConfigStatsCards
+        COMMANDES_CONFIG.STATS_CARDS_CONFIG.cartes.forEach(carte => {
+            statsToUpdate[carte.statut] = stats.parStatut[carte.statut] || 0;
         });
         
-        statsCards.updateAll(allStats);
+        statsCards.updateAll(statsToUpdate);
     }
 }
 

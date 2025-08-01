@@ -156,7 +156,7 @@ export class DropdownList {
         const link = document.createElement('link');
         link.id = 'dropdown-list-styles';
         link.rel = 'stylesheet';
-        link.href = '../src/components/ui/dropdown-list/dropdown-list.css';
+        link.href = '../../src/components/ui/dropdown-list/dropdown-list.css';
         document.head.appendChild(link);
         
         console.log('📦 DropdownList styles chargés');

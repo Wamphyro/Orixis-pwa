@@ -106,7 +106,7 @@ export class Numpad {
             const link = document.createElement('link');
             link.id = styleId;
             link.rel = 'stylesheet';
-            link.href = '../src/components/ui/numpad/numpad.css';
+            link.href = '../../src/components/ui/numpad/numpad.css';
             document.head.appendChild(link);
             
             console.log('📦 CSS Numpad chargé');

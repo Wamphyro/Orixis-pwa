@@ -122,7 +122,7 @@ export class SearchDropdown {
         const link = document.createElement('link');
         link.id = 'search-dropdown-styles';
         link.rel = 'stylesheet';
-        link.href = '../src/components/ui/search-dropdown/search-dropdown.css';
+        link.href = '../../src/components/ui/search-dropdown/search-dropdown.css';
         document.head.appendChild(link);
         
         console.log('📦 SearchDropdown styles chargés');

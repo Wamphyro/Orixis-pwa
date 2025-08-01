@@ -73,7 +73,7 @@ export class NotificationManager {
         const link = document.createElement('link');
         link.id = 'notification-styles';
         link.rel = 'stylesheet';
-        link.href = '../src/components/ui/notification/notification.css';
+        link.href = '../../src/components/ui/notification/notification.css';
         document.head.appendChild(link);
         
         console.log('📦 Notification styles chargés');

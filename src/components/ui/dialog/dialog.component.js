@@ -75,7 +75,7 @@ export class Dialog {
         const link = document.createElement('link');
         link.id = 'dialog-styles';
         link.rel = 'stylesheet';
-        link.href = '../src/components/ui/dialog/dialog.css';
+        link.href = '../../src/components/ui/dialog/dialog.css';
         document.head.appendChild(link);
         
         console.log('📦 Dialog styles chargés');
