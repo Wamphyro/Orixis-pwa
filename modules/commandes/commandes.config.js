@@ -325,5 +325,6 @@ export default {
     Button,
     Modal,
     Dialog,
-    notify
+    notify,
+    modalManager  // ← AJOUTER modalManager ici
 };
