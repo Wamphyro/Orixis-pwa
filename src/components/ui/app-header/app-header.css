@@ -1,16 +1,13 @@
 /* ========================================
    APP-HEADER.CSS - Styles pour le composant header d'application
-   Chemin: src/css/shared/ui/app-header.css
-   
-   MODIFIÉ le 01/02/2025:
-   - Suppression des styles .header-user-section (migrés vers button.css)
-   - Ce fichier ne contient QUE les styles de layout et structure
+   Chemin: src/components/ui/app-header/app-header.css
    
    STRUCTURE:
    - Anti-FOUC et chargement
    - Header de base
    - Layout interne (left, center, right)
    - Section titre
+   - Styles glassmorphism pour les éléments
    - États et interactions
    - Thèmes
    - Responsive
@@ -134,10 +131,35 @@
 }
 
 /* ========================================
-   ÉLÉMENTS INTERNES DE LA SECTION UTILISATEUR
-   (styles non-bouton uniquement)
+   STYLES GLASSMORPHISM POUR LES ÉLÉMENTS
    ======================================== */
 
+/* Section utilisateur glassmorphism */
+.header-user-section {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    white-space: nowrap;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.header-user-section:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.35);
+    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+}
+
+/* Éléments internes de la section utilisateur */
 .user-name {
     font-weight: 600;
     color: white;
@@ -157,6 +179,80 @@
     height: 20px;
     background: rgba(255, 255, 255, 0.3);
     flex-shrink: 0;
+}
+
+/* Bouton retour glassmorphism */
+.btn.on-dark {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    font-weight: 500;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+}
+
+.btn.on-dark:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateX(-2px);
+    border-color: rgba(255, 255, 255, 0.3);
+    text-decoration: none;
+    color: white;
+}
+
+.btn.on-dark:active {
+    transform: translateX(-1px) scale(0.98);
+}
+
+/* Icône du bouton retour */
+.back-icon {
+    font-size: 16px;
+    margin-right: 4px;
+}
+
+/* Bouton déconnexion glassmorphism */
+.btn.btn-danger {
+    background: rgba(220, 53, 69, 0.9);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: inherit;
+}
+
+.btn.btn-danger:hover {
+    background: rgba(220, 53, 69, 1);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+}
+
+.btn.btn-danger:active {
+    transform: translateY(0);
+}
+
+/* Support pour les boutons pill */
+.btn.btn-pill {
+    border-radius: 25px;
+}
+
+.btn.btn-sm {
+    padding: 6px 12px;
+    font-size: 13px;
 }
 
 /* ========================================
@@ -188,46 +284,11 @@
     }
 }
 
-/* ========================================
-   THÈMES
-   ======================================== */
-
-/* Thème sombre */
-.app-header.theme-dark {
-    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-}
-
-/* Thème success */
-.app-header.theme-success {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-}
-
-/* Thème warning */
-.app-header.theme-warning {
-    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
-    color: #333;
-}
-
-.app-header.theme-warning .app-header-title,
-.app-header.theme-warning .app-header-subtitle,
-.app-header.theme-warning .user-name,
-.app-header.theme-warning .user-store {
-    color: #333;
-}
-
-/* Thème minimal */
-.app-header.theme-minimal {
-    background: white;
-    color: #333;
-    border-bottom: 1px solid #e9ecef;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.app-header.theme-minimal .app-header-title,
-.app-header.theme-minimal .app-header-subtitle,
-.app-header.theme-minimal .user-name,
-.app-header.theme-minimal .user-store {
-    color: #333;
+/* Focus pour accessibilité */
+.btn:focus,
+.header-user-section:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 2px;
 }
 
 /* ========================================
@@ -259,6 +320,114 @@
 }
 
 /* ========================================
+   THÈMES
+   ======================================== */
+
+/* Thème sombre */
+.app-header.theme-dark {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+}
+
+.theme-dark .header-user-section {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.theme-dark .header-user-section:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.theme-dark .btn.on-dark {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.theme-dark .btn.on-dark:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* Thème success */
+.app-header.theme-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+/* Thème warning */
+.app-header.theme-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    color: #333;
+}
+
+.app-header.theme-warning .app-header-title,
+.app-header.theme-warning .app-header-subtitle,
+.app-header.theme-warning .user-name,
+.app-header.theme-warning .user-store {
+    color: #333;
+}
+
+.theme-warning .header-user-section {
+    background: rgba(0, 0, 0, 0.1);
+    color: #333;
+}
+
+.theme-warning .header-user-section:hover {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.theme-warning .btn.on-dark {
+    background: rgba(0, 0, 0, 0.1);
+    color: #333;
+}
+
+.theme-warning .btn.on-dark:hover {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.theme-warning .btn.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+/* Thème minimal */
+.app-header.theme-minimal {
+    background: white;
+    color: #333;
+    border-bottom: 1px solid #e9ecef;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.app-header.theme-minimal .app-header-title,
+.app-header.theme-minimal .app-header-subtitle,
+.app-header.theme-minimal .user-name,
+.app-header.theme-minimal .user-store {
+    color: #333;
+}
+
+.theme-minimal .header-user-section {
+    background: #f8f9fa;
+    color: #333;
+    border: 1px solid #dee2e6;
+    backdrop-filter: none;
+}
+
+.theme-minimal .header-user-section:hover {
+    background: #e9ecef;
+}
+
+.theme-minimal .btn.on-dark {
+    background: #f8f9fa;
+    color: #333;
+    border: 1px solid #dee2e6;
+    backdrop-filter: none;
+}
+
+.theme-minimal .btn.on-dark:hover {
+    background: #e9ecef;
+}
+
+.theme-minimal .btn.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+/* ========================================
    RESPONSIVE
    ======================================== */
 
@@ -275,9 +444,19 @@
         padding: 0 15px;
     }
     
+    .header-user-section {
+        padding: 8px 16px;
+        gap: 10px;
+    }
+    
     .user-name,
     .user-store {
         font-size: 13px;
+    }
+    
+    .btn.btn-danger {
+        font-size: 12px;
+        padding: 5px 10px;
     }
 }
 
@@ -325,6 +504,13 @@
         font-size: 14px;
     }
     
+    .header-user-section {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 12px 16px;
+    }
+    
     .user-name {
         font-size: 14px;
         font-weight: 600;
@@ -332,6 +518,16 @@
     
     .user-store {
         font-size: 12px;
+    }
+    
+    .btn.btn-danger {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+    
+    .btn.on-dark {
+        font-size: 13px;
+        padding: 8px 16px;
     }
 }
 
@@ -352,6 +548,13 @@
         font-size: 13px;
     }
     
+    .header-user-section {
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 10px;
+    }
+    
     .user-separator {
         display: none;
     }
@@ -359,6 +562,11 @@
     .user-store {
         font-size: 11px;
         opacity: 0.8;
+    }
+    
+    .btn.btn-danger {
+        font-size: 11px;
+        padding: 5px 10px;
     }
     
     .app-header-icon {
@@ -388,6 +596,11 @@
     .user-separator {
         background: #ccc !important;
     }
+    
+    .btn.on-dark,
+    .btn.btn-danger {
+        display: none !important;
+    }
 }
 
 /* ========================================
@@ -412,6 +625,11 @@
     display: none;
 }
 
+.app-header.collapsed .header-user-section {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
 /* Ajustement si header fixe */
 body.header-fixed {
     padding-top: 100px;
@@ -428,12 +646,14 @@ body.header-fixed {
    
    [30/01/2025] - Création initiale
    [01/02/2025] - Migration des styles de boutons
-   - .header-user-section migré vers button.css
-   - Tous les styles de boutons dans button.css
-   - Ce fichier ne contient plus que layout et structure
+   [29/12/2024] - Restauration des styles glassmorphism
+   - Tous les styles nécessaires sont maintenant dans ce fichier
+   - Le composant est 100% indépendant
+   - Support complet du glassmorphism
+   - Les classes sont injectées par l'orchestrateur
    
    NOTES POUR REPRISES FUTURES:
-   - Les styles de boutons sont dans button.css
-   - Les classes sont passées par l'orchestrateur
+   - Ce fichier contient TOUS les styles nécessaires
+   - Ne pas dépendre d'autres fichiers CSS
    - Le composant reste indépendant
    ======================================== */

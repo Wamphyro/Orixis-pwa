@@ -10,6 +10,9 @@
 // - Support des classes CSS personnalisables via config
 // - Le composant ne connaît pas les classes, l'orchestrateur décide
 //
+// MODIFIÉ le 29/12/2024:
+// - Correction du chemin CSS pour support multi-niveaux
+//
 // API PUBLIQUE:
 // - constructor(config)
 // - setTitle(title, subtitle)
@@ -142,7 +145,13 @@ export class AppHeader {
             const link = document.createElement('link');
             link.id = styleId;
             link.rel = 'stylesheet';
-            link.href = '../../src/components/ui/app-header/app-header.css';
+            
+            // Utiliser un chemin relatif au document
+            const currentPath = window.location.pathname;
+            const pathDepth = (currentPath.match(/\//g) || []).length - 1;
+            const basePath = '../'.repeat(pathDepth);
+            link.href = basePath + 'src/components/ui/app-header/app-header.css';
+            
             document.head.appendChild(link);
             
             console.log('📦 CSS AppHeader chargé');
