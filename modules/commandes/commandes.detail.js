@@ -20,11 +20,49 @@
 
 import { CommandesService } from '../../src/services/commandes.service.js';
 import { 
-    COMMANDES_CONFIG, 
-    genererOptionsUrgence, 
-    genererOptionsTransporteurs,
-    genererOptionsTypesPreparation 
+    COMMANDES_CONFIG
 } from './commandes.data.js';
+
+// ET AJOUTER ces constantes/fonctions dans le fichier (après les imports) :
+const TIMELINE_CONFIG = {
+    sequence: ['nouvelle', 'preparation', 'terminee', 'expediee', 'receptionnee', 'livree'],
+    dateFields: {
+        nouvelle: 'commande',
+        preparation: 'preparationDebut',
+        terminee: 'preparationFin',
+        expediee: 'expeditionValidee',
+        receptionnee: 'receptionValidee',
+        livree: 'livraisonClient'
+    },
+    defaultOptions: {
+        theme: 'colorful',
+        orientation: 'horizontal',
+        animated: true,
+        showDates: true,
+        showLabels: true,
+        clickable: false
+    }
+};
+
+function genererOptionsUrgence() {
+    return Object.entries(COMMANDES_CONFIG.NIVEAUX_URGENCE).map(([key, urgence]) => ({
+        value: key,
+        label: `${urgence.icon} ${urgence.label}`
+    }));
+}
+
+function genererOptionsTransporteurs() {
+    return [
+        { value: 'Colissimo', label: 'Colissimo' },
+        { value: 'Chronopost', label: 'Chronopost' },
+        { value: 'UPS', label: 'UPS' },
+        { value: 'DHL', label: 'DHL' },
+        { value: 'Fedex', label: 'Fedex' },
+        { value: 'GLS', label: 'GLS' },
+        { value: 'Autre', label: 'Autre' }
+    ];
+}
+
 import { 
     Timeline,
     DropdownList,

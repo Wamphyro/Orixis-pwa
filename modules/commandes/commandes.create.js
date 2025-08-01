@@ -18,11 +18,25 @@ import { CommandesService } from '../../src/services/commandes.service.js';
 import { SearchDropdown, DropdownList, Dialog, notify } from '../../src/components/index.js';
 import { 
     COMMANDES_CONFIG,
-    genererOptionsTypesPreparation,
-    genererOptionsUrgence,
-    calculerDelaiLivraison 
+    calculerDelaiLivraison
 } from './commandes.data.js';
-import { chargerDonnees } from './commandes.list.js';
+
+// ET AJOUTER ces fonctions dans le fichier (après les imports) :
+function genererOptionsUrgence() {
+    return Object.entries(COMMANDES_CONFIG.NIVEAUX_URGENCE).map(([key, urgence]) => ({
+        value: key,
+        label: `${urgence.icon} ${urgence.label}`
+    }));
+}
+
+function genererOptionsTypesPreparation() {
+    return Object.entries(COMMANDES_CONFIG.TYPES_PREPARATION).map(([key, type]) => ({
+        value: key,
+        label: type.label,
+        description: type.description,
+        icon: type.icon
+    }));
+}
 import { ouvrirModal, afficherSucces, afficherErreur } from './commandes.main.js';
 
 // ========================================
