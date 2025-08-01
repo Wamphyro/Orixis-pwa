@@ -39,6 +39,9 @@ export { Numpad } from './ui/numpad/numpad.component.js';
 export { DataTable } from './ui/datatable/datatable.component.js';
 export { DataTableFilters } from './ui/datatable-filters/datatable-filters.component.js';
 
+// Loading
+export { LoadingOverlay, loader } from './ui/loading-overlay/loading-overlay.component.js';
+
 // ========================================
 // FONCTIONS UTILITAIRES
 // ========================================
