@@ -93,7 +93,7 @@
     padding: 15px 20px;
     text-align: left;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 15px;  /* Augmenter légèrement */
     white-space: nowrap;
 }
 
@@ -109,8 +109,13 @@
 
 .commandes-table td {
     padding: 15px 20px;
-    font-size: 14px;
+    font-size: 15px;  /* Harmoniser à 15px */
     color: #495057;
+}
+
+/* Forcer la taille pour tous les enfants du tableau */
+.commandes-table td * {
+    font-size: inherit !important;
 }
 
 .no-data {
@@ -123,6 +128,25 @@
 .table-actions {
     display: flex;
     gap: 8px;
+}
+
+/* Harmonisation des éléments dans le tableau */
+.commandes-table .badge {
+    font-size: 13px;  /* Un peu plus petit que le texte */
+}
+
+.commandes-table .btn-action {
+    font-size: 16px;  /* Icônes d'action */
+}
+
+.commandes-table .urgence-icon,
+.commandes-table .statut-icon {
+    font-size: 18px;  /* Emojis plus grands */
+}
+
+/* Cellule client */
+.commandes-table .client-name {
+    font-weight: 500;
 }
 
 /* ========================================
