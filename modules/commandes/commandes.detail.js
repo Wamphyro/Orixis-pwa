@@ -18,7 +18,7 @@
 // - COMMANDES_CONFIG (configuration)
 // ========================================
 
-import { CommandesService } from '../../src/services/commandes.service.js';
+import { CommandesService } from './commandes.service.js';
 import { 
     COMMANDES_CONFIG
 } from './commandes.data.js';

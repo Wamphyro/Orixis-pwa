@@ -17,7 +17,7 @@
    - notify: Pour les notifications
    ======================================== */
 
-import { CommandesService } from '../../src/services/commandes.service.js';
+import { CommandesService } from './commandes.service.js';
 import { Dialog, notify } from '../../src/components/index.js';
 
 // ========================================

@@ -15,16 +15,16 @@
 // 6. Statistiques et helpers (lignes 802-950)
 // ========================================
 
-import { db } from './firebase.service.js';
-import { ClientsService } from './clients.service.js';
-import { ProduitsService } from './produits.service.js';
+import { db } from '../../src/services/firebase.service.js';
+import { ClientsService } from '../../src/services/clients.service.js';
+import { ProduitsService } from '../../src/services/produits.service.js';
 import { 
     COMMANDES_CONFIG, 
     genererNumeroCommande, 
     getProchainStatut,
     peutEtreAnnulee,
     calculerDelaiLivraison 
-} from '../../modules/commandes/commandes.data.js';
+} from './commandes.data.js';
 
 /**
  * Service de gestion des commandes

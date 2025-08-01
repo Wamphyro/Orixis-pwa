@@ -14,7 +14,7 @@
 import { db } from '../../src/services/firebase.service.js';
 import { ClientsService } from '../../src/services/clients.service.js';
 import { ProduitsService } from '../../src/services/produits.service.js';
-import { CommandesService } from '../../src/services/commandes.service.js';
+import { CommandesService } from './commandes.service.js';
 import { SearchDropdown, DropdownList, Dialog, notify } from '../../src/components/index.js';
 import { 
     COMMANDES_CONFIG,

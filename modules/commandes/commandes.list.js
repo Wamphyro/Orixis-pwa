@@ -16,7 +16,7 @@
 // - L'orchestrateur décide maintenant comment présenter les données
 // ========================================
 
-import { CommandesService } from '../../src/services/commandes.service.js';
+import { CommandesService } from './commandes.service.js';
 import { 
     COMMANDES_CONFIG,
     calculerDelaiLivraison,
