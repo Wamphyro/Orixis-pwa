@@ -15,10 +15,6 @@
     
     <!-- ========================================
          CSS - Ordre de chargement optimisé
-         MODIFIÉ le 01/02/2025:
-         - Chemins mis à jour pour la nouvelle structure
-         - CSS components dans src/components/ui/
-         - CSS module local
          ======================================== -->
     
     <!-- 1. Base et layout -->
@@ -31,8 +27,6 @@
     <link rel="stylesheet" href="../../src/components/ui/common/button.css">
 
     <!-- 3. Composants UI (les composants chargent leur CSS automatiquement) -->
-    <!-- Note: Ces CSS sont normalement auto-chargés par les composants JS -->
-    <!-- Mais on peut les précharger pour éviter le FOUC -->
     <link rel="stylesheet" href="../../src/components/ui/modal/modal.css">
     <link rel="stylesheet" href="../../src/components/ui/dialog/dialog.css">
     <link rel="stylesheet" href="../../src/components/ui/notification/notification.css">
@@ -60,8 +54,8 @@
             </div>
             
             <div class="commandes-actions">
-                <!-- ✅ Bouton avec glassmorphism -->
-                <button class="btn btn-primary btn-with-icon" onclick="ouvrirNouvelleCommande()">
+                <!-- ✅ Bouton avec classe pill pour forme arrondie -->
+                <button class="btn btn-primary btn-with-icon btn-lg pill" onclick="ouvrirNouvelleCommande()">
                     <span>➕</span> Nouvelle commande
                 </button>
             </div>
@@ -127,8 +121,8 @@
                     
                     <div class="divider">OU</div>
                     
-                    <!-- ✅ Bouton secondaire avec icône -->
-                    <button class="btn btn-secondary btn-with-icon" onclick="ouvrirNouveauClient()">
+                    <!-- ✅ Bouton secondaire avec icône et pill -->
+                    <button class="btn btn-secondary btn-with-icon pill" onclick="ouvrirNouveauClient()">
                         <span>➕</span> Créer un nouveau client
                     </button>
                 </div>
@@ -213,14 +207,14 @@
             </div>
             
             <div class="modal-footer">
-                <!-- ✅ Boutons glassmorphism -->
-                <button class="btn btn-secondary" id="btnPrevStep" onclick="etapePrecedente()" disabled>
+                <!-- ✅ Boutons navigation avec pill -->
+                <button class="btn btn-secondary pill" id="btnPrevStep" onclick="etapePrecedente()" disabled>
                     ← Précédent
                 </button>
-                <button class="btn btn-primary" id="btnNextStep" onclick="etapeSuivante()">
+                <button class="btn btn-primary pill" id="btnNextStep" onclick="etapeSuivante()">
                     Suivant →
                 </button>
-                <button class="btn btn-success hidden" id="btnValiderCommande" onclick="validerCommande()">
+                <button class="btn btn-success pill hidden" id="btnValiderCommande" onclick="validerCommande()">
                     ✓ Valider la commande
                 </button>
             </div>
@@ -332,11 +326,11 @@
             </div>
             
             <div class="modal-footer">
-                <!-- ✅ Boutons glassmorphism -->
-                <button class="btn btn-secondary" onclick="fermerModal('modalNouveauClient')">
+                <!-- ✅ Boutons avec pill -->
+                <button class="btn btn-secondary pill" onclick="fermerModal('modalNouveauClient')">
                     Annuler
                 </button>
-                <button class="btn btn-primary btn-with-icon" onclick="creerNouveauClient()">
+                <button class="btn btn-primary btn-with-icon pill" onclick="creerNouveauClient()">
                     <span>➕</span> Créer le client
                 </button>
             </div>

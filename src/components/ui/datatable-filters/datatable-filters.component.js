@@ -7,43 +7,7 @@
 // Compatible avec DataTable mais utilisable seul
 //
 // MODIFIÉ le 01/02/2025:
-// - Génération d'ID autonome harmonisée
-// - DropdownList passé via config par l'orchestrateur
-// - 100% autonome
-//
-// API PUBLIQUE:
-// - constructor(config)
-// - getValues()
-// - reset()
-// - setValue(key, value)
-// - setEnabled(key, enabled)
-// - destroy()
-//
-// CALLBACKS DISPONIBLES:
-// - onFilter: (values) => void
-//
-// TYPES SUPPORTÉS:
-// - search: Recherche textuelle
-// - select: Liste déroulante (utilise DropdownList)
-// - daterange: Sélection de période
-// - checkbox: Cases à cocher multiples
-// - date: Sélection de date
-// - radio: Boutons radio
-// - range: Curseur de plage
-// - tags: Tags (non implémenté)
-// - buttongroup: Groupe de boutons
-// - custom: Personnalisé
-//
-// EXEMPLE:
-// const filters = new DataTableFilters({
-//     container: '.filters-container',
-//     DropdownClass: DropdownList, // Injection du composant
-//     filters: [
-//         { type: 'search', key: 'search', placeholder: 'Rechercher...' },
-//         { type: 'select', key: 'status', options: [...] }
-//     ],
-//     onFilter: (values) => console.log('Filtres:', values)
-// });
+// - Injection des classes CSS pour le bouton reset
 // ========================================
 
 export class DataTableFilters {
@@ -55,16 +19,29 @@ export class DataTableFilters {
         this.config = {
             container: null,
             filters: [],
-            autoSubmit: true,  // Filtrer automatiquement au changement
-            debounceDelay: 300, // Délai pour la recherche (ms)
-            onFilter: null,     // Callback quand les filtres changent
-            resetButton: true,  // Afficher le bouton reset
+            autoSubmit: true,
+            debounceDelay: 300,
+            onFilter: null,
+            resetButton: true,
+            
+            // 🔑 CLASSES CSS INJECTABLES
+            buttonClasses: {
+                reset: 'btn-reset-filters'  // Classe par défaut
+            },
             
             // Classe DropdownList injectée par l'orchestrateur
             DropdownClass: null,
             
             ...config
         };
+        
+        // Fusionner les classes CSS si fournies partiellement
+        if (config.buttonClasses) {
+            this.config.buttonClasses = {
+                ...this.config.buttonClasses,
+                ...config.buttonClasses
+            };
+        }
         
         // État des filtres
         this.values = {};
@@ -74,7 +51,7 @@ export class DataTableFilters {
             container: null,
             form: null,
             resetButton: null,
-            filters: {} // Stockage des éléments de chaque filtre
+            filters: {}
         };
         
         // Stockage des instances DropdownList
@@ -161,11 +138,11 @@ export class DataTableFilters {
             }
         });
         
-        // Le bouton est bien dans filtersRow
+        // 🔑 BOUTON RESET AVEC CLASSE INJECTABLE
         if (this.config.resetButton && this.config.filters.length > 0) {
             const resetBtn = document.createElement('button');
             resetBtn.type = 'button';
-            resetBtn.className = 'btn-reset-filters';
+            resetBtn.className = this.config.buttonClasses.reset;
             resetBtn.innerHTML = '🔄 Réinitialiser';
             resetBtn.onclick = () => this.reset();
             
@@ -578,7 +555,7 @@ export class DataTableFilters {
     /**
      * Render DateRange
      */
-    renderDateRange(config) {
+    renderDaterange(config) {
         const container = document.createElement('div');
         container.className = 'filter-daterange-container';
         
@@ -708,7 +685,7 @@ export class DataTableFilters {
     /**
      * Render Button Group
      */
-    renderButtonGroup(config) {
+    renderButtongroup(config) {
         const container = document.createElement('div');
         container.className = 'filter-buttongroup';
         
@@ -853,3 +830,5 @@ export class DataTableFilters {
         return null;
     }
 }
+
+export default DataTableFilters;

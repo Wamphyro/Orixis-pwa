@@ -4,47 +4,13 @@
 //
 // DESCRIPTION:
 // Tableau de données avancé avec tri, pagination, export et sélection
-// Composant autonome et modulaire
+// Composant 100% autonome - aucune dépendance
 //
 // MODIFIÉ le 01/02/2025:
-// - Génération d'ID autonome harmonisée
+// - Injection des modules via config
+// - Injection des classes CSS via config
 // - 100% indépendant
-//
-// API PUBLIQUE:
-// - constructor(config)
-// - setData(data)
-// - refresh()
-// - getSelectedRows()
-// - clearSelection()
-// - goToPage(page)
-// - sort(column)
-// - export(format)
-// - updateConfig(newConfig)
-// - destroy()
-//
-// CALLBACKS DISPONIBLES:
-// - onRowClick: (rowData, index, event) => void
-// - onSort: (column, direction) => void
-// - onPageChange: (page, pageSize) => void
-// - onExport: (format, data) => void
-// - onSelectionChange: (selectedRows) => void
-//
-// EXEMPLE:
-// const table = new DataTable({
-//     container: '.table-container',
-//     columns: [
-//         { key: 'id', label: 'ID', sortable: true },
-//         { key: 'nom', label: 'Nom', sortable: true }
-//     ],
-//     data: myData,
-//     onRowClick: (row) => console.log('Clicked:', row)
-// });
 // ========================================
-
-import { DataTableSort } from './datatable.sort.js';
-import { DataTableExport } from './datatable.export.js';
-import { DataTablePagination } from './datatable.pagination.js';
-import { DataTableResize } from './datatable.resize.js';
 
 export class DataTable {
     constructor(config) {
@@ -56,6 +22,21 @@ export class DataTable {
             container: null,
             columns: [],
             data: [],
+            
+            // 🔑 INJECTION DES MODULES (IoC)
+            modules: {
+                SortClass: null,
+                ExportClass: null,
+                PaginationClass: null,
+                ResizeClass: null
+            },
+            
+            // 🔑 INJECTION DES CLASSES CSS (IoC)
+            buttonClasses: {
+                export: 'btn btn-export',      // Classes par défaut
+                action: 'btn-action',          // Classes par défaut
+                pagination: 'pagination-btn'    // Classes par défaut
+            },
             
             // Features
             features: {
@@ -113,6 +94,14 @@ export class DataTable {
             ...config
         };
         
+        // Fusionner les classes CSS si fournies partiellement
+        if (config.buttonClasses) {
+            this.config.buttonClasses = {
+                ...this.config.buttonClasses,
+                ...config.buttonClasses
+            };
+        }
+        
         // État interne
         this.state = {
             data: [],
@@ -124,7 +113,7 @@ export class DataTable {
             loading: false
         };
         
-        // Modules
+        // Modules (instances)
         this.modules = {
             sort: null,
             export: null,
@@ -167,22 +156,8 @@ export class DataTable {
         // Créer la structure AVANT d'initialiser les modules
         this.render();
         
-        // Initialiser les modules APRÈS la création du DOM
-        if (this.config.features.sort) {
-            this.modules.sort = new DataTableSort(this);
-        }
-        
-        if (this.config.features.export) {
-            this.modules.export = new DataTableExport(this);
-        }
-        
-        if (this.config.features.pagination) {
-            this.modules.pagination = new DataTablePagination(this);
-        }
-        
-        if (this.config.features.resize) {
-            this.modules.resize = new DataTableResize(this);
-        }
+        // 🔑 INITIALISER LES MODULES INJECTÉS
+        this.initModules();
         
         // Charger les données si fournies
         if (this.config.data && this.config.data.length > 0) {
@@ -190,6 +165,33 @@ export class DataTable {
         }
         
         console.log('✅ DataTable initialisé:', this.id);
+    }
+    
+    /**
+     * Initialiser les modules injectés
+     */
+    initModules() {
+        // Sort
+        if (this.config.features.sort && this.config.modules.SortClass) {
+            this.modules.sort = new this.config.modules.SortClass(this);
+        }
+        
+        // Export
+        if (this.config.features.export && this.config.modules.ExportClass) {
+            this.modules.export = new this.config.modules.ExportClass(this);
+        }
+        
+        // Pagination
+        if (this.config.features.pagination && this.config.modules.PaginationClass) {
+            this.modules.pagination = new this.config.modules.PaginationClass(this);
+        }
+        
+        // Resize
+        if (this.config.features.resize && this.config.modules.ResizeClass) {
+            this.modules.resize = new this.config.modules.ResizeClass(this);
+        }
+        
+        console.log('📦 Modules DataTable initialisés:', Object.keys(this.modules).filter(m => this.modules[m]));
     }
     
     // ========================================
@@ -245,12 +247,15 @@ export class DataTable {
     renderExportButtons() {
         const buttons = [];
         
+        // 🔑 UTILISER LES CLASSES INJECTÉES
+        const btnClass = this.config.buttonClasses.export;
+        
         if (this.config.export.csv) {
-            buttons.push('<button class="btn btn-export" data-export="csv">📄 Export CSV</button>');
+            buttons.push(`<button class="${btnClass}" data-export="csv">📄 Export CSV</button>`);
         }
         
         if (this.config.export.excel) {
-            buttons.push('<button class="btn btn-export" data-export="excel">📊 Export Excel</button>');
+            buttons.push(`<button class="${btnClass}" data-export="excel">📊 Export Excel</button>`);
         }
         
         return `<div class="datatable-export-buttons">${buttons.join('')}</div>`;
@@ -301,6 +306,50 @@ export class DataTable {
                 </td>
             </tr>
         `;
+    }
+    
+    renderBody() {
+        const pageData = this.getPageData();
+        
+        if (pageData.length === 0) {
+            this.elements.tbody.innerHTML = this.renderNoData();
+            return;
+        }
+        
+        let html = '';
+        
+        pageData.forEach((row, index) => {
+            html += '<tr data-index="' + index + '">';
+            
+            // Checkbox de sélection
+            if (this.config.features.selection) {
+                const globalIndex = this.getGlobalIndex(index);
+                const checked = this.state.selectedRows.has(globalIndex) ? 'checked' : '';
+                html += `
+                    <td class="datatable-select">
+                        <input type="checkbox" class="row-select" ${checked}>
+                    </td>
+                `;
+            }
+            
+            // Colonnes de données
+            this.config.columns.forEach(column => {
+                const value = this.getNestedValue(row, column.key);
+                const formatted = column.formatter ? column.formatter(value, row) : value;
+                const className = column.className || '';
+                
+                // 🔑 Si c'est la colonne actions, utiliser la classe injectée
+                if (column.key === 'actions' && formatted.includes('btn-action')) {
+                    html += `<td class="${className}">${formatted.replace('btn-action', this.config.buttonClasses.action)}</td>`;
+                } else {
+                    html += `<td class="${className}">${formatted || ''}</td>`;
+                }
+            });
+            
+            html += '</tr>';
+        });
+        
+        this.elements.tbody.innerHTML = html;
     }
     
     // ========================================
@@ -393,45 +442,6 @@ export class DataTable {
         }
         
         this.updateSelectionUI();
-    }
-    
-    renderBody() {
-        const pageData = this.getPageData();
-        
-        if (pageData.length === 0) {
-            this.elements.tbody.innerHTML = this.renderNoData();
-            return;
-        }
-        
-        let html = '';
-        
-        pageData.forEach((row, index) => {
-            html += '<tr data-index="' + index + '">';
-            
-            // Checkbox de sélection
-            if (this.config.features.selection) {
-                const globalIndex = this.getGlobalIndex(index);
-                const checked = this.state.selectedRows.has(globalIndex) ? 'checked' : '';
-                html += `
-                    <td class="datatable-select">
-                        <input type="checkbox" class="row-select" ${checked}>
-                    </td>
-                `;
-            }
-            
-            // Colonnes de données
-            this.config.columns.forEach(column => {
-                const value = this.getNestedValue(row, column.key);
-                const formatted = column.formatter ? column.formatter(value, row) : value;
-                const className = column.className || '';
-                
-                html += `<td class="${className}">${formatted || ''}</td>`;
-            });
-            
-            html += '</tr>';
-        });
-        
-        this.elements.tbody.innerHTML = html;
     }
     
     getNestedValue(obj, path) {
@@ -595,3 +605,5 @@ export class DataTable {
         console.log('🧹 DataTable détruit:', this.id);
     }
 }
+
+export default DataTable;

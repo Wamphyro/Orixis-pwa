@@ -8,14 +8,8 @@
 //
 // MODIFIÉ le 01/02/2025:
 // - Architecture IoC stricte : aucun composant ne se connaît
-// - Injection de DropdownList dans DataTableFilters
-// - Gestion de l'interaction StatsCards/filtres ICI
-// - Les composants sont 100% autonomes
-//
-// DÉPENDANCES:
-// - CommandesService (logique métier)
-// - DataTable, DataTableFilters, DropdownList, StatsCards (composants UI)
-// - COMMANDES_CONFIG (configuration)
+// - Injection de tous les modules et classes CSS
+// - L'orchestrateur fait TOUS les liens
 // ========================================
 
 import { CommandesService } from '../../src/services/commandes.service.js';
@@ -32,6 +26,13 @@ import {
     DropdownList,
     formatDate as formatDateUtil 
 } from '../../src/components/index.js';
+
+// 🔑 IMPORT DES MODULES DATATABLE
+import { DataTableSort } from '../../src/components/ui/datatable/datatable.sort.js';
+import { DataTableExport } from '../../src/components/ui/datatable/datatable.export.js';
+import { DataTablePagination } from '../../src/components/ui/datatable/datatable.pagination.js';
+import { DataTableResize } from '../../src/components/ui/datatable/datatable.resize.js';
+
 import { state } from './commandes.main.js';
 import { chargerMagasins } from '../../src/services/firebase.service.js';
 
@@ -50,7 +51,7 @@ let statsCards = null;
 export async function initListeCommandes() {
     console.log('🚀 Initialisation orchestrateur liste commandes...');
     
-    // 1. Créer l'instance DataTable
+    // 1. Créer l'instance DataTable avec injection
     initDataTable();
     
     // 2. Créer les filtres avec injection de DropdownList
@@ -66,12 +67,27 @@ export async function initListeCommandes() {
 }
 
 // ========================================
-// INITIALISATION DATATABLE
+// INITIALISATION DATATABLE AVEC INJECTIONS
 // ========================================
 
 function initDataTable() {
     tableCommandes = new DataTable({
         container: '.commandes-table-container',
+        
+        // 🔑 INJECTION DES MODULES
+        modules: {
+            SortClass: DataTableSort,
+            ExportClass: DataTableExport,
+            PaginationClass: DataTablePagination,
+            ResizeClass: DataTableResize
+        },
+        
+        // 🔑 INJECTION DES CLASSES CSS
+        buttonClasses: {
+            export: 'btn btn-export pill',
+            action: 'btn-action',
+            pagination: 'pagination-btn'
+        },
         
         columns: [
             {
@@ -175,11 +191,11 @@ function initDataTable() {
         }
     });
     
-    console.log('📊 DataTable créée');
+    console.log('📊 DataTable créée avec modules injectés');
 }
 
 // ========================================
-// INITIALISATION FILTRES AVEC DROPDOWN
+// INITIALISATION FILTRES AVEC INJECTIONS
 // ========================================
 
 async function initFiltres() {
@@ -216,7 +232,7 @@ async function initFiltres() {
     // Ajuster pour séparer les icônes
     const filtresAjustes = ajusterIconesFiltres(filtresConfig);
     
-    // Créer l'instance DataTableFilters avec DropdownList injecté
+    // Créer l'instance DataTableFilters avec injections
     filtresCommandes = new DataTableFilters({
         container: '.commandes-filters',
         filters: filtresAjustes,
@@ -224,13 +240,18 @@ async function initFiltres() {
         // 🔑 INJECTION DE DROPDOWNLIST
         DropdownClass: DropdownList,
         
+        // 🔑 INJECTION DES CLASSES CSS
+        buttonClasses: {
+            reset: 'btn btn-reset pill'
+        },
+        
         // Callback appelé quand les filtres changent
         onFilter: (filters) => {
             handleFilterChange(filters);
         }
     });
     
-    console.log('🔍 Filtres créés avec DropdownList injecté');
+    console.log('🔍 Filtres créés avec DropdownList et classes CSS injectés');
 }
 
 // ========================================
@@ -586,36 +607,19 @@ function ajusterIconesFiltres(filtresConfig) {
 /* ========================================
    HISTORIQUE DES MODIFICATIONS
    
-   [01/02/2025] - Architecture harmonisée complète
-   - Architecture IoC stricte : aucun composant ne se connaît
-   - L'orchestrateur (ce fichier) gère TOUTES les connexions
-   - DropdownList injecté dans DataTableFilters
-   - Interaction StatsCards/filtres gérée ICI, pas dans main.js
-   - Fonctions handleFilterChange() et handleStatsCardClick()
+   [01/02/2025] - Architecture harmonisée avec injection complète
+   - Import des modules DataTable (Sort, Export, Pagination, Resize)
+   - Injection des modules dans DataTable via config.modules
+   - Injection des classes CSS dans DataTable via config.buttonClasses
+   - Injection des classes CSS dans DataTableFilters
+   - L'orchestrateur fait TOUS les liens, les composants ne se connaissent pas
    
-   [01/02/2025 v2] - Utilisation des templates centralisés
-   - DISPLAY_TEMPLATES.urgence.getHTML() pour l'affichage urgence
-   - DISPLAY_TEMPLATES.statut.getHTML() pour l'affichage statut
-   - Plus de HTML hardcodé dans les fonctions
-   
-   POINTS CLÉS:
-   - Les composants communiquent uniquement par callbacks
-   - Aucun import entre composants UI
-   - L'orchestrateur connaît tous les composants
-   - L'orchestrateur connaît la logique métier
-   - Les composants ne connaissent pas le métier
-   - Les templates d'affichage sont dans commandes.data.js
-   
-   ARCHITECTURE:
+   ARCHITECTURE FINALE:
    commandes.list.js (orchestrateur)
-       ├── DataTable (présentation)
-       ├── DataTableFilters (avec DropdownList injecté)
-       └── StatsCards (cartes cliquables)
+       ├── DataTable (reçoit modules et classes CSS)
+       ├── DataTableFilters (reçoit DropdownList et classes CSS)
+       └── StatsCards (indépendant)
    
-   FLUX:
-   1. User clique sur StatsCard → handleStatsCardClick()
-   2. User change un filtre → handleFilterChange()
-   3. Les deux mettent à jour state.filtres
-   4. Les deux appellent afficherCommandes()
-   5. afficherCommandes() filtre et met à jour DataTable
+   Les composants communiquent uniquement par callbacks.
+   L'orchestrateur est le seul à connaître tous les composants.
    ======================================== */
