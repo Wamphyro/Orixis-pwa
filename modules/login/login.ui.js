@@ -224,6 +224,13 @@ function resetPin() {
 }
 
 function setControlsDisabled(disabled) {
-    if (userDropdown) userDropdown.setEnabled(!disabled);
+    // DropdownList utilise disable/enable, pas setEnabled
+    if (userDropdown) {
+        if (disabled) {
+            userDropdown.disable();
+        } else {
+            userDropdown.enable();
+        }
+    }
     if (numpad) numpad.setDisabled(disabled);
 }
