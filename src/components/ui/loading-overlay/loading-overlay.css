@@ -44,12 +44,20 @@
     border-radius: 24px;
     position: relative;
     overflow: hidden;
-    transform: scale(0.9);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Taille fixe pour éviter les changements */
+    min-width: 400px;
+    min-height: 260px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* Animation d'opacité seulement */
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 .loading-overlay.visible .loading-content {
-    transform: scale(1);
+    opacity: 1;
 }
 
 /* Icône animée */
@@ -176,16 +184,30 @@
     }
 }
 
-/* Animation dots */
+/* Animation dots avec largeur fixe */
+.loading-message {
+    font-size: 18px;
+    font-weight: 500;
+    margin: 0;
+    opacity: 0.9;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* Réserver l'espace pour les dots */
+    display: inline-flex;
+    align-items: baseline;
+}
+
 .loading-message::after {
-    content: '';
+    content: '...';
+    display: inline-block;
+    width: 24px; /* Largeur fixe */
+    text-align: left;
     animation: loading-dots 1.5s steps(4, end) infinite;
 }
 
 @keyframes loading-dots {
-    0% { content: ''; }
-    25% { content: '.'; }
-    50% { content: '..'; }
+    0% { content: '\00a0\00a0\00a0'; } /* 3 espaces non-sécables */
+    25% { content: '.\00a0\00a0'; }
+    50% { content: '..\00a0'; }
     75% { content: '...'; }
 }
 
@@ -228,6 +250,8 @@
 @media (max-width: 480px) {
     .loading-content {
         padding: 48px 40px;
+        min-width: 320px;
+        min-height: 220px;
     }
     
     .loading-icon {
@@ -238,8 +262,14 @@
         font-size: 16px;
     }
     
+    .loading-message::after {
+        width: 20px;
+    }
+    
     .loading-overlay.compact .loading-content {
         padding: 32px;
+        min-width: 280px;
+        min-height: 180px;
     }
     
     .loading-overlay.compact .loading-icon {
