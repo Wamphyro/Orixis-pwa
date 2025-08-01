@@ -366,7 +366,8 @@ export function confirmerAction(options) {
 // EXPORT PAR DÉFAUT
 // ========================================
 
-export { Modal, ModalManager, modalManager, confirmerAction };
+// Export nommé sans confirmerAction (qui est dans l'export par défaut)
+export { Modal, ModalManager, modalManager };
 
 export default {
     Modal,
