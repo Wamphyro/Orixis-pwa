@@ -53,8 +53,8 @@ export function createCommandesHeader(userData) {
             );
             if (confirme) {
                 localStorage.removeItem('sav_auth');
-                // Utiliser un chemin absolu depuis la racine
-                window.location.href = window.location.origin + '/Orixis-pwa/index.html';
+                // Utiliser un chemin relatif comme pour le bouton retour
+                window.location.href = '../../index.html';
             }
         }
     });
