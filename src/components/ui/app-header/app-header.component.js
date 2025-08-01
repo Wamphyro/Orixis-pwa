@@ -9,6 +9,8 @@
 // MODIFIÉ le 01/02/2025:
 // - Génération d'ID autonome harmonisée
 // - 100% indépendant
+// - Correction classes CSS pour correspondre au fichier CSS
+// - Ajout de la classe 'loaded' pour affichage
 //
 // API PUBLIQUE:
 // - constructor(config)
@@ -152,6 +154,11 @@ export class AppHeader {
         // Sauvegarder les références
         this.elements.header = header;
         this.cacheElements();
+        
+        // 🔑 AJOUTER LA CLASSE LOADED APRÈS UN COURT DÉLAI (anti-FOUC)
+        setTimeout(() => {
+            header.classList.add('loaded');
+        }, 50);
     }
     
     generateHTML() {
@@ -159,45 +166,40 @@ export class AppHeader {
         const hasUser = this.config.user !== null;
         
         return `
-            <div class="header-container">
+            <div class="app-header-content">
                 <!-- Section gauche -->
-                <div class="header-left">
+                <div class="app-header-left">
                     ${hasBackButton ? `
                         <button class="btn-back" aria-label="Retour">
                             <span class="back-icon">←</span>
                             <span class="back-text">Retour</span>
                         </button>
                     ` : ''}
-                    
+                </div>
+                
+                <!-- Section centre -->
+                <div class="app-header-center">
                     <div class="header-title-section">
-                        <h1 class="header-title">${this.config.title}</h1>
+                        <h1 class="app-header-title">${this.config.title}</h1>
                         ${this.config.subtitle ? `
-                            <p class="header-subtitle">${this.config.subtitle}</p>
+                            <p class="app-header-subtitle">${this.config.subtitle}</p>
                         ` : ''}
                     </div>
                 </div>
                 
                 <!-- Section droite -->
-                <div class="header-right">
+                <div class="app-header-right">
                     ${hasUser ? `
-                        <div class="user-info">
-                            <div class="user-details">
-                                <span class="user-name">${this.config.user.name || 'Utilisateur'}</span>
-                                ${this.config.user.store ? `
-                                    <span class="user-store">${this.config.user.store}</span>
-                                ` : ''}
-                            </div>
-                            <div class="user-avatar">
-                                ${this.getInitials(this.config.user.name)}
-                            </div>
+                        <div class="header-user-section">
+                            <span class="user-name">${this.config.user.name || 'Utilisateur'}</span>
+                            ${this.config.user.store ? `
+                                <span class="user-store">${this.config.user.store}</span>
+                            ` : ''}
+                            <span class="user-separator"></span>
+                            <button class="header-logout-button">
+                                Déconnexion
+                            </button>
                         </div>
-                    ` : ''}
-                    
-                    ${hasUser && this.config.showLogout ? `
-                        <button class="btn-logout" aria-label="Déconnexion">
-                            <span class="logout-icon">⚡</span>
-                            <span class="logout-text">Déconnexion</span>
-                        </button>
                     ` : ''}
                 </div>
                 
@@ -213,10 +215,10 @@ export class AppHeader {
         const header = this.elements.header;
         
         this.elements.backButton = header.querySelector('.btn-back');
-        this.elements.titleElement = header.querySelector('.header-title');
-        this.elements.subtitleElement = header.querySelector('.header-subtitle');
-        this.elements.userInfo = header.querySelector('.user-info');
-        this.elements.logoutButton = header.querySelector('.btn-logout');
+        this.elements.titleElement = header.querySelector('.app-header-title');
+        this.elements.subtitleElement = header.querySelector('.app-header-subtitle');
+        this.elements.userInfo = header.querySelector('.header-user-section');
+        this.elements.logoutButton = header.querySelector('.header-logout-button');
         this.elements.loadingIndicator = header.querySelector('.loading-indicator');
     }
     
@@ -298,7 +300,7 @@ export class AppHeader {
         if (subtitle && !this.elements.subtitleElement) {
             // Créer le sous-titre s'il n'existe pas
             const subtitleEl = document.createElement('p');
-            subtitleEl.className = 'header-subtitle';
+            subtitleEl.className = 'app-header-subtitle';
             subtitleEl.textContent = subtitle;
             this.elements.titleElement.parentNode.appendChild(subtitleEl);
             this.elements.subtitleElement = subtitleEl;
@@ -333,7 +335,6 @@ export class AppHeader {
         if (this.elements.userInfo) {
             const nameEl = this.elements.userInfo.querySelector('.user-name');
             const storeEl = this.elements.userInfo.querySelector('.user-store');
-            const avatarEl = this.elements.userInfo.querySelector('.user-avatar');
             
             if (nameEl) nameEl.textContent = userData.name || 'Utilisateur';
             if (storeEl) {
@@ -344,7 +345,6 @@ export class AppHeader {
                     storeEl.style.display = 'none';
                 }
             }
-            if (avatarEl) avatarEl.textContent = this.getInitials(userData.name);
             
             this.elements.userInfo.style.display = '';
             if (this.elements.logoutButton && this.config.showLogout) {
