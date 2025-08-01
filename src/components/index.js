@@ -20,7 +20,7 @@
 // Composants de base
 export { AppHeader } from './ui/app-header/app-header.component.js';
 export { SearchDropdown } from './ui/search-dropdown/search-dropdown.component.js';
-export { Button } from './ui/common/button.component.js';
+export { Button } from './ui/button/button.component.js';
 
 // Modal - Import spécial car confirmerAction est dans l'export par défaut
 export { Modal, modalManager } from './ui/modal/modal.component.js';

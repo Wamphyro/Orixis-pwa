@@ -128,7 +128,7 @@ export class Button {
             const link = document.createElement('link');
             link.id = styleId;
             link.rel = 'stylesheet';
-            link.href = '../../src/components/ui/common/button.css';
+            link.href = '../../src/components/ui/button/button.css';
             document.head.appendChild(link);
         }
     }
