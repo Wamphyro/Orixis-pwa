@@ -2,20 +2,31 @@
    LOGIN.CSS - Styles du module login
    ======================================== */
 
-/* Import des animations globales */
-@import url('../../src/components/ui/common/animation.css');
+/* Variables */
+:root {
+    --login-primary: #667eea;
+    --login-secondary: #764ba2;
+    --login-gradient: linear-gradient(135deg, var(--login-primary) 0%, var(--login-secondary) 100%);
+    --login-text: #1a1a1a;
+    --login-text-muted: #6c757d;
+    --login-border: #e9ecef;
+    --login-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+}
 
-/* Body login */
+/* Reset et base */
+* {
+    box-sizing: border-box;
+}
+
+/* Body */
 body.login-page {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--login-gradient);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
-    margin: 0;
     min-height: 100vh;
-    height: 100vh;
-    overflow: hidden;
+    margin: 0;
+    padding: 20px;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
@@ -23,76 +34,67 @@ body.login-page {
 .login-container {
     background: rgba(255, 255, 255, 0.98);
     backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border-radius: 24px;
-    padding: 48px 40px 40px;
-    box-shadow: 
-        0 20px 60px rgba(0, 0, 0, 0.3),
-        0 0 100px rgba(102, 126, 234, 0.1);
+    box-shadow: var(--login-shadow);
     width: 100%;
-    max-width: 440px;
-    text-align: center;
+    max-width: 460px;
+    padding: 0;
+    overflow: hidden;
     opacity: 0;
     transform: translateY(20px);
-    transition: all 0.6s ease;
+    animation: fadeInUp 0.6s ease forwards;
 }
 
-.login-container.fade-in {
-    opacity: 1;
-    transform: translateY(0);
+/* Header */
+.login-header {
+    text-align: center;
+    padding: 48px 40px 32px;
+    background: rgba(102, 126, 234, 0.03);
+    border-bottom: 1px solid rgba(102, 126, 234, 0.08);
 }
 
-.login-container.success {
-    animation: pulse 0.5s ease;
-}
-
-/* Logo */
-.login-container .logo {
+.logo {
     font-size: 72px;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
     display: inline-block;
-    filter: grayscale(0.2);
+    animation: logoEntry 0.8s ease 0.2s both;
 }
 
-/* Titre */
-.login-container h1 {
-    color: #1a1a1a;
+.login-header h1 {
     font-size: 36px;
     font-weight: 700;
-    margin: 0 0 8px 0;
+    color: var(--login-text);
+    margin: 0 0 8px;
     letter-spacing: -0.5px;
 }
 
-.login-container .subtitle {
-    color: #6c757d;
+.subtitle {
     font-size: 16px;
-    margin: 0 0 40px 0;
+    color: var(--login-text-muted);
+    margin: 0;
 }
 
-/* Section utilisateur */
-.user-select-container {
+/* Formulaire */
+.login-form {
+    padding: 40px;
+}
+
+.form-section {
     margin-bottom: 32px;
-    text-align: left;
 }
 
-.user-select-container label {
+.form-label {
     display: block;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--login-text);
     margin-bottom: 12px;
-    color: #495057;
-    font-weight: 600;
-    font-size: 15px;
 }
 
-/* Section PIN */
-.pin-section {
-    margin: 32px 0;
-}
-
-.pin-section label {
-    display: block;
-    margin-bottom: 20px;
-    color: #495057;
-    font-weight: 600;
-    font-size: 15px;
+/* Dropdown utilisateur */
+#userDropdown {
+    width: 100%;
 }
 
 /* Affichage PIN */
@@ -100,49 +102,53 @@ body.login-page {
     display: flex;
     justify-content: center;
     gap: 16px;
-    margin-bottom: 32px;
+    margin-top: 20px;
 }
 
 .pin-dot {
     width: 64px;
-    height: 76px;
-    border: 2px solid #e9ecef;
+    height: 72px;
+    background: white;
+    border: 2px solid var(--login-border);
     border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 32px;
     font-weight: bold;
-    background: white;
+    color: var(--login-primary);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .pin-dot.filled {
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: var(--login-gradient);
     color: white;
     border-color: transparent;
     transform: scale(1.05);
     box-shadow: 
-        0 8px 24px rgba(102, 126, 234, 0.35),
+        0 8px 24px rgba(102, 126, 234, 0.3),
         inset 0 -2px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* Container numpad */
-#numpadContainer {
-    margin-bottom: 24px;
+.pin-dot.filled::before {
+    content: '•';
 }
 
-/* Grille numpad login */
+/* Section numpad */
+.numpad-section {
+    margin: 32px -8px;
+}
+
+/* Numpad personnalisé */
 .login-numpad-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 12px;
-    max-width: 360px;
+    max-width: 320px;
     margin: 0 auto;
 }
 
-/* Boutons numpad login avec glassmorphism */
 .login-numpad-btn {
     height: 60px;
     font-size: 22px;
@@ -152,208 +158,138 @@ body.login-page {
     cursor: pointer;
     position: relative;
     overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.2s ease;
     
     /* Glassmorphism */
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     box-shadow: 
         0 4px 12px rgba(0, 0, 0, 0.04),
-        inset 0 1px 0 rgba(255, 255, 255, 0.5);
-    color: #1a1a1a;
+        inset 0 1px 0 rgba(255, 255, 255, 1);
+    color: var(--login-text);
 }
 
-/* Hover effect */
 .login-numpad-btn:hover:not(:disabled) {
-    transform: translateY(-2px) scale(1.02);
-    background: rgba(102, 126, 234, 0.1);
+    transform: translateY(-2px);
+    background: rgba(102, 126, 234, 0.08);
     box-shadow: 
-        0 8px 24px rgba(102, 126, 234, 0.15),
-        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        0 6px 20px rgba(102, 126, 234, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 1);
 }
 
-/* Active state */
 .login-numpad-btn:active:not(:disabled) {
-    transform: translateY(0) scale(0.98);
+    transform: translateY(0);
     box-shadow: 
         0 2px 8px rgba(0, 0, 0, 0.08),
-        inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        inset 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
-/* Bouton Clear */
+/* Boutons spéciaux */
 .login-numpad-clear {
-    background: rgba(255, 243, 205, 0.9);
+    background: rgba(255, 243, 205, 0.8);
     color: #856404;
-    font-size: 18px;
 }
 
 .login-numpad-clear:hover:not(:disabled) {
-    background: rgba(255, 235, 186, 0.95);
+    background: rgba(255, 235, 186, 0.9);
 }
 
-/* Bouton Delete */
 .login-numpad-delete {
-    background: rgba(255, 193, 193, 0.9);
+    background: rgba(255, 218, 218, 0.8);
     color: #dc3545;
-    font-size: 24px;
 }
 
 .login-numpad-delete:hover:not(:disabled) {
-    background: rgba(255, 176, 176, 0.95);
+    background: rgba(255, 200, 200, 0.9);
 }
 
-/* Bouton 0 */
 .login-numpad-zero {
     grid-column: 2;
 }
 
-/* Effet ripple au clic */
-.login-numpad-btn::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(102, 126, 234, 0.3);
-    transform: translate(-50%, -50%);
-    transition: width 0.6s, height 0.6s;
-}
-
-.login-numpad-btn:active::before {
-    width: 100px;
-    height: 100px;
-}
-
-/* État désactivé */
+/* Disabled state */
 .login-numpad-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-    transform: none !important;
 }
 
-/* Animation d'apparition */
-.login-numpad-grid {
-    animation: fadeInUp 0.5s ease 0.2s both;
+/* Options */
+.login-options {
+    margin: 32px 0 0;
+    padding-top: 24px;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-container input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    cursor: pointer;
+    accent-color: var(--login-primary);
+}
+
+.checkbox-label {
+    font-size: 14px;
+    color: var(--login-text-muted);
+}
+
+/* Footer */
+.login-footer {
+    padding: 0 40px 40px;
+}
+
+.info-box {
+    background: #e7f3ff;
+    border: 1px solid #b3d9ff;
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-size: 14px;
+    color: #0066cc;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.info-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+/* États */
+.login-container.shake {
+    animation: shake 0.5s ease;
+}
+
+.login-container.success {
+    animation: pulse 0.5s ease;
+}
+
+/* Animations */
 @keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
 
-/* Responsive */
-@media (max-width: 480px) {
-    .login-numpad-grid {
-        gap: 10px;
-        max-width: 100%;
+@keyframes logoEntry {
+    from {
+        opacity: 0;
+        transform: scale(0.5) rotate(-180deg);
     }
-    
-    .login-numpad-btn {
-        height: 52px;
-        font-size: 20px;
-        border-radius: 12px;
+    to {
+        opacity: 1;
+        transform: scale(1) rotate(0);
     }
-}
-
-/* Remember device */
-.remember-device {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    margin: 28px 0;
-    font-size: 14px;
-    color: #6c757d;
-}
-
-.remember-device input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
-    accent-color: #667eea;
-}
-
-.remember-device label {
-    cursor: pointer;
-    margin: 0;
-}
-
-/* Info box */
-.info-box {
-    background: #e7f3ff;
-    border: 1px solid #b3d9ff;
-    border-radius: 12px;
-    padding: 16px 20px;
-    margin-top: 32px;
-    font-size: 14px;
-    color: #0066cc;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-/* Loading overlay */
-.loading-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    opacity: 1;
-    transition: opacity 0.3s ease;
-}
-
-.loading-overlay.hidden {
-    opacity: 0;
-    pointer-events: none;
-}
-
-.loading-spinner {
-    text-align: center;
-    color: white;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    padding: 40px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    transform: none !important;  /* S'assurer que le container ne tourne pas */
-}
-
-.loading-spinner .spin {
-    font-size: 64px;
-    display: inline-block;  /* Changé de block à inline-block */
-    margin-bottom: 20px;
-    animation: spin 2s linear infinite;
-    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
-}
-
-.loading-spinner p {
-    font-size: 18px;
-    margin: 0;
-    font-weight: 500;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    animation: none !important;  /* Force pas d'animation */
-    transform: none !important;  /* Force pas de transformation */
-}
-
-/* Animations */
-@keyframes spin {
-    to { transform: rotate(360deg); }
 }
 
 @keyframes shake {
@@ -367,36 +303,52 @@ body.login-page {
     50% { transform: scale(1.02); }
 }
 
-.shake {
-    animation: shake 0.5s ease;
-}
-
 /* Responsive */
 @media (max-width: 480px) {
     .login-container {
-        padding: 36px 24px 32px;
-        margin: 0 16px;
+        margin: 0;
     }
     
-    .login-container h1 {
+    .login-header {
+        padding: 36px 24px 24px;
+    }
+    
+    .login-form {
+        padding: 24px;
+    }
+    
+    .logo {
+        font-size: 56px;
+    }
+    
+    .login-header h1 {
         font-size: 28px;
     }
     
     .pin-dot {
         width: 52px;
-        height: 64px;
+        height: 60px;
         font-size: 28px;
     }
     
-    #numpadContainer .numpad-btn {
-        height: 48px !important;
-        font-size: 18px !important;
+    .login-numpad-btn {
+        height: 52px;
+        font-size: 20px;
     }
 }
 
-/* Dark mode support */
+/* Dark mode */
 @media (prefers-color-scheme: dark) {
     body.login-page {
         background: linear-gradient(135deg, #4a5bc0 0%, #5a3a82 100%);
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 }

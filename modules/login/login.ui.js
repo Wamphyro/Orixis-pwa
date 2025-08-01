@@ -1,9 +1,6 @@
 // ========================================
 // LOGIN.UI.JS - Orchestrateur UI
 // Chemin: modules/login/login.ui.js
-//
-// DESCRIPTION:
-// Gère l'interface utilisateur et la coordination des composants
 // ========================================
 
 import config from './login.config.js';
@@ -12,51 +9,40 @@ import { chargerTousLesUtilisateurs } from '../../src/services/firebase.service.
 import { state, incrementAttempts, animateError, animateSuccess } from './login.main.js';
 
 // ========================================
-// VARIABLES
+// COMPOSANTS UI
 // ========================================
 
 let userDropdown = null;
 let numpad = null;
 let currentPin = '';
-let selectedUserId = null;
-let selectedUserData = null;
+let selectedUser = null;
 
 // ========================================
-// INITIALISATION UI
+// INITIALISATION
 // ========================================
 
 export async function initLoginUI() {
-    console.log('📋 Initialisation de l\'interface...');
-    
     // Charger les utilisateurs
     const users = await loadUsers();
     
-    if (users.length === 0) {
+    if (!users || users.length === 0) {
         config.notify.error(config.LOGIN_CONFIG.messages.noUsers);
-        return;
+        throw new Error('Aucun utilisateur trouvé');
     }
     
-    // Créer le dropdown
+    // Initialiser les composants
     initUserDropdown(users);
-    
-    // Créer le numpad
     initNumpad();
-    
-    // Initialiser l'affichage PIN
     updatePinDisplay('');
-    
-    console.log('✅ Interface prête');
 }
 
 // ========================================
-// CHARGEMENT DES UTILISATEURS
+// CHARGEMENT UTILISATEURS
 // ========================================
 
 async function loadUsers() {
     try {
-        console.log('👥 Chargement des utilisateurs...');
         const users = await chargerTousLesUtilisateurs();
-        console.log(`✅ ${users.length} utilisateurs chargés`);
         
         // Trier par nom
         return users.sort((a, b) => {
@@ -66,8 +52,7 @@ async function loadUsers() {
         });
     } catch (error) {
         console.error('❌ Erreur chargement utilisateurs:', error);
-        config.notify.error('Impossible de charger les utilisateurs');
-        return [];
+        throw error;
     }
 }
 
@@ -77,40 +62,37 @@ async function loadUsers() {
 
 function initUserDropdown(users) {
     const container = document.getElementById('userDropdown');
-    if (!container) {
-        console.error('❌ Container userDropdown non trouvé');
-        return;
-    }
     
-    // Préparer les options
     const options = users.map(user => ({
         value: user.id,
         label: `${user.prenom} ${user.nom}`,
-        icon: user.role === 'admin' ? '👤' : '🔧'
+        icon: getIconForRole(user.role)
     }));
     
-    // Créer le dropdown
     userDropdown = config.createUserDropdown(container, {
         options,
         onChange: (userId) => {
-            selectedUserId = userId;
-            selectedUserData = users.find(u => u.id === userId);
-            console.log('👤 Utilisateur sélectionné:', selectedUserData);
+            selectedUser = users.find(u => u.id === userId);
+            console.log('👤 Utilisateur sélectionné:', selectedUser);
             
-            // Reset le PIN
-            if (numpad) {
-                numpad.clear();
-            }
-            currentPin = '';
-            updatePinDisplay('');
+            // Reset PIN
+            resetPin();
             
-            // Focus sur le numpad
-            if (numpad) {
-                const firstButton = document.querySelector('.numpad-btn');
-                if (firstButton) firstButton.focus();
-            }
+            // Focus numpad
+            const firstBtn = document.querySelector('.login-numpad-btn');
+            if (firstBtn) firstBtn.focus();
         }
     });
+}
+
+function getIconForRole(role) {
+    const icons = {
+        admin: '👤',
+        manager: '💼',
+        technicien: '🔧',
+        default: '👥'
+    };
+    return icons[role] || icons.default;
 }
 
 // ========================================
@@ -119,22 +101,15 @@ function initUserDropdown(users) {
 
 function initNumpad() {
     const container = document.getElementById('numpadContainer');
-    if (!container) {
-        console.error('❌ Container numpadContainer non trouvé');
-        return;
-    }
     
-    // Créer le numpad intégré
     numpad = config.createLoginNumpad(container, {
         maxLength: 4,
         onInput: (value) => {
             currentPin = value;
             updatePinDisplay(value);
-            
-            // Si 4 chiffres, valider automatiquement
-            if (value.length === 4) {
-                setTimeout(() => handlePinSubmit(value), 100);
-            }
+        },
+        onComplete: (value) => {
+            handlePinSubmit(value);
         }
     });
 }
@@ -144,18 +119,14 @@ function initNumpad() {
 // ========================================
 
 function updatePinDisplay(pin) {
-    for (let i = 1; i <= 4; i++) {
-        const dot = document.getElementById(`pin${i}`);
-        if (dot) {
-            if (i <= pin.length) {
-                dot.textContent = '•';
-                dot.classList.add('filled');
-            } else {
-                dot.textContent = '';
-                dot.classList.remove('filled');
-            }
+    const dots = document.querySelectorAll('.pin-dot');
+    dots.forEach((dot, index) => {
+        if (index < pin.length) {
+            dot.classList.add('filled');
+        } else {
+            dot.classList.remove('filled');
         }
-    }
+    });
 }
 
 // ========================================
@@ -163,47 +134,36 @@ function updatePinDisplay(pin) {
 // ========================================
 
 async function handlePinSubmit(pin) {
-    // Vérifier si verrouillé
+    // Vérifications
     if (state.isLocked) {
         config.notify.warning(config.LOGIN_CONFIG.messages.tooManyAttempts);
-        numpad.clear();
-        currentPin = '';
-        updatePinDisplay('');
+        resetPin();
         return;
     }
     
-    // Vérifier qu'un utilisateur est sélectionné
-    if (!selectedUserId) {
+    if (!selectedUser) {
         config.notify.warning(config.LOGIN_CONFIG.messages.selectUser);
-        numpad.clear();
-        currentPin = '';
-        updatePinDisplay('');
+        resetPin();
         return;
     }
     
     try {
-        // Désactiver le numpad pendant la vérification
-        numpad.setDisabled(true);
+        // Désactiver les contrôles
+        setControlsDisabled(true);
         
-        // Tenter l'authentification
-        const isValid = await authenticateUser(selectedUserId, pin);
+        // Authentifier
+        const isValid = await authenticateUser(selectedUser.id, pin);
         
         if (isValid) {
-            // Succès
-            handleLoginSuccess();
+            handleSuccess();
         } else {
-            // Échec
-            handleLoginFailure();
+            handleFailure();
         }
     } catch (error) {
         console.error('❌ Erreur authentification:', error);
         config.notify.error(config.LOGIN_CONFIG.messages.error);
-        resetPinInput();
-    } finally {
-        // Réactiver le numpad
-        if (!state.isLocked) {
-            numpad.setDisabled(false);
-        }
+        resetPin();
+        setControlsDisabled(false);
     }
 }
 
@@ -211,70 +171,59 @@ async function handlePinSubmit(pin) {
 // GESTION SUCCÈS/ÉCHEC
 // ========================================
 
-function handleLoginSuccess() {
+function handleSuccess() {
     console.log('✅ Connexion réussie');
     
-    // Animation de succès
+    // Animation
     animateSuccess();
     config.notify.success(config.LOGIN_CONFIG.messages.success);
     
-    // Sauvegarder l'authentification
+    // Sauvegarder
     const remember = document.getElementById('remember').checked;
-    saveAuthentication(selectedUserData, remember);
+    saveAuthentication(selectedUser, remember);
     
-    // Désactiver les contrôles
-    if (userDropdown) userDropdown.disable();
-    if (numpad) numpad.setDisabled(true);
-    
-    // Redirection après délai
+    // Redirection
     setTimeout(() => {
         window.location.href = config.LOGIN_CONFIG.successRedirect;
     }, 1500);
 }
 
-function handleLoginFailure() {
-    incrementAttempts();
-    
-    const remaining = config.LOGIN_CONFIG.maxAttempts - state.attempts;
+function handleFailure() {
+    const remaining = incrementAttempts();
     
     if (state.isLocked) {
         // Verrouillé
         config.notify.error(config.LOGIN_CONFIG.messages.tooManyAttempts);
-        
-        // Désactiver les contrôles
-        if (userDropdown) userDropdown.disable();
-        if (numpad) numpad.setDisabled(true);
+        setControlsDisabled(true);
         
         // Réactiver après le délai
         setTimeout(() => {
-            if (userDropdown) userDropdown.enable();
-            if (numpad) numpad.setDisabled(false);
-            config.notify.info('Vous pouvez réessayer');
+            setControlsDisabled(false);
         }, config.LOGIN_CONFIG.lockDuration);
     } else {
         // Pas encore verrouillé
         config.notify.error(
             `${config.LOGIN_CONFIG.messages.invalidCode}. ${config.LOGIN_CONFIG.messages.attemptsRemaining(remaining)}`
         );
+        setControlsDisabled(false);
     }
     
-    // Animation d'erreur
+    // Animation et reset
     animateError();
-    
-    // Reset PIN
-    resetPinInput();
+    resetPin();
 }
 
-function resetPinInput() {
-    if (numpad) {
-        numpad.clear();
-    }
+// ========================================
+// UTILITAIRES
+// ========================================
+
+function resetPin() {
     currentPin = '';
+    if (numpad) numpad.reset();
     updatePinDisplay('');
 }
 
-// ========================================
-// EXPORTS
-// ========================================
-
-export { handlePinSubmit };
+function setControlsDisabled(disabled) {
+    if (userDropdown) userDropdown.setEnabled(!disabled);
+    if (numpad) numpad.setDisabled(disabled);
+}

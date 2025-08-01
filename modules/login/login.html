@@ -13,7 +13,7 @@
     <meta name="theme-color" content="#667eea">
     
     <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👾</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
     
     <!-- CSS Global -->
     <link rel="stylesheet" href="../../src/css/main.css">
@@ -22,50 +22,48 @@
     <link rel="stylesheet" href="./login.css">
 </head>
 <body class="login-page">
-    <!-- Loading overlay -->
-    <div class="loading-overlay hidden" id="loadingOverlay">
-        <div class="loading-spinner">
-            <span class="spin">⚙️</span>
-            <p>Chargement des données...</p>
-        </div>
-    </div>
-
     <div class="login-container">
-        <div class="logo">🔧</div>
-        <h1>Orixis</h1>
-        <p class="subtitle">Connexion sécurisée</p>
-        
-        <!-- Container pour le dropdown des utilisateurs -->
-        <div class="user-select-container">
-            <label>Sélectionnez votre nom</label>
-            <div id="userDropdown"></div>
+        <div class="login-header">
+            <div class="logo">⚙️</div>
+            <h1>Orixis</h1>
+            <p class="subtitle">Connexion sécurisée</p>
         </div>
         
-        <!-- Affichage du code PIN -->
-        <div class="pin-section">
-            <label>Code d'accès à 4 chiffres</label>
-            <div class="pin-display">
-                <div class="pin-dot" id="pin1"></div>
-                <div class="pin-dot" id="pin2"></div>
-                <div class="pin-dot" id="pin3"></div>
-                <div class="pin-dot" id="pin4"></div>
+        <div class="login-form">
+            <!-- Sélection utilisateur -->
+            <div class="form-section">
+                <label class="form-label">Sélectionnez votre nom</label>
+                <div id="userDropdown"></div>
+            </div>
+            
+            <!-- Code PIN -->
+            <div class="form-section">
+                <label class="form-label">Code d'accès à 4 chiffres</label>
+                <div class="pin-display">
+                    <div class="pin-dot" data-index="0"></div>
+                    <div class="pin-dot" data-index="1"></div>
+                    <div class="pin-dot" data-index="2"></div>
+                    <div class="pin-dot" data-index="3"></div>
+                </div>
+            </div>
+            
+            <!-- Numpad -->
+            <div id="numpadContainer" class="numpad-section"></div>
+            
+            <!-- Options -->
+            <div class="login-options">
+                <label class="checkbox-container">
+                    <input type="checkbox" id="remember">
+                    <span class="checkbox-label">Mémoriser cet appareil pendant 30 jours</span>
+                </label>
             </div>
         </div>
         
-        <!-- Container pour le numpad -->
-        <div id="numpadContainer"></div>
-        
-        <!-- Remember device -->
-        <div class="remember-device">
-            <input type="checkbox" id="remember">
-            <label for="remember">Mémoriser cet appareil pendant 30 jours</label>
-        </div>
-        
-        <!-- Container pour les notifications -->
-        <div id="notificationContainer"></div>
-        
-        <div class="info-box">
-            ℹ️ Contactez votre responsable si vous avez oublié votre code
+        <div class="login-footer">
+            <div class="info-box">
+                <span class="info-icon">ℹ️</span>
+                <span>Contactez votre responsable si vous avez oublié votre code</span>
+            </div>
         </div>
     </div>
 

@@ -1,19 +1,15 @@
 // ========================================
-// LOGIN.CONFIG.JS - Configuration locale du module login
+// LOGIN.CONFIG.JS - Configuration locale
 // Chemin: modules/login/login.config.js
-//
-// DESCRIPTION:
-// Configuration et factories pour le module login
 // ========================================
 
 import { 
     DropdownList,
-    Numpad,
     notify
 } from '../../src/components/index.js';
 
 // ========================================
-// FACTORY : DROPDOWN UTILISATEURS
+// FACTORIES
 // ========================================
 
 export function createUserDropdown(container, options = {}) {
@@ -22,28 +18,18 @@ export function createUserDropdown(container, options = {}) {
         placeholder: '-- Choisir un utilisateur --',
         searchable: true,
         showIcons: true,
-        keepPlaceholder: false,
+        size: 'large',
         ...options
     });
 }
 
-// ========================================
-// FACTORY : NUMPAD
-// ========================================
-
 export function createLoginNumpad(container, options = {}) {
-    // Créer un numpad custom pour le login
+    // Créer le numpad HTML personnalisé
     const numpadHTML = `
         <div class="login-numpad-grid">
-            <button type="button" class="login-numpad-btn" data-value="1">1</button>
-            <button type="button" class="login-numpad-btn" data-value="2">2</button>
-            <button type="button" class="login-numpad-btn" data-value="3">3</button>
-            <button type="button" class="login-numpad-btn" data-value="4">4</button>
-            <button type="button" class="login-numpad-btn" data-value="5">5</button>
-            <button type="button" class="login-numpad-btn" data-value="6">6</button>
-            <button type="button" class="login-numpad-btn" data-value="7">7</button>
-            <button type="button" class="login-numpad-btn" data-value="8">8</button>
-            <button type="button" class="login-numpad-btn" data-value="9">9</button>
+            ${[1,2,3,4,5,6,7,8,9].map(n => 
+                `<button type="button" class="login-numpad-btn" data-value="${n}">${n}</button>`
+            ).join('')}
             <button type="button" class="login-numpad-btn login-numpad-clear" data-action="clear">C</button>
             <button type="button" class="login-numpad-btn login-numpad-zero" data-value="0">0</button>
             <button type="button" class="login-numpad-btn login-numpad-delete" data-action="delete">⌫</button>
@@ -52,21 +38,41 @@ export function createLoginNumpad(container, options = {}) {
     
     container.innerHTML = numpadHTML;
     
-    // Retourner un objet avec les méthodes nécessaires
-    const numpadApi = {
+    // API du numpad
+    const api = {
         value: '',
         maxLength: options.maxLength || 4,
         onInput: options.onInput || null,
+        onComplete: options.onComplete || null,
         
-        clear() {
-            this.value = '';
-            if (this.onInput) this.onInput(this.value);
+        init() {
+            container.addEventListener('click', this.handleClick.bind(this));
+        },
+        
+        handleClick(e) {
+            const btn = e.target.closest('.login-numpad-btn');
+            if (!btn || btn.disabled) return;
+            
+            const value = btn.dataset.value;
+            const action = btn.dataset.action;
+            
+            if (value) {
+                this.inputDigit(value);
+            } else if (action === 'clear') {
+                this.clear();
+            } else if (action === 'delete') {
+                this.backspace();
+            }
         },
         
         inputDigit(digit) {
             if (this.value.length < this.maxLength) {
                 this.value += digit;
                 if (this.onInput) this.onInput(this.value);
+                
+                if (this.value.length === this.maxLength && this.onComplete) {
+                    this.onComplete(this.value);
+                }
             }
         },
         
@@ -77,37 +83,23 @@ export function createLoginNumpad(container, options = {}) {
             }
         },
         
-        setDisabled(disabled) {
-            const buttons = container.querySelectorAll('.login-numpad-btn');
-            buttons.forEach(btn => {
-                btn.disabled = disabled;
-            });
+        clear() {
+            this.value = '';
+            if (this.onInput) this.onInput(this.value);
         },
         
-        // Pour compatibilité avec le code existant
-        open() {},
-        getValue() { return this.value; },
-        setValue(val) { this.value = val; }
+        setDisabled(disabled) {
+            const buttons = container.querySelectorAll('.login-numpad-btn');
+            buttons.forEach(btn => btn.disabled = disabled);
+        },
+        
+        reset() {
+            this.clear();
+        }
     };
     
-    // Attacher les événements
-    container.addEventListener('click', (e) => {
-        const btn = e.target.closest('.login-numpad-btn');
-        if (!btn) return;
-        
-        const value = btn.dataset.value;
-        const action = btn.dataset.action;
-        
-        if (value) {
-            numpadApi.inputDigit(value);
-        } else if (action === 'clear') {
-            numpadApi.clear();
-        } else if (action === 'delete') {
-            numpadApi.backspace();
-        }
-    });
-    
-    return numpadApi;
+    api.init();
+    return api;
 }
 
 // ========================================
@@ -123,8 +115,9 @@ export const LOGIN_CONFIG = {
     messages: {
         loading: 'Chargement des utilisateurs...',
         selectUser: 'Veuillez sélectionner votre nom',
+        enterPin: 'Veuillez entrer votre code PIN',
         invalidCode: 'Code incorrect',
-        attemptsRemaining: (remaining) => `${remaining} tentative${remaining > 1 ? 's' : ''} restante${remaining > 1 ? 's' : ''}`,
+        attemptsRemaining: (n) => `${n} tentative${n > 1 ? 's' : ''} restante${n > 1 ? 's' : ''}`,
         tooManyAttempts: 'Trop de tentatives. Veuillez attendre 3 minutes.',
         success: 'Connexion réussie ! Redirection...',
         error: 'Erreur lors de la connexion',
@@ -133,7 +126,7 @@ export const LOGIN_CONFIG = {
 };
 
 // ========================================
-// EXPORT PAR DÉFAUT
+// EXPORT
 // ========================================
 
 export default {

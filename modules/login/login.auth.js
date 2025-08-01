@@ -1,9 +1,6 @@
 // ========================================
 // LOGIN.AUTH.JS - Logique d'authentification
 // Chemin: modules/login/login.auth.js
-//
-// DESCRIPTION:
-// Gère la vérification des codes PIN et l'authentification
 // ========================================
 
 import { 
@@ -26,14 +23,14 @@ export function checkExistingAuth() {
         
         // Vérifier l'expiration
         if (now - authData.timestamp > authData.expiry) {
-            localStorage.removeItem('sav_auth');
-            localStorage.removeItem('sav_user_permissions');
+            clearAuth();
             return false;
         }
         
         return authData.authenticated === true;
     } catch (error) {
         console.error('❌ Erreur vérification auth:', error);
+        clearAuth();
         return false;
     }
 }
@@ -45,13 +42,7 @@ export function checkExistingAuth() {
 export async function authenticateUser(userId, pin) {
     try {
         console.log('🔐 Vérification du code PIN...');
-        
-        // Vérifier le code PIN
-        const isValid = await verifierCodePinUtilisateur(userId, pin);
-        
-        console.log('🔐 Résultat vérification:', isValid);
-        
-        return isValid;
+        return await verifierCodePinUtilisateur(userId, pin);
     } catch (error) {
         console.error('❌ Erreur vérification PIN:', error);
         throw error;
@@ -64,17 +55,14 @@ export async function authenticateUser(userId, pin) {
 
 export function saveAuthentication(userData, remember = false) {
     try {
-        // Calculer l'expiration
         const expiry = remember 
             ? config.LOGIN_CONFIG.rememberDays * 24 * 60 * 60 * 1000 
-            : 24 * 60 * 60 * 1000; // 24h par défaut
+            : 24 * 60 * 60 * 1000;
         
-        // Déterminer le magasin
         const magasin = userData.magasinParDefaut || 
-                       (userData.magasins && userData.magasins[0]) || 
+                       userData.magasins?.[0] || 
                        'NON_DEFINI';
         
-        // Créer l'objet auth
         const authData = {
             authenticated: true,
             timestamp: Date.now(),
@@ -90,24 +78,21 @@ export function saveAuthentication(userData, remember = false) {
             }
         };
         
-        // Sauvegarder
         localStorage.setItem('sav_auth', JSON.stringify(authData));
         
-        // Sauvegarder les permissions si disponibles
+        // Permissions
         if (userData.permissions || userData.autorisations) {
-            const permissions = {
+            localStorage.setItem('sav_user_permissions', JSON.stringify({
                 id: userData.id,
                 nom: userData.nom,
                 prenom: userData.prenom,
                 role: userData.role || 'technicien',
                 pagesInterdites: userData.pagesInterdites || [],
                 autorisations: userData.autorisations || {}
-            };
-            localStorage.setItem('sav_user_permissions', JSON.stringify(permissions));
+            }));
         }
         
-        console.log('✅ Authentification sauvegardée:', authData);
-        
+        console.log('✅ Authentification sauvegardée');
     } catch (error) {
         console.error('❌ Erreur sauvegarde auth:', error);
         throw error;
@@ -115,11 +100,10 @@ export function saveAuthentication(userData, remember = false) {
 }
 
 // ========================================
-// DÉCONNEXION
+// NETTOYAGE
 // ========================================
 
-export function logout() {
+export function clearAuth() {
     localStorage.removeItem('sav_auth');
     localStorage.removeItem('sav_user_permissions');
-    window.location.href = '/';
 }
