@@ -3,89 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAV Audio - Accueil</title>
+    <title>Orixis - Dashboard</title>
     
     <!-- PWA Meta Tags -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="SAV Audio">
+    <meta name="apple-mobile-web-app-title" content="Orixis">
     <link rel="manifest" href="../../manifest.json">
     <meta name="theme-color" content="#667eea">
     
-    <!-- CSS -->
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
+    
+    <!-- CSS Global -->
     <link rel="stylesheet" href="../../src/css/main.css">
-    <link rel="stylesheet" href="../../src/components/ui/common/button.css">
-    <link rel="stylesheet" href="../../src/components/ui/app-header/app-header.css">
-    <link rel="stylesheet" href="../../src/components/ui/dropdown-list/dropdown-list.css">
-    <!-- CSS local au module home -->
+    
+    <!-- CSS Module -->
     <link rel="stylesheet" href="./home.css">
 </head>
 <body>
-    <!-- Le header sera injecté ici -->
+    <!-- Le header sera injecté ici par AppHeader -->
     
     <div class="container">
-        <!-- Menu principal -->
         <div class="menu-grid">
-            <a href="../intervention/intervention.html" class="menu-card fade-in">
-                <span class="icon">📝</span>
-                <h3>Nouvelle Intervention</h3>
-                <p>Créer une fiche d'intervention pour un client</p>
-            </a>
-            
-            <a href="../commandes/commandes.html" class="menu-card fade-in">
-                <span class="icon">📦</span>
-                <h3>Commandes</h3>
-                <p>Gérer les commandes d'appareils et accessoires</p>
-            </a>
-            
-            <a href="../decompte-mutuelle/decompte-mutuelle.html" class="menu-card fade-in">
-                <span class="icon">💳</span>
-                <h3>Décompte Mutuelle</h3>
-                <p>Gérer les décomptes mutuelles et remboursements</p>
-            </a>
-
-            <a href="../decompte-mutuelle/decompte-mutuelle.html" class="menu-card fade-in">
-                <span class="icon">💳</span>
-                <h3>Décompte Sécurité social</h3>
-                <p>Gérer les décomptes mutuelles et remboursements</p>
-            </a>
-
-            <a href="../decompte-mutuelle/decompte-mutuelle.html" class="menu-card fade-in">
-                <span class="icon">💳</span>
-                <h3>Compte en banque</h3>
-                <p>Gérer les décomptes mutuelles et remboursements</p>
-            </a>
-
-            <a href="../decompte-mutuelle/decompte-mutuelle.html" class="menu-card fade-in">
-                <span class="icon">💳</span>
-                <h3>Facture fournisseur</h3>
-                <p>Gérer les décomptes mutuelles et remboursements</p>
-            </a>
-            
-            <a href="../decompte-mutuelle/decompte-mutuelle.html" class="menu-card fade-in">
-                <span class="icon">💳</span>
-                <h3>Compte client</h3>
-                <p>Gérer les décomptes mutuelles et remboursements</p>
-            </a>            
-
-            <a href="../../pages/guide.html" class="menu-card fade-in">
-                <span class="icon">📚</span>
-                <h3>Guide SAV</h3>
-                <p>Consulter les procédures et protocoles</p>
-            </a>
-            
-            <a href="../../pages/contacts.html" class="menu-card fade-in">
-                <span class="icon">📞</span>
-                <h3>Contacts SAV</h3>
-                <p>Numéros et contacts importants</p>
-            </a>
-            
-            <a href="../../pages/compte.html" class="menu-card fade-in">
-                <span class="icon">🔧</span>
-                <h3>Mon Compte</h3>
-                <p>Gérer mes informations personnelles</p>
-            </a>
+            <!-- Les cartes seront générées par JavaScript -->
         </div>
     </div>
 
@@ -93,203 +35,7 @@
         <p>Orixis - © 2025</p>
     </div>
 
-    <!-- Script principal avec module pour DropdownList -->
-    <script type="module">
-        import { DropdownList } from '../../src/components/ui/dropdown-list/dropdown-list.component.js';
-        
-        // Variables globales
-        let magasinDropdown = null;
-        let isInitializing = true; // Flag pour éviter la boucle
-        
-        // Fonction de vérification d'authentification
-        function checkAuth() {
-            const auth = localStorage.getItem('sav_auth');
-            if (!auth) return false;
-            
-            const authData = JSON.parse(auth);
-            const now = Date.now();
-            
-            if (now - authData.timestamp > authData.expiry) {
-                localStorage.removeItem('sav_auth');
-                return false;
-            }
-            
-            return authData.authenticated;
-        }
-        
-        // Obtenir les données utilisateur
-        function getUserData() {
-            const auth = JSON.parse(localStorage.getItem('sav_auth'));
-            const permissions = JSON.parse(localStorage.getItem('sav_user_permissions') || '{}');
-            
-            if (!auth || !auth.collaborateur) {
-                return {
-                    name: 'Utilisateur',
-                    magasin: 'Non défini',
-                    magasins: [],
-                    showLogout: true
-                };
-            }
-            
-            // Récupérer les magasins autorisés
-            let magasinsAutorises = auth.magasins || [];
-            
-            if (permissions.autorisations) {
-                magasinsAutorises = Object.keys(permissions.autorisations)
-                    .filter(mag => permissions.autorisations[mag].acces === true);
-            }
-            
-            if (magasinsAutorises.length === 0 && auth.magasin) {
-                magasinsAutorises = [auth.magasin];
-            }
-            
-            return {
-                name: `${auth.collaborateur.prenom} ${auth.collaborateur.nom}`,
-                magasin: auth.magasin || magasinsAutorises[0] || 'Non défini',
-                magasins: magasinsAutorises,
-                showLogout: true
-            };
-        }
-        
-        // Changer de magasin
-        function changeMagasin(nouveauMagasin) {
-            // IMPORTANT : Ne pas recharger si on est en train d'initialiser
-            if (isInitializing) {
-                return;
-            }
-            
-            const auth = JSON.parse(localStorage.getItem('sav_auth'));
-            const permissions = JSON.parse(localStorage.getItem('sav_user_permissions') || '{}');
-            
-            // Vérifier que c'est bien un changement
-            if (nouveauMagasin === auth.magasin) {
-                return;
-            }
-            
-            if (permissions.autorisations && 
-                permissions.autorisations[nouveauMagasin] && 
-                permissions.autorisations[nouveauMagasin].acces) {
-                
-                auth.magasin = nouveauMagasin;
-                localStorage.setItem('sav_auth', JSON.stringify(auth));
-                location.reload();
-            } else {
-                alert('Vous n\'avez pas accès à ce magasin');
-                // Remettre la sélection précédente
-                if (magasinDropdown) {
-                    magasinDropdown.setValue(auth.magasin);
-                }
-            }
-        }
-        
-        // Fonction de déconnexion
-        async function handleLogout() {
-            if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
-                localStorage.removeItem('sav_auth');
-                localStorage.removeItem('sav_user_permissions');
-                window.location.href = '../../index.html';
-            }
-        }
-        
-        // Créer le header avec DropdownList
-        function createHeader() {
-            const userData = getUserData();
-            
-            // Créer le header HTML
-            let magasinContent = '';
-            
-            if (userData.magasins.length > 1) {
-                // Plusieurs magasins : créer un conteneur pour le dropdown
-                magasinContent = `
-                    <div class="header-magasin-section">
-                        <span class="magasin-label">Magasin :</span>
-                        <div id="magasinDropdownContainer"></div>
-                    </div>
-                `;
-            } else {
-                // Un seul magasin : afficher en texte simple
-                magasinContent = `
-                    <div class="header-magasin-section">
-                        <span class="magasin-single">Magasin ${userData.magasin}</span>
-                    </div>
-                `;
-            }
-            
-            const headerHtml = `
-                <div class="app-header theme-default loaded" id="app-header-home">
-                    <div class="app-header-content">
-                        <div class="app-header-left"></div>
-                        <div class="app-header-center">
-                            <h1 class="app-header-title">📊 Dashboard</h1>
-                            <p class="app-header-subtitle">Système de Gestion des Interventions</p>
-                        </div>
-                        <div class="app-header-right">
-                            <div class="header-user-section">
-                                <div class="user-name">${userData.name}</div>
-                                ${magasinContent}
-                                <div class="user-separator"></div>
-                                <button class="header-logout-button" onclick="handleLogout()">
-                                    🚪 Déconnexion
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            // Injecter le header
-            document.body.insertAdjacentHTML('afterbegin', headerHtml);
-            
-            // Si plusieurs magasins, créer le DropdownList
-            if (userData.magasins.length > 1) {
-                setTimeout(() => {
-                    // Créer le dropdown
-                    magasinDropdown = new DropdownList({
-                        container: '#magasinDropdownContainer',
-                        options: userData.magasins.map(mag => ({
-                            value: mag,
-                            label: mag,
-                            icon: '🏪'
-                        })),
-                        value: userData.magasin,
-                        searchable: userData.magasins.length > 5,
-                        theme: 'header-compact',
-                        onChange: (value) => {
-                            // Ne déclencher que si l'initialisation est terminée
-                            if (!isInitializing) {
-                                changeMagasin(value);
-                            }
-                        }
-                    });
-                    
-                    // Marquer la fin de l'initialisation après un court délai
-                    setTimeout(() => {
-                        isInitializing = false;
-                    }, 500);
-                }, 100);
-            } else {
-                // Pas de dropdown, initialisation terminée
-                isInitializing = false;
-            }
-        }
-        
-        // Vérifier l'authentification au chargement
-        window.addEventListener('load', () => {
-            if (!checkAuth()) {
-                window.location.href = '../../index.html';
-            } else {
-                createHeader();
-                
-                // Animation des cards
-                const cards = document.querySelectorAll('.menu-card');
-                cards.forEach((card, index) => {
-                    card.style.animationDelay = `${index * 0.1}s`;
-                });
-            }
-        });
-        
-        // Exposer les fonctions globalement
-        window.handleLogout = handleLogout;
-    </script>
+    <!-- Script principal -->
+    <script type="module" src="./home.main.js"></script>
 </body>
 </html>
