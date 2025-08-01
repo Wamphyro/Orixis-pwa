@@ -181,18 +181,7 @@ async function initUIComponents() {
                 // Possibilité d'ouvrir un menu utilisateur ou profil
             }
         });
-        
-        // 2. Créer les cartes de statistiques avec la config centralisée
-        const cardsConfig = genererConfigStatsCards();
-        
-        statsCards = new StatsCards({
-            container: '.commandes-stats',
-            cards: cardsConfig,
-            onClick: (cardId, cardData) => {
-                console.log(`Filtre par statut: ${cardId}`, cardData);
-                // TODO: Implémenter le filtrage par statut au clic
-            }
-        });
+
         
         console.log('🎨 Composants UI initialisés avec magasin:', userData.store);
         
