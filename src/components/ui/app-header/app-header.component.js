@@ -7,10 +7,8 @@
 // Composant autonome et réutilisable dans n'importe quelle page
 //
 // MODIFIÉ le 01/02/2025:
-// - Génération d'ID autonome harmonisée
-// - 100% indépendant
-// - Correction classes CSS pour correspondre au fichier CSS
-// - Ajout de la classe 'loaded' pour affichage
+// - Support des classes CSS personnalisables via config
+// - Le composant ne connaît pas les classes, l'orchestrateur décide
 //
 // API PUBLIQUE:
 // - constructor(config)
@@ -30,6 +28,11 @@
 //     container: 'body',
 //     title: 'Ma Page',
 //     user: { name: 'John Doe', store: 'Magasin Paris' },
+//     buttonClasses: {
+//         back: 'btn on-dark pill',
+//         logout: 'btn-danger pill',
+//         userSection: 'header-user-section'
+//     },
 //     onLogout: () => console.log('Déconnexion')
 // });
 // ========================================
@@ -50,6 +53,13 @@ export class AppHeader {
             position: 'prepend',    // prepend ou append dans le container
             theme: 'default',       // Thème visuel
             
+            // Classes CSS personnalisables (l'orchestrateur décide)
+            buttonClasses: {
+                back: 'btn on-dark pill',           // Classes par défaut
+                logout: 'header-logout-button',     // Classes par défaut
+                userSection: 'header-user-section'  // Classes par défaut
+            },
+            
             // Callbacks
             onBack: null,           // Callback retour
             onLogout: null,         // Callback déconnexion
@@ -57,6 +67,14 @@ export class AppHeader {
             
             ...config
         };
+        
+        // Merger les buttonClasses si fournies partiellement
+        if (config.buttonClasses) {
+            this.config.buttonClasses = {
+                ...this.config.buttonClasses,
+                ...config.buttonClasses
+            };
+        }
         
         // État interne
         this.state = {
@@ -165,12 +183,17 @@ export class AppHeader {
         const hasBackButton = this.config.backUrl || this.config.onBack;
         const hasUser = this.config.user !== null;
         
+        // Utiliser les classes fournies par l'orchestrateur
+        const backClasses = this.config.buttonClasses.back;
+        const logoutClasses = this.config.buttonClasses.logout;
+        const userSectionClasses = this.config.buttonClasses.userSection;
+        
         return `
             <div class="app-header-content">
                 <!-- Section gauche -->
                 <div class="app-header-left">
                     ${hasBackButton ? `
-                        <button class="btn-back" aria-label="Retour">
+                        <button class="${backClasses}" aria-label="Retour">
                             <span class="back-icon">←</span>
                             <span class="back-text">Retour</span>
                         </button>
@@ -190,13 +213,13 @@ export class AppHeader {
                 <!-- Section droite -->
                 <div class="app-header-right">
                     ${hasUser ? `
-                        <div class="header-user-section">
+                        <div class="${userSectionClasses}">
                             <span class="user-name">${this.config.user.name || 'Utilisateur'}</span>
                             ${this.config.user.store ? `
                                 <span class="user-store">${this.config.user.store}</span>
                             ` : ''}
                             <span class="user-separator"></span>
-                            <button class="header-logout-button">
+                            <button class="${logoutClasses}">
                                 Déconnexion
                             </button>
                         </div>
@@ -214,22 +237,13 @@ export class AppHeader {
     cacheElements() {
         const header = this.elements.header;
         
-        this.elements.backButton = header.querySelector('.btn-back');
+        // Utiliser les bonnes classes pour trouver les éléments
+        this.elements.backButton = header.querySelector(`.${this.config.buttonClasses.back.split(' ')[0]}`);
         this.elements.titleElement = header.querySelector('.app-header-title');
         this.elements.subtitleElement = header.querySelector('.app-header-subtitle');
-        this.elements.userInfo = header.querySelector('.header-user-section');
-        this.elements.logoutButton = header.querySelector('.header-logout-button');
+        this.elements.userInfo = header.querySelector(`.${this.config.buttonClasses.userSection.split(' ')[0]}`);
+        this.elements.logoutButton = header.querySelector(`.${this.config.buttonClasses.logout.split(' ')[0]}`);
         this.elements.loadingIndicator = header.querySelector('.loading-indicator');
-    }
-    
-    getInitials(name) {
-        if (!name) return '?';
-        
-        const parts = name.trim().split(' ');
-        if (parts.length >= 2) {
-            return parts[0][0].toUpperCase() + parts[parts.length - 1][0].toUpperCase();
-        }
-        return name.substring(0, 2).toUpperCase();
     }
     
     // ========================================
@@ -253,7 +267,8 @@ export class AppHeader {
         
         // Bouton déconnexion
         if (this.elements.logoutButton) {
-            this.elements.logoutButton.addEventListener('click', () => {
+            this.elements.logoutButton.addEventListener('click', (e) => {
+                e.stopPropagation(); // Empêcher le clic sur userInfo
                 this.handleLogout();
             });
         }

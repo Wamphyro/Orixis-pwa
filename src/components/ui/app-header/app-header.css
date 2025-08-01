@@ -2,13 +2,15 @@
    APP-HEADER.CSS - Styles pour le composant header d'application
    Chemin: src/css/shared/ui/app-header.css
    
+   MODIFIÉ le 01/02/2025:
+   - Suppression des styles .header-user-section (migrés vers button.css)
+   - Ce fichier ne contient QUE les styles de layout et structure
+   
    STRUCTURE:
    - Anti-FOUC et chargement
    - Header de base
    - Layout interne (left, center, right)
-   - Éléments de navigation (retour, breadcrumb)
    - Section titre
-   - Section utilisateur (nom, magasin, déconnexion)
    - États et interactions
    - Thèmes
    - Responsive
@@ -56,13 +58,13 @@
    ======================================== */
 
 .app-header-content {
-    max-width: 2000px; /* Aligné avec le container principal */
+    max-width: 2000px;
     margin: 0 auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 20px;
-    position: relative; /* Pour le positionnement absolu du centre */
+    position: relative;
 }
 
 .app-header-left {
@@ -79,75 +81,24 @@
     transform: translateX(-50%);
     text-align: center;
     padding: 0 20px;
-    min-width: 0; /* Pour permettre le text-overflow */
-    z-index: 1; /* Pour s'assurer qu'il est au-dessus */
+    min-width: 0;
+    z-index: 1;
 }
 
 .app-header-right {
-    flex: 0 0 auto; /* 🆕 Changé de "200px" à "auto" pour s'adapter au contenu */
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
     justify-content: flex-end;
     gap: 15px;
-    /* 🆕 SUPPRIMÉ flex-wrap: wrap pour garder tout sur une ligne */
 }
 
 /* Empêcher le chevauchement du centre avec les côtés */
 @media (min-width: 769px) {
     .app-header-left,
     .app-header-right {
-        z-index: 2; /* Au-dessus du centre pour éviter les chevauchements */
+        z-index: 2;
     }
-}
-
-/* ========================================
-   ÉLÉMENTS DE NAVIGATION
-   ======================================== */
-
-/* ========================================
-   BOUTON RETOUR - Utilise maintenant les classes de button.css
-   ======================================== */
-
-/* Le bouton retour utilise maintenant la classe .btn-back de button.css */
-/* Ajustements spécifiques au contexte header si nécessaire */
-.app-header .btn-back {
-    /* Le style principal est dans button.css */
-    /* Ici uniquement les ajustements contextuels */
-    flex-shrink: 0;
-}
-
-/* ========================================
-   SECTION UTILISATEUR - Adaptation glassmorphism amélioré
-   ======================================== */
-
-/* Breadcrumb */
-.header-breadcrumb {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    opacity: 0.9;
-}
-
-.breadcrumb-link {
-    color: rgba(255, 255, 255, 0.8);
-    text-decoration: none;
-    transition: color 0.2s ease;
-}
-
-.breadcrumb-link:hover {
-    color: white;
-    text-decoration: underline;
-}
-
-.breadcrumb-separator {
-    color: rgba(255, 255, 255, 0.6);
-    margin: 0 4px;
-}
-
-.breadcrumb-current {
-    color: white;
-    font-weight: 500;
 }
 
 /* ========================================
@@ -166,7 +117,6 @@
     color: white;
     font-weight: 700;
     line-height: 1.2;
-    /* Gestion du débordement */
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -178,95 +128,35 @@
     margin: 0;
     font-weight: 400;
     line-height: 1.4;
-    /* Gestion du débordement */
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 /* ========================================
-   SECTION UTILISATEUR (NOUVEAU LAYOUT)
+   ÉLÉMENTS INTERNES DE LA SECTION UTILISATEUR
+   (styles non-bouton uniquement)
    ======================================== */
 
-/* 🆕 Container principal pour utilisateur */
-.header-user-section {
-    /* Glassmorphism amélioré avec backdrop-filter */
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    padding: 10px 20px;
-    border-radius: 25px;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    white-space: nowrap;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.header-user-section:hover {
-    background: rgba(255, 255, 255, 0.25);
-    border-color: rgba(255, 255, 255, 0.35);
-    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.15);
-    transform: translateY(-1px);
-}
-
-/* 🆕 Avatar utilisateur */
-.user-avatar {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    object-fit: cover;
-    flex-shrink: 0; /* Ne pas rétrécir */
-}
-
-/* 🆕 Nom de l'utilisateur */
 .user-name {
     font-weight: 600;
     color: white;
     font-size: 14px;
-    flex-shrink: 0; /* Ne pas rétrécir */
+    flex-shrink: 0;
 }
 
-/* 🆕 Magasin de l'utilisateur */
 .user-store {
     font-weight: 400;
     color: rgba(255, 255, 255, 0.9);
     font-size: 13px;
-    flex-shrink: 0; /* Ne pas rétrécir */
+    flex-shrink: 0;
 }
 
-/* 🆕 Séparateur visuel */
 .user-separator {
     width: 1px;
     height: 20px;
     background: rgba(255, 255, 255, 0.3);
-    flex-shrink: 0; /* Ne pas rétrécir */
-}
-
-/* 🆕 Bouton déconnexion dans la section */
-.header-user-section .header-logout-button {
-    /* Utilise le style de button.css + ajustements contextuels */
-    padding: 6px 12px;
-    font-size: 13px;
-    border-radius: 15px;
     flex-shrink: 0;
-    backdrop-filter: none; /* Pas de double blur */
-    /* Le reste du style vient de button.css via la classe .header-logout-button */
-}
-
-.header-user-section .header-logout-button:hover {
-    background: rgba(220, 53, 69, 1);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
-}
-
-.header-user-section .header-logout-button:active {
-    transform: translateY(0);
 }
 
 /* ========================================
@@ -280,16 +170,6 @@
 
 .app-header.loading * {
     pointer-events: none;
-}
-
-/* Effet de focus pour accessibilité */
-.btn-back:focus,
-.header-user-section:focus,
-.header-logout-button:focus {
-    /* Le focus du btn-back est géré dans button.css */
-    /* Focus spécifique pour la section utilisateur */
-    outline: 2px solid rgba(255, 255, 255, 0.8);
-    outline-offset: 2px;
 }
 
 /* Animation d'apparition */
@@ -317,19 +197,6 @@
     background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
 }
 
-.app-header.theme-dark .btn-back,
-.app-header.theme-dark .header-user-section {
-    /* btn-back géré par button.css avec .on-dark */
-}
-
-.app-header.theme-dark .header-user-section {
-    background: rgba(255, 255, 255, 0.12);
-}
-
-.app-header.theme-dark .header-user-section:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-
 /* Thème success */
 .app-header.theme-success {
     background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
@@ -341,23 +208,11 @@
     color: #333;
 }
 
-.app-header.theme-warning .header-back-button,
-.app-header.theme-warning .header-user-section,
 .app-header.theme-warning .app-header-title,
 .app-header.theme-warning .app-header-subtitle,
 .app-header.theme-warning .user-name,
 .app-header.theme-warning .user-store {
     color: #333;
-}
-
-.app-header.theme-warning .header-back-button,
-.app-header.theme-warning .header-user-section {
-    background: rgba(0, 0, 0, 0.1);
-}
-
-.app-header.theme-warning .header-back-button:hover,
-.app-header.theme-warning .header-user-section:hover {
-    background: rgba(0, 0, 0, 0.2);
 }
 
 /* Thème minimal */
@@ -368,18 +223,6 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.app-header.theme-minimal .header-back-button,
-.app-header.theme-minimal .header-user-section {
-    background: #f8f9fa;
-    color: #333;
-    border: 1px solid #dee2e6;
-}
-
-.app-header.theme-minimal .header-back-button:hover,
-.app-header.theme-minimal .header-user-section:hover {
-    background: #e9ecef;
-}
-
 .app-header.theme-minimal .app-header-title,
 .app-header.theme-minimal .app-header-subtitle,
 .app-header.theme-minimal .user-name,
@@ -387,8 +230,32 @@
     color: #333;
 }
 
-.app-header.theme-minimal .header-logout-button {
-    background: #dc3545;
+/* ========================================
+   INDICATEUR DE CHARGEMENT
+   ======================================== */
+
+.loading-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 /* ========================================
@@ -408,20 +275,9 @@
         padding: 0 15px;
     }
     
-    /* 🆕 Réduire la section utilisateur sur tablette */
-    .header-user-section {
-        padding: 8px 16px;
-        gap: 10px;
-    }
-    
     .user-name,
     .user-store {
         font-size: 13px;
-    }
-    
-    .header-logout-button {
-        font-size: 12px;
-        padding: 5px 10px;
     }
 }
 
@@ -434,13 +290,13 @@
         flex-direction: column;
         gap: 15px;
         align-items: stretch;
-        position: static; /* Retour au flow normal */
+        position: static;
     }
     
     .app-header-left,
     .app-header-center,
     .app-header-right {
-        position: static; /* Retour au flow normal */
+        position: static;
         transform: none;
         flex: initial;
         width: 100%;
@@ -449,7 +305,7 @@
     }
     
     .app-header-left {
-        order: 3; /* Mettre les boutons en bas */
+        order: 3;
     }
     
     .app-header-center {
@@ -469,14 +325,6 @@
         font-size: 14px;
     }
     
-    /* 🆕 Section utilisateur sur mobile */
-    .header-user-section {
-        justify-content: center;
-        flex-wrap: wrap; /* 🆕 Permettre le wrap sur mobile si nécessaire */
-        gap: 8px;
-        padding: 12px 16px;
-    }
-    
     .user-name {
         font-size: 14px;
         font-weight: 600;
@@ -484,25 +332,6 @@
     
     .user-store {
         font-size: 12px;
-    }
-    
-    .header-logout-button {
-        font-size: 12px;
-        padding: 6px 12px;
-    }
-    
-    /* Styles btn-back gérés dans button.css responsive */
-
-    
-    /* Breadcrumb sur mobile */
-    .header-breadcrumb {
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-    }
-    
-    .breadcrumb-separator {
-        display: none;
     }
 }
 
@@ -523,16 +352,8 @@
         font-size: 13px;
     }
     
-    /* 🆕 Très petit écran : stack vertical si nécessaire */
-    .header-user-section {
-        flex-direction: column;
-        align-items: center;
-        gap: 6px;
-        padding: 10px;
-    }
-    
     .user-separator {
-        display: none; /* Cacher le séparateur sur très petit écran */
+        display: none;
     }
     
     .user-store {
@@ -540,18 +361,8 @@
         opacity: 0.8;
     }
     
-    .header-logout-button {
-        font-size: 11px;
-        padding: 5px 10px;
-    }
-    
-    /* Sur très petit écran, simplifier l'affichage */
     .app-header-icon {
         font-size: 20px;
-    }
-    
-    .header-breadcrumb {
-        font-size: 11px;
     }
 }
 
@@ -565,16 +376,6 @@
         color: black !important;
         box-shadow: none !important;
         page-break-after: avoid;
-    }
-    
-    .header-back-button,
-    .header-logout-button {
-        display: none !important;
-    }
-    
-    .header-user-section {
-        background: transparent !important;
-        color: black !important;
     }
     
     .app-header-title,
@@ -611,19 +412,14 @@
     display: none;
 }
 
-.app-header.collapsed .header-user-section {
-    padding: 6px 12px;
-    font-size: 12px;
-}
-
 /* Ajustement si header fixe */
 body.header-fixed {
-    padding-top: 100px; /* Ajuster selon la hauteur du header */
+    padding-top: 100px;
 }
 
 @media (max-width: 768px) {
     body.header-fixed {
-        padding-top: 140px; /* Plus d'espace sur mobile */
+        padding-top: 140px;
     }
 }
 
@@ -631,29 +427,13 @@ body.header-fixed {
    HISTORIQUE DES DIFFICULTÉS
    
    [30/01/2025] - Création initiale
-   - Styles extraits et améliorés depuis main.css
-   - Anti-FOUC intégré avec opacity et .loaded
-   - Support complet responsive mobile-first
-   - Thèmes multiples (dark, success, warning, minimal)
-   - Gestion du débordement de texte
-   - États interactifs et accessibilité
-   - Support header fixe avec ajustement body
-   
-   [30/01/2025] - Réorganisation section utilisateur
-   - Nouveau layout : [nom] [magasin] | [déconnexion] sur même ligne
-   - Suppression flex-wrap sur .app-header-right
-   - Création .header-user-section avec display: flex
-   - Ajout .user-name, .user-store, .user-separator
-   - Bouton déconnexion plus compact dans la section
-   - Responsive amélioré pour gérer le nouveau layout
-   - Sur mobile : stack vertical si nécessaire
+   [01/02/2025] - Migration des styles de boutons
+   - .header-user-section migré vers button.css
+   - Tous les styles de boutons dans button.css
+   - Ce fichier ne contient plus que layout et structure
    
    NOTES POUR REPRISES FUTURES:
-   - Les variables CSS de main.css sont utilisées
-   - Le composant est complètement autonome
-   - Les thèmes peuvent être étendus facilement
-   - L'ordre responsive peut être personnalisé
-   - Support impression intégré
-   - La section utilisateur est maintenant compacte et horizontale
-   - Utilise flex-shrink: 0 pour éviter la compression des éléments
+   - Les styles de boutons sont dans button.css
+   - Les classes sont passées par l'orchestrateur
+   - Le composant reste indépendant
    ======================================== */

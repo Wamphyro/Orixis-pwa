@@ -7,14 +7,15 @@
 // Modifié le 30/01/2025 : Intégration du composant AppHeader avec magasin
 // Modifié le 31/01/2025 : Utilisation de la config centralisée pour les stats cards
 // Modifié le 01/02/2025 : Mise à jour des chemins d'import pour la nouvelle structure
+// Modifié le 01/02/2025 : Ajout des buttonClasses pour personnaliser les boutons du header
 //
 // STRUCTURE:
-// 1. Imports (lignes 15-40)
-// 2. Variables globales (lignes 42-54)
-// 3. Initialisation (lignes 56-150)
-// 4. Gestion des modales (lignes 152-220)
-// 5. Exposition des fonctions (lignes 222-271)
-// 6. Utilitaires (lignes 273-320)
+// 1. Imports (lignes 16-41)
+// 2. Variables globales (lignes 43-55)
+// 3. Initialisation (lignes 57-160)
+// 4. Gestion des modales (lignes 162-230)
+// 5. Exposition des fonctions (lignes 232-285)
+// 6. Utilitaires (lignes 287-340)
 // ========================================
 
 import { initFirebase } from '../../src/services/firebase.service.js';
@@ -156,19 +157,28 @@ async function initUIComponents() {
         // Récupérer les données utilisateur avec magasin
         const userData = getUserData();
         
-        // 1. Créer le header d'application
+        // 1. Créer le header d'application avec classes personnalisées
         appHeader = new AppHeader({
             container: 'body',
             title: '📦 Gestion des Commandes',
             subtitle: 'Commandes d\'appareils et accessoires',
             backUrl: 'home.html',
             user: userData,
+            
+            // 🆕 L'ORCHESTRATEUR décide des classes CSS pour les boutons
+            buttonClasses: {
+                back: 'btn on-dark pill',              // Bouton retour arrondi sur fond sombre
+                logout: 'header-logout-button pill',   // Bouton déconnexion arrondi
+                userSection: 'header-user-section'     // Section utilisateur glassmorphism
+            },
+            
             onLogout: handleLogout,
             onBack: () => {
                 console.log('Retour vers l\'accueil');
             },
             onUserClick: (user) => {
                 console.log('Clic sur utilisateur:', user);
+                // Possibilité d'ouvrir un menu utilisateur ou profil
             }
         });
         
@@ -180,6 +190,7 @@ async function initUIComponents() {
             cards: cardsConfig,
             onClick: (cardId, cardData) => {
                 console.log(`Filtre par statut: ${cardId}`, cardData);
+                // TODO: Implémenter le filtrage par statut au clic
             }
         });
         
@@ -503,10 +514,14 @@ export function getCurrentUser() {
    - Chemins data: ../../src/js/data/ → ../../src/data/
    - Adaptation à la nouvelle structure modules/commandes/
    
-   [01/02/2025] - Correction du chemin de commandes.data.js
+   [01/02/2025] - Ajout des buttonClasses pour personnalisation
    Modification:
-   - Chemin corrigé: ../../src/js/data/ → ../../src/data/
-   - Le fichier est dans src/data/ selon la nouvelle structure
+   - Ajout de buttonClasses dans la config AppHeader
+   - L'orchestrateur décide maintenant des classes CSS des boutons
+   - Bouton retour avec classe 'btn on-dark pill' (arrondi sur fond sombre)
+   - Bouton déconnexion avec classe 'header-logout-button pill'
+   - Section utilisateur avec classe 'header-user-section' (glassmorphism)
+   - Le composant AppHeader reste indépendant (Inversion of Control)
    
    Impact: 
    - Header maintenant géré par composant (plus de HTML statique)
@@ -516,6 +531,7 @@ export function getCurrentUser() {
    - Affichage magasin utilisateur dans le header
    - Possibilité de mise à jour dynamique des infos utilisateur
    - Chemins alignés avec la nouvelle structure de dossiers
+   - Personnalisation complète de l'apparence des boutons depuis l'orchestrateur
    
    NOTES POUR REPRISES FUTURES:
    - AppHeader remplace complètement le header HTML statique
@@ -527,5 +543,5 @@ export function getCurrentUser() {
    - Format final: "Magasin [nom]" affiché dans le header
    - Les stats cards sont maintenant générées depuis commandes.data.js
    - Structure: modules/[module]/ pour les modules, src/ pour le code partagé
-   - ATTENTION: commandes.data.js est dans src/js/data/ et non src/data/
+   - Les classes CSS des boutons sont passées par l'orchestrateur (IoC)
    ======================================== */
