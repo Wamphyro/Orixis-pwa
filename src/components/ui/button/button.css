@@ -119,14 +119,23 @@
 
 /* Danger - Rouge */
 .btn-danger {
-    background: var(--danger-glass);
+    background: rgba(220, 53, 69, 0.85);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
     border-color: rgba(220, 53, 69, 0.3);
+    color: white;
 }
 
 .btn-danger:hover {
-    background: rgba(220, 53, 69, 0.25);
+    background: rgba(220, 53, 69, 0.95);
     border-color: rgba(220, 53, 69, 0.5);
     box-shadow: 0 12px 40px rgba(220, 53, 69, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-danger:active {
+    background: rgba(220, 53, 69, 1);
+    transform: translateY(0);
 }
 
 /* Success - Vert */
@@ -290,6 +299,31 @@
 .on-light:hover {
     background: rgba(0, 0, 0, 0.1);
     border-color: rgba(0, 0, 0, 0.2);
+}
+
+/* ========================================
+   CONTEXTES SPÉCIAUX
+   ======================================== */
+
+/* Boutons dans un header gradient */
+.app-header .btn {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.app-header .btn:hover {
+    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* Bouton danger dans header = plus visible */
+.app-header .btn-danger {
+    background: rgba(220, 53, 69, 0.9);
+    border: 1px solid rgba(220, 53, 69, 0.4);
+}
+
+.app-header .btn-danger:hover {
+    background: rgba(220, 53, 69, 1);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 6px 30px rgba(220, 53, 69, 0.5);
 }
 
 /* ========================================

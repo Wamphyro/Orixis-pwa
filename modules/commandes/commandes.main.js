@@ -43,6 +43,8 @@ import {
 } from './commandes.detail.js';
 import './commandes.serial.js'; // Import du module de gestion des NS
 import config from './commandes.config.js';
+import { modalManager } from '../../src/components/index.js';
+
 
 // ========================================
 // VARIABLES GLOBALES (partagées entre modules)
@@ -237,7 +239,7 @@ function initModales() {
     });
     
     // Ajouter les callbacks spécifiques pour la modal nouvelle commande
-    const modalNouvelleCommande = config.modalManager.get('modalNouvelleCommande');
+    const modalNouvelleCommande = modalManager.get('modalNouvelleCommande');
     if (modalNouvelleCommande) {
         modalNouvelleCommande.options = {
             ...modalNouvelleCommande.options,

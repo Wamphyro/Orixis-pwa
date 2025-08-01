@@ -221,43 +221,6 @@
     margin-right: 4px;
 }
 
-/* Bouton déconnexion glassmorphism */
-.btn.btn-danger {
-    background: rgba(220, 53, 69, 0.9);
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 15px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-family: inherit;
-}
-
-.btn.btn-danger:hover {
-    background: rgba(220, 53, 69, 1);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
-}
-
-.btn.btn-danger:active {
-    transform: translateY(0);
-}
-
-/* Support pour les boutons pill */
-.btn.btn-pill {
-    border-radius: 25px;
-}
-
-.btn.btn-sm {
-    padding: 6px 12px;
-    font-size: 13px;
-}
-
 /* ========================================
    ÉTATS ET INTERACTIONS
    ======================================== */
