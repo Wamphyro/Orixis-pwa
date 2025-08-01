@@ -269,7 +269,11 @@ function initDataTable() {
                         console.warn(`Type non trouvé: "${value}"`);
                         return value || '-';
                     }
-                    return config.HTML_TEMPLATES.badge(value, configData.label, configData.icon);
+                    const badge = config.createBadge(configData.label, {
+    type: value.replace(/_/g, '-'),
+    icon: configData.icon
+});
+return badge.toString();
                 }
             },
             {

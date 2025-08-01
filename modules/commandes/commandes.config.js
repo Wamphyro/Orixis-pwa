@@ -9,6 +9,7 @@
 
 import { 
     Button,
+    Badge,
     AppHeader,
     DataTable,
     DataTableFilters,
@@ -233,6 +234,18 @@ export function createButton(type, options = {}) {
     
     return new Button({
         ...config,
+        ...options
+    });
+}
+
+// ========================================
+// FACTORY : BADGES DU MODULE
+// ========================================
+
+export function createBadge(text, options = {}) {
+    return new Badge({
+        text,
+        size: 'table',  // Taille harmonisée pour les tableaux
         ...options
     });
 }

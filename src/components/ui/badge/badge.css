@@ -299,9 +299,21 @@
     font-size: 11px;
 }
 
+.badge-md {
+    padding: 6px 12px;
+    font-size: 12px;  /* Taille par défaut */
+}
+
 .badge-lg {
     padding: 8px 16px;
     font-size: 14px;
+}
+
+/* Taille spéciale pour harmonisation dans les tableaux */
+.badge-table {
+    padding: 5px 10px;
+    font-size: 14px;  /* Même taille que le texte du tableau */
+    font-weight: 500;  /* Un peu moins gras */
 }
 
 /* ========================================
@@ -321,6 +333,48 @@
 .badge-icon::before {
     margin-right: 4px;
     font-size: 14px;
+}
+
+/* ========================================
+   BADGE WRAPPER (pour tooltip)
+   ======================================== */
+.badge-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.badge-wrapper .badge-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    margin-bottom: 5px;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.badge-wrapper:hover .badge-tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Badge avec icône interne */
+.badge-icon {
+    font-size: 1.1em;
+    margin-right: 4px;
+}
+
+.badge-text {
+    vertical-align: middle;
 }
 
 /* ========================================
