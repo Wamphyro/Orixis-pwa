@@ -1,6 +1,6 @@
 // ========================================
 // COMMANDES.DATA.JS - Constantes et données de référence
-// Chemin: src/js/data/commandes.data.js
+// Chemin: src/data/commandes.data.js
 //
 // DESCRIPTION:
 // Centralise toutes les configurations liées aux commandes
@@ -8,19 +8,20 @@
 // Modifié le 31/01/2025 : Correction des icônes pour cohérence avec UI
 // Modifié le 31/01/2025 : Centralisation COMPLÈTE de toutes les configs UI
 // Modifié le 01/02/2025 : Ajout TIMELINE_CONFIG, DISPLAY_TEMPLATES et icônes manquantes
+// Modifié le 02/02/2025 : Retrait filtre statut, ajout cartes terminee et receptionnee
 //
 // STRUCTURE:
-// 1. Configuration générale (lignes 15-20)
-// 2. Statuts de commande (lignes 22-85)
-// 3. Configuration Timeline (lignes 87-110)
-// 4. Types de préparation (lignes 112-135)
-// 5. Niveaux d'urgence (lignes 137-160)
-// 6. Templates d'affichage (lignes 162-180)
-// 7. Configuration des filtres (lignes 182-225)
-// 8. Configuration des stats cards (lignes 227-245)
-// 9. Configuration des selects UI (lignes 247-295)
-// 10. Configuration des exports (lignes 297-325)
-// 11. Autres configurations (lignes 327+)
+// 1. Configuration générale (lignes 16-21)
+// 2. Statuts de commande (lignes 23-86)
+// 3. Configuration Timeline (lignes 88-111)
+// 4. Types de préparation (lignes 113-136)
+// 5. Niveaux d'urgence (lignes 138-161)
+// 6. Templates d'affichage (lignes 163-181)
+// 7. Configuration des filtres (lignes 183-216)
+// 8. Configuration des stats cards (lignes 218-239)
+// 9. Configuration des selects UI (lignes 241-289)
+// 10. Configuration des exports (lignes 291-319)
+// 11. Autres configurations (lignes 321+)
 // ========================================
 
 export const COMMANDES_CONFIG = {
@@ -196,6 +197,7 @@ export const COMMANDES_CONFIG = {
     
     // ========================================
     // Configuration des filtres
+    // 🔑 MODIFIÉ : Retrait du filtre statut
     // ========================================
     FILTRES_CONFIG: {
         recherche: {
@@ -213,13 +215,7 @@ export const COMMANDES_CONFIG = {
             options: [] // Chargé dynamiquement
         },
         
-        statut: {
-            type: 'select',
-            key: 'statut',
-            label: 'Statut',
-            keepPlaceholder: true,
-            options: [] // Généré dynamiquement
-        },
+        // 🔑 SUPPRIMÉ : Le filtre statut (les cartes font ce travail)
         
         periode: {
             type: 'select',
@@ -247,12 +243,15 @@ export const COMMANDES_CONFIG = {
     
     // ========================================
     // Configuration des cartes de statistiques
+    // 🔑 MODIFIÉ : Ajout des cartes terminee et receptionnee
     // ========================================
     STATS_CARDS_CONFIG: {
         cartes: [
             { statut: 'nouvelle', color: 'info' },
             { statut: 'preparation', color: 'warning' },
+            { statut: 'terminee', color: 'secondary' },      // 🆕 AJOUTÉ
             { statut: 'expediee', color: 'primary' },
+            { statut: 'receptionnee', color: 'info' },       // 🆕 AJOUTÉ
             { statut: 'livree', color: 'success' }
         ]
     },
@@ -417,20 +416,13 @@ export const COMMANDES_CONFIG = {
 
 /**
  * Générer les options de filtres dynamiquement
+ * 🔑 MODIFIÉ : Ne génère plus le filtre statut
  */
 export function genererOptionsFiltres() {
     const config = { ...COMMANDES_CONFIG.FILTRES_CONFIG };
     
-    // Générer les options de statut depuis STATUTS
-    config.statut.options = [
-        { value: '', label: 'Tous les statuts' },
-        ...Object.entries(COMMANDES_CONFIG.STATUTS)
-            .filter(([key]) => key !== 'supprime') // Exclure le statut supprimé
-            .map(([key, statut]) => ({
-                value: key,
-                label: `${statut.icon} ${statut.label}`
-            }))
-    ];
+    // 🔑 NE PLUS GÉNÉRER LES OPTIONS DE STATUT
+    // Les cartes de statistiques font ce travail
     
     // Générer les options d'urgence depuis NIVEAUX_URGENCE
     config.urgence.options = [
@@ -441,11 +433,13 @@ export function genererOptionsFiltres() {
         }))
     ];
     
+    // Retourner tous les filtres SAUF statut
     return Object.values(config);
 }
 
 /**
  * Générer la configuration des cartes de statistiques
+ * 🔑 MODIFIÉ : Génère maintenant 6 cartes au lieu de 4
  */
 export function genererConfigStatsCards() {
     return COMMANDES_CONFIG.STATS_CARDS_CONFIG.cartes.map(carte => {
@@ -642,10 +636,17 @@ function formatDate(timestamp) {
    - Description pour chaque statut
    - joursLivraison dans NIVEAUX_URGENCE
    
+   [02/02/2025] - Retrait filtre statut et ajout cartes manquantes
+   Problème: Duplication du filtrage par statut (dropdown + cartes)
+   Solution: Retrait du filtre statut dropdown, utilisation des cartes uniquement
+   - Suppression de la config statut dans FILTRES_CONFIG
+   - Modification de genererOptionsFiltres() pour ne plus générer le filtre statut
+   - Ajout des cartes "terminee" et "receptionnee" dans STATS_CARDS_CONFIG
+   - Maintenant 6 cartes cliquables pour filtrer par statut
+   
    NOTES POUR REPRISES FUTURES:
+   - Le filtrage par statut se fait UNIQUEMENT via les cartes cliquables
+   - Les 6 cartes correspondent aux 6 statuts actifs (pas annulee ni supprime)
+   - Les filtres dropdown sont : Recherche, Magasin, Période, Urgence
    - Toute configuration UI doit être dans ce fichier
-   - Utiliser les fonctions de génération plutôt que dupliquer
-   - Les icônes sont définies à UN SEUL endroit
-   - Les templates HTML sont dans DISPLAY_TEMPLATES
-   - La séquence des statuts est dans TIMELINE_CONFIG.sequence
    ======================================== */
