@@ -22,7 +22,7 @@ export function createUserDropdown(container, options = {}) {
         placeholder: '-- Choisir un utilisateur --',
         searchable: true,
         showIcons: true,
-        size: 'large',
+        keepPlaceholder: false,
         ...options
     });
 }
@@ -31,18 +31,19 @@ export function createUserDropdown(container, options = {}) {
 // FACTORY : NUMPAD
 // ========================================
 
-export function createNumpad(container, options = {}) {
+export function createLoginNumpad(container, options = {}) {
     return new Numpad({
         container,
         title: '',
         maxLength: 4,
         allowDecimal: false,
+        allowNegative: false,
         showDisplay: false,
         showCancel: false,
         showSubmit: false,
         showClear: true,
         autoSubmitLength: 4,
-        theme: 'login',
+        theme: 'default',
         ...options
     });
 }
@@ -64,7 +65,8 @@ export const LOGIN_CONFIG = {
         attemptsRemaining: (remaining) => `${remaining} tentative${remaining > 1 ? 's' : ''} restante${remaining > 1 ? 's' : ''}`,
         tooManyAttempts: 'Trop de tentatives. Veuillez attendre 3 minutes.',
         success: 'Connexion réussie ! Redirection...',
-        error: 'Erreur lors de la connexion'
+        error: 'Erreur lors de la connexion',
+        noUsers: 'Aucun utilisateur trouvé'
     }
 };
 
@@ -74,7 +76,7 @@ export const LOGIN_CONFIG = {
 
 export default {
     createUserDropdown,
-    createNumpad,
+    createLoginNumpad,
     LOGIN_CONFIG,
     notify
 };

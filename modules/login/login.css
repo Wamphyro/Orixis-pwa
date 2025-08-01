@@ -2,7 +2,10 @@
    LOGIN.CSS - Styles du module login
    ======================================== */
 
-/* Body spécifique login */
+/* Import des animations globales */
+@import url('../../src/components/ui/common/animation.css');
+
+/* Body login */
 body.login-page {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     display: flex;
@@ -11,85 +14,106 @@ body.login-page {
     padding: 20px;
     margin: 0;
     min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* Container principal */
 .login-container {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 40px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 48px 40px 40px;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.3),
+        0 0 100px rgba(102, 126, 234, 0.1);
     width: 100%;
-    max-width: 420px;
+    max-width: 440px;
     text-align: center;
-    animation: fadeInUp 0.6s ease;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.6s ease;
 }
 
+.login-container.fade-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.login-container.success {
+    animation: pulse 0.5s ease;
+}
+
+/* Logo */
 .login-container .logo {
-    font-size: 80px;
-    margin-bottom: 20px;
-    animation: bounce 1s ease;
+    font-size: 72px;
+    margin-bottom: 24px;
+    display: inline-block;
+    filter: grayscale(0.2);
 }
 
+/* Titre */
 .login-container h1 {
-    color: #2c3e50;
-    font-size: 32px;
-    margin-bottom: 10px;
+    color: #1a1a1a;
+    font-size: 36px;
     font-weight: 700;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.5px;
 }
 
 .login-container .subtitle {
-    color: #7f8c8d;
-    margin-bottom: 40px;
+    color: #6c757d;
     font-size: 16px;
+    margin: 0 0 40px 0;
 }
 
 /* Section utilisateur */
 .user-select-container {
-    margin-bottom: 30px;
+    margin-bottom: 32px;
     text-align: left;
 }
 
 .user-select-container label {
     display: block;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     color: #495057;
     font-weight: 600;
+    font-size: 15px;
 }
 
 /* Section PIN */
 .pin-section {
-    margin: 30px 0;
+    margin: 32px 0;
 }
 
 .pin-section label {
     display: block;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     color: #495057;
     font-weight: 600;
+    font-size: 15px;
 }
 
+/* Affichage PIN */
 .pin-display {
     display: flex;
     justify-content: center;
-    gap: 12px;
-    margin-bottom: 30px;
+    gap: 16px;
+    margin-bottom: 32px;
 }
 
 .pin-dot {
-    width: 60px;
-    height: 70px;
-    border: 2px solid #e0e0e0;
-    border-radius: 12px;
+    width: 64px;
+    height: 76px;
+    border: 2px solid #e9ecef;
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 28px;
+    font-size: 32px;
     font-weight: bold;
     background: white;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
 }
 
 .pin-dot.filled {
@@ -97,7 +121,58 @@ body.login-page {
     color: white;
     border-color: transparent;
     transform: scale(1.05);
-    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+    box-shadow: 
+        0 8px 24px rgba(102, 126, 234, 0.35),
+        inset 0 -2px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Container numpad */
+#numpadContainer {
+    margin-bottom: 24px;
+}
+
+/* Override numpad styles pour login */
+#numpadContainer .numpad-container {
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+#numpadContainer .numpad-header {
+    display: none !important;
+}
+
+#numpadContainer .numpad-grid {
+    gap: 12px !important;
+}
+
+#numpadContainer .numpad-btn {
+    height: 56px !important;
+    font-size: 20px !important;
+    border-radius: 12px !important;
+    background: white !important;
+    border: 2px solid #e9ecef !important;
+    color: #1a1a1a !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+#numpadContainer .numpad-btn:hover {
+    background: #f8f9fa !important;
+    border-color: #667eea !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2) !important;
+}
+
+#numpadContainer .numpad-btn:active {
+    transform: translateY(0) !important;
+}
+
+#numpadContainer .numpad-clear {
+    background: #fff3cd !important;
+    color: #856404 !important;
+    border-color: #ffeaa7 !important;
 }
 
 /* Remember device */
@@ -105,27 +180,37 @@ body.login-page {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    margin: 25px 0;
+    gap: 12px;
+    margin: 28px 0;
     font-size: 14px;
-    color: #495057;
+    color: #6c757d;
 }
 
 .remember-device input[type="checkbox"] {
     width: 20px;
     height: 20px;
     cursor: pointer;
+    accent-color: #667eea;
+}
+
+.remember-device label {
+    cursor: pointer;
+    margin: 0;
 }
 
 /* Info box */
 .info-box {
-    background: rgba(102, 126, 234, 0.1);
-    border: 1px solid rgba(102, 126, 234, 0.2);
+    background: #e7f3ff;
+    border: 1px solid #b3d9ff;
     border-radius: 12px;
-    padding: 15px;
-    margin-top: 30px;
+    padding: 16px 20px;
+    margin-top: 32px;
     font-size: 14px;
-    color: #495057;
+    color: #0066cc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
 /* Loading overlay */
@@ -135,16 +220,18 @@ body.login-page {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.8);
+    background: rgba(0, 0, 0, 0.9);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 9999;
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(10px);
+    transition: opacity 0.3s ease;
 }
 
 .loading-overlay.hidden {
-    display: none;
+    opacity: 0;
+    pointer-events: none;
 }
 
 .loading-spinner {
@@ -153,36 +240,31 @@ body.login-page {
 }
 
 .loading-spinner .spin {
-    font-size: 60px;
+    font-size: 64px;
     display: block;
+    margin-bottom: 16px;
     animation: spin 2s linear infinite;
 }
 
-/* Animations */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.loading-spinner p {
+    font-size: 16px;
+    opacity: 0.8;
 }
 
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-20px); }
+/* Animations */
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
 @keyframes shake {
     0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-10px); }
-    75% { transform: translateX(10px); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+    20%, 40%, 60%, 80% { transform: translateX(10px); }
 }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
 }
 
 .shake {
@@ -192,12 +274,29 @@ body.login-page {
 /* Responsive */
 @media (max-width: 480px) {
     .login-container {
-        padding: 30px 20px;
+        padding: 36px 24px 32px;
+        margin: 0 16px;
+    }
+    
+    .login-container h1 {
+        font-size: 28px;
     }
     
     .pin-dot {
-        width: 50px;
-        height: 60px;
-        font-size: 24px;
+        width: 52px;
+        height: 64px;
+        font-size: 28px;
+    }
+    
+    #numpadContainer .numpad-btn {
+        height: 48px !important;
+        font-size: 18px !important;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    body.login-page {
+        background: linear-gradient(135deg, #4a5bc0 0%, #5a3a82 100%);
     }
 }

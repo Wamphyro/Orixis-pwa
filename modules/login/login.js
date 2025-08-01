@@ -13,7 +13,7 @@ import {
     getUtilisateurDetails 
 } from '../../src/services/firebase.service.js';
 
-import { NumpadComponent } from '../../src/components/ui/numpad/numpad.component.js';
+import { Numpad } from '../../src/components/index.js';
 
 // ========================================
 // VARIABLES GLOBALES
@@ -41,21 +41,30 @@ window.addEventListener('DOMContentLoaded', async () => {
     // Initialiser le numpad
     const numpadContainer = document.querySelector('.numpad');
     if (numpadContainer) {
-        numpad = new NumpadComponent(numpadContainer, {
+        // Vider le container et créer le numpad
+        numpadContainer.innerHTML = '';
+        numpad = new Numpad({
+            container: numpadContainer,
             maxLength: 4,
+            allowDecimal: false,
+            showDisplay: false,
+            showCancel: false,
+            showSubmit: false,
+            showClear: true,
+            autoSubmitLength: 4,
             onInput: (value) => {
                 pinCode = value;
                 updatePinDisplay();
-            },
-            onComplete: (value) => {
-                pinCode = value;
-                validatePin();
-            },
-            onDelete: (value) => {
-                pinCode = value;
-                updatePinDisplay();
+                
+                // Auto-validation à 4 chiffres
+                if (value.length === 4) {
+                    validatePin();
+                }
             }
         });
+        
+        // Ouvrir le numpad
+        numpad.open();
     }
     
     // Charger tous les utilisateurs
@@ -307,6 +316,24 @@ function checkAuth() {
     
     return authData.authenticated;
 }
+
+// ========================================
+// FONCTIONS GLOBALES POUR LE HTML
+// ========================================
+
+window.addDigit = function(digit) {
+    if (numpad) {
+        numpad.inputDigit(digit);
+    }
+};
+
+window.deleteDigit = function() {
+    if (numpad) {
+        numpad.backspace();
+    }
+};
+
+window.validatePin = validatePin;
 
 // ========================================
 // EXPORT
