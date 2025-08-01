@@ -18,10 +18,7 @@ export async function initHeader() {
     
     // Créer le header
     const appHeader = config.createHomeHeader(userData);
-    
-    // Définir les callbacks
-    appHeader.onLogout = handleLogout;
-    
+
     // Si plusieurs magasins, ajouter le dropdown après
     if (userData.magasins && userData.magasins.length > 1) {
         // Attendre que le header soit rendu

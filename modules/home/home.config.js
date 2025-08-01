@@ -23,10 +23,7 @@ export function createHomeHeader(userData) {
         subtitle: 'Système de Gestion',
         showBack: false,
         theme: 'gradient',
-        user: {
-            name: userData.name,
-            showLogout: true
-        },
+        user: userData,
         // Ajouter les classes pour les boutons
         buttonClasses: {
             back: 'btn on-dark btn-pill',
