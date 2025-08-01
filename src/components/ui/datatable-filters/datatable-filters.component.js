@@ -7,7 +7,7 @@
 // Compatible avec DataTable mais utilisable seul
 //
 // MODIFIÉ le 01/02/2025:
-// - Injection des classes CSS pour le bouton reset
+// - Correction du bug de bind sur méthodes non définies
 // ========================================
 
 export class DataTableFilters {
@@ -60,6 +60,9 @@ export class DataTableFilters {
         // Timer pour le debounce
         this.debounceTimer = null;
         
+        // Types de filtres (sera initialisé dans init())
+        this.filterTypes = {};
+        
         // Initialiser
         this.init();
     }
@@ -69,19 +72,8 @@ export class DataTableFilters {
     // ========================================
     
     init() {
-        // Définir les types de filtres disponibles
-        this.filterTypes = {
-            'search': this.renderSearch.bind(this),
-            'select': this.renderSelect.bind(this),
-            'date': this.renderDate.bind(this),
-            'daterange': this.renderDateRange.bind(this),
-            'checkbox': this.renderCheckbox.bind(this),
-            'radio': this.renderRadio.bind(this),
-            'range': this.renderRange.bind(this),
-            'tags': this.renderTags.bind(this),
-            'buttongroup': this.renderButtonGroup.bind(this),
-            'custom': this.renderCustom.bind(this)
-        };
+        // 🔑 DÉFINIR LES TYPES APRÈS QUE LES MÉTHODES EXISTENT
+        this.setupFilterTypes();
         
         // Vérifier le container
         if (typeof this.config.container === 'string') {
@@ -106,6 +98,24 @@ export class DataTableFilters {
         
         console.log('✅ DataTableFilters initialisé:', this.id, 
             this.config.DropdownClass ? 'avec DropdownList' : 'sans DropdownList');
+    }
+    
+    /**
+     * Configuration des types de filtres
+     */
+    setupFilterTypes() {
+        this.filterTypes = {
+            'search': this.renderSearch.bind(this),
+            'select': this.renderSelect.bind(this),
+            'date': this.renderDate.bind(this),
+            'daterange': this.renderDateRange.bind(this),
+            'checkbox': this.renderCheckbox.bind(this),
+            'radio': this.renderRadio.bind(this),
+            'range': this.renderRange.bind(this),
+            'tags': this.renderTags.bind(this),
+            'buttongroup': this.renderButtonGroup.bind(this),
+            'custom': this.renderCustom.bind(this)
+        };
     }
     
     // ========================================
@@ -555,7 +565,7 @@ export class DataTableFilters {
     /**
      * Render DateRange
      */
-    renderDaterange(config) {
+    renderDateRange(config) {
         const container = document.createElement('div');
         container.className = 'filter-daterange-container';
         
@@ -685,7 +695,7 @@ export class DataTableFilters {
     /**
      * Render Button Group
      */
-    renderButtongroup(config) {
+    renderButtonGroup(config) {
         const container = document.createElement('div');
         container.className = 'filter-buttongroup';
         
