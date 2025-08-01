@@ -248,9 +248,8 @@ export class AppHeader {
         this.elements.titleElement = header.querySelector('.app-header-title');
         this.elements.subtitleElement = header.querySelector('.app-header-subtitle');
         this.elements.userInfo = header.querySelector(`.${this.config.buttonClasses.userSection.split(' ')[0]}`);
-        // Chercher le bouton dans la section utilisateur par son texte
-        this.elements.logoutButton = header.querySelector(`button:has-text("Déconnexion")`) || 
-                             header.querySelector(`.${this.config.buttonClasses.userSection} button`);
+        // Chercher spécifiquement le bouton dans la section droite
+        this.elements.logoutButton = header.querySelector('.app-header-right button');
         this.elements.loadingIndicator = header.querySelector('.loading-indicator');
     }
     
