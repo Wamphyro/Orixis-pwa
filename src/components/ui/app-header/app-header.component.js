@@ -241,17 +241,20 @@ export class AppHeader {
     }
     
     cacheElements() {
-        const header = this.elements.header;
-        
-        // Utiliser les bonnes classes pour trouver les éléments
-        this.elements.backButton = header.querySelector(`.${this.config.buttonClasses.back.split(' ')[0]}`);
-        this.elements.titleElement = header.querySelector('.app-header-title');
-        this.elements.subtitleElement = header.querySelector('.app-header-subtitle');
-        this.elements.userInfo = header.querySelector(`.${this.config.buttonClasses.userSection.split(' ')[0]}`);
-        // Chercher spécifiquement le bouton dans la section droite
-        this.elements.logoutButton = header.querySelector('.app-header-right button');
-        this.elements.loadingIndicator = header.querySelector('.loading-indicator');
-    }
+    const header = this.elements.header;
+    
+    // Utiliser les bonnes classes pour trouver les éléments
+    this.elements.backButton = header.querySelector(`.${this.config.buttonClasses.back.split(' ')[0]}`);
+    this.elements.titleElement = header.querySelector('.app-header-title');
+    this.elements.subtitleElement = header.querySelector('.app-header-subtitle');
+    this.elements.userInfo = header.querySelector(`.${this.config.buttonClasses.userSection.split(' ')[0]}`);
+    
+    // Chercher le bouton logout avec TOUTES ses classes pour être sûr
+    const logoutClasses = this.config.buttonClasses.logout.split(' ').map(c => `.${c}`).join('');
+    this.elements.logoutButton = header.querySelector(`.app-header-right ${logoutClasses}`);
+    
+    this.elements.loadingIndicator = header.querySelector('.loading-indicator');
+}
     
     // ========================================
     // GESTION DES ÉVÉNEMENTS
