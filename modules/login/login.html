@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAV Audio - Connexion</title>
+    <title>Orixis - Connexion</title>
     
     <!-- PWA Meta Tags -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="SAV Audio">
+    <meta name="apple-mobile-web-app-title" content="Orixis">
     <meta name="theme-color" content="#667eea">
     
     <!-- Favicon -->
@@ -18,86 +18,58 @@
     <!-- CSS Global -->
     <link rel="stylesheet" href="../../src/css/main.css">
     
-    <!-- Composants UI réutilisables -->
-    <link rel="stylesheet" href="../../src/components/ui/common/animation.css">
-    <link rel="stylesheet" href="../../src/components/ui/common/form.css">
-    <link rel="stylesheet" href="../../src/components/ui/common/button.css">
-    <link rel="stylesheet" href="../../src/components/ui/numpad/numpad.css">
-    <link rel="stylesheet" href="../../src/components/ui/notification/notification.css">
-    
-    <!-- CSS spécifique au login (minimal) -->
+    <!-- CSS spécifique au login -->
     <link rel="stylesheet" href="./login.css">
 </head>
 <body class="login-page">
-    <!-- Loading overlay utilisant les classes d'animation -->
-    <div class="loading-overlay hidden fade-in" id="loadingOverlay">
+    <!-- Loading overlay -->
+    <div class="loading-overlay hidden" id="loadingOverlay">
         <div class="loading-spinner">
             <span class="spin">⚙️</span>
             <p>Chargement des données...</p>
         </div>
     </div>
 
-    <div class="login-container fade-in">
-        <div class="logo bounce">🔧</div>
-        <h1>SAV Audio</h1>
+    <div class="login-container">
+        <div class="logo">🔧</div>
+        <h1>Orixis</h1>
         <p class="subtitle">Connexion sécurisée</p>
         
-        <form id="loginForm">
-            <!-- Utilise les styles de form.css -->
-            <div class="form-group">
-                <label for="utilisateur">Sélectionnez votre nom</label>
-                <select id="utilisateur" class="form-control" required>
-                    <option value="">-- Choisir un utilisateur --</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label>Code d'accès à 4 chiffres</label>
-                <div class="pin-display">
-                    <div class="pin-dot" id="pin1"></div>
-                    <div class="pin-dot" id="pin2"></div>
-                    <div class="pin-dot" id="pin3"></div>
-                    <div class="pin-dot" id="pin4"></div>
-                </div>
-            </div>
-            
-            <!-- Utilise numpad.css -->
-            <div class="numpad">
-                <button type="button" class="numpad-btn" onclick="addDigit(1)">1</button>
-                <button type="button" class="numpad-btn" onclick="addDigit(2)">2</button>
-                <button type="button" class="numpad-btn" onclick="addDigit(3)">3</button>
-                <button type="button" class="numpad-btn" onclick="addDigit(4)">4</button>
-                <button type="button" class="numpad-btn" onclick="addDigit(5)">5</button>
-                <button type="button" class="numpad-btn" onclick="addDigit(6)">6</button>
-                <button type="button" class="numpad-btn" onclick="addDigit(7)">7</button>
-                <button type="button" class="numpad-btn" onclick="addDigit(8)">8</button>
-                <button type="button" class="numpad-btn" onclick="addDigit(9)">9</button>
-                <button type="button" class="numpad-btn delete" onclick="deleteDigit()">←</button>
-                <button type="button" class="numpad-btn zero" onclick="addDigit(0)">0</button>
-                <button type="button" class="numpad-btn validate" onclick="validatePin()">✓</button>
-            </div>
-            
-            <div class="remember-device">
-                <input type="checkbox" id="remember">
-                <label for="remember">Mémoriser cet appareil pendant 30 jours</label>
-            </div>
-            
-            <!-- Messages utilisant les styles de notification -->
-            <div id="errorMsg" class="alert alert-danger slide-in" style="display: none;">
-                Code incorrect. Veuillez réessayer.
-            </div>
-            
-            <div id="successMsg" class="alert alert-success slide-in" style="display: none;">
-                Connexion réussie ! Redirection...
-            </div>
-        </form>
+        <!-- Container pour le dropdown des utilisateurs -->
+        <div class="user-select-container">
+            <label>Sélectionnez votre nom</label>
+            <div id="userDropdown"></div>
+        </div>
         
-        <div class="info-box alert alert-info">
+        <!-- Affichage du code PIN -->
+        <div class="pin-section">
+            <label>Code d'accès à 4 chiffres</label>
+            <div class="pin-display">
+                <div class="pin-dot" id="pin1"></div>
+                <div class="pin-dot" id="pin2"></div>
+                <div class="pin-dot" id="pin3"></div>
+                <div class="pin-dot" id="pin4"></div>
+            </div>
+        </div>
+        
+        <!-- Container pour le numpad -->
+        <div id="numpadContainer"></div>
+        
+        <!-- Remember device -->
+        <div class="remember-device">
+            <input type="checkbox" id="remember">
+            <label for="remember">Mémoriser cet appareil pendant 30 jours</label>
+        </div>
+        
+        <!-- Container pour les notifications -->
+        <div id="notificationContainer"></div>
+        
+        <div class="info-box">
             ℹ️ Contactez votre responsable si vous avez oublié votre code
         </div>
     </div>
 
-    <!-- Script du module login -->
-    <script type="module" src="./login.js"></script>
+    <!-- Script principal -->
+    <script type="module" src="./login.main.js"></script>
 </body>
 </html>

@@ -1,16 +1,8 @@
 /* ========================================
-   LOGIN.CSS - Styles SPÉCIFIQUES au login uniquement
-   
-   Utilise les composants globaux pour :
-   - Animations (animation.css)
-   - Boutons (button.css)
-   - Formulaires (form.css)
-   - Notifications (notification.css)
+   LOGIN.CSS - Styles du module login
    ======================================== */
 
-/* ========================================
-   BODY SPÉCIFIQUE LOGIN
-   ======================================== */
+/* Body spécifique login */
 body.login-page {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     display: flex;
@@ -21,156 +13,191 @@ body.login-page {
     min-height: 100vh;
 }
 
-/* ========================================
-   CONTAINER DE LOGIN
-   ======================================== */
+/* Container principal */
 .login-container {
-    background: white;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
     border-radius: 20px;
     padding: 40px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.2);
     width: 100%;
-    max-width: 400px;
+    max-width: 420px;
     text-align: center;
+    animation: fadeInUp 0.6s ease;
 }
 
 .login-container .logo {
-    font-size: 60px;
+    font-size: 80px;
     margin-bottom: 20px;
+    animation: bounce 1s ease;
 }
 
 .login-container h1 {
     color: #2c3e50;
-    font-size: 28px;
+    font-size: 32px;
     margin-bottom: 10px;
+    font-weight: 700;
 }
 
 .login-container .subtitle {
     color: #7f8c8d;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
     font-size: 16px;
 }
 
-/* ========================================
-   AFFICHAGE PIN (spécifique)
-   ======================================== */
+/* Section utilisateur */
+.user-select-container {
+    margin-bottom: 30px;
+    text-align: left;
+}
+
+.user-select-container label {
+    display: block;
+    margin-bottom: 10px;
+    color: #495057;
+    font-weight: 600;
+}
+
+/* Section PIN */
+.pin-section {
+    margin: 30px 0;
+}
+
+.pin-section label {
+    display: block;
+    margin-bottom: 15px;
+    color: #495057;
+    font-weight: 600;
+}
+
 .pin-display {
-    margin: 20px 0;
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: 12px;
+    margin-bottom: 30px;
 }
 
 .pin-dot {
-    width: 50px;
-    height: 60px;
+    width: 60px;
+    height: 70px;
     border: 2px solid #e0e0e0;
-    border-radius: 10px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 28px;
     font-weight: bold;
-    background: #f8f9fa;
+    background: white;
     transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
 .pin-dot.filled {
-    background: #667eea;
+    background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
-    border-color: #667eea;
-    transform: scale(1.1);
+    border-color: transparent;
+    transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
 }
 
-/* ========================================
-   REMEMBER DEVICE (spécifique)
-   ======================================== */
+/* Remember device */
 .remember-device {
     display: flex;
     align-items: center;
-    margin: 20px 0;
-    font-size: 14px;
     justify-content: center;
-    gap: 8px;
-}
-
-.remember-device input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-}
-
-.remember-device label {
-    margin: 0;
-    cursor: pointer;
+    gap: 10px;
+    margin: 25px 0;
+    font-size: 14px;
     color: #495057;
 }
 
-/* ========================================
-   RESPONSIVE LOGIN
-   ======================================== */
+.remember-device input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+/* Info box */
+.info-box {
+    background: rgba(102, 126, 234, 0.1);
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    border-radius: 12px;
+    padding: 15px;
+    margin-top: 30px;
+    font-size: 14px;
+    color: #495057;
+}
+
+/* Loading overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(5px);
+}
+
+.loading-overlay.hidden {
+    display: none;
+}
+
+.loading-spinner {
+    text-align: center;
+    color: white;
+}
+
+.loading-spinner .spin {
+    font-size: 60px;
+    display: block;
+    animation: spin 2s linear infinite;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.shake {
+    animation: shake 0.5s ease;
+}
+
+/* Responsive */
 @media (max-width: 480px) {
     .login-container {
         padding: 30px 20px;
-        margin: 10px;
     }
     
-    .login-container .logo {
-        font-size: 48px;
-    }
-    
-    .login-container h1 {
+    .pin-dot {
+        width: 50px;
+        height: 60px;
         font-size: 24px;
-    }
-    
-    .pin-dot {
-        width: 45px;
-        height: 55px;
-        font-size: 20px;
-    }
-}
-
-@media (max-width: 360px) {
-    .login-container {
-        padding: 25px 15px;
-    }
-    
-    .pin-dot {
-        width: 40px;
-        height: 50px;
-        font-size: 18px;
-    }
-}
-
-/* ========================================
-   DARK MODE (optionnel mais spécifique)
-   ======================================== */
-@media (prefers-color-scheme: dark) {
-    body.login-page {
-        background: linear-gradient(135deg, #4a5bc0 0%, #5a3a82 100%);
-    }
-    
-    .login-container {
-        background: #1a1a1a;
-        color: #e0e0e0;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-    }
-    
-    .login-container h1 {
-        color: #e0e0e0;
-    }
-    
-    .login-container .subtitle {
-        color: #b0b0b0;
-    }
-    
-    .pin-dot {
-        background: #2a2a2a;
-        border-color: #444;
-    }
-    
-    .pin-dot.filled {
-        background: #667eea;
-        border-color: #667eea;
     }
 }
