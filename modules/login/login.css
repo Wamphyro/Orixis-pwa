@@ -331,11 +331,12 @@ body.login-page {
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    transform: none !important;  /* S'assurer que le container ne tourne pas */
 }
 
 .loading-spinner .spin {
     font-size: 64px;
-    display: block;
+    display: inline-block;  /* Changé de block à inline-block */
     margin-bottom: 20px;
     animation: spin 2s linear infinite;
     filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
@@ -346,6 +347,8 @@ body.login-page {
     margin: 0;
     font-weight: 500;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    animation: none !important;  /* Force pas d'animation */
+    transform: none !important;  /* Force pas de transformation */
 }
 
 /* Animations */
