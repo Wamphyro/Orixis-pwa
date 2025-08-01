@@ -545,4 +545,5 @@ export class ButtonGroup {
 // EXPORT PAR DÉFAUT
 // ========================================
 
+export { Button };
 export default Button;

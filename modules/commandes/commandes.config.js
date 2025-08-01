@@ -34,7 +34,6 @@ import { DataTableResize } from '../../src/components/ui/datatable/datatable.res
 export function createCommandesHeader(userData) {
     return new AppHeader({
         container: 'body',
-        ButtonClass: Button,
         title: '📦 Gestion des Commandes',
         subtitle: 'Commandes d\'appareils et accessoires',
         backUrl: '../../home/index.html',
@@ -59,7 +58,6 @@ export function createCommandesHeader(userData) {
 export function createCommandesTable(container, options = {}) {
     return new DataTable({
         container,
-        ButtonClass: Button,
         modules: {
             SortClass: DataTableSort,
             ExportClass: DataTableExport,
@@ -281,29 +279,25 @@ export function registerCommandesModals() {
     // Modal nouvelle commande
     Modal.modalManager.register('modalNouvelleCommande', {
         closeOnOverlayClick: false,
-        closeOnEscape: true,
-        ButtonClass: Button
+        closeOnEscape: true
     });
     
     // Modal détail commande
     Modal.modalManager.register('modalDetailCommande', {
         closeOnOverlayClick: false,
-        closeOnEscape: true,
-        ButtonClass: Button
+        closeOnEscape: true
     });
     
     // Modal nouveau client
     Modal.modalManager.register('modalNouveauClient', {
         closeOnOverlayClick: false,
-        closeOnEscape: true,
-        ButtonClass: Button
+        closeOnEscape: true
     });
     
     // Modal numéros de série
     Modal.modalManager.register('modalNumerosSerie', {
         closeOnOverlayClick: false,
-        closeOnEscape: true,
-        ButtonClass: Button
+        closeOnEscape: true
     });
 }
 
