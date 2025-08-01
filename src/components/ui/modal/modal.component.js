@@ -366,10 +366,10 @@ export function confirmerAction(options) {
 // EXPORT PAR DÉFAUT
 // ========================================
 
-// Exports nommés (pour index.js)
-export { Modal, ModalManager, modalManager };
+// Exports nommés (modalManager est déjà exporté ligne 307)
+export { Modal, ModalManager };
 
-// Export par défaut (pour confirmerAction)
+// Export par défaut pour confirmerAction
 export default {
     confirmerAction
 };
