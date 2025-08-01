@@ -14,13 +14,7 @@
 // ========================================
 
 import { initFirebase } from '../../src/services/firebase.service.js';
-import { 
-    AppHeader,
-    modalManager, 
-    confirmerAction, 
-    Dialog, 
-    notify 
-} from '../../src/components/index.js';
+import { confirmerAction } from '../../src/components/index.js';
 import { 
     initListeCommandes, 
     chargerDonnees, 
@@ -48,7 +42,7 @@ import {
     changerStatutCommande 
 } from './commandes.detail.js';
 import './commandes.serial.js'; // Import du module de gestion des NS
-import { COMPONENT_CONFIG } from '../../src/config/ui.config.js';
+import config from './commandes.config.js';
 
 // ========================================
 // VARIABLES GLOBALES (partagées entre modules)
@@ -150,17 +144,9 @@ async function initUIComponents() {
         // Récupérer les données utilisateur avec magasin
         const userData = getUserData();
         
-        // 1. Créer le header d'application avec classes personnalisées
-        appHeader = new AppHeader({
-            container: 'body',
-            title: '📦 Gestion des Commandes',
-            subtitle: 'Commandes d\'appareils et accessoires',
-            backUrl: 'home.html',
-            user: userData,
-            
-            // 🔑 UTILISATION DE LA CONFIG UI
-            ...COMPONENT_CONFIG.appHeader,
-            
+        // 1. Créer le header d'application avec la config locale
+        appHeader = config.createCommandesHeader(userData);
+        appHeader.setOptions({
             onLogout: handleLogout,
             onBack: () => {
                 console.log('Retour vers l\'accueil');
@@ -179,7 +165,7 @@ async function initUIComponents() {
         
     } catch (error) {
         console.error('❌ Erreur initialisation UI:', error);
-        notify.error('Erreur lors de l\'initialisation de l\'interface');
+        config.notify.error('Erreur lors de l\'initialisation de l\'interface');
     }
 }
 
@@ -202,7 +188,7 @@ window.addEventListener('load', async () => {
         
         // 4. HACK: Retirer TOUS les event listeners du modal component
         setTimeout(() => {
-            const modal = modalManager.get('modalNouvelleCommande');
+            const modal = config.modalManager.get('modalNouvelleCommande');
             if (modal && modal.closeButton) {
                 // Cloner le bouton pour retirer TOUS les event listeners
                 const oldButton = modal.closeButton;
@@ -213,7 +199,7 @@ window.addEventListener('load', async () => {
                 newButton.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    modalManager.close('modalNouvelleCommande');
+                    config.modalManager.close('modalNouvelleCommande');
                 });
                 
                 // Mettre à jour la référence
@@ -247,51 +233,50 @@ window.addEventListener('load', async () => {
 // ========================================
 
 function initModales() {
-    // Modal nouvelle commande
-    modalManager.register('modalNouvelleCommande', {
-        closeOnOverlayClick: false,
-        closeOnEscape: true,
-        onBeforeClose: async () => {
-            // Si on est en train d'ouvrir une autre modal, ne pas demander confirmation
-            if (window.skipConfirmation) {
-                window.skipConfirmation = false;
+    // Enregistrer toutes les modales via la config
+    config.registerCommandesModals();
+    
+    // Ajouter les callbacks spécifiques pour la modal nouvelle commande
+    const modalNouvelleCommande = config.modalManager.get('modalNouvelleCommande');
+    if (modalNouvelleCommande) {
+        modalNouvelleCommande.setOptions({
+            onBeforeClose: async () => {
+                // Si on est en train d'ouvrir une autre modal, ne pas demander confirmation
+                if (window.skipConfirmation) {
+                    window.skipConfirmation = false;
+                    return true;
+                }
+                
+                const { nouvelleCommande } = window.commandeCreateState || {};
+                if (nouvelleCommande && (nouvelleCommande.produits.length > 0 || nouvelleCommande.clientId)) {
+                    return await config.Dialog.confirm('Voulez-vous vraiment fermer ? Les données non sauvegardées seront perdues.');
+                }
                 return true;
+            },
+            onClose: () => {
+                // Réinitialiser le formulaire via le module create
+                if (window.resetNouvelleCommande) {
+                    window.resetNouvelleCommande();
+                }
             }
-            
-            const { nouvelleCommande } = window.commandeCreateState || {};
-            if (nouvelleCommande && (nouvelleCommande.produits.length > 0 || nouvelleCommande.clientId)) {
-                return await Dialog.confirm('Voulez-vous vraiment fermer ? Les données non sauvegardées seront perdues.');
-            }
-            return true;
-        },
-        onClose: () => {
-            // Réinitialiser le formulaire via le module create
-            if (window.resetNouvelleCommande) {
-                window.resetNouvelleCommande();
-            }
-        }
-    });
+        });
+    }
     
-    // Modal détail commande
-    modalManager.register('modalDetailCommande', {
-        closeOnOverlayClick: false,
-        closeOnEscape: true
-    });
-    
-    // Modal nouveau client
-    modalManager.register('modalNouveauClient', {
-        closeOnOverlayClick: false,
-        closeOnEscape: true,
-        onClose: () => {
-            const formClient = document.getElementById('formNouveauClient');
-            if (formClient) formClient.reset();
-            
-            // Rouvrir la modal de nouvelle commande
-            setTimeout(() => {
-                modalManager.open('modalNouvelleCommande');
-            }, 300);
-        }
-    });
+    // Ajouter les callbacks spécifiques pour la modal nouveau client
+    const modalNouveauClient = config.modalManager.get('modalNouveauClient');
+    if (modalNouveauClient) {
+        modalNouveauClient.setOptions({
+            onClose: () => {
+                const formClient = document.getElementById('formNouveauClient');
+                if (formClient) formClient.reset();
+                
+                // Rouvrir la modal de nouvelle commande
+                setTimeout(() => {
+                    config.modalManager.open('modalNouvelleCommande');
+                }, 300);
+            }
+        });
+    }
 }
 
 // ========================================
@@ -314,7 +299,7 @@ async function handleLogout() {
             localStorage.removeItem('sav_user_permissions');
             
             // Notification de déconnexion
-            notify.success('Déconnexion réussie');
+            config.notify.success('Déconnexion réussie');
             
             // Redirection
             setTimeout(() => {
@@ -323,7 +308,7 @@ async function handleLogout() {
         }
     } catch (error) {
         console.error('Erreur lors de la déconnexion:', error);
-        notify.error('Erreur lors de la déconnexion');
+        config.notify.error('Erreur lors de la déconnexion');
     }
 }
 
@@ -341,7 +326,7 @@ export function updateUserInfo() {
 // ========================================
 
 // Exposer modalManager globalement pour les autres modules
-window.modalManager = modalManager;
+window.modalManager = config.modalManager;
 
 // Exposer les composants UI pour les autres modules
 window.appHeader = () => appHeader;
@@ -375,7 +360,7 @@ window.annulerSelectionCote = annulerSelectionCote;
 // ========================================
 
 function fermerModal(modalId) {
-    modalManager.close(modalId);
+    config.modalManager.close(modalId);
 }
 
 // Fonction logout legacy (pour compatibilité)
@@ -402,7 +387,7 @@ function initEventListeners() {
 
 // Cleanup au déchargement de la page
 window.addEventListener('beforeunload', () => {
-    modalManager.destroyAll();
+    config.modalManager.destroyAll();
     
     // Cleanup du composant header
     if (appHeader) {
@@ -415,15 +400,15 @@ window.addEventListener('beforeunload', () => {
 // ========================================
 
 export function ouvrirModal(modalId) {
-    modalManager.open(modalId);
+    config.modalManager.open(modalId);
 }
 
 export function afficherSucces(message) {
-    notify.success(message);
+    config.notify.success(message);
 }
 
 export function afficherErreur(message) {
-    notify.error(message);
+    config.notify.error(message);
 }
 
 // Getter pour le composant header (pour les autres modules)

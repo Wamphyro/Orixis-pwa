@@ -18,7 +18,7 @@
    ======================================== */
 
 import { CommandesService } from './commandes.service.js';
-import { Dialog, notify } from '../../src/components/index.js';
+import config from './commandes.config.js';
 
 // ========================================
 // CRÉATION DU MODAL DE SAISIE
@@ -84,7 +84,7 @@ export async function ouvrirSaisieNumerosSerie(commandeId) {
         // Récupérer la commande
         const commande = await CommandesService.getCommande(commandeId);
         if (!commande) {
-            notify.error('Commande introuvable');
+            config.notify.error('Commande introuvable');
             return;
         }
         
@@ -189,7 +189,7 @@ export async function ouvrirSaisieNumerosSerie(commandeId) {
         
     } catch (error) {
         console.error('Erreur ouverture saisie NS:', error);
-        notify.error('Erreur lors de l\'ouverture de la saisie');
+        config.notify.error('Erreur lors de l\'ouverture de la saisie');
     }
 }
 
@@ -250,7 +250,7 @@ window.validerNumerosSerie = async function() {
         if (appareilsObligatoires.length > 0) {
             const tousRemplis = Array.from(appareilsObligatoires).every(input => input.value.trim());
             if (!tousRemplis) {
-                await Dialog.alert('Tous les numéros de série des appareils auditifs sont obligatoires.', 'Attention');
+                await config.Dialog.alert('Tous les numéros de série des appareils auditifs sont obligatoires.', 'Attention');
                 return;
             }
         }
@@ -267,11 +267,11 @@ window.validerNumerosSerie = async function() {
             await window.voirDetailCommande(commandeId);
         }
         
-        notify.success('Numéros de série enregistrés avec succès');
+        config.notify.success('Numéros de série enregistrés avec succès');
         
     } catch (error) {
         console.error('Erreur validation NS:', error);
-        notify.error('Erreur lors de l\'enregistrement des numéros');
+        config.notify.error('Erreur lors de l\'enregistrement des numéros');
     }
 };
 
@@ -289,7 +289,7 @@ export async function verifierNumerosSerie(commande) {
         const message = `${appareilsSansNS.length} appareil(s) auditif(s) n'ont pas de numéro de série. 
                         La saisie est obligatoire avant de terminer la préparation.`;
         
-        await Dialog.alert(message, '⚠️ Numéros de série manquants');
+        await config.Dialog.alert(message, '⚠️ Numéros de série manquants');
         return false;
     }
     

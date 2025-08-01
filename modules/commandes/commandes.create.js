@@ -12,19 +12,17 @@
 // ========================================
 
 
-import { MODULE_BUTTONS } from '../../src/config/ui.config.js';
-
-const btnSave = `<button class="${MODULE_BUTTONS.commandes.save}">Enregistrer</button>`;
+// SUPPRIMÉ - Plus besoin
 
 import { db } from '../../src/services/firebase.service.js';
 import { ClientsService } from '../../src/services/clients.service.js';
 import { ProduitsService } from '../../src/services/produits.service.js';
 import { CommandesService } from './commandes.service.js';
-import { SearchDropdown, DropdownList, Dialog, notify } from '../../src/components/index.js';
 import { 
     COMMANDES_CONFIG,
     calculerDelaiLivraison
 } from './commandes.data.js';
+import config from './commandes.config.js';
 
 // ET AJOUTER ces fonctions dans le fichier (après les imports) :
 function genererOptionsUrgence() {
@@ -208,8 +206,7 @@ function genererOptionsEtape3() {
     // 1. Type de préparation avec DropdownList
     const typesPreparation = genererOptionsTypesPreparation();
     
-    dropdownType = new DropdownList({
-        container: '#typePreparation',
+    dropdownType = config.createDropdown('#typePreparation', {
         placeholder: '-- Sélectionner un type --',
         options: typesPreparation.map(type => ({
             value: type.value,
@@ -275,7 +272,7 @@ async function validerEtape(etape) {
     switch (etape) {
         case 1:
             if (!nouvelleCommande.clientId) {
-                await Dialog.alert('Veuillez sélectionner un client', 'Attention');
+                await config.Dialog.alert('Veuillez sélectionner un client', 'Attention');
                 return false;
             }
             break;
@@ -312,12 +309,8 @@ function initClientSearch() {
         clientSearchDropdown.destroy();
     }
     
-    clientSearchDropdown = new SearchDropdown({
-        container: '.client-search',
+    clientSearchDropdown = config.createSearchDropdown('.client-search', {
         placeholder: 'Rechercher un client (nom, prénom, téléphone...)',
-        minLength: 2,
-        noResultsText: 'Aucun client trouvé',
-        loadingText: 'Recherche en cours...',
         onSearch: async (query) => {
             try {
                 return await ClientsService.rechercherClients(query);
@@ -378,7 +371,7 @@ export async function selectionnerClient(clientId) {
         }
     } catch (error) {
         console.error('Erreur sélection client:', error);
-        notify.error('Erreur lors de la sélection du client');
+        config.notify.error('Erreur lors de la sélection du client');
     }
 }
 
@@ -432,8 +425,7 @@ async function chargerMagasinsPourNouveauClient() {
         const auth = JSON.parse(localStorage.getItem('sav_auth'));
         
         // Créer le dropdown pour nouveau client
-        dropdownMagasinClient = new DropdownList({
-            container: '#newClientMagasin',
+        dropdownMagasinClient = config.createDropdown('#newClientMagasin', {
             placeholder: '-- Sélectionner un magasin --',
             searchable: true,
             options: magasins.map(magasin => ({
@@ -495,7 +487,7 @@ export async function creerNouveauClient() {
         
     } catch (error) {
         console.error('Erreur création client:', error);
-        await Dialog.error('Erreur lors de la création du client: ' + error.message);
+        await config.Dialog.error('Erreur lors de la création du client: ' + error.message);
     }
 }
 
@@ -525,8 +517,7 @@ async function chargerPackTemplates() {
         packs.sort((a, b) => (a.ordre || 999) - (b.ordre || 999));
         
         // Créer le dropdown des packs
-        dropdownPack = new DropdownList({
-            container: '#packTemplate',
+        dropdownPack = config.createDropdown('#packTemplate', {
             placeholder: '-- Commande personnalisée --',
             options: packs.map(pack => ({
                 value: pack.id,
@@ -544,7 +535,7 @@ async function chargerPackTemplates() {
         
     } catch (error) {
         console.error('❌ Erreur chargement packs:', error);
-        notify.error('Erreur lors du chargement des packs');
+        config.notify.error('Erreur lors du chargement des packs');
     }
 }
 
@@ -565,7 +556,7 @@ export async function appliquerPack() {
         
         // Vérifier que le pack a bien des produits
         if (!pack.produits || !Array.isArray(pack.produits) || pack.produits.length === 0) {
-            notify.warning(`Le pack "${pack.nom}" ne contient aucun produit`);
+            config.notify.warning(`Le pack "${pack.nom}" ne contient aucun produit`);
             return;
         }
         
@@ -621,16 +612,16 @@ export async function appliquerPack() {
                 }
             } else {
                 console.warn(`⚠️ Aucun produit trouvé pour:`, produitPack);
-                notify.warning(`Produit non trouvé: ${produitPack.reference || produitPack.categorie || 'Inconnu'}`);
+                config.notify.warning(`Produit non trouvé: ${produitPack.reference || produitPack.categorie || 'Inconnu'}`);
             }
         }
         
         afficherPanierTemporaire();
-        notify.success(`Pack "${pack.nom}" appliqué avec succès`);
+        config.notify.success(`Pack "${pack.nom}" appliqué avec succès`);
         
     } catch (error) {
         console.error('Erreur application pack:', error);
-        notify.error('Erreur lors de l\'application du pack');
+        config.notify.error('Erreur lors de l\'application du pack');
     }
 }
 
@@ -639,12 +630,8 @@ function initProductSearch() {
         productSearchDropdown.destroy();
     }
     
-    productSearchDropdown = new SearchDropdown({
-        container: '.product-search',
+    productSearchDropdown = config.createSearchDropdown('.product-search', {
         placeholder: 'Rechercher un produit...',
-        minLength: 2,
-        noResultsText: 'Aucun produit trouvé',
-        loadingText: 'Recherche en cours...',
         onSearch: async (query) => {
             try {
                 return await ProduitsService.rechercherProduits(query);
@@ -855,8 +842,7 @@ async function chargerMagasins() {
         magasins.sort((a, b) => a.code.localeCompare(b.code));
         
         // Créer le dropdown avec recherche
-        dropdownMagasin = new DropdownList({
-            container: '#magasinLivraison',
+        dropdownMagasin = config.createDropdown('#magasinLivraison', {
             placeholder: '-- Sélectionner un magasin --',
             searchable: true,
             options: magasins.map(magasin => ({
@@ -882,8 +868,7 @@ async function chargerMagasins() {
             }
         }
         
-        dropdownMagasin = new DropdownList({
-            container: '#magasinLivraison',
+        dropdownMagasin = config.createDropdown('#magasinLivraison', {
             placeholder: '-- Sélectionner un magasin --',
             searchable: true,
             options: magasins.map(magasin => ({

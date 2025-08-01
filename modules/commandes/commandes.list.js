@@ -26,23 +26,8 @@ import {
     genererNumeroCommande,
     formaterPrix
 } from './commandes.data.js';
-import { 
-    DataTable, 
-    DataTableFilters, 
-    StatsCards, 
-    DropdownList,
-    formatDate as formatDateUtil 
-} from '../../src/components/index.js';
-
-// 🔑 IMPORT DES MODULES DATATABLE
-import { DataTableSort } from '../../src/components/ui/datatable/datatable.sort.js';
-import { DataTableExport } from '../../src/components/ui/datatable/datatable.export.js';
-import { DataTablePagination } from '../../src/components/ui/datatable/datatable.pagination.js';
-import { DataTableResize } from '../../src/components/ui/datatable/datatable.resize.js';
-
-// 🔑 IMPORT DE LA CONFIG UI
-import { COMPONENT_CONFIG } from '../../src/config/ui.config.js';
-
+import { formatDate as formatDateUtil } from '../../src/components/index.js';
+import config from './commandes.config.js';
 import { state } from './commandes.main.js';
 import { chargerMagasins } from '../../src/services/firebase.service.js';
 
@@ -245,20 +230,7 @@ export async function initListeCommandes() {
 // ========================================
 
 function initDataTable() {
-    tableCommandes = new DataTable({
-        container: '.commandes-table-container',
-        
-        // 🔑 INJECTION DES MODULES
-        modules: {
-            SortClass: DataTableSort,
-            ExportClass: DataTableExport,
-            PaginationClass: DataTablePagination,
-            ResizeClass: DataTableResize
-        },
-        
-        // 🔑 UTILISATION DE LA CONFIG UI
-        ...COMPONENT_CONFIG.dataTable,
-        
+    tableCommandes = config.createCommandesTable('.commandes-table-container', {
         columns: [
             {
                 key: 'dates.commande',
@@ -292,12 +264,12 @@ function initDataTable() {
                 label: 'Type de préparation',
                 sortable: true,
                 formatter: (value) => {
-                    const config = COMMANDES_CONFIG.TYPES_PREPARATION[value];
-                    if (!config) {
+                    const configData = COMMANDES_CONFIG.TYPES_PREPARATION[value];
+                    if (!configData) {
                         console.warn(`Type non trouvé: "${value}"`);
                         return value || '-';
                     }
-                    return `<span class="badge badge-${value.replace(/_/g, '-')}">${config.icon} ${config.label}</span>`;
+                    return config.HTML_TEMPLATES.badge(value, configData.label, configData.icon);
                 }
             },
             {
@@ -319,24 +291,16 @@ function initDataTable() {
                 resizable: false,
                 exportable: false,
                 formatter: (_, row) => `
-                    <button class="btn-action" onclick="voirDetailCommande('${row.id}')">
+                    <button class="${config.BUTTON_CLASSES.action}" onclick="voirDetailCommande('${row.id}')">
                         👁️
                     </button>
                 `
             }
         ],
         
-        features: {
-            sort: true,
-            resize: true,
-            export: true,
-            selection: false,
-            pagination: true
-        },
-        
-        pagination: {
-            itemsPerPage: state.itemsPerPage || 20,
-            pageSizeOptions: [10, 20, 50, 100]
+        // Callback pour gérer le changement de page
+        onPageChange: (page) => {
+            state.currentPage = page;
         },
         
         export: {
@@ -344,24 +308,10 @@ function initDataTable() {
             excel: true,
             filename: `commandes_${formatDateUtil(new Date(), 'YYYY-MM-DD')}`,
             onBeforeExport: (data) => prepareExportData(data)
-        },
-        
-        messages: {
-            noData: 'Aucune commande trouvée',
-            loading: 'Chargement des commandes...',
-            itemsPerPage: 'Éléments par page',
-            page: 'Page',
-            of: 'sur',
-            items: 'éléments'
-        },
-        
-        // Callback pour gérer le changement de page
-        onPageChange: (page) => {
-            state.currentPage = page;
         }
     });
     
-    console.log('📊 DataTable créée avec modules et config UI injectés');
+    console.log('📊 DataTable créée avec config locale');
 }
 
 // ========================================
@@ -402,24 +352,14 @@ async function initFiltres() {
     // Ajuster pour séparer les icônes
     const filtresAjustes = ajusterIconesFiltres(filtresConfig);
     
-    // Créer l'instance DataTableFilters avec injections
-    filtresCommandes = new DataTableFilters({
-        container: '.commandes-filters',
-        filters: filtresAjustes,
-        
-        // 🔑 INJECTION DE DROPDOWNLIST
-        DropdownClass: DropdownList,
-        
-        // 🔑 UTILISATION DE LA CONFIG UI
-        ...COMPONENT_CONFIG.dataTableFilters,
-        
-        // Callback appelé quand les filtres changent
-        onFilter: (filters) => {
-            handleFilterChange(filters);
-        }
-    });
+    // Créer l'instance DataTableFilters avec la config locale
+    filtresCommandes = config.createCommandesFilters(
+        '.commandes-filters',
+        filtresAjustes,
+        (filters) => handleFilterChange(filters)
+    );
     
-    console.log('🔍 Filtres créés avec DropdownList et classes CSS injectés');
+    console.log('🔍 Filtres créés avec config locale');
 }
 
 // ========================================
@@ -430,18 +370,13 @@ function initStatsCards() {
     // 🆕 Utiliser la fonction locale genererConfigStatsCards()
     const cardsConfig = genererConfigStatsCards();
     
-    statsCards = new StatsCards({
-        container: '.commandes-stats',
-        cards: cardsConfig,
-        animated: true,
-        
-        // 🔑 GESTION DU CLIC ICI DANS L'ORCHESTRATEUR
-        onClick: (cardId) => {
-            handleStatsCardClick(cardId);
-        }
-    });
+    statsCards = config.createCommandesStatsCards(
+        '.commandes-stats',
+        cardsConfig,
+        (cardId) => handleStatsCardClick(cardId)
+    );
     
-    console.log('📈 StatsCards créées');
+    console.log('📈 StatsCards créées avec config locale');
 }
 
 // ========================================
@@ -716,19 +651,17 @@ function formatDate(timestamp) {
 }
 
 function afficherUrgence(urgence) {
-    const config = COMMANDES_CONFIG.NIVEAUX_URGENCE[urgence];
-    if (!config) return urgence;
+    const configData = COMMANDES_CONFIG.NIVEAUX_URGENCE[urgence];
+    if (!configData) return urgence;
     
-    // 🆕 Utiliser le template local DISPLAY_TEMPLATES
-    return DISPLAY_TEMPLATES.urgence.getHTML(config);
+    return config.HTML_TEMPLATES.urgence(configData);
 }
 
 function afficherStatut(statut) {
-    const config = COMMANDES_CONFIG.STATUTS[statut];
-    if (!config) return statut;
+    const configData = COMMANDES_CONFIG.STATUTS[statut];
+    if (!configData) return statut;
     
-    // 🆕 Utiliser le template local DISPLAY_TEMPLATES
-    return DISPLAY_TEMPLATES.statut.getHTML(config);
+    return config.HTML_TEMPLATES.statut(configData);
 }
 
 /**

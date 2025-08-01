@@ -22,8 +22,11 @@ import { CommandesService } from './commandes.service.js';
 import { 
     COMMANDES_CONFIG
 } from './commandes.data.js';
+import config from './commandes.config.js';
+import { chargerDonnees } from './commandes.list.js';
+import { afficherSucces, afficherErreur } from './commandes.main.js';
 
-// ET AJOUTER ces constantes/fonctions dans le fichier (après les imports) :
+// Configuration Timeline locale au module
 const TIMELINE_CONFIG = {
     sequence: ['nouvelle', 'preparation', 'terminee', 'expediee', 'receptionnee', 'livree'],
     dateFields: {
@@ -62,15 +65,6 @@ function genererOptionsTransporteurs() {
         { value: 'Autre', label: 'Autre' }
     ];
 }
-
-import { 
-    Timeline,
-    DropdownList,
-    Dialog, 
-    notify 
-} from '../../src/components/index.js';
-import { chargerDonnees } from './commandes.list.js';
-import { afficherSucces, afficherErreur } from './commandes.main.js';
 
 // ========================================
 // VARIABLES GLOBALES DU MODULE
@@ -152,8 +146,12 @@ function createOrderTimeline(container, commande, options = {}) {
         items
     };
     
-    // Créer l'instance Timeline avec la configuration
-    return new Timeline(finalOptions);
+    // Créer l'instance Timeline avec la config locale
+    return config.createCommandeTimeline(
+        finalOptions.container,
+        finalOptions.items,
+        finalOptions
+    );
 }
 
 function getDateForStatut(commande, statut) {
@@ -494,8 +492,7 @@ window.editerLivraison = async function() {
         cleanupDropdowns(['editMagasin', 'editUrgence']);
         
         // Créer le dropdown magasin
-        dropdownInstances.editMagasin = new DropdownList({
-            container: '#editMagasinLivraison',
+        dropdownInstances.editMagasin = config.createDropdown('#editMagasinLivraison', {
             searchable: true,
             placeholder: 'Sélectionner un magasin',
             options: magasins,
@@ -504,8 +501,7 @@ window.editerLivraison = async function() {
         
         // Créer le dropdown urgence
         const optionsUrgence = genererOptionsUrgence();
-        dropdownInstances.editUrgence = new DropdownList({
-            container: '#editNiveauUrgence',
+        dropdownInstances.editUrgence = config.createDropdown('#editNiveauUrgence', {
             placeholder: 'Sélectionner l\'urgence',
             options: optionsUrgence.map(opt => ({
                 value: opt.value,
@@ -518,7 +514,7 @@ window.editerLivraison = async function() {
         
     } catch (error) {
         console.error('Erreur chargement dropdowns:', error);
-        notify.error('Erreur lors du chargement des options');
+        config.notify.error('Erreur lors du chargement des options');
     }
 };
 
@@ -546,11 +542,11 @@ window.sauvegarderLivraison = async function() {
         
         annulerEditionLivraison();
         await voirDetailCommande(commandeActuelle.id);
-        notify.success('Informations de livraison mises à jour');
+        config.notify.success('Informations de livraison mises à jour');
         
     } catch (error) {
         console.error('Erreur sauvegarde livraison:', error);
-        notify.error('Erreur lors de la sauvegarde');
+        config.notify.error('Erreur lors de la sauvegarde');
     }
 };
 
@@ -566,8 +562,7 @@ window.editerExpedition = async function() {
     
     // Créer le dropdown transporteur
     const transporteurs = genererOptionsTransporteurs();
-    dropdownInstances.editTransporteur = new DropdownList({
-        container: '#editTransporteur',
+    dropdownInstances.editTransporteur = config.createDropdown('#editTransporteur', {
         placeholder: 'Sélectionner un transporteur',
         options: transporteurs.map(t => ({
             value: t.value,
@@ -604,11 +599,11 @@ window.sauvegarderExpedition = async function() {
         
         annulerEditionExpedition();
         await voirDetailCommande(commandeActuelle.id);
-        notify.success('Informations d\'expédition mises à jour');
+        config.notify.success('Informations d\'expédition mises à jour');
         
     } catch (error) {
         console.error('Erreur sauvegarde expédition:', error);
-        notify.error('Erreur lors de la sauvegarde');
+        config.notify.error('Erreur lors de la sauvegarde');
     }
 };
 
@@ -625,7 +620,7 @@ export async function changerStatutCommande(commandeId) {
         const prochainStatut = COMMANDES_CONFIG.STATUTS[commande.statut]?.suivant;
         if (!prochainStatut) return;
         
-        const confirme = await Dialog.confirm(
+        const confirme = await config.Dialog.confirm(
             `Passer la commande au statut "${COMMANDES_CONFIG.STATUTS[prochainStatut].label}" ?`,
             'Confirmation du changement de statut'
         );
@@ -761,8 +756,7 @@ window.saisirExpedition = async function(commandeId) {
             dialogContainer.classList.add('active');
             
             // Créer le dropdown pour le transporteur
-            dropdownInstances.expeditionTransporteur = new DropdownList({
-                container: '#expeditionTransporteurDropdown',
+            dropdownInstances.expeditionTransporteur = config.createDropdown('#expeditionTransporteurDropdown', {
                 placeholder: 'Sélectionner un transporteur',
                 options: transporteurs.map(t => ({
                     value: t.value,
@@ -932,7 +926,7 @@ window.changerStatutDetail = async function(commandeId, nouveauStatut, skipConfi
         let confirme = skipConfirmation;
         
         if (!skipConfirmation) {
-            confirme = await Dialog.confirm(
+            confirme = await config.Dialog.confirm(
                 `Êtes-vous sûr de vouloir passer la commande au statut "${labelStatut}" ?`,
                 'Confirmation du changement de statut'
             );
@@ -1134,7 +1128,7 @@ window.validerReception = async function(commandeId) {
 };
 
 window.marquerPatientPrevenu = async function(commandeId) {
-    const confirme = await Dialog.confirm(
+    const confirme = await config.Dialog.confirm(
         'Confirmer que le patient a été prévenu ?',
         'Patient prévenu'
     );
@@ -1158,7 +1152,7 @@ window.marquerPatientPrevenu = async function(commandeId) {
 };
 
 window.livrerDirectement = async function(commandeId) {
-    const confirme = await Dialog.confirm(
+    const confirme = await config.Dialog.confirm(
         'Confirmer la livraison directe au patient (sans expédition) ?',
         'Livraison directe'
     );
@@ -1321,11 +1315,11 @@ window.sauvegarderClient = async function() {
         
         annulerEditionClient();
         await voirDetailCommande(commandeActuelle.id);
-        notify.success('Informations client mises à jour');
+        config.notify.success('Informations client mises à jour');
         
     } catch (error) {
         console.error('Erreur sauvegarde client:', error);
-        notify.error('Erreur lors de la sauvegarde');
+        config.notify.error('Erreur lors de la sauvegarde');
     }
 };
 
