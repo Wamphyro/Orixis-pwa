@@ -10,6 +10,7 @@
 // - Suppression de l'export generateId
 // - Tous les composants génèrent leur ID de manière autonome
 // - Architecture 100% découplée
+// - Ajout de l'export confirmerAction depuis modal.component.js
 // ========================================
 
 // ========================================
@@ -19,7 +20,12 @@
 // Composants de base
 export { AppHeader } from './ui/app-header/app-header.component.js';
 export { SearchDropdown } from './ui/search-dropdown/search-dropdown.component.js';
+
+// Modal - Import spécial car confirmerAction est dans l'export par défaut
 export { Modal, modalManager } from './ui/modal/modal.component.js';
+import ModalDefaults from './ui/modal/modal.component.js';
+export const confirmerAction = ModalDefaults.confirmerAction;
+
 export { default as Dialog } from './ui/dialog/dialog.component.js';
 export { default as notify } from './ui/notification/notification.component.js';
 export { DropdownList } from './ui/dropdown-list/dropdown-list.component.js';
@@ -60,6 +66,18 @@ export function formatDate(date, format = 'short') {
             hour: '2-digit',
             minute: '2-digit'
         });
+    } else if (format === 'DD/MM/YYYY') {
+        // Format spécifique pour DataTable
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${day}/${month}/${year}`;
+    } else if (format === 'YYYY-MM-DD') {
+        // Format ISO pour les exports
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${year}-${month}-${day}`;
     }
     return d.toLocaleDateString('fr-FR');
 }
