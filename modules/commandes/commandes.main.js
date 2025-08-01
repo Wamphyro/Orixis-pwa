@@ -1,27 +1,21 @@
 // ========================================
-// COMMANDES.MAIN.JS - Point d'entrée principal (VERSION AVEC APPHEADER + MAGASIN)
+// COMMANDES.MAIN.JS - Point d'entrée principal (VERSION AVEC APPHEADER)
 // Chemin: modules/commandes/commandes.main.js
 //
 // DESCRIPTION:
 // Point d'entrée principal du module commandes
-// Modifié le 30/01/2025 : Intégration du composant AppHeader avec magasin
-// Modifié le 31/01/2025 : Utilisation de la config centralisée pour les stats cards
-// Modifié le 01/02/2025 : Mise à jour des chemins d'import pour la nouvelle structure
-// Modifié le 01/02/2025 : Ajout des buttonClasses pour personnaliser les boutons du header
+// Modifié le 02/02/2025 : Suppression de la gestion des StatsCards (déléguée à list.js)
 //
-// STRUCTURE:
-// 1. Imports (lignes 16-41)
-// 2. Variables globales (lignes 43-55)
-// 3. Initialisation (lignes 57-160)
-// 4. Gestion des modales (lignes 162-230)
-// 5. Exposition des fonctions (lignes 232-285)
-// 6. Utilitaires (lignes 287-340)
+// ARCHITECTURE:
+// - commandes.main.js : Gère l'initialisation, l'auth et le header
+// - commandes.list.js : Orchestre DataTable, Filtres ET StatsCards
+// - commandes.create.js : Gère la création
+// - commandes.detail.js : Gère le détail
 // ========================================
 
 import { initFirebase } from '../../src/services/firebase.service.js';
 import { 
     AppHeader,
-    StatsCards,
     modalManager, 
     confirmerAction, 
     Dialog, 
@@ -53,7 +47,6 @@ import {
     voirDetailCommande, 
     changerStatutCommande 
 } from './commandes.detail.js';
-import { genererConfigStatsCards } from './commandes.data.js';
 import './commandes.serial.js'; // Import du module de gestion des NS
 
 // ========================================
@@ -69,13 +62,12 @@ export const state = {
         magasin: '',
         periode: 'all',
         urgence: '',
-        statuts: []  // 🔍 Vérifier : "statuts" (avec S) et array []
+        statuts: []  // Array pour filtrage multi-statuts
     }
 };
 
-// Variables pour les composants UI
+// Variable pour le composant UI header
 let appHeader = null;
-let statsCards = null;
 
 // ========================================
 // INITIALISATION
@@ -165,7 +157,7 @@ async function initUIComponents() {
             backUrl: 'home.html',
             user: userData,
             
-            // 🆕 L'ORCHESTRATEUR décide des classes CSS pour les boutons
+            // L'ORCHESTRATEUR décide des classes CSS pour les boutons
             buttonClasses: {
                 back: 'btn on-dark pill',              // Bouton retour arrondi sur fond sombre
                 logout: 'header-logout-button pill',   // Bouton déconnexion arrondi
@@ -181,7 +173,10 @@ async function initUIComponents() {
                 // Possibilité d'ouvrir un menu utilisateur ou profil
             }
         });
-
+        
+        // 2. Les stats cards sont maintenant créées et gérées par commandes.list.js
+        // selon la nouvelle architecture où l'orchestrateur contrôle toute l'UI
+        console.log('📊 Stats cards seront initialisées par commandes.list.js');
         
         console.log('🎨 Composants UI initialisés avec magasin:', userData.store);
         
@@ -344,18 +339,6 @@ export function updateUserInfo() {
     }
 }
 
-// Mise à jour des statistiques (appelée depuis commandes.list.js)
-export function updateStats(stats) {
-    if (statsCards) {
-        statsCards.updateAll({
-            nouvelle: stats.nouvelle || 0,
-            preparation: stats.preparation || 0,
-            expediee: stats.expediee || 0,
-            livree: stats.livree || 0
-        });
-    }
-}
-
 // ========================================
 // EXPOSITION DES FONCTIONS GLOBALES
 // ========================================
@@ -365,8 +348,6 @@ window.modalManager = modalManager;
 
 // Exposer les composants UI pour les autres modules
 window.appHeader = () => appHeader;
-window.statsCards = () => statsCards;
-window.updateStats = updateStats;
 window.updateUserInfo = updateUserInfo;
 
 // Toutes les fonctions utilisées dans le HTML avec onclick
@@ -426,12 +407,9 @@ function initEventListeners() {
 window.addEventListener('beforeunload', () => {
     modalManager.destroyAll();
     
-    // Cleanup des composants UI
+    // Cleanup du composant header
     if (appHeader) {
         appHeader.destroy();
-    }
-    if (statsCards) {
-        statsCards.destroy();
     }
 });
 
@@ -451,13 +429,9 @@ export function afficherErreur(message) {
     notify.error(message);
 }
 
-// Getters pour les composants (pour les autres modules)
+// Getter pour le composant header (pour les autres modules)
 export function getAppHeader() {
     return appHeader;
-}
-
-export function getStatsCards() {
-    return statsCards;
 }
 
 // Getter pour les données utilisateur actuelles
@@ -468,69 +442,22 @@ export function getCurrentUser() {
 /* ========================================
    HISTORIQUE DES DIFFICULTÉS
    
-   [28/01/2025] - Suppression des imports rechercherClient/rechercherProduit
-   Modification: Ces fonctions ont été remplacées par SearchDropdown
-   Impact: Plus besoin de les importer ni de les exposer globalement
-   
-   [30/01/2025] - Intégration AppHeader et StatsCards
-   Modification: 
-   - Ajout imports AppHeader et StatsCards
-   - Création fonction initUIComponents()
-   - Nouvelle fonction handleLogout() pour le header
-   - Export updateStats() pour mise à jour depuis list.js
-   - Cleanup des composants au beforeunload
-   - Getters pour accès aux composants depuis autres modules
-   
-   [30/01/2025] - Ajout gestion magasin utilisateur
+   [02/02/2025] - Suppression complète de la gestion des StatsCards
    Modification:
-   - Extension getUserData() pour inclure le magasin
-   - Support de plusieurs formats de champs magasin (magasin, magasin_nom, store, agence)
-   - Formatage automatique du nom de magasin
-   - Ajout callback onUserClick au header
-   - Export updateUserInfo() pour mise à jour dynamique
-   - Export getCurrentUser() pour accès aux données utilisateur
+   - Suppression de l'import genererConfigStatsCards (n'existe plus)
+   - Suppression de la variable statsCards
+   - Suppression de updateStats() (gérée par list.js)
+   - Suppression de getStatsCards()
+   - Les StatsCards sont maintenant 100% gérées par commandes.list.js
    
-   [31/01/2025] - Centralisation de la config des stats cards
-   Modification:
-   - Import de genererConfigStatsCards depuis commandes.data.js
-   - Les cartes de stats utilisent maintenant la config centralisée
-   - Plus de duplication des icônes et labels
-   
-   [01/02/2025] - Mise à jour des chemins d'import
-   Modification:
-   - Chemins services: ../../src/js/services/ → ../../src/services/
-   - Chemins components: ../../src/js/shared/ → ../../src/components/
-   - Chemins data: ../../src/js/data/ → ../../src/data/
-   - Adaptation à la nouvelle structure modules/commandes/
-   
-   [01/02/2025] - Ajout des buttonClasses pour personnalisation
-   Modification:
-   - Ajout de buttonClasses dans la config AppHeader
-   - L'orchestrateur décide maintenant des classes CSS des boutons
-   - Bouton retour avec classe 'btn on-dark pill' (arrondi sur fond sombre)
-   - Bouton déconnexion avec classe 'header-logout-button pill'
-   - Section utilisateur avec classe 'header-user-section' (glassmorphism)
-   - Le composant AppHeader reste indépendant (Inversion of Control)
-   
-   Impact: 
-   - Header maintenant géré par composant (plus de HTML statique)
-   - Stats cards avec animation et interactions
-   - Configuration des stats cards centralisée dans commandes.data.js
-   - Déconnexion unifiée entre bouton header et fonction legacy
-   - Affichage magasin utilisateur dans le header
-   - Possibilité de mise à jour dynamique des infos utilisateur
-   - Chemins alignés avec la nouvelle structure de dossiers
-   - Personnalisation complète de l'apparence des boutons depuis l'orchestrateur
+   Architecture finale:
+   - main.js : Initialisation, auth, header
+   - list.js : Orchestre DataTable + Filtres + StatsCards
+   - create.js : Gère la création
+   - detail.js : Gère le détail
    
    NOTES POUR REPRISES FUTURES:
-   - AppHeader remplace complètement le header HTML statique
-   - StatsCards remplace les cartes statiques du HTML
-   - La fonction updateStats() doit être appelée depuis list.js
-   - Les composants UI sont accessibles via getters pour autres modules
-   - Cleanup automatique des composants au déchargement
-   - Le magasin est auto-détecté depuis plusieurs champs possibles
-   - Format final: "Magasin [nom]" affiché dans le header
-   - Les stats cards sont maintenant générées depuis commandes.data.js
-   - Structure: modules/[module]/ pour les modules, src/ pour le code partagé
-   - Les classes CSS des boutons sont passées par l'orchestrateur (IoC)
+   - NE PAS réintroduire StatsCards ici !
+   - La logique UI est dans les orchestrateurs de chaque section
+   - main.js reste léger et ne gère que l'init globale
    ======================================== */
