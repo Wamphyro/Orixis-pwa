@@ -1,36 +1,20 @@
 // ========================================
-// COMMANDES.DATA.JS - Constantes et données de référence
+// COMMANDES.DATA.JS - Données métier UNIQUEMENT
 // Chemin: src/data/commandes.data.js
 //
 // DESCRIPTION:
-// Centralise toutes les configurations liées aux commandes
-// Modifié le 27/07/2025 : Ajout du statut "supprime"
-// Modifié le 31/01/2025 : Correction des icônes pour cohérence avec UI
-// Modifié le 31/01/2025 : Centralisation COMPLÈTE de toutes les configs UI
-// Modifié le 01/02/2025 : Ajout TIMELINE_CONFIG, DISPLAY_TEMPLATES et icônes manquantes
-// Modifié le 02/02/2025 : Retrait filtre statut, ajout cartes terminee et receptionnee
+// Contient UNIQUEMENT les constantes et données de référence métier
+// PAS de configuration UI, PAS de fonctions de génération pour l'UI
 //
-// STRUCTURE:
-// 1. Configuration générale (lignes 16-21)
-// 2. Statuts de commande (lignes 23-86)
-// 3. Configuration Timeline (lignes 88-111)
-// 4. Types de préparation (lignes 113-136)
-// 5. Niveaux d'urgence (lignes 138-161)
-// 6. Templates d'affichage (lignes 163-181)
-// 7. Configuration des filtres (lignes 183-216)
-// 8. Configuration des stats cards (lignes 218-239)
-// 9. Configuration des selects UI (lignes 241-289)
-// 10. Configuration des exports (lignes 291-319)
-// 11. Autres configurations (lignes 321+)
+// MODIFIÉ le 02/02/2025:
+// - Suppression de toutes les configs UI (FILTRES_CONFIG, STATS_CARDS_CONFIG, etc.)
+// - Suppression des fonctions genererOptionsFiltres, genererConfigStatsCards
+// - Conservation UNIQUEMENT des données métier pures
 // ========================================
 
 export const COMMANDES_CONFIG = {
-    // Configuration générale
-    ITEMS_PAR_PAGE: 20,
-    DELAI_RECHERCHE: 300, // ms pour debounce
-    
     // ========================================
-    // Statuts de commande
+    // STATUTS DE COMMANDE (données métier)
     // ========================================
     STATUTS: {
         nouvelle: {
@@ -92,35 +76,7 @@ export const COMMANDES_CONFIG = {
     },
     
     // ========================================
-    // Configuration de la Timeline
-    // ========================================
-    TIMELINE_CONFIG: {
-        // Ordre d'affichage des statuts dans la timeline
-        sequence: ['nouvelle', 'preparation', 'terminee', 'expediee', 'receptionnee', 'livree'],
-        
-        // Mapping statuts -> champs de dates dans l'objet commande
-        dateFields: {
-            nouvelle: 'commande',
-            preparation: 'preparationDebut',
-            terminee: 'preparationFin',
-            expediee: 'expeditionValidee',
-            receptionnee: 'receptionValidee',
-            livree: 'livraisonClient'
-        },
-        
-        // Configuration par défaut pour Timeline
-        defaultOptions: {
-            theme: 'colorful',
-            orientation: 'horizontal',
-            animated: true,
-            showDates: true,
-            showLabels: true,
-            clickable: false
-        }
-    },
-    
-    // ========================================
-    // Types de préparation
+    // TYPES DE PRÉPARATION (données métier)
     // ========================================
     TYPES_PREPARATION: {
         livraison_premiere_paire: {
@@ -141,7 +97,7 @@ export const COMMANDES_CONFIG = {
     },
     
     // ========================================
-    // Niveaux d'urgence
+    // NIVEAUX D'URGENCE (données métier)
     // ========================================
     NIVEAUX_URGENCE: {
         normal: {
@@ -168,170 +124,7 @@ export const COMMANDES_CONFIG = {
     },
     
     // ========================================
-    // Templates d'affichage HTML
-    // ========================================
-    DISPLAY_TEMPLATES: {
-        urgence: {
-            wrapper: 'urgence-icon-wrapper',
-            className: 'urgence-icon',
-            tooltipClass: 'urgence-tooltip',
-            getHTML: (config) => `
-                <span class="urgence-icon-wrapper">
-                    <span class="urgence-icon">${config.icon}</span>
-                    <span class="urgence-tooltip">${config.label} (${config.delai})</span>
-                </span>
-            `
-        },
-        statut: {
-            wrapper: 'statut-icon-wrapper',
-            className: 'statut-icon',
-            tooltipClass: 'statut-tooltip',
-            getHTML: (config) => `
-                <span class="statut-icon-wrapper">
-                    <span class="statut-icon">${config.icon}</span>
-                    <span class="statut-tooltip">${config.label}</span>
-                </span>
-            `
-        }
-    },
-    
-    // ========================================
-    // Configuration des filtres
-    // 🔑 MODIFIÉ : Retrait du filtre statut
-    // ========================================
-    FILTRES_CONFIG: {
-        recherche: {
-            type: 'search',
-            key: 'recherche',
-            placeholder: 'Client, produit, n° commande...'
-        },
-        
-        magasin: {
-            type: 'select',
-            key: 'magasin',
-            label: 'Magasin',
-            keepPlaceholder: true,
-            searchable: true,
-            options: [] // Chargé dynamiquement
-        },
-        
-        // 🔑 SUPPRIMÉ : Le filtre statut (les cartes font ce travail)
-        
-        periode: {
-            type: 'select',
-            key: 'periode',
-            label: 'Période',
-            defaultValue: 'all',
-            keepPlaceholder: true,
-            options: [
-                { value: 'all', label: 'Toutes' },
-                { value: 'today', label: "Aujourd'hui" },
-                { value: 'week', label: 'Cette semaine' },
-                { value: 'month', label: 'Ce mois' }
-            ]
-        },
-        
-        urgence: {
-            type: 'select',
-            key: 'urgence',
-            label: 'Urgence',
-            keepPlaceholder: true,
-            showIcons: true,
-            options: [] // Généré dynamiquement
-        }
-    },
-    
-    // ========================================
-    // Configuration des cartes de statistiques
-    // 🔑 MODIFIÉ : Ajout des cartes terminee et receptionnee
-    // ========================================
-    STATS_CARDS_CONFIG: {
-        cartes: [
-            { statut: 'nouvelle', color: 'info' },
-            { statut: 'preparation', color: 'warning' },
-            { statut: 'terminee', color: 'secondary' },      // 🆕 AJOUTÉ
-            { statut: 'expediee', color: 'primary' },
-            { statut: 'receptionnee', color: 'info' },       // 🆕 AJOUTÉ
-            { statut: 'livree', color: 'success' }
-        ]
-    },
-    
-    // ========================================
-    // Configuration des selects UI
-    // ========================================
-    UI_SELECTS: {
-        transporteurs: [
-            { value: 'Colissimo', label: 'Colissimo' },
-            { value: 'Chronopost', label: 'Chronopost' },
-            { value: 'UPS', label: 'UPS' },
-            { value: 'DHL', label: 'DHL' },
-            { value: 'Fedex', label: 'Fedex' },
-            { value: 'GLS', label: 'GLS' },
-            { value: 'Autre', label: 'Autre' }
-        ]
-    },
-    
-    // ========================================
-    // Configuration des colonnes d'export
-    // ========================================
-    EXPORT_CONFIG: {
-        colonnes: [
-            { key: 'numeroCommande', label: 'N° Commande' },
-            { key: 'date', label: 'Date', formatter: 'date' },
-            { key: 'client', label: 'Client', formatter: 'client' },
-            { key: 'telephone', label: 'Téléphone' },
-            { key: 'typePreparation', label: 'Type', formatter: 'typePreparation' },
-            { key: 'niveauUrgence', label: 'Urgence', formatter: 'urgence' },
-            { key: 'statut', label: 'Statut', formatter: 'statut' },
-            { key: 'magasinLivraison', label: 'Magasin Livraison' },
-            { key: 'commentaires', label: 'Commentaires' }
-        ]
-    },
-    
-    // ========================================
-    // Types de produits
-    // ========================================
-    TYPES_PRODUITS: {
-        appareil_auditif: {
-            label: 'Appareil auditif',
-            necessiteCote: true,
-            gestionNumeroSerie: true
-        },
-        accessoire: {
-            label: 'Accessoire',
-            necessiteCote: false,
-            gestionNumeroSerie: true
-        },
-        consommable: {
-            label: 'Consommable',
-            necessiteCote: false,
-            gestionNumeroSerie: false
-        }
-    },
-    
-    // ========================================
-    // Catégories de produits
-    // ========================================
-    CATEGORIES_PRODUITS: {
-        // Appareils
-        'contour': 'Contour d\'oreille',
-        'intra': 'Intra-auriculaire',
-        'ric': 'RIC (écouteur déporté)',
-        
-        // Accessoires
-        'chargeur': 'Chargeur',
-        'telecommande': 'Télécommande',
-        'connectivite': 'Accessoire connectivité',
-        
-        // Consommables
-        'dome': 'Dômes',
-        'filtre': 'Filtres',
-        'pile': 'Piles',
-        'entretien': 'Produits d\'entretien'
-    },
-    
-    // ========================================
-    // Transporteurs (config détaillée)
+    // TRANSPORTEURS (données métier)
     // ========================================
     TRANSPORTEURS: {
         colissimo: {
@@ -357,7 +150,49 @@ export const COMMANDES_CONFIG = {
     },
     
     // ========================================
-    // Messages et textes
+    // TYPES DE PRODUITS (données métier)
+    // ========================================
+    TYPES_PRODUITS: {
+        appareil_auditif: {
+            label: 'Appareil auditif',
+            necessiteCote: true,
+            gestionNumeroSerie: true
+        },
+        accessoire: {
+            label: 'Accessoire',
+            necessiteCote: false,
+            gestionNumeroSerie: true
+        },
+        consommable: {
+            label: 'Consommable',
+            necessiteCote: false,
+            gestionNumeroSerie: false
+        }
+    },
+    
+    // ========================================
+    // CATÉGORIES DE PRODUITS (données métier)
+    // ========================================
+    CATEGORIES_PRODUITS: {
+        // Appareils
+        'contour': 'Contour d\'oreille',
+        'intra': 'Intra-auriculaire',
+        'ric': 'RIC (écouteur déporté)',
+        
+        // Accessoires
+        'chargeur': 'Chargeur',
+        'telecommande': 'Télécommande',
+        'connectivite': 'Accessoire connectivité',
+        
+        // Consommables
+        'dome': 'Dômes',
+        'filtre': 'Filtres',
+        'pile': 'Piles',
+        'entretien': 'Produits d\'entretien'
+    },
+    
+    // ========================================
+    // MESSAGES ET TEXTES
     // ========================================
     MESSAGES: {
         AUCUNE_COMMANDE: 'Aucune commande pour le moment',
@@ -384,7 +219,7 @@ export const COMMANDES_CONFIG = {
     },
     
     // ========================================
-    // Validations
+    // VALIDATIONS (regex métier)
     // ========================================
     VALIDATIONS: {
         TELEPHONE: /^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$/,
@@ -394,7 +229,7 @@ export const COMMANDES_CONFIG = {
     },
     
     // ========================================
-    // Formats d'affichage
+    // FORMATS D'AFFICHAGE (données métier)
     // ========================================
     FORMATS: {
         DATE: {
@@ -411,113 +246,7 @@ export const COMMANDES_CONFIG = {
 };
 
 // ========================================
-// FONCTIONS DE GÉNÉRATION DES CONFIGS
-// ========================================
-
-/**
- * Générer les options de filtres dynamiquement
- * 🔑 MODIFIÉ : Ne génère plus le filtre statut
- */
-export function genererOptionsFiltres() {
-    const config = { ...COMMANDES_CONFIG.FILTRES_CONFIG };
-    
-    // 🔑 NE PLUS GÉNÉRER LES OPTIONS DE STATUT
-    // Les cartes de statistiques font ce travail
-    
-    // Générer les options d'urgence depuis NIVEAUX_URGENCE
-    config.urgence.options = [
-        { value: '', label: 'Toutes' },
-        ...Object.entries(COMMANDES_CONFIG.NIVEAUX_URGENCE).map(([key, urgence]) => ({
-            value: key,
-            label: `${urgence.icon} ${urgence.label}`
-        }))
-    ];
-    
-    // Retourner tous les filtres SAUF statut
-    return Object.values(config);
-}
-
-/**
- * Générer la configuration des cartes de statistiques
- * 🔑 MODIFIÉ : Génère maintenant 6 cartes au lieu de 4
- */
-export function genererConfigStatsCards() {
-    return COMMANDES_CONFIG.STATS_CARDS_CONFIG.cartes.map(carte => {
-        const statut = COMMANDES_CONFIG.STATUTS[carte.statut];
-        return {
-            id: carte.statut,
-            label: statut.label,
-            value: 0,
-            icon: statut.icon,
-            color: carte.color
-        };
-    });
-}
-
-/**
- * Générer les options pour un select d'urgence
- */
-export function genererOptionsUrgence() {
-    return Object.entries(COMMANDES_CONFIG.NIVEAUX_URGENCE).map(([key, urgence]) => ({
-        value: key,
-        label: `${urgence.icon} ${urgence.label}`
-    }));
-}
-
-/**
- * Générer les options pour un select de transporteurs
- */
-export function genererOptionsTransporteurs() {
-    return COMMANDES_CONFIG.UI_SELECTS.transporteurs;
-}
-
-/**
- * Générer les options pour un select de types de préparation
- */
-export function genererOptionsTypesPreparation() {
-    return Object.entries(COMMANDES_CONFIG.TYPES_PREPARATION).map(([key, type]) => ({
-        value: key,
-        label: type.label,
-        description: type.description,
-        icon: type.icon
-    }));
-}
-
-/**
- * Formater les données pour l'export selon la config
- */
-export function formaterDonneesExport(data) {
-    return data.map(row => {
-        const result = {};
-        
-        COMMANDES_CONFIG.EXPORT_CONFIG.colonnes.forEach(col => {
-            switch (col.formatter) {
-                case 'date':
-                    result[col.label] = formatDate(row.dates?.commande);
-                    break;
-                case 'client':
-                    result[col.label] = `${row.client.prenom} ${row.client.nom}`;
-                    break;
-                case 'typePreparation':
-                    result[col.label] = COMMANDES_CONFIG.TYPES_PREPARATION[row.typePreparation]?.label || row.typePreparation;
-                    break;
-                case 'urgence':
-                    result[col.label] = COMMANDES_CONFIG.NIVEAUX_URGENCE[row.niveauUrgence]?.label || row.niveauUrgence;
-                    break;
-                case 'statut':
-                    result[col.label] = COMMANDES_CONFIG.STATUTS[row.statut]?.label || row.statut;
-                    break;
-                default:
-                    result[col.label] = row[col.key] || '-';
-            }
-        });
-        
-        return result;
-    });
-}
-
-// ========================================
-// FONCTIONS HELPERS EXISTANTES
+// FONCTIONS HELPERS MÉTIER (pas UI)
 // ========================================
 
 // Fonction helper pour générer un numéro de commande
@@ -537,23 +266,6 @@ export function formaterPrix(montant) {
         style: 'currency',
         currency: 'EUR'
     }).format(montant);
-}
-
-// Fonction helper pour formater une date
-export function formaterDate(timestamp, format = 'complet') {
-    if (!timestamp) return '-';
-    
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    
-    switch (format) {
-        case 'jour':
-            return date.toLocaleDateString('fr-FR');
-        case 'heure':
-            return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-        case 'complet':
-        default:
-            return `${date.toLocaleDateString('fr-FR')} à ${date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
-    }
 }
 
 // Fonction helper pour valider un téléphone
@@ -576,7 +288,7 @@ export function peutEtreAnnulee(statut) {
     return !['livree', 'annulee', 'supprime'].includes(statut);
 }
 
-// Vérifier si une commande peut être supprimée
+// Fonction helper pour vérifier si une commande peut être supprimée
 export function peutEtreSupprimee(statut) {
     return !['livree', 'supprime'].includes(statut);
 }
@@ -597,56 +309,23 @@ export function calculerDelaiLivraison(urgence = 'normal') {
     return maintenant;
 }
 
-// Fonction helper private pour formater les dates (utilisée en interne)
-function formatDate(timestamp) {
-    if (!timestamp) return '-';
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return date.toLocaleDateString('fr-FR');
-}
-
 /* ========================================
-   HISTORIQUE DES DIFFICULTÉS
+   HISTORIQUE DES MODIFICATIONS
    
-   [27/07/2025] - Ajout du statut "supprime"
-   Problème: Besoin de supprimer des commandes sans perte de données
-   Solution: Ajout d'un statut "supprime" pour soft delete
-   Impact: Les commandes supprimées restent en base mais n'apparaissent plus
+   [02/02/2025] - Nettoyage complet pour architecture propre
+   - SUPPRIMÉ : FILTRES_CONFIG (déplacé dans commandes.list.js)
+   - SUPPRIMÉ : STATS_CARDS_CONFIG (déplacé dans commandes.list.js)
+   - SUPPRIMÉ : TIMELINE_CONFIG (déplacé dans commandes.detail.js)
+   - SUPPRIMÉ : DISPLAY_TEMPLATES (déplacé dans les orchestrateurs)
+   - SUPPRIMÉ : EXPORT_CONFIG (déplacé dans commandes.list.js)
+   - SUPPRIMÉ : UI_SELECTS (déplacé dans les orchestrateurs)
+   - SUPPRIMÉ : genererOptionsFiltres() (fait dans l'orchestrateur)
+   - SUPPRIMÉ : genererConfigStatsCards() (fait dans l'orchestrateur)
+   - SUPPRIMÉ : genererOptionsUrgence() (fait dans l'orchestrateur)
+   - SUPPRIMÉ : genererOptionsTransporteurs() (fait dans l'orchestrateur)
+   - SUPPRIMÉ : genererOptionsTypesPreparation() (fait dans l'orchestrateur)
+   - SUPPRIMÉ : formaterDonneesExport() (fait dans l'orchestrateur)
+   - SUPPRIMÉ : formaterDate() (utilise le composant partagé)
    
-   [31/01/2025] - Correction des icônes pour cohérence UI
-   Problème: Icônes différentes entre dropdown et tableau
-   Solution: Uniformisation des icônes dans toute l'interface
-   - Statuts: 📋 Nouvelle, 🔧 En préparation, etc.
-   - Urgences: 🍃 Normal, 💨 Urgent, 🔥 Très urgent
-   
-   [31/01/2025] - Centralisation COMPLÈTE de toutes les configs
-   Problème: Duplication des configs dans plusieurs fichiers
-   Solution: Tout centralisé dans commandes.data.js
-   - FILTRES_CONFIG + genererOptionsFiltres()
-   - STATS_CARDS_CONFIG + genererConfigStatsCards()
-   - UI_SELECTS pour les transporteurs et autres
-   - EXPORT_CONFIG pour les colonnes d'export
-   - Nouvelles fonctions de génération d'options
-   
-   [01/02/2025] - Ajout TIMELINE_CONFIG et DISPLAY_TEMPLATES
-   Problème: Configuration timeline et templates éparpillés dans le code
-   Solution: Centralisation dans commandes.data.js
-   - TIMELINE_CONFIG avec séquence et mapping des dates
-   - DISPLAY_TEMPLATES pour les templates HTML d'urgence et statut
-   - Ajout des icônes manquantes dans TYPES_PREPARATION
-   - Description pour chaque statut
-   - joursLivraison dans NIVEAUX_URGENCE
-   
-   [02/02/2025] - Retrait filtre statut et ajout cartes manquantes
-   Problème: Duplication du filtrage par statut (dropdown + cartes)
-   Solution: Retrait du filtre statut dropdown, utilisation des cartes uniquement
-   - Suppression de la config statut dans FILTRES_CONFIG
-   - Modification de genererOptionsFiltres() pour ne plus générer le filtre statut
-   - Ajout des cartes "terminee" et "receptionnee" dans STATS_CARDS_CONFIG
-   - Maintenant 6 cartes cliquables pour filtrer par statut
-   
-   NOTES POUR REPRISES FUTURES:
-   - Le filtrage par statut se fait UNIQUEMENT via les cartes cliquables
-   - Les 6 cartes correspondent aux 6 statuts actifs (pas annulee ni supprime)
-   - Les filtres dropdown sont : Recherche, Magasin, Période, Urgence
-   - Toute configuration UI doit être dans ce fichier
+   CONSERVÉ : Uniquement les données métier et helpers métier purs
    ======================================== */
