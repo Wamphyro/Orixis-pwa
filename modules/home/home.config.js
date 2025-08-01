@@ -26,6 +26,12 @@ export function createHomeHeader(userData) {
         user: {
             name: userData.name,
             showLogout: true
+        },
+        // Ajouter les classes pour les boutons
+        buttonClasses: {
+            back: 'btn on-dark btn-pill',
+            logout: 'btn btn-danger btn-sm',  // ← Classes pour le bouton rouge
+            userSection: 'header-user-section'
         }
     };
     
