@@ -47,6 +47,7 @@ export function createCommandesHeader(userData) {
             userSection: 'header-user-section'
         },
         onLogout: async () => {
+            console.log('🔴 Bouton déconnexion cliqué !');  // AJOUTER CETTE LIGNE
             const confirme = await Dialog.confirm(
                 'Voulez-vous vraiment vous déconnecter ?',
                 'Déconnexion'
