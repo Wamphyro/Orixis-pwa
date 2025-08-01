@@ -124,8 +124,9 @@ function initNumpad() {
         return;
     }
     
-    // Créer le numpad
+    // Créer le numpad intégré
     numpad = config.createLoginNumpad(container, {
+        maxLength: 4,
         onInput: (value) => {
             currentPin = value;
             updatePinDisplay(value);
@@ -136,9 +137,6 @@ function initNumpad() {
             }
         }
     });
-    
-    // Ouvrir le numpad (pour l'afficher)
-    numpad.open();
 }
 
 // ========================================

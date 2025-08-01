@@ -133,48 +133,134 @@ body.login-page {
     margin-bottom: 24px;
 }
 
-/* Override numpad styles pour login */
-#numpadContainer .numpad-container {
-    background: transparent !important;
-    box-shadow: none !important;
-    padding: 0 !important;
+/* Grille numpad login */
+.login-numpad-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    max-width: 360px;
+    margin: 0 auto;
 }
 
-#numpadContainer .numpad-header {
-    display: none !important;
+/* Boutons numpad login avec glassmorphism */
+.login-numpad-btn {
+    height: 60px;
+    font-size: 22px;
+    font-weight: 600;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Glassmorphism */
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    color: #1a1a1a;
 }
 
-#numpadContainer .numpad-grid {
-    gap: 12px !important;
+/* Hover effect */
+.login-numpad-btn:hover:not(:disabled) {
+    transform: translateY(-2px) scale(1.02);
+    background: rgba(102, 126, 234, 0.1);
+    box-shadow: 
+        0 8px 24px rgba(102, 126, 234, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
-#numpadContainer .numpad-btn {
-    height: 56px !important;
-    font-size: 20px !important;
-    border-radius: 12px !important;
-    background: white !important;
-    border: 2px solid #e9ecef !important;
-    color: #1a1a1a !important;
-    font-weight: 600 !important;
-    transition: all 0.2s ease !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+/* Active state */
+.login-numpad-btn:active:not(:disabled) {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.08),
+        inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-#numpadContainer .numpad-btn:hover {
-    background: #f8f9fa !important;
-    border-color: #667eea !important;
-    transform: translateY(-2px) !important;
-    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2) !important;
+/* Bouton Clear */
+.login-numpad-clear {
+    background: rgba(255, 243, 205, 0.9);
+    color: #856404;
+    font-size: 18px;
 }
 
-#numpadContainer .numpad-btn:active {
-    transform: translateY(0) !important;
+.login-numpad-clear:hover:not(:disabled) {
+    background: rgba(255, 235, 186, 0.95);
 }
 
-#numpadContainer .numpad-clear {
-    background: #fff3cd !important;
-    color: #856404 !important;
-    border-color: #ffeaa7 !important;
+/* Bouton Delete */
+.login-numpad-delete {
+    background: rgba(255, 193, 193, 0.9);
+    color: #dc3545;
+    font-size: 24px;
+}
+
+.login-numpad-delete:hover:not(:disabled) {
+    background: rgba(255, 176, 176, 0.95);
+}
+
+/* Bouton 0 */
+.login-numpad-zero {
+    grid-column: 2;
+}
+
+/* Effet ripple au clic */
+.login-numpad-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(102, 126, 234, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.login-numpad-btn:active::before {
+    width: 100px;
+    height: 100px;
+}
+
+/* État désactivé */
+.login-numpad-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* Animation d'apparition */
+.login-numpad-grid {
+    animation: fadeInUp 0.5s ease 0.2s both;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .login-numpad-grid {
+        gap: 10px;
+        max-width: 100%;
+    }
+    
+    .login-numpad-btn {
+        height: 52px;
+        font-size: 20px;
+        border-radius: 12px;
+    }
 }
 
 /* Remember device */
