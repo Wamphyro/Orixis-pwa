@@ -328,6 +328,7 @@ export default {
     createDropdown,
     createSearchDropdown,
     createButton,
+    createBadge,  // ← AJOUTER ICI
     
     // Configs
     BUTTON_CLASSES,
@@ -336,8 +337,9 @@ export default {
     
     // Components directs (pour injection)
     Button,
+    Badge,  // ← AJOUTER ICI
     Modal,
     Dialog,
     notify,
-    modalManager  // ← AJOUTER modalManager ici
+    modalManager
 };
