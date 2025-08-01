@@ -3,7 +3,7 @@
 // ========================================
 
 import { db } from './firebase.service.js';
-import { COMMANDES_CONFIG } from '../data/commandes.data.js';
+import { COMMANDES_CONFIG } from '../../modules/commandes/commandes.data.js';
 
 // Variables locales
 let produitsCache = new Map();

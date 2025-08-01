@@ -3,7 +3,7 @@
 // ========================================
 
 import { db } from './firebase.service.js';
-import { validerTelephone, validerEmail } from '../data/commandes.data.js';
+import { validerTelephone, validerEmail } from '../../modules/commandes/commandes.data.js';
 
 // Variables locales
 let clientsCache = new Map();

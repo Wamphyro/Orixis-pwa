@@ -13,6 +13,10 @@
 // ========================================
 
 export const COMMANDES_CONFIG = {
+    // Configuration générale
+    ITEMS_PAR_PAGE: 20,
+    DELAI_RECHERCHE: 300, // ms pour debounce
+    
     // ========================================
     // STATUTS DE COMMANDE (données métier)
     // ========================================
@@ -268,6 +272,23 @@ export function formaterPrix(montant) {
     }).format(montant);
 }
 
+// Fonction helper pour formater une date
+export function formaterDate(timestamp, format = 'complet') {
+    if (!timestamp) return '-';
+    
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    
+    switch (format) {
+        case 'jour':
+            return date.toLocaleDateString('fr-FR');
+        case 'heure':
+            return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        case 'complet':
+        default:
+            return `${date.toLocaleDateString('fr-FR')} à ${date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
+    }
+}
+
 // Fonction helper pour valider un téléphone
 export function validerTelephone(telephone) {
     return COMMANDES_CONFIG.VALIDATIONS.TELEPHONE.test(telephone.replace(/\s/g, ''));
@@ -288,7 +309,7 @@ export function peutEtreAnnulee(statut) {
     return !['livree', 'annulee', 'supprime'].includes(statut);
 }
 
-// Fonction helper pour vérifier si une commande peut être supprimée
+// Vérifier si une commande peut être supprimée
 export function peutEtreSupprimee(statut) {
     return !['livree', 'supprime'].includes(statut);
 }
@@ -313,19 +334,30 @@ export function calculerDelaiLivraison(urgence = 'normal') {
    HISTORIQUE DES MODIFICATIONS
    
    [02/02/2025] - Nettoyage complet pour architecture propre
-   - SUPPRIMÉ : FILTRES_CONFIG (déplacé dans commandes.list.js)
-   - SUPPRIMÉ : STATS_CARDS_CONFIG (déplacé dans commandes.list.js)
-   - SUPPRIMÉ : TIMELINE_CONFIG (déplacé dans commandes.detail.js)
-   - SUPPRIMÉ : DISPLAY_TEMPLATES (déplacé dans les orchestrateurs)
-   - SUPPRIMÉ : EXPORT_CONFIG (déplacé dans commandes.list.js)
-   - SUPPRIMÉ : UI_SELECTS (déplacé dans les orchestrateurs)
-   - SUPPRIMÉ : genererOptionsFiltres() (fait dans l'orchestrateur)
-   - SUPPRIMÉ : genererConfigStatsCards() (fait dans l'orchestrateur)
-   - SUPPRIMÉ : genererOptionsUrgence() (fait dans l'orchestrateur)
-   - SUPPRIMÉ : genererOptionsTransporteurs() (fait dans l'orchestrateur)
-   - SUPPRIMÉ : genererOptionsTypesPreparation() (fait dans l'orchestrateur)
-   - SUPPRIMÉ : formaterDonneesExport() (fait dans l'orchestrateur)
-   - SUPPRIMÉ : formaterDate() (utilise le composant partagé)
    
-   CONSERVÉ : Uniquement les données métier et helpers métier purs
+   🗑️ SUPPRIMÉ (déplacé dans commandes.list.js) :
+   - FILTRES_CONFIG
+   - STATS_CARDS_CONFIG
+   - EXPORT_CONFIG
+   - DISPLAY_TEMPLATES
+   - UI_SELECTS
+   - genererOptionsFiltres()
+   - genererConfigStatsCards()
+   - genererOptionsUrgence()
+   - genererOptionsTransporteurs()
+   - genererOptionsTypesPreparation()
+   - formaterDonneesExport()
+   
+   🗑️ SUPPRIMÉ (déplacé dans commandes.detail.js) :
+   - TIMELINE_CONFIG
+   
+   ✅ CONSERVÉ : 
+   - Toutes les données métier (STATUTS, TYPES_PREPARATION, etc.)
+   - Les fonctions helpers métier pures
+   - Les validations métier
+   
+   NOTES POUR REPRISES FUTURES:
+   - Ce fichier contient UNIQUEMENT les données métier
+   - Toute config UI est dans les orchestrateurs
+   - Les fonctions de génération UI sont dans les orchestrateurs
    ======================================== */

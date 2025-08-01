@@ -24,7 +24,7 @@ import {
     genererOptionsUrgence, 
     genererOptionsTransporteurs,
     genererOptionsTypesPreparation 
-} from '../../src/data/commandes.data.js';
+} from './commandes.data.js';
 import { 
     Timeline,
     DropdownList,

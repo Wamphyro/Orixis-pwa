@@ -24,7 +24,7 @@ import {
     getProchainStatut,
     peutEtreAnnulee,
     calculerDelaiLivraison 
-} from '../data/commandes.data.js';
+} from '../../modules/commandes/commandes.data.js';
 
 /**
  * Service de gestion des commandes

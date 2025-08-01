@@ -53,7 +53,7 @@ import {
     voirDetailCommande, 
     changerStatutCommande 
 } from './commandes.detail.js';
-import { genererConfigStatsCards } from '../../src/data/commandes.data.js';
+import { genererConfigStatsCards } from './src/data/commandes.data.js';
 import './commandes.serial.js'; // Import du module de gestion des NS
 
 // ========================================

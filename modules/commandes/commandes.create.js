@@ -21,7 +21,7 @@ import {
     genererOptionsTypesPreparation,
     genererOptionsUrgence,
     calculerDelaiLivraison 
-} from '../../src/data/commandes.data.js';
+} from './commandes.data.js';
 import { chargerDonnees } from './commandes.list.js';
 import { ouvrirModal, afficherSucces, afficherErreur } from './commandes.main.js';
 
