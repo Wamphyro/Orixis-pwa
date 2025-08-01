@@ -146,11 +146,8 @@ export class AppHeader {
             link.id = styleId;
             link.rel = 'stylesheet';
             
-            // Utiliser un chemin relatif au document
-            const currentPath = window.location.pathname;
-            const pathDepth = (currentPath.match(/\//g) || []).length - 1;
-            const basePath = '../'.repeat(pathDepth);
-            link.href = basePath + 'src/components/ui/app-header/app-header.css';
+            // Utiliser import.meta.url pour un chemin relatif au composant
+            link.href = new URL('./app-header.css', import.meta.url).href;
             
             document.head.appendChild(link);
             

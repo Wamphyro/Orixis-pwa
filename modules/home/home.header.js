@@ -7,6 +7,7 @@
 // ========================================
 
 import config from './home.config.js';
+import { DropdownList } from '../../src/components/index.js';
 
 // ========================================
 // INITIALISATION HEADER
@@ -21,7 +22,56 @@ export async function initHeader() {
     // Définir les callbacks
     appHeader.onLogout = handleLogout;
     
+    // Si plusieurs magasins, ajouter le dropdown après
+    if (userData.magasins && userData.magasins.length > 1) {
+        // Attendre que le header soit rendu
+        setTimeout(() => {
+            addMagasinDropdown(userData);
+        }, 100);
+    }
+    
     return appHeader;
+}
+
+// Fonction pour ajouter le dropdown
+function addMagasinDropdown(userData) {
+    const userSection = document.querySelector('.app-header-user');
+    if (!userSection) return;
+    
+    // Créer le conteneur pour le dropdown
+    const dropdownContainer = document.createElement('div');
+    dropdownContainer.className = 'header-magasin-section';
+    dropdownContainer.innerHTML = `
+        <span class="magasin-label">Magasin :</span>
+        <div id="magasinDropdownHeader"></div>
+    `;
+    
+    // Insérer avant le bouton déconnexion
+    const logoutBtn = userSection.querySelector('.btn-logout');
+    if (logoutBtn) {
+        userSection.insertBefore(dropdownContainer, logoutBtn);
+    } else {
+        userSection.appendChild(dropdownContainer);
+    }
+    
+    // Créer le dropdown
+    new DropdownList({
+        container: '#magasinDropdownHeader',
+        options: userData.magasins.map(mag => ({
+            value: mag,
+            label: mag,
+            icon: '🏪'
+        })),
+        value: userData.magasin,
+        searchable: userData.magasins.length > 5,
+        size: 'small',
+        theme: 'compact',
+        onChange: (value) => {
+            if (window.changeMagasin) {
+                window.changeMagasin(value);
+            }
+        }
+    });
 }
 
 // ========================================

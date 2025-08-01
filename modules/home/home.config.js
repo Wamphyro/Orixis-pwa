@@ -29,42 +29,13 @@ export function createHomeHeader(userData) {
         }
     };
     
-    // Si plusieurs magasins, ajouter le dropdown
-    if (userData.magasins && userData.magasins.length > 1) {
-        config.user.customContent = createMagasinDropdown(userData);
-    } else if (userData.magasin) {
+    // Si un seul magasin, l'afficher directement
+    if (userData.magasins && userData.magasins.length === 1) {
         config.user.store = `Magasin ${userData.magasin}`;
     }
+    // Si plusieurs magasins, on va ajouter le dropdown après
     
     return new AppHeader(config);
-}
-
-function createMagasinDropdown(userData) {
-    const container = document.createElement('div');
-    container.className = 'header-magasin-dropdown';
-    container.innerHTML = '<span class="magasin-label">Magasin :</span><div id="magasinDropdown"></div>';
-    
-    // Créer le dropdown après insertion
-    setTimeout(() => {
-        new DropdownList({
-            container: '#magasinDropdown',
-            options: userData.magasins.map(mag => ({
-                value: mag,
-                label: mag,
-                icon: '🏪'
-            })),
-            value: userData.magasin,
-            searchable: userData.magasins.length > 5,
-            size: 'small',
-            onChange: (value) => {
-                if (window.changeMagasin) {
-                    window.changeMagasin(value);
-                }
-            }
-        });
-    }, 100);
-    
-    return container;
 }
 
 // ========================================

@@ -145,3 +145,39 @@
         min-width: 80px;
     }
 }
+
+/* Section magasin dans le header */
+.header-magasin-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: 16px;
+}
+
+.magasin-label {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 500;
+}
+
+/* Dropdown compact pour le header */
+#magasinDropdownHeader .dropdown-list {
+    min-width: 120px;
+}
+
+#magasinDropdownHeader .dropdown-list-toggle {
+    padding: 6px 12px;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+#magasinDropdownHeader .dropdown-list-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+#magasinDropdownHeader .dropdown-list-options {
+    background: white;
+    color: #333;
+}
