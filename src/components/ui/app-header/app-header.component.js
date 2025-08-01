@@ -122,7 +122,7 @@ export class AppHeader {
             const link = document.createElement('link');
             link.id = styleId;
             link.rel = 'stylesheet';
-            link.href = '../src/components/ui/app-header/app-header.css';
+            link.href = '../../src/components/ui/app-header/app-header.css';
             document.head.appendChild(link);
             
             console.log('📦 CSS AppHeader chargé');

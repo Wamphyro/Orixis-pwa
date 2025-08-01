@@ -100,7 +100,7 @@ export class StatsCards {
                 const link = document.createElement('link');
                 link.id = styleId;
                 link.rel = 'stylesheet';
-                link.href = '../src/components/ui/stats-cards/stats-cards.css';
+                link.href = '../../src/components/ui/stats-cards/stats-cards.css';
                 
                 // Attendre que le CSS soit chargé
                 link.onload = () => {

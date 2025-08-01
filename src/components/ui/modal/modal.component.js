@@ -90,7 +90,7 @@ export class Modal {
         const link = document.createElement('link');
         link.id = 'modal-styles';
         link.rel = 'stylesheet';
-        link.href = '../src/components/ui/modal/modal.css';
+        link.href = '../../src/components/ui/modal/modal.css';
         document.head.appendChild(link);
         
         console.log('📦 Modal styles chargés');
