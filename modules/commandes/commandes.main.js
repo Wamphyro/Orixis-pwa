@@ -48,6 +48,7 @@ import {
     changerStatutCommande 
 } from './commandes.detail.js';
 import './commandes.serial.js'; // Import du module de gestion des NS
+import { COMPONENT_CONFIG } from '../../src/config/ui.config.js';
 
 // ========================================
 // VARIABLES GLOBALES (partagées entre modules)
@@ -157,12 +158,8 @@ async function initUIComponents() {
             backUrl: 'home.html',
             user: userData,
             
-            // L'ORCHESTRATEUR décide des classes CSS pour les boutons
-            buttonClasses: {
-                back: 'btn on-dark pill',              // Bouton retour arrondi sur fond sombre
-                logout: 'header-logout-button pill',   // Bouton déconnexion arrondi
-                userSection: 'header-user-section'     // Section utilisateur glassmorphism
-            },
+            // 🔑 UTILISATION DE LA CONFIG UI
+            ...COMPONENT_CONFIG.appHeader,
             
             onLogout: handleLogout,
             onBack: () => {

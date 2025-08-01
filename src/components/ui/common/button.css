@@ -1,409 +1,308 @@
 /* ========================================
-   BUTTON.CSS - Styles de TOUS les boutons de l'application
-   Chemin: src/css/shared/ui/button.css
+   BUTTON.CSS - Styles glassmorphism pour TOUS les boutons
+   Chemin: src/components/ui/common/button.css
    
    DESCRIPTION:
-   Centralise tous les styles de boutons pour éviter la duplication.
-   Modifié le 01/02/2025 : Ajout des modificateurs de forme et migration header-user-section
-   
-   STRUCTURE:
-   1. Base button (.btn)
-   2. Modificateurs de forme (pill, standard, square, round)
-   3. Variantes principales (primary, secondary, etc.)
-   4. Contextes (on-dark, on-light)
-   5. Tailles
-   6. Boutons icône
-   7. Boutons d'action tableau
-   8. Boutons spéciaux (link, reset, logout, back)
-   9. Éléments UI style bouton (header-user-section)
-   10. États (loading, disabled)
-   11. Groupes de boutons
-   12. Responsive
+   Design system unifié avec glassmorphism pour toute l'application
+   Créé le 28/12/2024 : Refonte complète glassmorphism
    ======================================== */
 
 /* ========================================
-   BASE BUTTON
+   VARIABLES & DESIGN TOKENS
+   ======================================== */
+:root {
+    /* Glassmorphism */
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-bg-hover: rgba(255, 255, 255, 0.15);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+    --glass-blur: 10px;
+    
+    /* Couleurs avec transparence */
+    --primary-glass: rgba(102, 126, 234, 0.15);
+    --danger-glass: rgba(220, 53, 69, 0.15);
+    --success-glass: rgba(40, 167, 69, 0.15);
+    --warning-glass: rgba(255, 193, 7, 0.15);
+    --info-glass: rgba(23, 162, 184, 0.15);
+    
+    /* Tailles */
+    --btn-padding-sm: 8px 16px;
+    --btn-padding-md: 12px 24px;
+    --btn-padding-lg: 16px 32px;
+    --btn-font-sm: 13px;
+    --btn-font-md: 15px;
+    --btn-font-lg: 17px;
+}
+
+/* ========================================
+   BASE GLASSMORPHISM BUTTON
    ======================================== */
 .btn {
+    /* Structure */
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    padding: 15px 40px;
-    border: none;
-    border-radius: 10px;
-    font-size: 18px;
+    gap: 8px;
+    padding: var(--btn-padding-md);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    
+    /* Glassmorphism */
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    box-shadow: var(--glass-shadow);
+    
+    /* Typographie */
+    font-size: var(--btn-font-md);
     font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
+    color: white;
     text-decoration: none;
     font-family: inherit;
+    
+    /* Comportement */
+    cursor: pointer;
     position: relative;
     overflow: hidden;
-    background: #6c757d;
-    color: white;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hover avec effet de lumière */
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transition: left 0.5s;
+}
+
+.btn:hover::before {
+    left: 100%;
 }
 
 .btn:hover {
+    background: var(--glass-bg-hover);
+    border-color: rgba(255, 255, 255, 0.3);
     transform: translateY(-2px);
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-    text-decoration: none;
+    box-shadow: 0 12px 40px rgba(31, 38, 135, 0.5);
 }
 
 .btn:active {
     transform: translateY(0);
-}
-
-.btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none !important;
-    box-shadow: none !important;
+    box-shadow: var(--glass-shadow);
 }
 
 /* ========================================
-   MODIFICATEURS DE FORME (NOUVEAU)
+   VARIANTES GLASSMORPHISM
    ======================================== */
 
-/* Forme pill (totalement arrondie) */
-.btn.pill {
-    border-radius: 25px !important;
-}
-
-/* Forme standard (coins moyennement arrondis) */
-.btn.standard {
-    border-radius: 10px !important;
-}
-
-/* Forme carrée (coins peu arrondis) */
-.btn.square {
-    border-radius: 4px !important;
-}
-
-/* Forme ronde (cercle parfait pour icônes) */
-.btn.round {
-    border-radius: 50% !important;
-    width: 40px;
-    height: 40px;
-    padding: 0;
-}
-
-.btn.round.btn-sm {
-    width: 32px;
-    height: 32px;
-}
-
-.btn.round.btn-lg {
-    width: 48px;
-    height: 48px;
-}
-
-/* ========================================
-   VARIANTES PRINCIPALES
-   ======================================== */
+/* Primary - Violet/Bleu */
 .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--primary-glass);
+    border-color: rgba(102, 126, 234, 0.3);
     color: white;
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, #5a73e5 0%, #6b4199 100%);
-    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    background: rgba(102, 126, 234, 0.25);
+    border-color: rgba(102, 126, 234, 0.5);
+    box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
 }
 
-.btn-secondary {
-    background: #6c757d;
-    color: white;
-}
-
-.btn-secondary:hover {
-    background: #5a6268;
-}
-
-.btn-success {
-    background: #28a745;
-    color: white;
-}
-
-.btn-success:hover {
-    background: #218838;
-}
-
+/* Danger - Rouge */
 .btn-danger {
-    background: #dc3545;
-    color: white;
+    background: var(--danger-glass);
+    border-color: rgba(220, 53, 69, 0.3);
 }
 
 .btn-danger:hover {
-    background: #c82333;
+    background: rgba(220, 53, 69, 0.25);
+    border-color: rgba(220, 53, 69, 0.5);
+    box-shadow: 0 12px 40px rgba(220, 53, 69, 0.4);
 }
 
+/* Success - Vert */
+.btn-success {
+    background: var(--success-glass);
+    border-color: rgba(40, 167, 69, 0.3);
+}
+
+.btn-success:hover {
+    background: rgba(40, 167, 69, 0.25);
+    border-color: rgba(40, 167, 69, 0.5);
+    box-shadow: 0 12px 40px rgba(40, 167, 69, 0.4);
+}
+
+/* Warning - Jaune */
 .btn-warning {
-    background: #ffc107;
-    color: #212529;
-}
-
-.btn-warning:hover {
-    background: #e0a800;
-}
-
-.btn-info {
-    background: #17a2b8;
-    color: white;
-}
-
-.btn-info:hover {
-    background: #138496;
-}
-
-/* ========================================
-   CONTEXTES (on-dark, on-light)
-   ======================================== */
-
-/* Boutons sur fond sombre (header coloré) */
-.btn.on-dark {
-    background: rgba(255, 255, 255, 0.2);
-    border: 2px solid transparent;
-    color: white;
-}
-
-.btn.on-dark:hover {
-    background: rgba(255, 255, 255, 0.3);
-    border-color: rgba(255, 255, 255, 0.3);
-}
-
-/* Boutons sur fond clair */
-.btn.on-light {
-    background: #f8f9fa;
-    border: 2px solid #dee2e6;
+    background: var(--warning-glass);
+    border-color: rgba(255, 193, 7, 0.3);
     color: #333;
 }
 
-.btn.on-light:hover {
-    background: #e9ecef;
-    border-color: #adb5bd;
+.btn-warning:hover {
+    background: rgba(255, 193, 7, 0.25);
+    border-color: rgba(255, 193, 7, 0.5);
+    box-shadow: 0 12px 40px rgba(255, 193, 7, 0.4);
+}
+
+/* Secondary - Neutre */
+.btn-secondary {
+    background: rgba(108, 117, 125, 0.15);
+    border-color: rgba(108, 117, 125, 0.3);
+}
+
+.btn-secondary:hover {
+    background: rgba(108, 117, 125, 0.25);
+    border-color: rgba(108, 117, 125, 0.5);
+}
+
+/* Ghost - Transparent */
+.btn-ghost {
+    background: transparent;
+    border-color: var(--glass-border);
+}
+
+.btn-ghost:hover {
+    background: var(--glass-bg);
 }
 
 /* ========================================
    TAILLES
    ======================================== */
 .btn-sm {
-    padding: 8px 16px;
-    font-size: 14px;
+    padding: var(--btn-padding-sm);
+    font-size: var(--btn-font-sm);
+    border-radius: 8px;
 }
 
 .btn-lg {
-    padding: 16px 32px;
-    font-size: 18px;
+    padding: var(--btn-padding-lg);
+    font-size: var(--btn-font-lg);
+    border-radius: 16px;
 }
 
 /* ========================================
-   BOUTONS ICÔNE UNIQUEMENT
+   FORMES
    ======================================== */
-.btn-icon {
-    padding: 8px;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
+.btn-pill {
+    border-radius: 50px;
 }
 
-.btn-icon.btn-sm {
+.btn-square {
+    border-radius: 4px;
+}
+
+.btn-circle {
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+}
+
+.btn-circle.btn-sm {
     width: 32px;
     height: 32px;
 }
 
-.btn-icon.btn-lg {
-    width: 48px;
-    height: 48px;
+.btn-circle.btn-lg {
+    width: 56px;
+    height: 56px;
 }
 
 /* ========================================
-   BOUTONS D'ACTION (tableau)
+   BOUTONS ICÔNE (Actions tableau)
    ======================================== */
 .btn-action {
-    background: none;
-    border: 2px solid #e9ecef;
+    padding: 6px;
+    width: 32px;
+    height: 32px;
     border-radius: 8px;
-    padding: 6px 12px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.2s ease;
-    color: #495057;
+    font-size: 16px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
 }
 
 .btn-action:hover {
-    background: #f8f9fa;
-    border-color: #667eea;
-    color: #667eea;
-    transform: scale(1.05);
+    background: var(--primary-glass);
+    border-color: rgba(102, 126, 234, 0.3);
+    transform: scale(1.1);
 }
 
-/* Bouton suppression */
-.btn-action.btn-delete {
-    border-color: #dc3545;
-    color: #dc3545;
+/* Action danger (supprimer) */
+.btn-action-danger {
+    background: var(--danger-glass);
+    border-color: rgba(220, 53, 69, 0.3);
 }
 
-.btn-action.btn-delete:hover {
-    background: #dc3545;
-    border-color: #dc3545;
-    color: white;
+.btn-action-danger:hover {
+    background: rgba(220, 53, 69, 0.3);
     transform: scale(1.1) rotate(-5deg);
-    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
-}
-
-.btn-action.btn-delete:active {
-    transform: scale(0.95);
 }
 
 /* ========================================
    BOUTONS SPÉCIAUX
    ======================================== */
 
-/* Bouton lien */
-.btn-link {
-    background: none;
-    border: none;
-    color: #667eea;
-    padding: 0;
-    text-decoration: underline;
-    font-weight: 500;
+/* Export */
+.btn-export {
+    background: linear-gradient(135deg, var(--success-glass), var(--info-glass));
+    border-color: rgba(40, 167, 69, 0.3);
 }
 
-.btn-link:hover {
-    color: #5a73e5;
-    transform: none;
-    box-shadow: none;
-}
-
-/* Bouton reset (filtres) */
+/* Reset/Clear */
 .btn-reset {
-    background: #f8f9fa;
-    color: #6c757d;
-    border: 2px solid #e9ecef;
-    padding: 8px 20px;
-    border-radius: 10px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-weight: normal;
+    background: transparent;
+    border-style: dashed;
+    border-color: rgba(108, 117, 125, 0.3);
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .btn-reset:hover {
-    background: #e9ecef;
-    border-color: #dee2e6;
-    transform: scale(1.05);
-}
-
-/* Bouton retour (avec support contexte) */
-.btn-back,
-.header-back-button {
-    /* Style par défaut géré par .btn + modificateurs */
-    /* Ajustements spécifiques si nécessaire */
-    flex-shrink: 0;
-}
-
-/* Animation spéciale pour bouton retour */
-.btn-back:hover,
-.header-back-button:hover {
-    transform: translateX(-2px);
-}
-
-/* Bouton déconnexion */
-.btn-logout,
-.header-logout-button {
-    background: #e74c3c;
-    color: white;
-    border: none;
-    padding: 8px 20px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.btn-logout:hover,
-.header-logout-button:hover {
-    background: #c0392b;
-    transform: scale(1.05);
-}
-
-/* Bouton déconnexion dans header-user-section */
-.header-user-section .header-logout-button {
-    padding: 6px 12px;
-    font-size: 13px;
-    border-radius: 15px;
+    background: rgba(108, 117, 125, 0.1);
+    border-style: solid;
 }
 
 /* ========================================
-   ÉLÉMENTS UI STYLE BOUTON (migré depuis app-header.css)
+   CONTEXTES
    ======================================== */
 
-/* Section utilisateur du header (glassmorphism) */
-.header-user-section {
-    /* Glassmorphism similaire aux boutons */
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    padding: 10px 20px;
-    border-radius: 25px;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    white-space: nowrap;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+/* Sur fond sombre (défaut) */
+.on-dark {
+    /* Styles par défaut déjà adaptés */
 }
 
-.header-user-section:hover {
-    background: rgba(255, 255, 255, 0.25);
-    border-color: rgba(255, 255, 255, 0.35);
-    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.15);
-    transform: translateY(-1px);
+/* Sur fond clair */
+.on-light {
+    color: #333;
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
 }
 
-/* Adaptations contextuelles */
-.theme-dark .header-user-section {
-    background: rgba(255, 255, 255, 0.12);
-}
-
-.theme-dark .header-user-section:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-
-.theme-warning .header-user-section {
+.on-light:hover {
     background: rgba(0, 0, 0, 0.1);
-    color: #333;
-}
-
-.theme-warning .header-user-section:hover {
-    background: rgba(0, 0, 0, 0.2);
-}
-
-.theme-minimal .header-user-section {
-    background: #f8f9fa;
-    color: #333;
-    border: 1px solid #dee2e6;
-    backdrop-filter: none;
-}
-
-.theme-minimal .header-user-section:hover {
-    background: #e9ecef;
+    border-color: rgba(0, 0, 0, 0.2);
 }
 
 /* ========================================
-   ÉTAT LOADING
+   ÉTATS
    ======================================== */
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+    pointer-events: none;
+}
+
+/* Loading */
 .btn.loading {
     color: transparent;
 }
@@ -413,43 +312,27 @@
     position: absolute;
     width: 20px;
     height: 20px;
-    top: 50%;
-    left: 50%;
-    margin-left: -10px;
-    margin-top: -10px;
-    border: 2px solid rgba(255, 255, 255, 0.6);
-    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
     border-top-color: white;
-    animation: spinner 0.8s linear infinite;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
 }
 
-.btn-secondary.loading::after,
-.btn-reset.loading::after {
-    border-color: rgba(108, 117, 125, 0.3);
-    border-top-color: #6c757d;
-}
-
-@keyframes spinner {
+@keyframes spin {
     to { transform: rotate(360deg); }
 }
 
 /* ========================================
-   GROUPE DE BOUTONS
+   GROUPES
    ======================================== */
 .btn-group {
     display: flex;
-    gap: 12px;
+    gap: 8px;
     align-items: center;
-    flex-wrap: wrap;
 }
 
 .btn-group-vertical {
     flex-direction: column;
-    width: 100%;
-}
-
-.btn-group-vertical .btn {
-    width: 100%;
 }
 
 /* ========================================
@@ -457,69 +340,12 @@
    ======================================== */
 @media (max-width: 768px) {
     .btn {
-        padding: 12px 20px;
-        font-size: 16px;
+        padding: 10px 20px;
+        font-size: 14px;
     }
     
     .btn-sm {
         padding: 6px 12px;
-        font-size: 13px;
-    }
-    
-    .btn-lg {
-        padding: 14px 28px;
-        font-size: 16px;
-    }
-    
-    .btn-action {
-        padding: 5px 10px;
-        font-size: 13px;
-    }
-    
-    /* Section utilisateur responsive */
-    .header-user-section {
-        padding: 8px 16px;
-        gap: 10px;
+        font-size: 12px;
     }
 }
-
-@media (max-width: 480px) {
-    .btn {
-        padding: 10px 16px;
-        font-size: 14px;
-    }
-    
-    .btn-group {
-        flex-direction: column;
-        width: 100%;
-    }
-    
-    .btn-group .btn {
-        width: 100%;
-    }
-    
-    /* Section utilisateur mobile */
-    .header-user-section {
-        flex-direction: column;
-        align-items: center;
-        gap: 6px;
-        padding: 10px;
-    }
-}
-
-/* ========================================
-   HISTORIQUE DES DIFFICULTÉS
-   
-   [27/01/2025] - Centralisation de tous les boutons
-   [01/02/2025] - Ajout des modificateurs de forme
-   - Ajout .pill, .standard, .square, .round
-   - Migration de .header-user-section depuis app-header.css
-   - Support des contextes (on-dark, on-light)
-   - Centralisation complète de tous les styles de boutons
-   
-   NOTES POUR REPRISES FUTURES:
-   - Tous les boutons sont maintenant centralisés ici
-   - Utiliser les modificateurs de forme pour personnaliser
-   - .header-user-section est maintenant ici (pas dans app-header.css)
-   - Les orchestrateurs passent les classes aux composants
-   ======================================== */

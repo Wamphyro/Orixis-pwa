@@ -14,6 +14,9 @@
 // MODIFIÉ le 02/02/2025:
 // - DÉPLACEMENT de toutes les configs UI ici (depuis commandes.data.js)
 // - L'orchestrateur décide maintenant comment présenter les données
+//
+// MODIFIÉ le 29/12/2024:
+// - Intégration de ui.config.js pour les styles de boutons
 // ========================================
 
 import { CommandesService } from './commandes.service.js';
@@ -37,11 +40,14 @@ import { DataTableExport } from '../../src/components/ui/datatable/datatable.exp
 import { DataTablePagination } from '../../src/components/ui/datatable/datatable.pagination.js';
 import { DataTableResize } from '../../src/components/ui/datatable/datatable.resize.js';
 
+// 🔑 IMPORT DE LA CONFIG UI
+import { COMPONENT_CONFIG } from '../../src/config/ui.config.js';
+
 import { state } from './commandes.main.js';
 import { chargerMagasins } from '../../src/services/firebase.service.js';
 
 // ========================================
-// 🆕 CONFIGURATION UI (DÉPLACÉE ICI DEPUIS COMMANDES.DATA.JS)
+// CONFIGURATION UI (DÉPLACÉE ICI DEPUIS COMMANDES.DATA.JS)
 // ========================================
 
 // Configuration des filtres - L'ORCHESTRATEUR décide
@@ -250,12 +256,8 @@ function initDataTable() {
             ResizeClass: DataTableResize
         },
         
-        // 🔑 INJECTION DES CLASSES CSS
-        buttonClasses: {
-            export: 'btn btn-export pill',
-            action: 'btn-action',
-            pagination: 'pagination-btn'
-        },
+        / 🔑 UTILISATION DE LA CONFIG UI
+        ...COMPONENT_CONFIG.dataTable,
         
         columns: [
             {
@@ -408,10 +410,8 @@ async function initFiltres() {
         // 🔑 INJECTION DE DROPDOWNLIST
         DropdownClass: DropdownList,
         
-        // 🔑 INJECTION DES CLASSES CSS
-        buttonClasses: {
-            reset: 'btn btn-reset pill'
-        },
+        // 🔑 UTILISATION DE LA CONFIG UI
+        ...COMPONENT_CONFIG.dataTableFilters,
         
         // Callback appelé quand les filtres changent
         onFilter: (filters) => {

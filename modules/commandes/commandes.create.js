@@ -11,6 +11,11 @@
 // [01/02/2025] - Intégration de DropdownList pour tous les selects
 // ========================================
 
+
+import { MODULE_BUTTONS } from '../../src/config/ui.config.js';
+
+const btnSave = `<button class="${MODULE_BUTTONS.commandes.save}">Enregistrer</button>`;
+
 import { db } from '../../src/services/firebase.service.js';
 import { ClientsService } from '../../src/services/clients.service.js';
 import { ProduitsService } from '../../src/services/produits.service.js';
