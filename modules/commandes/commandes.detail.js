@@ -116,7 +116,7 @@ export async function voirDetailCommande(commandeId) {
 
 function createOrderTimeline(container, commande, options = {}) {
     // Utiliser la configuration centralisée
-    const statuts = COMMANDES_CONFIG.TIMELINE_CONFIG.sequence;
+    const statuts = TIMELINE_CONFIG.sequence;
     
     // Transformer les données commande en items génériques pour Timeline
     const items = statuts.map(statut => {
@@ -146,7 +146,7 @@ function createOrderTimeline(container, commande, options = {}) {
     
     // Fusionner les options par défaut avec celles fournies
     const finalOptions = {
-        ...COMMANDES_CONFIG.TIMELINE_CONFIG.defaultOptions,
+        ...TIMELINE_CONFIG.defaultOptions,
         ...options,
         container,
         items
@@ -158,7 +158,7 @@ function createOrderTimeline(container, commande, options = {}) {
 
 function getDateForStatut(commande, statut) {
     // Utiliser le mapping centralisé
-    const dateField = COMMANDES_CONFIG.TIMELINE_CONFIG.dateFields[statut];
+    const dateField = TIMELINE_CONFIG.dateFields[statut];
     if (!dateField) return '';
     
     const date = commande.dates?.[dateField];
