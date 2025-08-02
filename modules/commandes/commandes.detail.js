@@ -23,29 +23,9 @@ import {
     COMMANDES_CONFIG
 } from './commandes.data.js';
 import config from './commandes.config.js';
+import { createOrderTimeline } from '../../src/components/ui/timeline/timeline.component.js';
 import { chargerDonnees } from './commandes.list.js';
 import { afficherSucces, afficherErreur } from './commandes.main.js';
-
-// Configuration Timeline locale au module
-const TIMELINE_CONFIG = {
-    sequence: ['nouvelle', 'preparation', 'terminee', 'expediee', 'receptionnee', 'livree'],
-    dateFields: {
-        nouvelle: 'commande',
-        preparation: 'preparationDebut',
-        terminee: 'preparationFin',
-        expediee: 'expeditionValidee',
-        receptionnee: 'receptionValidee',
-        livree: 'livraisonClient'
-    },
-    defaultOptions: {
-        theme: 'colorful',
-        orientation: 'horizontal',
-        animated: true,
-        showDates: true,
-        showLabels: true,
-        clickable: false
-    }
-};
 
 function genererOptionsUrgence() {
     return Object.entries(COMMANDES_CONFIG.NIVEAUX_URGENCE).map(([key, urgence]) => ({
@@ -104,69 +84,6 @@ export async function voirDetailCommande(commandeId) {
 }
 
 // ========================================
-// LOGIQUE DE CRÉATION DE TIMELINE POUR COMMANDES
-// Cette fonction est ICI car c'est de la logique métier
-// ========================================
-
-function createOrderTimeline(container, commande, options = {}) {
-    // Utiliser la configuration centralisée
-    const statuts = TIMELINE_CONFIG.sequence;
-    
-    // Transformer les données commande en items génériques pour Timeline
-    const items = statuts.map(statut => {
-        const config = COMMANDES_CONFIG.STATUTS[statut];
-        
-        const item = {
-            id: statut,
-            label: config.label,
-            icon: config.icon,
-            date: getDateForStatut(commande, statut),
-            description: config.description || null
-        };
-        
-        // Déterminer le statut visuel
-        if (commande.statut === 'annulee') {
-            item.status = 'disabled';
-        } else if (statut === commande.statut) {
-            item.status = 'active';
-        } else if (statuts.indexOf(statut) < statuts.indexOf(commande.statut)) {
-            item.status = 'completed';
-        } else {
-            item.status = 'pending';
-        }
-        
-        return item;
-    });
-    
-    // Fusionner les options par défaut avec celles fournies
-    const finalOptions = {
-        ...TIMELINE_CONFIG.defaultOptions,
-        ...options,
-        container,
-        items
-    };
-    
-    // Créer l'instance Timeline avec la config locale
-    return config.createCommandeTimeline(
-        finalOptions.container,
-        finalOptions.items,
-        finalOptions
-    );
-}
-
-function getDateForStatut(commande, statut) {
-    // Utiliser le mapping centralisé
-    const dateField = TIMELINE_CONFIG.dateFields[statut];
-    if (!dateField) return '';
-    
-    const date = commande.dates?.[dateField];
-    if (!date) return '';
-    
-    const dateObj = date.toDate ? date.toDate() : new Date(date);
-    return dateObj.toLocaleDateString('fr-FR');
-}
-
-// ========================================
 // AFFICHAGE DU DÉTAIL
 // ========================================
 
@@ -181,16 +98,26 @@ function afficherDetailCommande(commande) {
     }
     
     const timelineContainer = document.getElementById('timeline');
+    if (!timelineContainer) {
+        console.error('❌ Container timeline non trouvé');
+        return;
+    }
+    
     timelineContainer.innerHTML = '';
     
     // Créer la nouvelle timeline
-    timelineInstance = createOrderTimeline(timelineContainer, commande, {
-        orientation: 'horizontal',
-        theme: 'colorful',
-        animated: true,
-        showDates: true,
-        showLabels: true
-    });
+    try {
+        timelineInstance = createOrderTimeline('#timeline', commande, {
+            orientation: 'horizontal',
+            theme: 'colorful',
+            animated: true,
+            showDates: true,
+            showLabels: true
+        });
+        console.log('✅ Timeline créée avec succès');
+    } catch (error) {
+        console.error('❌ Erreur création timeline:', error);
+    }
     
     // Informations client
     afficherSectionClient(commande);
