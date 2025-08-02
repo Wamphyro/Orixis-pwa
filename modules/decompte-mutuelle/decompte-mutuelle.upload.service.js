@@ -67,10 +67,7 @@ export async function uploadDecompteDocument(file) {
         const extension = file.name.split('.').pop().toLowerCase();
         const nomFichier = `DM_${userInfo.societe}_${dateStr}_${timeStr}_${shortUUID}.${extension}`;
         
-        // Récupérer les infos utilisateur (avec société)
-        const userInfo = getUserInfo();
-        
-        // Chemin complet : decomptes-mutuelles/BA/inbox/2025/02/03/1234567890_decompte.pdf
+        // Chemin complet : decomptes-mutuelles/BA/inbox/2025/02/03/DM_BA_20250203_143029_550e8400.pdf
         const chemin = `${STORAGE_BASE_PATH}/${userInfo.societe}/inbox/${annee}/${mois}/${jour}/${nomFichier}`;
         
         console.log('📤 Upload vers:', chemin);
