@@ -44,7 +44,7 @@ let dropdownPrestataire = null;
 // ========================================
 
 export function initCreationDecompte() {
-    console.log('Module création décompte initialisé (vide pour l'instant)');
+    console.log('Module création décompte initialisé (vide pour l\'instant)');
     
     // Préparer les listeners futurs
     window.resetNouveauDecompte = resetNouveauDecompte;
