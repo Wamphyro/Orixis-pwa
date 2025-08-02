@@ -13,7 +13,7 @@ export const MAGASIN_TEMPLATE = {
     societe: {
         id: null,                   // String - Référence: societes/xxx
         code: null,                 // String - Ex: "BA"
-        raisonSociale: null         // String (optionnel - 10% fillRate)
+        raisonSociale: null         // String - Nom complet société (100% fillRate)
     },
     
     // Coordonnées
@@ -55,7 +55,7 @@ export const MAGASIN_TEMPLATE = {
 };
 
 export const MAGASIN_RULES = {
-    required: ['code', 'nom', 'societe', 'actif'],
+    required: ['code', 'nom', 'societe', 'societe.code', 'societe.raisonSociale', 'actif'],
     unique: ['code'],
     pattern: {
         code: /^9[A-Z]{3}$/         // Format: 9XXX
