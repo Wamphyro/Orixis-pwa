@@ -61,7 +61,7 @@ export async function creerDecompte(data) {
         // Remplir les données du template
         // Identification
         decompteData.numeroDecompte = numeroDecompte;
-        decompteData.typeDecompte = 'individuel';  // Par défaut
+        decompteData.typeDecompte = null;  // Sera déterminé par l'IA
         
         // Organisation - Récupérer la raison sociale dynamiquement
         if (!auth.raisonSociale && auth.magasin) {

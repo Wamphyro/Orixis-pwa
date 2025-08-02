@@ -330,6 +330,9 @@ export const HTML_TEMPLATES = {
     
     // Template pour type décompte
     typeDecompte: (type) => {
+        if (!type) {
+            return `<span class="type-decompte">- Non déterminé</span>`;
+        }
         const config = type === 'groupe' ? 
             { icon: '👥', label: 'Groupé' } : 
             { icon: '👤', label: 'Individuel' };
