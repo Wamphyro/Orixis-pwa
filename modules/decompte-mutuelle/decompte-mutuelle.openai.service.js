@@ -272,18 +272,39 @@ export class DecompteOpenAIService {
      * Préparer les images du document
      * @private
      */
-    static async prepareDocumentImages(documentUrl, documentType) {
-        // HACK TEMPORAIRE : Traiter les PDF comme des images
-        console.warn('⚠️ PDF traité comme image - résultats imprévisibles');
-        
-        try {
-            const base64 = await this.fetchImageAsBase64(documentUrl);
-            return [base64];
-        } catch (error) {
-            console.error('❌ Erreur conversion:', error);
-            throw new Error('Document non lisible. Utilisez des images JPG/PNG pour de meilleurs résultats.');
-        }
+static async prepareDocumentImages(documentUrl, documentType) {
+    console.log('📄 Type de document:', documentType);
+    
+    // HACK TEMPORAIRE : On envoie le PDF tel quel à OpenAI
+    // GPT-4 Vision peut parfois lire des PDF simples
+    if (documentType === 'application/pdf') {
+        console.warn('⚠️ Envoi PDF direct à OpenAI - fonctionnalité expérimentale');
     }
+    
+    try {
+        // On récupère le fichier comme blob peu importe le type
+        const response = await fetch(documentUrl);
+        const blob = await response.blob();
+        
+        // Convertir en base64
+        const base64 = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64 = reader.result.split(',')[1];
+                resolve(base64);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+        
+        console.log('✅ Document converti en base64, taille:', base64.length);
+        return [base64];
+        
+    } catch (error) {
+        console.error('❌ Erreur conversion:', error);
+        throw new Error('Impossible de lire le document');
+    }
+}
     
     /**
      * Récupérer une image et la convertir en base64
