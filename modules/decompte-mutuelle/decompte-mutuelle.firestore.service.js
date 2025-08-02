@@ -19,6 +19,7 @@
 // ========================================
 
 import { db } from '../../src/services/firebase.service.js';
+import { DECOMPTE_TEMPLATE } from '../../src/templates/index.js';
 
 // ========================================
 // CONFIGURATION
@@ -54,49 +55,49 @@ export async function creerDecompte(data) {
         // Récupérer les infos utilisateur
         const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
         
-        // Préparer les données
-        const decompteData = {
-            // Identifiants
-            numeroDecompte: numeroDecompte,
-            
-            // Documents uploadés
-            documents: data.documents || [],
-            
-            // Infos organisation
-            societe: auth.societe || 'XXX',
-            magasinUploadeur: auth.magasin || 'XXX',
-            
-            // Données à extraire par l'IA
-            client: null,
-            mutuelle: null,
-            montants: null,
-            dateDecompte: null,
-            magasinConcerne: null,  // Sera déterminé par l'IA
-            
-            // Statut et workflow
-            statut: STATUTS.NOUVEAU,
-            
-            // Métadonnées
-            dateCreation: serverTimestamp(),
-            dateModification: serverTimestamp(),
-            creeePar: {
-                id: auth.collaborateur?.id || 'unknown',
-                nom: auth.collaborateur ? `${auth.collaborateur.prenom} ${auth.collaborateur.nom}` : 'Inconnu'
-            },
-            
-            // Historique
-            historique: [{
-                date: new Date().toISOString(),
-                action: 'creation',
-                par: auth.collaborateur ? `${auth.collaborateur.prenom} ${auth.collaborateur.nom}` : 'Système',
-                details: `${data.documents.length} document(s) uploadé(s)`
-            }]
+        // Cloner le template pour garantir la structure
+        const decompteData = JSON.parse(JSON.stringify(DECOMPTE_TEMPLATE));
+        
+        // Remplir les données du template
+        // Identification
+        decompteData.numeroDecompte = numeroDecompte;
+        decompteData.typeDecompte = 'individuel';  // Par défaut
+        
+        // Organisation
+        decompteData.societe = auth.societe || 'XXX';
+        decompteData.codeMagasin = auth.magasin || 'XXX';
+        decompteData.magasinUploadeur = auth.magasin || 'XXX';
+        
+        // Documents uploadés
+        decompteData.documents = data.documents || [];
+        
+        // Dates - utiliser serverTimestamp pour la création
+        decompteData.dates.creation = serverTimestamp();
+        
+        // Intervenants
+        decompteData.intervenants.creePar = {
+            id: auth.collaborateur?.id || 'unknown',
+            nom: auth.collaborateur?.nom || 'Inconnu',
+            prenom: auth.collaborateur?.prenom || '',
+            role: auth.collaborateur?.role || 'technicien'
         };
+        
+        // Historique initial
+        decompteData.historique = [{
+            date: new Date().toISOString(),
+            action: 'creation',
+            par: auth.collaborateur ? `${auth.collaborateur.prenom} ${auth.collaborateur.nom}` : 'Système',
+            details: `${data.documents.length} document(s) uploadé(s)`
+        }];
+        
+        // Statut initial
+        decompteData.statut = STATUTS.NOUVEAU;
         
         // Créer dans Firestore
         const docRef = await addDoc(collection(db, COLLECTION_NAME), decompteData);
         
-        console.log('✅ Décompte créé:', numeroDecompte, 'ID:', docRef.id);
+        console.log('✅ Décompte créé avec template:', numeroDecompte, 'ID:', docRef.id);
+        console.log('📋 Structure complète:', decompteData);
         
         return docRef.id;
         
@@ -135,7 +136,7 @@ export async function getDecomptes(filtres = {}) {
         }
         
         if (filtres.magasin) {
-            constraints.push(where('magasinConcerne', '==', filtres.magasin));
+            constraints.push(where('codeMagasin', '==', filtres.magasin));
         }
         
         if (filtres.mutuelle) {
@@ -222,7 +223,8 @@ export async function updateStatut(id, nouveauStatut) {
         
         const updates = {
             statut: nouveauStatut,
-            dateModification: serverTimestamp(),
+            'dates.transmissionIA': nouveauStatut === STATUTS.EN_COURS ? serverTimestamp() : null,
+            'dates.traitementEffectue': nouveauStatut === STATUTS.TRAITE ? serverTimestamp() : null,
             historique: await ajouterHistorique(id, {
                 action: 'changement_statut',
                 details: `Statut changé en: ${nouveauStatut}`
@@ -251,18 +253,42 @@ export async function ajouterDonneesExtraites(id, donnees) {
         );
         
         const updates = {
-            // Données extraites
-            client: donnees.client || null,
+            // Client - structure complète conforme au template
+            client: {
+                id: donnees.client?.id || null,
+                nom: donnees.client?.nom || null,
+                prenom: donnees.client?.prenom || null,
+                numeroSecuriteSociale: donnees.client?.numeroSecuriteSociale || null
+            },
+            
+            // Données financières
             mutuelle: donnees.mutuelle || null,
-            montants: donnees.montants || null,
-            dateDecompte: donnees.dateDecompte || null,
-            magasinConcerne: donnees.magasinConcerne || null,
+            montantRemboursementClient: donnees.montantRemboursementClient || 0,
+            montantVirement: donnees.montantVirement || 0,
+            nombreClients: donnees.nombreClients || 1,
+            
+            // Magasin concerné (déterminé par l'IA)
+            codeMagasin: donnees.magasinConcerne || donnees.codeMagasin,
+            
+            // Prestataire TP si identifié
+            prestataireTP: donnees.prestataireTP || null,
+            
+            // Mise à jour des dates
+            'dates.transmissionIA': serverTimestamp(),
+            'dates.traitementEffectue': serverTimestamp(),
             
             // Mise à jour du statut
             statut: STATUTS.TRAITE,
-            dateModification: serverTimestamp(),
             
-            // Historique
+            // Intervenant qui a traité
+            'intervenants.traitePar': {
+                id: 'system_ia',
+                nom: 'SYSTEM',
+                prenom: 'IA',
+                role: 'system'
+            },
+            
+            // Ajouter à l'historique
             historique: await ajouterHistorique(id, {
                 action: 'extraction_ia',
                 details: 'Données extraites avec succès',
@@ -272,7 +298,7 @@ export async function ajouterDonneesExtraites(id, donnees) {
         
         await updateDoc(doc(db, COLLECTION_NAME, id), updates);
         
-        console.log('✅ Données extraites ajoutées');
+        console.log('✅ Données extraites ajoutées avec template');
         
     } catch (error) {
         console.error('❌ Erreur ajout données:', error);
