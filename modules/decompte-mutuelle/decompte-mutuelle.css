@@ -1,0 +1,450 @@
+/* ========================================
+   DECOMPTE-MUTUELLE.CSS - Styles du module décomptes mutuelles
+   Chemin: modules/decompte-mutuelle/decompte-mutuelle.css
+   
+   DESCRIPTION:
+   Adaptation des styles commandes pour le module décomptes mutuelles
+   Classes préfixées .decompte-* pour éviter les conflits
+   
+   TABLE DES MATIÈRES:
+   1. Fix FOUC - Masquage initial des modales
+   2. En-tête et statistiques
+   3. Tableau des décomptes
+   4. Badges et statuts spécifiques
+   5. Modales décomptes
+   6. Timeline
+   7. Formatage des montants
+   8. Responsive
+   
+   DÉPENDANCES:
+   - Réutilise les composants UI (button.css, badge.css, etc.)
+   - Styles spécifiques au module uniquement
+   ======================================== */
+
+/* ========================================
+   FIX FOUC - Cacher les modales au chargement
+   ======================================== */
+#modalNouveauDecompte,
+#modalDetailDecompte {
+    display: none !important;
+}
+
+#modalNouveauDecompte.active,
+#modalDetailDecompte.active {
+    display: flex !important;
+}
+
+/* ========================================
+   EN-TÊTE ET STATISTIQUES
+   ======================================== */
+.decomptes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.decomptes-stats {
+    display: flex;
+    gap: 20px;
+    flex: 1;
+    flex-wrap: wrap;
+}
+
+.decomptes-actions {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+/* ========================================
+   TABLEAU DES DÉCOMPTES
+   ======================================== */
+.decomptes-table-container {
+    background: white;
+    border-radius: 15px;
+    padding: 0;
+    margin-bottom: 30px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.decomptes-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.decomptes-table thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.decomptes-table th {
+    padding: 15px 20px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 15px;
+    white-space: nowrap;
+}
+
+.decomptes-table tbody tr {
+    border-bottom: 1px solid #f1f3f5;
+    transition: all 0.2s ease;
+}
+
+.decomptes-table tbody tr:hover {
+    background: #f8f9fa;
+    transform: scale(1.01);
+}
+
+.decomptes-table td {
+    padding: 15px 20px;
+    font-size: 15px;
+    color: #495057;
+}
+
+/* Harmonisation des éléments */
+.decomptes-table .badge {
+    font-size: 13px;
+}
+
+.decomptes-table .btn-action {
+    font-size: 16px;
+}
+
+/* ========================================
+   BADGES ET STATUTS SPÉCIFIQUES
+   ======================================== */
+
+/* Statuts décomptes */
+.badge-nouveau {
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+.badge-traitement-ia {
+    background-color: #cfe2ff;
+    color: #084298;
+}
+
+.badge-traitement-effectue {
+    background-color: #d1e7dd;
+    color: #0f5132;
+}
+
+.badge-traitement-manuel {
+    background-color: #fff3cd;
+    color: #664d03;
+}
+
+.badge-rapprochement-bancaire {
+    background-color: #e7f1ff;
+    color: #0c63e4;
+}
+
+.badge-supprime {
+    background-color: #f8d7da;
+    color: #842029;
+}
+
+/* Type de décompte */
+.type-decompte {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 14px;
+}
+
+/* Montants */
+.montant-value {
+    font-weight: 600;
+    color: #2c3e50;
+    white-space: nowrap;
+}
+
+/* NSS */
+.nss-value {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+}
+
+/* Icônes statuts */
+.statut-icon-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+}
+
+.statut-icon {
+    font-size: 18px;
+}
+
+.statut-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    margin-bottom: 5px;
+}
+
+.statut-icon-wrapper:hover .statut-tooltip {
+    display: block;
+}
+
+/* ========================================
+   MODAL DÉTAIL DÉCOMPTE
+   ======================================== */
+
+/* Taille des modales */
+#modalNouveauDecompte .modal-content,
+#modalDetailDecompte .modal-content {
+    width: 900px;
+    max-width: 95%;
+    height: 80vh;
+    max-height: 90vh;
+}
+
+/* Sections détail */
+.detail-sections {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.detail-column-left,
+.detail-column-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.detail-section {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.detail-section h3 {
+    font-size: 18px;
+    color: #667eea;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+/* Info détaillées */
+.detail-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.detail-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 13px;
+}
+
+.detail-value {
+    color: #2c3e50;
+    font-size: 15px;
+}
+
+/* Section montants spéciale */
+.montants-detail {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 10px;
+}
+
+.montant-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+}
+
+.montant-row:not(:last-child) {
+    border-bottom: 1px solid #f1f3f5;
+}
+
+.montant-label {
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.montant-total {
+    font-weight: 700;
+    font-size: 18px;
+    color: #667eea;
+    border-top: 2px solid #667eea;
+    padding-top: 10px;
+    margin-top: 10px;
+}
+
+/* ========================================
+   TIMELINE SPÉCIFIQUE
+   ======================================== */
+.timeline-container {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+/* ========================================
+   MODAL NOUVEAU DÉCOMPTE
+   ======================================== */
+.nouveau-decompte-placeholder {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+
+.nouveau-decompte-placeholder h3 {
+    font-size: 24px;
+    margin-bottom: 15px;
+    color: #495057;
+}
+
+.nouveau-decompte-placeholder p {
+    font-size: 16px;
+    margin-bottom: 30px;
+}
+
+/* ========================================
+   ACTIONS DÉTAIL
+   ======================================== */
+.detail-actions {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.detail-actions .btn {
+    min-width: 160px;
+}
+
+/* ========================================
+   FILTRES DÉCOMPTES
+   ======================================== */
+.decomptes-filters {
+    margin-bottom: 25px;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 1200px) {
+    .decomptes-table-container {
+        overflow-x: auto;
+    }
+    
+    .decomptes-table {
+        min-width: 900px;
+    }
+}
+
+@media (max-width: 768px) {
+    /* En-tête */
+    .decomptes-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .decomptes-stats {
+        justify-content: space-between;
+    }
+    
+    /* Modales */
+    #modalNouveauDecompte .modal-content,
+    #modalDetailDecompte .modal-content {
+        width: 100%;
+        height: 100%;
+        max-height: 100%;
+        border-radius: 0;
+    }
+    
+    /* Détail */
+    .detail-sections {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .detail-info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .detail-actions {
+        padding: 15px;
+    }
+    
+    .detail-actions .btn {
+        min-width: 100%;
+    }
+    
+    /* Tableau */
+    .decomptes-table {
+        font-size: 14px;
+    }
+    
+    .decomptes-table th,
+    .decomptes-table td {
+        padding: 12px 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stat-card {
+        min-width: 100%;
+    }
+    
+    .decomptes-actions .btn {
+        font-size: 14px;
+        padding: 12px 20px;
+    }
+    
+    .montant-value {
+        font-size: 14px;
+    }
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [02/02/2025] - Création initiale
+   - Adaptation des styles commandes
+   - Classes préfixées .decompte-*
+   - Styles spécifiques aux statuts décomptes
+   - Section montants détaillée
+   
+   NOTES POUR REPRISES FUTURES:
+   - Les composants réutilisables ont leur propre CSS
+   - Ne pas dupliquer les styles des composants
+   - Utiliser les classes .decompte-* pour ce module
+   ======================================== */

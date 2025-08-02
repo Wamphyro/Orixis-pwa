@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAV Audio - Décompte Mutuelle</title>
+    <title>SAV Audio - Décomptes Mutuelles</title>
     
     <!-- PWA Meta Tags -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="SAV Audio">
-    <link rel="manifest" href="../manifest.json">
+    <link rel="manifest" href="../../manifest.json">
     <meta name="theme-color" content="#667eea">
     
     <!-- ========================================
@@ -18,26 +18,28 @@
          ======================================== -->
     
     <!-- 1. Base et layout -->
-    <link rel="stylesheet" href="../src/css/main.css">
+    <link rel="stylesheet" href="../../src/css/main.css">
 
-    <!-- 2. Composants UI partagés -->
-    <link rel="stylesheet" href="../src/css/shared/ui/animation.css">
-    <link rel="stylesheet" href="../src/css/shared/ui/badge.css">
-    <link rel="stylesheet" href="../src/css/shared/ui/form.css">
-    <link rel="stylesheet" href="../src/css/shared/ui/modal.css">
-    <link rel="stylesheet" href="../src/css/shared/ui/dialog.css">
-    <link rel="stylesheet" href="../src/css/shared/ui/notification.css">
-    <link rel="stylesheet" href="../src/css/shared/ui/search-dropdown.css">
-    <link rel="stylesheet" href="../src/css/shared/ui/datatable.css">
-    <link rel="stylesheet" href="../src/css/shared/ui/datatable-filters.css">
-    <link rel="stylesheet" href="../src/css/shared/ui/dropdown-list.css">
-    <link rel="stylesheet" href="../src/css/shared/ui/button.css">
-    <link rel="stylesheet" href="../src/css/shared/ui/stats-cards.css">
-    <link rel="stylesheet" href="../src/css/shared/ui/app-header.css">
+    <!-- 2. CSS utilitaires partagés -->
+    <link rel="stylesheet" href="../../src/components/ui/common/animation.css">
+    <link rel="stylesheet" href="../../src/components/ui/common/form.css">
+    <link rel="stylesheet" href="../../src/components/ui/button/button.css">
 
-    <!-- 3. CSS spécifiques au décompte mutuelle -->
-    <link rel="stylesheet" href="../src/css/decompte-mutuelle/decompte-mutuelle.css">
-    <link rel="stylesheet" href="../src/css/decompte-mutuelle/decompte-mutuelle-custom.css">
+    <!-- 3. Composants UI -->
+    <link rel="stylesheet" href="../../src/components/ui/modal/modal.css">
+    <link rel="stylesheet" href="../../src/components/ui/dialog/dialog.css">
+    <link rel="stylesheet" href="../../src/components/ui/notification/notification.css">
+    <link rel="stylesheet" href="../../src/components/ui/timeline/timeline.css">
+    <link rel="stylesheet" href="../../src/components/ui/search-dropdown/search-dropdown.css">
+    <link rel="stylesheet" href="../../src/components/ui/datatable/datatable.css">
+    <link rel="stylesheet" href="../../src/components/ui/datatable-filters/datatable-filters.css">
+    <link rel="stylesheet" href="../../src/components/ui/dropdown-list/dropdown-list.css">
+    <link rel="stylesheet" href="../../src/components/ui/stats-cards/stats-cards.css">
+    <link rel="stylesheet" href="../../src/components/ui/app-header/app-header.css">
+    <link rel="stylesheet" href="../../src/components/ui/badge/badge.css">
+
+    <!-- 4. CSS spécifique au module décomptes mutuelles -->
+    <link rel="stylesheet" href="./decompte-mutuelle.css">
 </head>
 <body>
     <!-- Container pour le composant AppHeader -->
@@ -45,150 +47,44 @@
     
     <div class="container">
         <!-- Barre d'actions et statistiques -->
-        <div class="decompte-header">
-            <div class="decompte-stats">
+        <div class="decomptes-header">
+            <div class="decomptes-stats">
                 <!-- StatsCards va générer le contenu ici -->
             </div>
             
-            <div class="decompte-actions">
-                <!-- ✅ Bouton avec glassmorphism -->
-                <button class="btn btn-primary btn-with-icon" onclick="window.ouvrirNouvelleSaisie()">
-                    <span>➕</span> Nouvelle saisie
+            <div class="decomptes-actions">
+                <button class="btn btn-primary btn-with-icon btn-lg pill" onclick="ouvrirNouveauDecompte()">
+                    <span>➕</span> Nouveau décompte
                 </button>
             </div>
         </div>
 
         <!-- Filtres -->
-        <div class="decompte-filters section">
+        <div class="decomptes-filters section">
             <!-- DataTableFilters va générer le contenu ici -->
         </div>
 
         <!-- Container pour DataTable -->
-        <div class="decompte-table-container section">
+        <div class="decomptes-table-container section">
             <!-- DataTable sera généré ici -->
         </div>
     </div>
 
-    <!-- Modal Nouvelle Saisie -->
-    <div id="modalNouvelleSaisie" class="modal" style="display: none;">
+    <!-- Modal Nouveau Décompte (vide pour l'instant) -->
+    <div id="modalNouveauDecompte" class="modal" style="display: none;">
         <div class="modal-content modal-large">
             <div class="modal-header">
-                <h2>Nouvelle Saisie Décompte Mutuelle</h2>
+                <h2>Nouveau Décompte Mutuelle</h2>
                 <button class="modal-close">&times;</button>
             </div>
             
             <div class="modal-body">
-                <!-- Section Client -->
-                <div class="form-section">
-                    <h3>Sélection du client</h3>
-                    
-                    <div class="client-search">
-                        <!-- SearchDropdown sera initialisé ici -->
-                    </div>
-                    
-                    <div class="client-selected" id="clientSelected" style="display: none;">
-                        <h4>Client sélectionné :</h4>
-                        <div class="client-info">
-                            <p><strong id="selectedClientName"></strong></p>
-                            <p id="selectedClientInfo"></p>
-                        </div>
-                        <button class="btn-link" onclick="window.changerClient()">Changer de client</button>
-                    </div>
-                </div>
-                
-                <!-- Section Informations Mutuelle -->
-                <div class="form-section">
-                    <h3>Informations Mutuelle</h3>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Numéro d'adhérent *</label>
-                            <input type="text" id="numeroAdherent" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Organisme *</label>
-                            <div id="organismeSelect"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Date d'émission *</label>
-                            <input type="date" id="dateEmission" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Date d'expiration</label>
-                            <input type="date" id="dateExpiration">
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Section Montants -->
-                <div class="form-section">
-                    <h3>Montants à décompter</h3>
-                    
-                    <div class="montants-grid">
-                        <div class="montant-card">
-                            <label>Prix de vente TTC</label>
-                            <input type="number" id="prixVente" step="0.01" min="0" 
-                                   placeholder="0,00 €" oninput="window.calculerMontants()">
-                        </div>
-                        
-                        <div class="montant-card">
-                            <label>Remboursement Sécu</label>
-                            <input type="number" id="remboursementSecu" step="0.01" min="0" 
-                                   placeholder="0,00 €" oninput="window.calculerMontants()">
-                        </div>
-                        
-                        <div class="montant-card highlight">
-                            <label>Reste à charge</label>
-                            <div class="montant-value" id="resteACharge">0,00 €</div>
-                        </div>
-                        
-                        <div class="montant-card success">
-                            <label>Prise en charge Mutuelle</label>
-                            <input type="number" id="priseEnCharge" step="0.01" min="0" 
-                                   placeholder="0,00 €" oninput="window.calculerMontants()">
-                        </div>
-                    </div>
-                    
-                    <div class="reste-final">
-                        <span>Reste à payer par le client :</span>
-                        <span id="resteFinal" class="montant-final">0,00 €</span>
-                    </div>
-                </div>
-                
-                <!-- Section Documents -->
-                <div class="form-section">
-                    <h3>Documents justificatifs</h3>
-                    
-                    <div class="documents-zone">
-                        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
-                            <p>📎 Glissez vos fichiers ici ou cliquez pour sélectionner</p>
-                            <input type="file" id="fileInput" multiple accept=".pdf,.jpg,.jpeg,.png" 
-                                   style="display: none;" onchange="window.gererFichiers(this.files)">
-                        </div>
-                        
-                        <div class="documents-list" id="documentsList">
-                            <!-- Liste des documents uploadés -->
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Section Commentaires -->
-                <div class="form-section">
-                    <h3>Commentaires (optionnel)</h3>
-                    <textarea id="commentaires" rows="3" 
-                              placeholder="Informations complémentaires..."></textarea>
-                </div>
+                <!-- Le contenu sera généré par decompte-mutuelle.create.js -->
             </div>
             
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="window.fermerModal('modalNouvelleSaisie')">
-                    Annuler
-                </button>
-                <button class="btn btn-success" onclick="window.validerSaisie()">
-                    ✓ Valider la saisie
+                <button class="btn btn-secondary pill" onclick="fermerModal('modalNouveauDecompte')">
+                    Fermer
                 </button>
             </div>
         </div>
@@ -203,37 +99,51 @@
             </div>
             
             <div class="modal-body">
-                <!-- Statut et timeline -->
-                <div class="statut-container">
-                    <div class="statut-badge" id="statutBadge">
-                        <!-- Badge de statut dynamique -->
+                <!-- Timeline du statut -->
+                <div class="timeline-container">
+                    <div class="timeline" id="timeline">
+                        <!-- Timeline générée dynamiquement -->
                     </div>
                 </div>
                 
-                <!-- Informations détaillées -->
+                <!-- Sections détail -->
                 <div class="detail-sections">
-                    <!-- Section Client -->
-                    <div class="detail-section">
-                        <h3>Client</h3>
-                        <div id="detailClient"></div>
+                    <!-- Colonne de gauche : Client + Montants -->
+                    <div class="detail-column-left">
+                        <!-- Section Client -->
+                        <div class="detail-section">
+                            <h3>Informations client</h3>
+                            <div id="detailClient">
+                                <!-- Contenu généré dynamiquement -->
+                            </div>
+                        </div>
+                        
+                        <!-- Section Montants -->
+                        <div class="detail-section">
+                            <h3>Montants</h3>
+                            <div id="detailMontants">
+                                <!-- Contenu généré dynamiquement -->
+                            </div>
+                        </div>
                     </div>
                     
-                    <!-- Section Mutuelle -->
-                    <div class="detail-section">
-                        <h3>Mutuelle</h3>
-                        <div id="detailMutuelle"></div>
-                    </div>
-                    
-                    <!-- Section Montants -->
-                    <div class="detail-section full-width">
-                        <h3>Détail des montants</h3>
-                        <div id="detailMontants"></div>
-                    </div>
-                    
-                    <!-- Section Documents -->
-                    <div class="detail-section full-width">
-                        <h3>Documents</h3>
-                        <div id="detailDocuments"></div>
+                    <!-- Colonne de droite : Mutuelle + Informations -->
+                    <div class="detail-column-right">
+                        <!-- Section Mutuelle -->
+                        <div class="detail-section">
+                            <h3>Mutuelle et prestataire</h3>
+                            <div id="detailMutuelle">
+                                <!-- Contenu généré dynamiquement -->
+                            </div>
+                        </div>
+                        
+                        <!-- Section Informations -->
+                        <div class="detail-section">
+                            <h3>Informations décompte</h3>
+                            <div id="detailInformations">
+                                <!-- Contenu généré dynamiquement -->
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -245,11 +155,15 @@
         </div>
     </div>
 
+    <!-- Container pour les dialogs custom -->
+    <div id="dialog-container" class="dialog-container"></div>
+
     <!-- Footer -->
     <div class="footer">
         <p>Orixis - © 2025</p>
     </div>
 
-    <script type="module" src="../src/js/pages/decompte-mutuelle/decompte-mutuelle.main.js"></script>
+    <!-- JavaScript local au module -->
+    <script type="module" src="./decompte-mutuelle.main.js"></script>
 </body>
 </html>

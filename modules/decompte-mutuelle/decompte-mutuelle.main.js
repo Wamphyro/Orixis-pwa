@@ -1,32 +1,64 @@
 // ========================================
 // DECOMPTE-MUTUELLE.MAIN.JS - Point d'entrée principal
-// Chemin: src/js/pages/decompte-mutuelle/decompte-mutuelle.main.js
+// Chemin: modules/decompte-mutuelle/decompte-mutuelle.main.js
+//
+// DESCRIPTION:
+// Point d'entrée principal du module décomptes mutuelles
+// Gère l'initialisation, l'authentification et le header
+// Coordonne tous les orchestrateurs
+//
+// ARCHITECTURE:
+// - main.js : Initialisation globale et auth
+// - list.js : Orchestre DataTable + Filtres + StatsCards
+// - create.js : Gère la création (vide pour l'instant)
+// - detail.js : Gère le détail avec timeline
+//
+// DÉPENDANCES:
+// - Firebase pour l'auth
+// - config pour les factories
+// - Les orchestrateurs de chaque section
 // ========================================
 
-import { initFirebase } from '../../src/js/services/firebase.service.js';
+import { initFirebase } from '../../src/services/firebase.service.js';
 import { 
-    AppHeader,
-    StatsCards,
-    modalManager, 
-    Dialog, 
-    notify 
-} from '../../src/components/index.js';
+    initListeDecomptes, 
+    chargerDonnees, 
+    resetFiltres
+} from './decompte-mutuelle.list.js';
+import { 
+    initCreationDecompte,
+    ouvrirNouveauDecompte
+} from './decompte-mutuelle.create.js';
+import { 
+    voirDetailDecompte
+} from './decompte-mutuelle.detail.js';
+import config from './decompte-mutuelle.config.js';
+import { modalManager } from '../../src/components/index.js';
 
-// État global temporaire (en attendant les autres modules)
-const state = {
+// ========================================
+// VARIABLES GLOBALES (partagées entre modules)
+// ========================================
+
+export const state = {
     decomptesData: [],
     currentPage: 1,
     itemsPerPage: 20,
     filtres: {
         recherche: '',
-        organisme: '',
+        magasin: '',
+        mutuelle: '',
         periode: 'all',
-        statut: ''
+        statut: '',
+        statutsActifs: [] // Array pour filtrage multi-statuts depuis cards
     }
 };
 
+// Variable pour le composant header
 let appHeader = null;
-let statsCards = null;
+
+// ========================================
+// INITIALISATION
+// ========================================
 
 // Vérifier l'authentification
 function checkAuth() {
@@ -48,9 +80,32 @@ function checkAuth() {
 function getUserData() {
     const auth = JSON.parse(localStorage.getItem('sav_auth'));
     if (auth && auth.collaborateur) {
+        let storeName = '';
+        
+        // Chercher le magasin dans l'ordre de priorité
+        if (auth.magasin) {
+            storeName = auth.magasin;
+        } else if (auth.collaborateur.magasin) {
+            storeName = auth.collaborateur.magasin;
+        } else if (auth.collaborateur.magasin_nom) {
+            storeName = auth.collaborateur.magasin_nom;
+        } else {
+            storeName = 'NON_DEFINI';
+        }
+        
+        // Formater le nom du magasin
+        let formattedStore = '';
+        if (/^9[A-Z]{3}$/.test(storeName)) {
+            formattedStore = storeName;
+        } else if (storeName.startsWith('Magasin')) {
+            formattedStore = storeName;
+        } else {
+            formattedStore = `Magasin ${storeName}`;
+        }
+        
         return {
             name: `${auth.collaborateur.prenom} ${auth.collaborateur.nom}`,
-            store: `Magasin ${auth.magasin || 'NON_DEFINI'}`,
+            store: formattedStore,
             showLogout: true
         };
     }
@@ -67,235 +122,21 @@ async function initUIComponents() {
     try {
         const userData = getUserData();
         
-        // Créer le header
-        appHeader = new AppHeader({
-            container: 'body',
-            title: '💳 Décompte Mutuelle',
-            subtitle: 'Gestion des remboursements mutuelles',
-            backUrl: 'home.html',
-            user: userData,
-            onLogout: handleLogout
-        });
+        // Créer le header avec la config locale
+        appHeader = config.createDecomptesHeader(userData);
         
-        // Créer les cartes de statistiques
-        const cardsConfig = [
-            {
-                id: 'en-attente',
-                label: 'En attente',
-                value: 15,
-                color: 'warning',
-                icon: '⏳'
-            },
-            {
-                id: 'traite',
-                label: 'Traités',
-                value: 42,
-                color: 'success',
-                icon: '✅'
-            },
-            {
-                id: 'refuse',
-                label: 'Refusés',
-                value: 3,
-                color: 'danger',
-                icon: '❌'
-            },
-            {
-                id: 'expire',
-                label: 'Expirés',
-                value: 7,
-                color: 'secondary',
-                icon: '⏰'
-            }
-        ];
-        
-        statsCards = new StatsCards({
-            container: '.decompte-stats',
-            cards: cardsConfig,
-            animated: true,
-            onClick: (cardId) => {
-                console.log(`Filtre par statut: ${cardId}`);
-            }
-        });
-        
-        console.log('✅ Composants UI initialisés');
+        console.log('🎨 Composants UI initialisés avec magasin:', userData.store);
         
     } catch (error) {
         console.error('❌ Erreur initialisation UI:', error);
+        config.notify.error('Erreur lors de l\'initialisation de l\'interface');
     }
 }
 
-// Initialiser les filtres (temporaire)
-function initFiltres() {
-    const filtresContainer = document.querySelector('.decompte-filters');
-    if (filtresContainer) {
-        filtresContainer.innerHTML = `
-            <div class="filters-row">
-                <div class="filter-item">
-                    <input type="text" placeholder="Rechercher..." class="filter-search">
-                </div>
-                <div class="filter-item">
-                    <select class="filter-select">
-                        <option value="">Tous les organismes</option>
-                        <option value="harmonie">Harmonie Mutuelle</option>
-                        <option value="malakoff">Malakoff Humanis</option>
-                        <option value="mgen">MGEN</option>
-                    </select>
-                </div>
-                <div class="filter-item">
-                    <select class="filter-select">
-                        <option value="all">Toutes les périodes</option>
-                        <option value="today">Aujourd'hui</option>
-                        <option value="week">Cette semaine</option>
-                        <option value="month">Ce mois</option>
-                    </select>
-                </div>
-                <button class="btn btn-secondary" onclick="window.resetFiltres()">
-                    Réinitialiser
-                </button>
-            </div>
-        `;
-    }
-}
+// ========================================
+// INITIALISATION AU CHARGEMENT
+// ========================================
 
-// Initialiser le tableau (temporaire)
-function initTableau() {
-    const tableContainer = document.querySelector('.decompte-table-container');
-    if (tableContainer) {
-        tableContainer.innerHTML = `
-            <table class="datatable">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Client</th>
-                        <th>Organisme</th>
-                        <th>Montant</th>
-                        <th>Statut</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>31/01/2025</td>
-                        <td>Jean DUPONT</td>
-                        <td>Harmonie Mutuelle</td>
-                        <td>250,00 €</td>
-                        <td><span class="badge badge-warning">⏳ En attente</span></td>
-                        <td>
-                            <button class="btn-action" onclick="window.voirDetailDecompte('1')">👁️</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>30/01/2025</td>
-                        <td>Marie MARTIN</td>
-                        <td>MGEN</td>
-                        <td>180,00 €</td>
-                        <td><span class="badge badge-success">✅ Traité</span></td>
-                        <td>
-                            <button class="btn-action" onclick="window.voirDetailDecompte('2')">👁️</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>29/01/2025</td>
-                        <td>Pierre BERNARD</td>
-                        <td>Malakoff Humanis</td>
-                        <td>320,00 €</td>
-                        <td><span class="badge badge-danger">❌ Refusé</span></td>
-                        <td>
-                            <button class="btn-action" onclick="window.voirDetailDecompte('3')">👁️</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        `;
-    }
-}
-
-// Gestion de la déconnexion
-async function handleLogout() {
-    const confirme = await Dialog.confirm('Voulez-vous vraiment vous déconnecter ?');
-    
-    if (confirme) {
-        localStorage.removeItem('sav_auth');
-        localStorage.removeItem('sav_user_permissions');
-        notify.success('Déconnexion réussie');
-        setTimeout(() => {
-            window.location.href = '../../index.html';
-        }, 1000);
-    }
-}
-
-// Fonctions temporaires exposées globalement
-window.ouvrirNouvelleSaisie = function() {
-    console.log('Ouvrir nouvelle saisie');
-    // Pour l'instant, juste afficher le modal
-    const modal = document.getElementById('modalNouvelleSaisie');
-    if (modal) {
-        modal.classList.add('active');
-        modal.style.display = 'flex';
-    }
-};
-
-window.fermerModal = function(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.classList.remove('active');
-        setTimeout(() => {
-            modal.style.display = 'none';
-        }, 300);
-    }
-};
-
-window.voirDetailDecompte = function(id) {
-    console.log('Voir détail décompte:', id);
-    // Afficher le modal détail
-    const modal = document.getElementById('modalDetailDecompte');
-    if (modal) {
-        modal.classList.add('active');
-        modal.style.display = 'flex';
-        document.getElementById('detailNumDecompte').textContent = `#00${id}`;
-    }
-};
-
-window.changerClient = function() {
-    console.log('Changer client');
-};
-
-window.calculerMontants = function() {
-    const prixVente = parseFloat(document.getElementById('prixVente').value) || 0;
-    const remboursementSecu = parseFloat(document.getElementById('remboursementSecu').value) || 0;
-    const priseEnCharge = parseFloat(document.getElementById('priseEnCharge').value) || 0;
-    
-    const resteACharge = prixVente - remboursementSecu;
-    const resteFinal = resteACharge - priseEnCharge;
-    
-    document.getElementById('resteACharge').textContent = resteACharge.toFixed(2) + ' €';
-    document.getElementById('resteFinal').textContent = resteFinal.toFixed(2) + ' €';
-};
-
-window.gererFichiers = function(files) {
-    console.log('Fichiers sélectionnés:', files);
-    const liste = document.getElementById('documentsList');
-    liste.innerHTML = Array.from(files).map(file => `
-        <div class="document-item">
-            <span class="document-name">📄 ${file.name}</span>
-            <span class="document-size">${(file.size / 1024).toFixed(0)} KB</span>
-        </div>
-    `).join('');
-};
-
-window.validerSaisie = function() {
-    notify.success('Décompte enregistré avec succès !');
-    window.fermerModal('modalNouvelleSaisie');
-};
-
-window.resetFiltres = function() {
-    document.querySelector('.filter-search').value = '';
-    document.querySelectorAll('.filter-select').forEach(s => s.value = '');
-    notify.info('Filtres réinitialisés');
-};
-
-// Initialisation au chargement
 window.addEventListener('load', async () => {
     if (!checkAuth()) {
         window.location.href = '../../index.html';
@@ -303,37 +144,127 @@ window.addEventListener('load', async () => {
     }
     
     try {
-        await initFirebase();
+        // 1. Initialiser les composants UI
         await initUIComponents();
         
-        // Init temporaire en attendant les vrais modules
-        initFiltres();
-        initTableau();
+        // 2. Initialiser Firebase
+        await initFirebase();
         
-        // Gérer les fermetures de modales
-        document.querySelectorAll('.modal-close').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const modal = e.target.closest('.modal');
-                if (modal) {
-                    window.fermerModal(modal.id);
-                }
-            });
-        });
+        // 3. Initialiser les modales
+        initModales();
         
-        // Gérer les clics overlay
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    window.fermerModal(modal.id);
-                }
-            });
-        });
+        // 4. Initialiser les modules
+        await initListeDecomptes();
+        initCreationDecompte();
         
+        // 5. Charger les données initiales
+        await chargerDonnees();
+        
+        // 6. Activer les animations
         document.body.classList.add('page-loaded');
-        console.log('✅ Page décompte mutuelle initialisée');
+        
+        // 7. Container pour les dialogs
+        if (!document.getElementById('dialog-container')) {
+            const dialogContainer = document.createElement('div');
+            dialogContainer.id = 'dialog-container';
+            dialogContainer.className = 'dialog-container';
+            document.body.appendChild(dialogContainer);
+        }
+        
+        console.log('✅ Page décomptes mutuelles initialisée avec succès');
         
     } catch (error) {
-        console.error('❌ Erreur initialisation:', error);
-        notify.error('Erreur lors du chargement de la page');
+        console.error('❌ Erreur lors de l\'initialisation:', error);
+        config.notify.error('Erreur lors du chargement de la page');
     }
 });
+
+// ========================================
+// GESTION DES MODALES
+// ========================================
+
+function initModales() {
+    // Enregistrer les modales via la config
+    config.registerDecomptesModals();
+    
+    // Vérifier l'existence des modales
+    const modalIds = ['modalNouveauDecompte', 'modalDetailDecompte'];
+    
+    modalIds.forEach(modalId => {
+        const modalElement = document.getElementById(modalId);
+        if (!modalElement) {
+            console.warn(`⚠️ Modal HTML "${modalId}" non trouvé dans le DOM`);
+        }
+    });
+    
+    // Callbacks pour la modal nouveau décompte
+    const modalNouveauDecompte = modalManager.get('modalNouveauDecompte');
+    if (modalNouveauDecompte) {
+        modalNouveauDecompte.options = {
+            ...modalNouveauDecompte.options,
+            onClose: () => {
+                // Réinitialiser si nécessaire
+                if (window.resetNouveauDecompte) {
+                    window.resetNouveauDecompte();
+                }
+            }
+        };
+    }
+}
+
+// ========================================
+// EXPOSITION DES FONCTIONS GLOBALES
+// ========================================
+
+// Exposer modalManager
+window.modalManager = config.modalManager;
+
+// Fonctions pour le HTML
+window.ouvrirNouveauDecompte = ouvrirNouveauDecompte;
+window.voirDetailDecompte = voirDetailDecompte;
+window.resetFiltres = resetFiltres;
+
+// Fonction fermer modal
+window.fermerModal = function(modalId) {
+    config.modalManager.close(modalId);
+};
+
+// ========================================
+// FONCTIONS UTILITAIRES EXPORTÉES
+// ========================================
+
+export function ouvrirModal(modalId) {
+    config.modalManager.open(modalId);
+}
+
+export function afficherSucces(message) {
+    config.notify.success(message);
+}
+
+export function afficherErreur(message) {
+    config.notify.error(message);
+}
+
+// Cleanup au déchargement
+window.addEventListener('beforeunload', () => {
+    config.modalManager.destroyAll();
+    
+    if (appHeader) {
+        appHeader.destroy();
+    }
+});
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [02/02/2025] - Création initiale
+   - Architecture identique à commandes.main.js
+   - Gestion auth et header
+   - Initialisation des orchestrateurs
+   - Container dialog pour les popups custom
+   
+   NOTES POUR REPRISES FUTURES:
+   - main.js reste léger, juste l'init
+   - Les orchestrateurs gèrent leur section
+   - Les composants ne se connaissent pas
+   ======================================== */
