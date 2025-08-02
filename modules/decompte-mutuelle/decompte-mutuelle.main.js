@@ -122,30 +122,11 @@ async function initUIComponents() {
     try {
         const userData = getUserData();
         
-        // Charger les magasins pour vérifier s'il y en a plusieurs
-        const { chargerMagasins } = await import('../../src/services/firebase.service.js');
-        const magasinsData = await chargerMagasins();
-        const magasinsArray = magasinsData ? 
-            Object.entries(magasinsData)
-                .filter(([id, data]) => data.actif !== false)
-                .map(([id, data]) => ({
-                    code: data.code || id,
-                    nom: data.nom || data.code || id
-                })) : [];
-        
         // Créer le header avec la config locale
         appHeader = config.createDecomptesHeader({
             ...userData,
-            showMagasinSelector: magasinsArray.length > 1  // Seulement si plusieurs magasins
+            showMagasinSelector: false  // PAS de dropdown, juste afficher le magasin
         });
-        
-        // Si plusieurs magasins, ajouter le dropdown après que le header soit rendu
-        if (magasinsArray.length > 1) {
-            const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
-            setTimeout(() => {
-                addMagasinDropdown(magasinsArray, auth.magasin);
-            }, 100);
-        }
         
         console.log('🎨 Composants UI initialisés avec magasin:', userData.store);
         
