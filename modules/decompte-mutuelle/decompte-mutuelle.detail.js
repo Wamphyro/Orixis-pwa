@@ -188,15 +188,25 @@ function getDateField(statut) {
 
 function afficherSectionClient(decompte) {
     const detailClient = document.getElementById('detailClient');
+    
+    // Gestion des valeurs null
+    const nomComplet = (decompte.client?.nom || decompte.client?.prenom) 
+        ? `${decompte.client.prenom || ''} ${decompte.client.nom || ''}`.trim()
+        : '-';
+    
+    const nss = decompte.client?.numeroSecuriteSociale 
+        ? formaterNSS(decompte.client.numeroSecuriteSociale)
+        : '-';
+    
     detailClient.innerHTML = `
         <div class="detail-info-grid">
             <div class="detail-info-item">
                 <span class="detail-label">Nom complet</span>
-                <span class="detail-value">${decompte.client.prenom} ${decompte.client.nom}</span>
+                <span class="detail-value">${nomComplet}</span>
             </div>
             <div class="detail-info-item">
                 <span class="detail-label">N° Sécurité Sociale</span>
-                <span class="detail-value nss-value">${formaterNSS(decompte.client.numeroSecuriteSociale)}</span>
+                <span class="detail-value nss-value">${nss}</span>
             </div>
         </div>
     `;
@@ -208,11 +218,11 @@ function afficherSectionMutuelle(decompte) {
         <div class="detail-info-grid">
             <div class="detail-info-item">
                 <span class="detail-label">Mutuelle</span>
-                <span class="detail-value">${decompte.mutuelle}</span>
+                <span class="detail-value">${decompte.mutuelle || '-'}</span>
             </div>
             <div class="detail-info-item">
                 <span class="detail-label">Prestataire TP</span>
-                <span class="detail-value">${decompte.prestataireTP}</span>
+                <span class="detail-value">${decompte.prestataireTP || '-'}</span>
             </div>
             <div class="detail-info-item">
                 <span class="detail-label">Type de décompte</span>
@@ -252,23 +262,29 @@ function afficherSectionMontants(decompte) {
 
 function afficherSectionInformations(decompte) {
     const detailInformations = document.getElementById('detailInformations');
+    
+    // Gestion de la date virement
+    const dateVirement = decompte.dateVirement 
+        ? formaterDate(decompte.dateVirement, 'jour')
+        : '-';
+    
     detailInformations.innerHTML = `
         <div class="detail-info-grid">
             <div class="detail-info-item">
                 <span class="detail-label">N° Virement</span>
-                <span class="detail-value">${decompte.virementId}</span>
+                <span class="detail-value">${decompte.virementId || '-'}</span>
             </div>
             <div class="detail-info-item">
                 <span class="detail-label">Date virement</span>
-                <span class="detail-value">${formaterDate(decompte.dateVirement, 'jour')}</span>
+                <span class="detail-value">${dateVirement}</span>
             </div>
             <div class="detail-info-item">
                 <span class="detail-label">Code magasin</span>
-                <span class="detail-value">${decompte.codeMagasin}</span>
+                <span class="detail-value">${decompte.codeMagasin || '-'}</span>
             </div>
             <div class="detail-info-item">
                 <span class="detail-label">Société</span>
-                <span class="detail-value">${decompte.societe}</span>
+                <span class="detail-value">${decompte.societe || '-'}</span>
             </div>
         </div>
         ${decompte.motifTraitementManuel ? `

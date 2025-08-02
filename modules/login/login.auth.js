@@ -64,14 +64,17 @@ export async function saveAuthentication(userData, remember = false) {
                        userData.magasins?.[0] || 
                        'NON_DEFINI';
         
-        // Récupérer la société depuis le magasin
-        let societe = 'XXX'; // Par défaut
+        // Récupérer la société et la raison sociale depuis le magasin
+        let societe = 'XXX'; // Code par défaut
+        let raisonSociale = 'BROKER AUDIOLOGIE'; // Raison sociale par défaut
+        
         try {
             const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
             const magasinDoc = await getDoc(doc(db, 'magasins', magasin));
             if (magasinDoc.exists()) {
                 const magasinData = magasinDoc.data();
                 societe = magasinData.societe?.code || 'XXX';
+                raisonSociale = magasinData.societe?.raisonSociale || 'BROKER AUDIOLOGIE';
             }
         } catch (error) {
             console.warn('⚠️ Impossible de récupérer la société:', error);
@@ -83,7 +86,8 @@ export async function saveAuthentication(userData, remember = false) {
             expiry: expiry,
             magasin: magasin,
             magasins: userData.magasins || [],
-            societe: societe,  // NOUVEAU !
+            societe: societe,  // Code société
+            raisonSociale: raisonSociale,  // Nom complet société
             collaborateur: {
                 id: userData.id,
                 prenom: userData.prenom,
