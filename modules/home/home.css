@@ -213,18 +213,19 @@
 }
 
 [id^="magasinDropdown-"] .dropdown-list-option {
-    color: #333;
+    color: rgba(255, 255, 255, 0.9) !important;
     transition: all 0.2s ease;
     padding: 10px 16px;
 }
 
 [id^="magasinDropdown-"] .dropdown-list-option:hover {
-    background: rgba(102, 126, 234, 0.1);
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
 }
 
 [id^="magasinDropdown-"] .dropdown-list-option.selected {
-    background: rgba(102, 126, 234, 0.15);
-    color: #667eea;
+    background: rgba(102, 126, 234, 0.3) !important;
+    color: white !important;
     font-weight: 600;
 }
 
@@ -287,17 +288,21 @@
     transform: rotate(180deg);
 }
 
-/* Le dropdown menu garde son style glassmorphism */
+/* Le dropdown menu avec style sombre élégant */
+[id^="magasinDropdown-"] .dropdown-list-panel {
+    background: rgba(30, 30, 40, 0.95) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    margin-top: 8px !important;
+}
+
 [id^="magasinDropdown-"] .dropdown-list-options {
-    background: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    color: #333;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-    border-radius: 12px;
-    overflow: hidden;
-    margin-top: 8px;
+    background: transparent !important;
 }
 
 /* Override complet pour dropdown transparent dans header */
