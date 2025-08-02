@@ -77,6 +77,19 @@
     margin: 0;
 }
 
+/* Badge "Bientôt disponible" */
+.badge.badge-soon {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
 /* ========================================
    ANIMATIONS SPÉCIFIQUES
    ======================================== */
@@ -98,6 +111,185 @@
 .menu-card:nth-child(4) { animation-delay: 0.4s; }
 .menu-card:nth-child(5) { animation-delay: 0.5s; }
 .menu-card:nth-child(6) { animation-delay: 0.6s; }
+.menu-card:nth-child(7) { animation-delay: 0.7s; }
+.menu-card:nth-child(8) { animation-delay: 0.8s; }
+.menu-card:nth-child(9) { animation-delay: 0.9s; }
+.menu-card:nth-child(10) { animation-delay: 1s; }
+
+/* ========================================
+   SECTION MAGASIN DANS LE HEADER
+   ======================================== */
+.header-magasin-section {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+}
+
+.magasin-label {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 400;
+}
+
+/* ========================================
+   DROPDOWN MAGASIN PERSONNALISÉ
+   ======================================== */
+
+/* Override pour rendre le dropdown transparent dans le header */
+.dropdown-header-transparent .dropdown-list-wrapper {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.dropdown-header-transparent .dropdown-list-trigger {
+    all: unset !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    cursor: pointer !important;
+    color: white !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    font-family: inherit !important;
+}
+
+.dropdown-header-transparent .dropdown-list-value {
+    color: white !important;
+}
+
+.dropdown-header-transparent .dropdown-list-arrow {
+    color: rgba(255, 255, 255, 0.7) !important;
+    font-size: 10px !important;
+    transition: transform 0.2s ease !important;
+}
+
+.dropdown-header-transparent .dropdown-list-trigger:hover {
+    opacity: 0.8 !important;
+}
+
+.dropdown-header-transparent.open .dropdown-list-arrow {
+    transform: rotate(180deg) !important;
+}
+
+/* Panel dropdown avec design moderne */
+.dropdown-header-transparent .dropdown-list-panel {
+    /* Fond avec effet de verre dépoli */
+    background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.95),
+        rgba(248, 249, 252, 0.95)
+    ) !important;
+    backdrop-filter: blur(24px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
+    
+    /* Bordure subtile */
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    
+    /* Ombres multiples pour la profondeur */
+    box-shadow: 
+        0 0 0 1px rgba(0, 0, 0, 0.05),
+        0 10px 40px -10px rgba(102, 126, 234, 0.35),
+        0 20px 25px -20px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+    
+    /* Coins arrondis */
+    border-radius: 16px !important;
+    overflow: hidden !important;
+    margin-top: 12px !important;
+}
+
+/* Container des options */
+.dropdown-header-transparent .dropdown-list-options {
+    background: transparent !important;
+}
+
+/* Style des options */
+.dropdown-header-transparent .dropdown-list-option {
+    color: #2c3e50 !important;
+    padding: 14px 20px !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+}
+
+/* Hover sur option */
+.dropdown-header-transparent .dropdown-list-option:hover {
+    background: linear-gradient(
+        to right,
+        rgba(102, 126, 234, 0.08),
+        rgba(118, 75, 162, 0.08)
+    ) !important;
+    color: #667eea !important;
+    padding-left: 24px !important;
+}
+
+/* Option sélectionnée */
+.dropdown-header-transparent .dropdown-list-option.selected {
+    background: transparent !important;
+    color: #667eea !important;
+    font-weight: 600 !important;
+}
+
+/* Indicateur visuel pour l'option sélectionnée */
+.dropdown-header-transparent .dropdown-list-option.selected::after {
+    content: '✓' !important;
+    position: absolute !important;
+    right: 20px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    color: #667eea !important;
+    font-size: 16px !important;
+    font-weight: bold !important;
+}
+
+/* Barre latérale pour l'option sélectionnée */
+.dropdown-header-transparent .dropdown-list-option.selected::before {
+    content: '' !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 20% !important;
+    bottom: 20% !important;
+    width: 3px !important;
+    background: linear-gradient(
+        to bottom,
+        #667eea,
+        #764ba2
+    ) !important;
+    border-radius: 0 2px 2px 0 !important;
+    opacity: 0.8 !important;
+}
+
+/* Icône magasin */
+.dropdown-header-transparent .dropdown-list-option-icon {
+    margin-right: 10px !important;
+    font-size: 16px !important;
+    opacity: 0.8 !important;
+    transition: all 0.2s ease !important;
+}
+
+.dropdown-header-transparent .dropdown-list-option:hover .dropdown-list-option-icon {
+    opacity: 1 !important;
+    transform: scale(1.1) rotate(5deg) !important;
+}
+
+/* Animation d'ouverture */
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.dropdown-header-transparent .dropdown-list-panel.show {
+    animation: dropdownFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
 
 /* ========================================
    RESPONSIVE SPÉCIFIQUE HOME
@@ -121,14 +313,12 @@
         font-size: 1.25rem;
     }
     
-    .magasin-selector {
-        margin-right: 10px;
+    .header-magasin-section {
+        margin: 0 8px;
     }
     
-    .magasin-selector select {
-        min-width: 100px;
-        font-size: 13px;
-        padding: 6px 10px;
+    .magasin-label {
+        display: none;
     }
 }
 
@@ -137,219 +327,12 @@
         padding: 25px 15px;
     }
     
-    .magasin-selector label {
-        font-size: 14px;
+    .dropdown-header-transparent .dropdown-list-panel {
+        border-radius: 12px !important;
     }
     
-    .magasin-selector select {
-        min-width: 80px;
+    .dropdown-header-transparent .dropdown-list-option {
+        padding: 12px 16px !important;
+        font-size: 15px !important;
     }
-}
-
-/* Section magasin dans le header */
-.header-magasin-section {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 0 12px;
-}
-
-.magasin-label {
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.9);
-    font-weight: 500;
-}
-
-@keyframes dropdownSlide {
-    from {
-        opacity: 0;
-        transform: translateY(-8px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Ajustements pour l'intégration parfaite */
-.header-magasin-section {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin: 0;
-}
-
-.magasin-label {
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.9);
-    font-weight: 400;
-}
-
-
-/* Override complet pour dropdown transparent dans header */
-.dropdown-header-transparent .dropdown-list-wrapper {
-    background: transparent !important;
-    border: none !important;
-}
-
-.dropdown-header-transparent .dropdown-list-trigger {
-    /* Reset total */
-    all: unset !important;
-    
-    /* Styles minimaux */
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 4px !important;
-    cursor: pointer !important;
-    color: white !important;
-    font-size: 14px !important;
-    font-weight: 600 !important;
-    font-family: inherit !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-}
-
-.dropdown-header-transparent .dropdown-list-value {
-    color: white !important;
-}
-
-.dropdown-header-transparent .dropdown-list-arrow {
-    color: rgba(255, 255, 255, 0.7) !important;
-    font-size: 10px !important;
-}
-
-.dropdown-header-transparent .dropdown-list-trigger:hover {
-    opacity: 0.8 !important;
-    background: transparent !important;
-}
-
-/* Panel reste glassmorphism */
-.dropdown-header-transparent .dropdown-list-panel {
-    background: rgba(255, 255, 255, 0.98) !important;
-    backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(0, 0, 0, 0.1) !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
-}
-
-/* ========================================
-   DROPDOWN MAGASIN - STYLE GLASSMORPHISM ÉLÉGANT
-   ======================================== */
-
-/* Container invisible */
-[id^="magasinDropdown-"] .dropdown-list-wrapper {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-}
-
-/* Trigger totalement invisible */
-[id^="magasinDropdown-"] .dropdown-list-trigger {
-    all: unset !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 4px !important;
-    cursor: pointer !important;
-    color: white !important;
-    font-size: 14px !important;
-    font-weight: 600 !important;
-    font-family: inherit !important;
-}
-
-[id^="magasinDropdown-"] .dropdown-list-value {
-    color: white !important;
-}
-
-[id^="magasinDropdown-"] .dropdown-list-arrow {
-    color: rgba(255, 255, 255, 0.7) !important;
-    font-size: 10px !important;
-}
-
-[id^="magasinDropdown-"] .dropdown-list-trigger:hover {
-    opacity: 0.8 !important;
-}
-
-/* Panel avec glassmorphism moderne */
-[id^="magasinDropdown-"] .dropdown-list-panel {
-    background: linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.9) 0%,
-        rgba(255, 255, 255, 0.7) 100%
-    ) !important;
-    backdrop-filter: blur(20px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.4) !important;
-    box-shadow: 
-        0 8px 32px rgba(102, 126, 234, 0.2),
-        0 2px 8px rgba(0, 0, 0, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
-    border-radius: 16px !important;
-    overflow: hidden !important;
-    margin-top: 12px !important;
-}
-
-/* Fond des options transparent */
-[id^="magasinDropdown-"] .dropdown-list-options {
-    background: transparent !important;
-}
-
-/* Options avec style moderne */
-[id^="magasinDropdown-"] .dropdown-list-option {
-    color: #2c3e50 !important;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    padding: 12px 20px !important;
-    position: relative !important;
-    font-weight: 500 !important;
-}
-
-[id^="magasinDropdown-"] .dropdown-list-option:hover {
-    background: linear-gradient(
-        90deg,
-        rgba(102, 126, 234, 0.15) 0%,
-        rgba(118, 75, 162, 0.15) 100%
-    ) !important;
-    color: #667eea !important;
-    transform: translateX(4px) !important;
-}
-
-[id^="magasinDropdown-"] .dropdown-list-option.selected {
-    background: linear-gradient(
-        90deg,
-        rgba(102, 126, 234, 0.2) 0%,
-        rgba(118, 75, 162, 0.2) 100%
-    ) !important;
-    color: #667eea !important;
-    font-weight: 600 !important;
-}
-
-/* Barre colorée pour l'option sélectionnée */
-[id^="magasinDropdown-"] .dropdown-list-option.selected::before {
-    content: '' !important;
-    position: absolute !important;
-    left: 0 !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    width: 4px !important;
-    height: 70% !important;
-    background: linear-gradient(
-        to bottom,
-        #667eea,
-        #764ba2
-    ) !important;
-    border-radius: 2px !important;
-}
-
-/* Icône avec effet */
-[id^="magasinDropdown-"] .dropdown-list-option-icon {
-    margin-right: 10px !important;
-    font-size: 18px !important;
-    filter: grayscale(0.3) !important;
-    transition: all 0.2s ease !important;
-}
-
-[id^="magasinDropdown-"] .dropdown-list-option:hover .dropdown-list-option-icon {
-    filter: grayscale(0) !important;
-    transform: scale(1.1) !important;
 }
