@@ -144,7 +144,7 @@ export async function getDecomptes(filtres = {}) {
         }
         
         // Tri par défaut : plus récent en premier
-        constraints.push(orderBy('dateCreation', 'desc'));
+        constraints.push(orderBy('dates.creation', 'desc'));
         
         if (filtres.limite) {
             constraints.push(limit(filtres.limite));
