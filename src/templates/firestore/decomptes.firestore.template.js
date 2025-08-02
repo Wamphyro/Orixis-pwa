@@ -9,8 +9,8 @@ export const DECOMPTE_TEMPLATE = {
     typeDecompte: 'individuel',     // String - individuel|collectif
     
     // Organisation
-    societe: null,                  // String - Code société
-    codeMagasin: null,              // String - Code magasin concerné
+    societe: 'ORIXIS SAS',          // String - Nom complet de la société
+    codeMagasin: null,              // String - Magasin où l'achat a été fait
     magasinUploadeur: null,         // String - Qui a uploadé
     prestataireTP: null,            // String ou null - Tiers payant
     
@@ -27,6 +27,7 @@ export const DECOMPTE_TEMPLATE = {
     montantRemboursementClient: 0,  // number
     montantVirement: 0,             // number
     nombreClients: 1,               // number (1 pour individuel)
+    dateVirement: null,             // Timestamp ou null - Date du virement effectué
     
     // Dates
     dates: {
@@ -53,19 +54,33 @@ export const DECOMPTE_TEMPLATE = {
     documents: [],                  // Array<Object>
     
     // Références
-    virementId: null,               // String ou null
+    virementId: null,               // String ou null - Format: VIR-AAAA-MM-XXX
     
     // Workflow
     statut: 'nouveau',              // String
     
-    // Historique
+    // Historique (version complexe comme les anciens)
     historique: []                  // Array<Object>
+};
+
+// Structure d'une entrée historique
+export const HISTORIQUE_ENTRY_TEMPLATE = {
+    date: null,                     // Timestamp
+    action: null,                   // String
+    details: null,                  // String
+    timestamp: null,                // number (milliseconds)
+    utilisateur: {                  // Object
+        id: null,                   // String
+        nom: null,                  // String
+        prenom: null,               // String
+        role: null                  // String
+    }
 };
 
 export const DECOMPTE_RULES = {
     required: ['numeroDecompte', 'societe', 'codeMagasin', 'statut', 'typeDecompte'],
     enum: {
         typeDecompte: ['individuel', 'collectif'],
-        statut: ['nouveau', 'en_cours_traitement', 'traitement_effectue', 'valide', 'erreur']
+        statut: ['nouveau', 'en_cours_traitement', 'traitement_effectue', 'traitement_manuel', 'valide', 'erreur']
     }
 };

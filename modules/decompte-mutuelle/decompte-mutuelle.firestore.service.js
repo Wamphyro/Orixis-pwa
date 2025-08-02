@@ -63,8 +63,8 @@ export async function creerDecompte(data) {
         decompteData.numeroDecompte = numeroDecompte;
         decompteData.typeDecompte = 'individuel';  // Par défaut
         
-        // Organisation
-        decompteData.societe = auth.societe || 'XXX';
+        // Organisation - ORIXIS SAS comme nom complet
+        decompteData.societe = 'ORIXIS SAS';  // Toujours le nom complet
         decompteData.codeMagasin = auth.magasin || 'XXX';
         decompteData.magasinUploadeur = auth.magasin || 'XXX';
         
@@ -82,12 +82,18 @@ export async function creerDecompte(data) {
             role: auth.collaborateur?.role || 'technicien'
         };
         
-        // Historique initial
+        // Historique initial (version complexe comme les anciens)
         decompteData.historique = [{
-            date: new Date().toISOString(),
+            date: serverTimestamp(),
             action: 'creation',
-            par: auth.collaborateur ? `${auth.collaborateur.prenom} ${auth.collaborateur.nom}` : 'Système',
-            details: `${data.documents.length} document(s) uploadé(s)`
+            details: `${data.documents.length} document(s) uploadé(s)`,
+            timestamp: Date.now(),
+            utilisateur: {
+                id: auth.collaborateur?.id || 'unknown',
+                nom: auth.collaborateur?.nom || 'Inconnu',
+                prenom: auth.collaborateur?.prenom || '',
+                role: auth.collaborateur?.role || 'technicien'
+            }
         }];
         
         // Statut initial
@@ -356,15 +362,27 @@ async function genererNumeroDecompte() {
  */
 async function ajouterHistorique(id, nouvelleEntree) {
     try {
+        const { serverTimestamp } = await import(
+            'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js'
+        );
+        
         const decompte = await getDecompteById(id);
         const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
         
         const historique = decompte?.historique || [];
         
+        // Format complexe comme les anciens décomptes
         historique.push({
-            date: new Date().toISOString(),
-            par: auth.collaborateur ? `${auth.collaborateur.prenom} ${auth.collaborateur.nom}` : 'Système',
-            ...nouvelleEntree
+            date: serverTimestamp(),  // Timestamp Firestore
+            action: nouvelleEntree.action,
+            details: nouvelleEntree.details,
+            timestamp: Date.now(),  // Milliseconds pour compatibilité
+            utilisateur: {
+                id: auth.collaborateur?.id || 'unknown',
+                nom: auth.collaborateur?.nom || 'Inconnu',
+                prenom: auth.collaborateur?.prenom || '',
+                role: auth.collaborateur?.role || 'technicien'
+            }
         });
         
         return historique;
