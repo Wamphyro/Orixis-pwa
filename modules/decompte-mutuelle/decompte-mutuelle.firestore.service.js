@@ -84,7 +84,7 @@ export async function creerDecompte(data) {
         
         // Historique initial (version complexe comme les anciens)
         decompteData.historique = [{
-            date: serverTimestamp(),
+            date: new Date(),
             action: 'creation',
             details: `${data.documents.length} document(s) uploadé(s)`,
             timestamp: Date.now(),
@@ -373,7 +373,7 @@ async function ajouterHistorique(id, nouvelleEntree) {
         
         // Format complexe comme les anciens décomptes
         historique.push({
-            date: serverTimestamp(),  // Timestamp Firestore
+            date: new Date(),  // Date normale (sera convertie en Timestamp)
             action: nouvelleEntree.action,
             details: nouvelleEntree.details,
             timestamp: Date.now(),  // Milliseconds pour compatibilité
