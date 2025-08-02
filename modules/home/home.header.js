@@ -32,7 +32,7 @@ export async function initHeader() {
 
 // Fonction pour ajouter le dropdown
 function addMagasinDropdown(userData) {
-    const userSection = document.querySelector('.app-header-user');
+    const userSection = document.querySelector('.header-user-section');
     if (!userSection) return;
     
     // Créer le conteneur pour le dropdown
@@ -44,7 +44,7 @@ function addMagasinDropdown(userData) {
     `;
     
     // Insérer avant le bouton déconnexion
-    const logoutBtn = userSection.querySelector('.btn-logout');
+    const logoutBtn = userSection.querySelector('.header-logout-button');
     if (logoutBtn) {
         userSection.insertBefore(dropdownContainer, logoutBtn);
     } else {
