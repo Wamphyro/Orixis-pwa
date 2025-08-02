@@ -160,23 +160,36 @@
     font-weight: 500;
 }
 
-/* Styles glassmorphism pour le dropdown dans le header */
+/* Styles pour un dropdown invisible/intégré dans le header */
 [id^="magasinDropdown-"] .dropdown-list {
-    min-width: 140px;
+    min-width: auto;
 }
 
 [id^="magasinDropdown-"] .dropdown-list-toggle {
-    padding: 8px 16px;
+    padding: 0;
     font-size: 14px;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 2px solid rgba(255, 255, 255, 0.2);
+    background: transparent;
+    border: none;
     color: white;
-    border-radius: 20px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    font-weight: 500;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 0;
+    transition: all 0.2s ease;
+    font-weight: 600;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+[id^="magasinDropdown-"] .dropdown-list-toggle:hover {
+    background: transparent;
+    border: none;
+    transform: none;
+    box-shadow: none;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+[id^="magasinDropdown-"] .dropdown-list-toggle:focus {
+    outline: none;
+    box-shadow: none;
 }
 
 [id^="magasinDropdown-"] .dropdown-list-toggle:hover {

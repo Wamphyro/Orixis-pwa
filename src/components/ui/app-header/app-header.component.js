@@ -222,6 +222,7 @@ export class AppHeader {
                     ${hasUser ? `
                         <div class="${userSectionClasses}">
                             <span class="user-name">${this.config.user.name || 'Utilisateur'}</span>
+                            <span class="user-separator"></span>
                             ${this.config.showMagasinDropdown ? `
                                 <div class="header-magasin-section">
                                     <span class="magasin-label">Magasin :</span>
