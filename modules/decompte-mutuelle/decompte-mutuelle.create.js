@@ -34,7 +34,8 @@ let nouveauDecompte = {
     nombreClients: 1
 };
 
-// Instances des composants (futures)
+// Instances des composants
+let dropzoneDocuments = null;
 let clientSearchDropdown = null;
 let dropdownMutuelle = null;
 let dropdownPrestataire = null;
@@ -72,25 +73,56 @@ function afficherPlaceholder() {
     const modalBody = document.querySelector('#modalNouveauDecompte .modal-body');
     if (modalBody) {
         modalBody.innerHTML = `
-            <div class="nouveau-decompte-placeholder">
-                <h3>🚧 Fonctionnalité en développement</h3>
-                <p>
-                    La création de décomptes mutuelles sera bientôt disponible.<br>
-                    Cette fonction permettra de :
-                </p>
-                <ul style="text-align: left; display: inline-block; margin-top: 20px;">
-                    <li>Rechercher et sélectionner un client</li>
-                    <li>Choisir la mutuelle et le prestataire TP</li>
-                    <li>Saisir les montants de remboursement</li>
-                    <li>Générer automatiquement le numéro de décompte</li>
-                    <li>Créer des décomptes groupés pour plusieurs clients</li>
-                </ul>
-                <button class="btn btn-primary btn-pill" style="margin-top: 30px;" 
-                        onclick="window.modalManager.close('modalNouveauDecompte')">
-                    Fermer
-                </button>
+            <div class="nouveau-decompte-form">
+                <!-- Zone de dépôt des documents -->
+                <div class="form-section">
+                    <h4>📄 Documents du décompte</h4>
+                    <p class="form-section-help">Déposez ici les décomptes mutuelles (PDF, JPG, PNG)</p>
+                    <div id="decompte-dropzone"></div>
+                </div>
+                
+                <!-- Section client (à venir) -->
+                <div class="form-section disabled">
+                    <h4>👤 Sélection du client</h4>
+                    <p class="form-section-help">Recherche et sélection du client (bientôt disponible)</p>
+                    <div class="placeholder-box">
+                        <span>🔍 SearchDropdown à implémenter</span>
+                    </div>
+                </div>
+                
+                <!-- Section mutuelle et montants (à venir) -->
+                <div class="form-section disabled">
+                    <h4>🏥 Mutuelle et montants</h4>
+                    <p class="form-section-help">Sélection de la mutuelle et saisie des montants (bientôt disponible)</p>
+                    <div class="placeholder-box">
+                        <span>📝 Formulaire à implémenter</span>
+                    </div>
+                </div>
             </div>
         `;
+        
+        // Créer la DropZone après que le HTML soit inséré
+        setTimeout(() => {
+            if (dropzoneDocuments) {
+                dropzoneDocuments.destroy();
+            }
+            
+            dropzoneDocuments = config.createDecompteDropzone('#decompte-dropzone', {
+                onDrop: (files) => {
+                    console.log('📎 Fichiers déposés:', files);
+                    nouveauDecompte.documents = files;
+                    
+                    // Afficher un message temporaire
+                    config.notify.success(`${files.length} fichier(s) ajouté(s)`);
+                },
+                onRemove: (file, index) => {
+                    console.log('🗑️ Fichier retiré:', file.name);
+                },
+                onChange: (files) => {
+                    nouveauDecompte.documents = files;
+                }
+            });
+        }, 100);
     }
 }
 
@@ -105,10 +137,15 @@ function resetNouveauDecompte() {
         prestataireTP: '',
         montantRemboursementClient: 0,
         typeDecompte: 'individuel',
-        nombreClients: 1
+        nombreClients: 1,
+        documents: []  // Ajout pour stocker les fichiers
     };
     
     // Détruire les composants s'ils existent
+    if (dropzoneDocuments) {
+        dropzoneDocuments.destroy();
+        dropzoneDocuments = null;
+    }
     if (clientSearchDropdown) {
         clientSearchDropdown.destroy();
         clientSearchDropdown = null;

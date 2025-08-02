@@ -30,7 +30,8 @@ import {
     Modal,
     modalManager,
     Dialog,
-    notify
+    notify,
+    DropZone
 } from '../../src/components/index.js';
 
 // Import des modules DataTable
@@ -167,6 +168,29 @@ export function createSearchDropdown(container, options) {
         minLength: 2,
         noResultsText: 'Aucun résultat trouvé',
         loadingText: 'Recherche en cours...',
+        ...options
+    });
+}
+
+// ========================================
+// FACTORY : DROPZONE DOCUMENTS
+// ========================================
+
+export function createDecompteDropzone(container, options = {}) {
+    return new DropZone({
+        container,
+        acceptedTypes: ['application/pdf', 'image/jpeg', 'image/png'],
+        maxFiles: 10,
+        maxFileSize: 10 * 1024 * 1024, // 10MB
+        showPreview: true,
+        previewSize: 'medium',
+        messages: {
+            drop: '📄 Glissez vos décomptes mutuelles ici',
+            browse: 'ou cliquez pour parcourir',
+            typeError: 'Seuls les PDF et images (JPG, PNG) sont acceptés',
+            sizeError: 'Fichier trop volumineux (max 10MB)',
+            maxFilesError: 'Maximum 10 fichiers autorisés'
+        },
         ...options
     });
 }
@@ -350,6 +374,7 @@ export default {
     createDecompteTimeline,
     createDropdown,
     createSearchDropdown,
+    createDecompteDropzone,
     createButton,
     createBadge,
     

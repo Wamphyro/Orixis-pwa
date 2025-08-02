@@ -435,6 +435,68 @@
 }
 
 /* ========================================
+   FORMULAIRE NOUVEAU DÉCOMPTE
+   ======================================== */
+
+.nouveau-decompte-form {
+    padding: 20px;
+}
+
+.form-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.form-section:last-child {
+    margin-bottom: 0;
+}
+
+.form-section h4 {
+    margin: 0 0 8px 0;
+    color: #667eea;
+    font-size: 18px;
+}
+
+.form-section-help {
+    margin: 0 0 16px 0;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+/* Section désactivée */
+.form-section.disabled {
+    opacity: 0.6;
+    background: #e9ecef;
+}
+
+.form-section.disabled h4 {
+    color: #6c757d;
+}
+
+.placeholder-box {
+    padding: 40px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.5);
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    color: #adb5bd;
+    font-size: 14px;
+}
+
+/* Ajustement de la DropZone dans le formulaire */
+#decompte-dropzone .dropzone-area {
+    min-height: 150px;
+}
+
+#decompte-dropzone .dropzone-content {
+    min-height: 150px;
+    padding: 30px 20px;
+}
+
+/* ========================================
    HISTORIQUE DES DIFFICULTÉS
    
    [02/02/2025] - Création initiale
