@@ -40,7 +40,8 @@ function createMagasinDropdown(dropdownId, userData) {
         value: userData.magasin,
         searchable: userData.magasins.length > 5,
         size: 'small',
-        theme: 'compact',
+        theme: 'glass-dark',  // Thème glassmorphism
+        width: '140px',       // Largeur fixe
         onChange: (value) => {
             if (window.changeMagasin) {
                 window.changeMagasin(value);
