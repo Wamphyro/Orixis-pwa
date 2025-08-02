@@ -133,11 +133,11 @@
 }
 
 /* ========================================
-   DROPDOWN MAGASIN - HAUTE SPÉCIFICITÉ
+   DROPDOWN MAGASIN - OVERRIDE TOTAL
    ======================================== */
 
-/* Trigger invisible - Plus spécifique */
-.dropdown-header-transparent.dropdown-list-wrapper .dropdown-list-trigger {
+/* Force l'override du thème minimal avec sélecteur ultra-spécifique */
+body .dropdown-header-transparent.dropdown-list-minimal .dropdown-list-trigger {
     all: unset !important;
     display: inline-flex !important;
     align-items: center !important;
@@ -147,22 +147,29 @@
     font-size: 14px !important;
     font-weight: 600 !important;
     font-family: inherit !important;
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
 }
 
-.dropdown-header-transparent .dropdown-list-value {
+body .dropdown-header-transparent .dropdown-list-value {
     color: white !important;
 }
 
-.dropdown-header-transparent .dropdown-list-arrow svg {
+body .dropdown-header-transparent .dropdown-list-arrow {
     color: rgba(255, 255, 255, 0.7) !important;
 }
 
-/* Panel - Sélecteurs très spécifiques pour override dropdown-list.css */
-.dropdown-header-transparent.dropdown-list-wrapper .dropdown-list-panel.show {
-    /* Reset des styles par défaut */
-    background: none !important;
-    
-    /* Notre design glassmorphism */
+body .dropdown-header-transparent .dropdown-list-arrow svg {
+    fill: currentColor !important;
+}
+
+/* Panel glassmorphism - ultra spécifique pour override minimal theme */
+body .dropdown-header-transparent.dropdown-list-minimal .dropdown-list-panel {
     background: linear-gradient(
         135deg,
         rgba(255, 255, 255, 0.92),
@@ -170,102 +177,42 @@
     ) !important;
     backdrop-filter: blur(20px) saturate(180%) !important;
     -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-    
-    /* Bordure et ombres élégantes */
-    border: 1px solid rgba(255, 255, 255, 0.6) !important;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
     box-shadow: 
         0 0 0 1px rgba(102, 126, 234, 0.1),
         0 8px 32px rgba(102, 126, 234, 0.25),
-        0 2px 4px rgba(0, 0, 0, 0.05),
-        inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
-    
-    /* Coins arrondis */
-    border-radius: 16px !important;
-    overflow: hidden !important;
-    margin-top: 12px !important;
-}
-
-/* Override spécifique pour dropdown-down et dropdown-up */
-.dropdown-header-transparent .dropdown-list-panel.dropdown-down,
-.dropdown-header-transparent .dropdown-list-panel.dropdown-up {
+        0 2px 4px rgba(0, 0, 0, 0.05) !important;
     border-radius: 16px !important;
 }
 
-/* Options - Plus spécifique */
-.dropdown-header-transparent .dropdown-list-options {
+/* Options */
+body .dropdown-header-transparent .dropdown-list-options {
     background: transparent !important;
 }
 
-.dropdown-header-transparent .dropdown-list-panel .dropdown-list-option {
+body .dropdown-header-transparent .dropdown-list-option {
     color: #2c3e50 !important;
     padding: 14px 20px !important;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    position: relative !important;
-    font-weight: 500 !important;
     background: transparent !important;
+    font-weight: 500 !important;
 }
 
-.dropdown-header-transparent .dropdown-list-panel .dropdown-list-option:hover {
+body .dropdown-header-transparent .dropdown-list-option:hover {
     background: linear-gradient(
         90deg,
         rgba(102, 126, 234, 0.12),
         rgba(118, 75, 162, 0.08)
     ) !important;
     color: #667eea !important;
-    transform: translateX(2px) !important;
 }
 
-.dropdown-header-transparent .dropdown-list-panel .dropdown-list-option.selected {
+body .dropdown-header-transparent .dropdown-list-option.selected {
     background: linear-gradient(
         90deg,
         rgba(102, 126, 234, 0.15),
         rgba(118, 75, 162, 0.1)
     ) !important;
     color: #667eea !important;
-    font-weight: 600 !important;
-}
-
-/* Indicateurs visuels */
-.dropdown-header-transparent .dropdown-list-option.selected::before {
-    content: '' !important;
-    position: absolute !important;
-    left: 0 !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    width: 3px !important;
-    height: 60% !important;
-    background: linear-gradient(to bottom, #667eea, #764ba2) !important;
-    border-radius: 0 2px 2px 0 !important;
-}
-
-.dropdown-header-transparent .dropdown-list-option.selected::after {
-    content: '✓' !important;
-    position: absolute !important;
-    right: 20px !important;
-    color: #667eea !important;
-    font-weight: bold !important;
-}
-
-/* Icônes */
-.dropdown-header-transparent .dropdown-list-option-icon {
-    margin-right: 10px !important;
-    font-size: 16px !important;
-}
-
-/* Animation spécifique */
-.dropdown-header-transparent .dropdown-list-panel.show {
-    animation: dropdownSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
-}
-
-@keyframes dropdownSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-8px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 /* ========================================
