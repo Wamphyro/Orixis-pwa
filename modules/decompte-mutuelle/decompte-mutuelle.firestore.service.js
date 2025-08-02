@@ -63,8 +63,21 @@ export async function creerDecompte(data) {
         decompteData.numeroDecompte = numeroDecompte;
         decompteData.typeDecompte = 'individuel';  // Par défaut
         
-        // Organisation - ORIXIS SAS comme nom complet
-        decompteData.societe = 'ORIXIS SAS';  // Toujours le nom complet
+        // Organisation - Récupérer la raison sociale dynamiquement
+        if (!auth.raisonSociale && auth.magasin) {
+            // Ancienne connexion, on charge la raison sociale
+            try {
+                const { chargerMagasins } = await import('../../src/services/firebase.service.js');
+                const magasins = await chargerMagasins();
+                const magasinUser = Object.values(magasins).find(m => m.code === auth.magasin);
+                decompteData.societe = magasinUser?.societe?.raisonSociale || 'NON DEFINI';
+            } catch (error) {
+                decompteData.societe = 'NON DEFINI';
+            }
+        } else {
+            // Nouvelle connexion avec raisonSociale
+            decompteData.societe = auth.raisonSociale || 'NON DEFINI';
+        }
         decompteData.codeMagasin = auth.magasin || 'XXX';
         decompteData.magasinUploadeur = auth.magasin || 'XXX';
         
