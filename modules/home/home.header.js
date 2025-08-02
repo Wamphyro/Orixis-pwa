@@ -40,7 +40,7 @@ function createMagasinDropdown(dropdownId, userData) {
         value: userData.magasin,
         searchable: userData.magasins.length > 5,
         size: 'small',
-        theme: 'minimal',     // Thème minimal qu'on va customiser
+        theme: '',            // PAS de thème, on utilise juste notre classe
         className: 'dropdown-header-transparent', // Classe custom
         width: '140px',       // Largeur fixe
         onChange: (value) => {
