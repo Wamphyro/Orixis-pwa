@@ -203,7 +203,7 @@ async function enregistrerDecompte() {
         
         try {
             // Upload des documents
-            console.log(`📤 Upload de ${nouveauDecompte.documents.length} fichiers vers le magasin ${magasin}`);
+            console.log(`📤 Upload de ${nouveauDecompte.documents.length} fichiers`);
             
             const resultats = await uploadService.uploadMultipleDocuments(
                 nouveauDecompte.documents
