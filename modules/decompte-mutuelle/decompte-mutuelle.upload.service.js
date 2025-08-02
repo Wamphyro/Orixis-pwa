@@ -57,9 +57,15 @@ export async function uploadDecompteDocument(file) {
         const mois = String(date.getMonth() + 1).padStart(2, '0');
         const jour = String(date.getDate()).padStart(2, '0');
         
-        // Nettoyer le nom du fichier
-        const nomNettoye = cleanFileName(file.name);
-        const nomFichier = `${timestamp}_${nomNettoye}`;
+        // Récupérer les infos utilisateur
+        const userInfo = getUserInfo();
+        
+        // Créer un nom standardisé avec UUID court
+        const dateStr = `${annee}${mois}${jour}`;
+        const timeStr = date.toTimeString().slice(0,8).replace(/:/g, '');
+        const shortUUID = crypto.randomUUID().substring(0, 8);
+        const extension = file.name.split('.').pop().toLowerCase();
+        const nomFichier = `DM_${userInfo.societe}_${dateStr}_${timeStr}_${shortUUID}.${extension}`;
         
         // Récupérer les infos utilisateur (avec société)
         const userInfo = getUserInfo();
