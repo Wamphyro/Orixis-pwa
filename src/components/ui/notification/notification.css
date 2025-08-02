@@ -130,15 +130,16 @@
 .notification-title {
     font-weight: 600;
     font-size: 14px;
-    color: #1a1a1a;
+    color: #000000;    /* Noir pur */
     margin-bottom: 4px;
     line-height: 1.4;
 }
 
 .notification-message {
     font-size: 13px;
-    color: #333333;
+    color: #000000;    /* Noir pur pour meilleure lisibilité */
     line-height: 1.5;
+    font-weight: 500;  /* Un peu plus gras */
 }
 
 /* Bouton fermer notification */
