@@ -608,6 +608,111 @@ body.header-fixed {
 }
 
 /* ========================================
+   SECTION MAGASIN DROPDOWN
+   ======================================== */
+
+.header-magasin-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 12px;
+}
+
+.magasin-label {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Styles pour la DropdownList dans le header */
+#magasinDropdownHeader .dropdown-list {
+    min-width: 120px;
+}
+
+#magasinDropdownHeader .dropdown-list-toggle {
+    padding: 6px 14px;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    border-radius: 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#magasinDropdownHeader .dropdown-list-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.35);
+    transform: translateY(-1px);
+}
+
+#magasinDropdownHeader .dropdown-list-toggle:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 2px;
+}
+
+#magasinDropdownHeader .dropdown-list-options {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    color: #333;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+#magasinDropdownHeader .dropdown-list-option {
+    color: #333;
+    transition: all 0.2s ease;
+}
+
+#magasinDropdownHeader .dropdown-list-option:hover {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+#magasinDropdownHeader .dropdown-list-option.selected {
+    background: rgba(102, 126, 234, 0.15);
+    color: #667eea;
+    font-weight: 600;
+}
+
+/* Responsive pour la section magasin */
+@media (max-width: 768px) {
+    .header-magasin-section {
+        margin: 0 8px;
+    }
+    
+    .magasin-label {
+        display: none; /* Masquer le label sur mobile */
+    }
+    
+    #magasinDropdownHeader .dropdown-list {
+        min-width: 100px;
+    }
+    
+    #magasinDropdownHeader .dropdown-list-toggle {
+        padding: 5px 10px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-magasin-section {
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 8px;
+    }
+    
+    #magasinDropdownHeader .dropdown-list {
+        width: 100%;
+        max-width: 200px;
+    }
+}
+
+/* ========================================
    HISTORIQUE DES DIFFICULTÉS
    
    [30/01/2025] - Création initiale
