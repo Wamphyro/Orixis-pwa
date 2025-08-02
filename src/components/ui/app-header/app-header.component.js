@@ -417,6 +417,16 @@ export class AppHeader {
     }
     
     /**
+     * Obtenir l'ID du container dropdown magasin (si activé)
+     */
+    getMagasinDropdownId() {
+        if (this.config.showMagasinDropdown) {
+            return `magasinDropdown-${this.id}`;
+        }
+        return null;
+    }
+    
+    /**
      * Détruire le composant
      */
     destroy() {
