@@ -97,13 +97,15 @@ function afficherDetailCommande(commande) {
         timelineInstance = null;
     }
     
-    const timelineContainer = document.getElementById('timeline');
-    if (!timelineContainer) {
-        console.error('❌ Container timeline non trouvé');
+    // Recréer le container timeline car destroy() le supprime
+    const timelineWrapper = document.querySelector('.timeline-container');
+    if (!timelineWrapper) {
+        console.error('❌ Container .timeline-container non trouvé');
         return;
     }
     
-    timelineContainer.innerHTML = '';
+    // Recréer le div timeline à l'intérieur
+    timelineWrapper.innerHTML = '<div class="timeline" id="timeline"></div>';
     
     // Créer la nouvelle timeline
     try {
@@ -112,7 +114,8 @@ function afficherDetailCommande(commande) {
             theme: 'colorful',
             animated: true,
             showDates: true,
-            showLabels: true
+            showLabels: true,
+            clickable: false
         });
         console.log('✅ Timeline créée avec succès');
     } catch (error) {

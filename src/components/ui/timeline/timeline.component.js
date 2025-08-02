@@ -102,7 +102,7 @@ export class Timeline {
         const link = document.createElement('link');
         link.id = 'timeline-styles';
         link.rel = 'stylesheet';
-        link.href = '../src/components/ui/timeline/timeline.css';
+        link.href = '../../src/components/ui/timeline/timeline.css';
         document.head.appendChild(link);
         
         console.log('📦 Timeline styles chargés');
