@@ -122,8 +122,30 @@ async function initUIComponents() {
     try {
         const userData = getUserData();
         
+        // Charger les magasins pour vérifier s'il y en a plusieurs
+        const { chargerMagasins } = await import('../../src/services/firebase.service.js');
+        const magasinsData = await chargerMagasins();
+        const magasinsArray = magasinsData ? 
+            Object.entries(magasinsData)
+                .filter(([id, data]) => data.actif !== false)
+                .map(([id, data]) => ({
+                    code: data.code || id,
+                    nom: data.nom || data.code || id
+                })) : [];
+        
         // Créer le header avec la config locale
-        appHeader = config.createDecomptesHeader(userData);
+        appHeader = config.createDecomptesHeader({
+            ...userData,
+            showMagasinSelector: magasinsArray.length > 1  // Seulement si plusieurs magasins
+        });
+        
+        // Si plusieurs magasins, ajouter le dropdown après que le header soit rendu
+        if (magasinsArray.length > 1) {
+            const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
+            setTimeout(() => {
+                addMagasinDropdown(magasinsArray, auth.magasin);
+            }, 100);
+        }
         
         console.log('🎨 Composants UI initialisés avec magasin:', userData.store);
         
@@ -131,6 +153,48 @@ async function initUIComponents() {
         console.error('❌ Erreur initialisation UI:', error);
         config.notify.error('Erreur lors de l\'initialisation de l\'interface');
     }
+}
+
+// Fonction pour ajouter le dropdown de magasin
+function addMagasinDropdown(magasins, magasinActuel) {
+    const dropdownContainer = document.getElementById('magasinDropdownHeader');
+    if (!dropdownContainer) return;
+    
+    // Créer la DropdownList
+    state.magasinSelector = config.createDropdown(dropdownContainer, {
+        options: magasins.map(mag => ({
+            value: mag.code,
+            label: mag.nom,
+            icon: '🏪'
+        })),
+        value: magasinActuel,
+        searchable: magasins.length > 5,
+        size: 'small',
+        theme: 'compact',
+        onChange: async (value) => {
+            // Mettre à jour l'auth
+            const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
+            auth.magasin = value;
+            
+            // Récupérer la raison sociale du nouveau magasin
+            const { chargerMagasins } = await import('../../src/services/firebase.service.js');
+            const magasinsData = await chargerMagasins();
+            const magasin = Object.values(magasinsData).find(m => m.code === value);
+            if (magasin?.societe?.raisonSociale) {
+                auth.raisonSociale = magasin.societe.raisonSociale;
+            }
+            
+            localStorage.setItem('sav_auth', JSON.stringify(auth));
+            
+            // Notification
+            config.notify.success(`Changement de magasin : ${value}`);
+            
+            // Recharger après 1 seconde
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        }
+    });
 }
 
 // ========================================
