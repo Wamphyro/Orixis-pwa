@@ -256,11 +256,18 @@
     }
     
     .notification-title {
-        color: #ffffff;
+        font-weight: 600;
+        font-size: 14px;
+        color: #000000 !important;    /* Forcer le noir */
+        margin-bottom: 4px;
+        line-height: 1.4;
     }
-    
+
     .notification-message {
-        color: #e0e0e0;
+        font-size: 13px;
+        color: #000000 !important;    /* Forcer le noir */
+        line-height: 1.5;
+        font-weight: 500;
     }
     
     .notification-close {
