@@ -53,7 +53,7 @@ export class AppHeader {
             backUrl: null,          // URL de retour (null = pas de bouton retour)
             user: null,             // Données utilisateur { name, store, role }
             showLogout: true,       // Afficher le bouton déconnexion
-            showMagasinSelector: false, // 🆕 Afficher un container pour dropdown magasin
+            showMagasinDropdown: false, // Afficher un dropdown pour changer de magasin
             position: 'prepend',    // prepend ou append dans le container
             theme: 'default',       // Thème visuel
             
@@ -222,10 +222,10 @@ export class AppHeader {
                     ${hasUser ? `
                         <div class="${userSectionClasses}">
                             <span class="user-name">${this.config.user.name || 'Utilisateur'}</span>
-                            ${this.config.showMagasinSelector ? `
+                            ${this.config.showMagasinDropdown ? `
                                 <div class="header-magasin-section">
                                     <span class="magasin-label">Magasin :</span>
-                                    <div id="magasinDropdownHeader"></div>
+                                    <div id="magasinDropdown-${this.id}"></div>
                                 </div>
                             ` : this.config.user.store ? `
                                 <span class="user-store">${this.config.user.store}</span>

@@ -24,6 +24,7 @@ export function createHomeHeader(userData) {
         showBack: false,
         theme: 'gradient',
         user: userData,
+        showMagasinDropdown: userData.magasins && userData.magasins.length > 1,
         // Ajouter les classes pour les boutons
         buttonClasses: {
             back: 'btn on-dark btn-pill',

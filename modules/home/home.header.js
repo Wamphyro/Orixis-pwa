@@ -19,41 +19,19 @@ export async function initHeader() {
     // Créer le header
     const appHeader = config.createHomeHeader(userData);
 
-    // Si plusieurs magasins, ajouter le dropdown après
-    if (userData.magasins && userData.magasins.length > 1) {
-        // Attendre que le header soit rendu
-        setTimeout(() => {
-            addMagasinDropdown(userData);
-        }, 100);
+    // Si plusieurs magasins ET que le dropdown est activé, le créer
+    if (userData.magasins && userData.magasins.length > 1 && appHeader.getMagasinDropdownId()) {
+        createMagasinDropdown(appHeader.getMagasinDropdownId(), userData);
     }
     
     return appHeader;
 }
 
-// Fonction pour ajouter le dropdown
-function addMagasinDropdown(userData) {
-    const userSection = document.querySelector('.header-user-section');
-    if (!userSection) return;
-    
-    // Créer le conteneur pour le dropdown
-    const dropdownContainer = document.createElement('div');
-    dropdownContainer.className = 'header-magasin-section';
-    dropdownContainer.innerHTML = `
-        <span class="magasin-label">Magasin :</span>
-        <div id="magasinDropdownHeader"></div>
-    `;
-    
-    // Insérer avant le bouton déconnexion
-    const logoutBtn = userSection.querySelector('.header-logout-button');
-    if (logoutBtn) {
-        userSection.insertBefore(dropdownContainer, logoutBtn);
-    } else {
-        userSection.appendChild(dropdownContainer);
-    }
-    
+// Fonction pour créer le dropdown
+function createMagasinDropdown(dropdownId, userData) {
     // Créer le dropdown
     new DropdownList({
-        container: '#magasinDropdownHeader',
+        container: `#${dropdownId}`,
         options: userData.magasins.map(mag => ({
             value: mag,
             label: mag,
