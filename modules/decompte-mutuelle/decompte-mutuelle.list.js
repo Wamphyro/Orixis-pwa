@@ -162,10 +162,20 @@ function initDataTable() {
                 key: 'client',
                 label: 'Client',
                 sortable: true,
-                formatter: (client) => `${client.prenom} ${client.nom}`,
+                formatter: (client) => {
+                    if (!client || (!client.nom && !client.prenom)) {
+                        return '-';
+                    }
+                    const nom = client.nom || '';
+                    const prenom = client.prenom || '';
+                    const nomComplet = `${prenom} ${nom}`.trim();
+                    return nomComplet || '-';
+                },
                 sortFunction: (a, b, direction) => {
-                    const nameA = `${a.prenom} ${a.nom}`.toLowerCase();
-                    const nameB = `${b.prenom} ${b.nom}`.toLowerCase();
+                    const clientA = a || {};
+                    const clientB = b || {};
+                    const nameA = `${clientA.prenom || ''} ${clientA.nom || ''}`.trim().toLowerCase() || '-';
+                    const nameB = `${clientB.prenom || ''} ${clientB.nom || ''}`.trim().toLowerCase() || '-';
                     return direction === 'asc' 
                         ? nameA.localeCompare(nameB, 'fr')
                         : nameB.localeCompare(nameA, 'fr');
