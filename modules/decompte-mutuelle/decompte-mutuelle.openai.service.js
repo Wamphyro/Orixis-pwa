@@ -273,14 +273,16 @@ export class DecompteOpenAIService {
      * @private
      */
     static async prepareDocumentImages(documentUrl, documentType) {
-        if (documentType === 'application/pdf') {
-            // TODO: Implémenter conversion PDF → Images
-            throw new Error('Conversion PDF non implémentée. Utilisez des images JPG/PNG.');
-        }
+        // HACK TEMPORAIRE : Traiter les PDF comme des images
+        console.warn('⚠️ PDF traité comme image - résultats imprévisibles');
         
-        // Image directe
-        const base64 = await this.fetchImageAsBase64(documentUrl);
-        return [base64];
+        try {
+            const base64 = await this.fetchImageAsBase64(documentUrl);
+            return [base64];
+        } catch (error) {
+            console.error('❌ Erreur conversion:', error);
+            throw new Error('Document non lisible. Utilisez des images JPG/PNG pour de meilleurs résultats.');
+        }
     }
     
     /**
