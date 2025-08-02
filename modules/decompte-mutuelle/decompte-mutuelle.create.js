@@ -21,6 +21,7 @@
 import config from './decompte-mutuelle.config.js';
 import { afficherSucces, afficherErreur } from './decompte-mutuelle.main.js';
 import uploadService from './decompte-mutuelle.upload.service.js';
+import firestoreService from './decompte-mutuelle.firestore.service.js';
 
 // ========================================
 // ÉTAT LOCAL DU MODULE
@@ -220,21 +221,38 @@ async function enregistrerDecompte() {
             if (resultats.reussis.length > 0) {
                 afficherSucces(`${resultats.reussis.length} document(s) uploadé(s) avec succès`);
                 
-                // Pour l'instant, on affiche juste les URLs
                 console.log('📎 Documents uploadés:', resultats.reussis);
                 
-                // TODO: Créer le décompte dans Firestore
-                // const decompteId = await DecomptesMutuellesService.creerDecompte({
-                //     ...nouveauDecompte,
-                //     documents: resultats.reussis,
-                //     magasin: magasin
-                // });
-                
-                // Fermer la modal
-                setTimeout(() => {
-                    window.modalManager.close('modalNouveauDecompte');
-                    resetNouveauDecompte();
-                }, 2000);
+                try {
+                    // Créer le décompte dans Firestore
+                    btnEnregistrer.innerHTML = '💾 Enregistrement...';
+                    
+                    const decompteId = await firestoreService.creerDecompte({
+                        documents: resultats.reussis
+                    });
+                    
+                    afficherSucces('Décompte créé avec succès !');
+                    console.log('✅ Décompte créé avec ID:', decompteId);
+                    
+                    // Fermer la modal après succès
+                    setTimeout(() => {
+                        window.modalManager.close('modalNouveauDecompte');
+                        resetNouveauDecompte();
+                        
+                        // Optionnel : Recharger la liste
+                        if (window.refreshDecomptesList) {
+                            window.refreshDecomptesList();
+                        }
+                    }, 1500);
+                    
+                } catch (error) {
+                    console.error('❌ Erreur création décompte:', error);
+                    afficherErreur('Erreur lors de la création du décompte');
+                    
+                    // Réactiver le bouton
+                    btnEnregistrer.disabled = false;
+                    btnEnregistrer.innerHTML = texteOriginal;
+                }
             }
             
         } catch (error) {
