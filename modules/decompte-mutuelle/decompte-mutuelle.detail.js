@@ -352,18 +352,30 @@ function afficherActionsDecompte(decompte) {
 
 window.transmettreIA = async function(decompteId) {
     const confirme = await config.Dialog.confirm(
-        'Confirmer la transmission à l\'IA pour traitement automatique ?',
-        'Transmission IA'
+        'Lancer l\'analyse IA de ce décompte ?',
+        'Analyse IA'
     );
     
     if (confirme) {
         try {
-            await DecomptesMutuellesService.changerStatut(decompteId, 'traitement_ia');
+            // Afficher un loader
+            config.notify.info('🤖 Analyse IA en cours...');
+            
+            // AJOUTER L'APPEL IA ICI
+            const DecompteOpenAIService = await import('./decompte-mutuelle.openai.service.js');
+            const resultIA = await DecompteOpenAIService.default.analyserDocumentExistant(decompteId);
+            
+            console.log('✅ Résultat IA:', resultIA);
+            
+            // Recharger pour voir les nouvelles données
             await chargerDonnees();
             await voirDetailDecompte(decompteId);
-            afficherSucces('Décompte transmis à l\'IA');
+            
+            afficherSucces('Analyse IA terminée !');
+            
         } catch (error) {
-            afficherErreur(error.message || 'Erreur lors de la transmission');
+            console.error('❌ Erreur IA:', error);
+            afficherErreur('Erreur lors de l\'analyse IA : ' + error.message);
         }
     }
 };

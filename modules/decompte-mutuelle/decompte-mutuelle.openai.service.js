@@ -21,7 +21,7 @@
 // ========================================
 
 // Configuration de la Cloud Function
-const CLOUD_FUNCTION_URL = 'https://europe-west1-orixis-pwa.cloudfunctions.net/analyzeDecompte';
+const CLOUD_FUNCTION_URL = 'https://europe-west1-orixis-pwa.cloudfunctions.net/analyzeDocument';
 
 
 // ========================================
@@ -41,11 +41,31 @@ export class DecompteOpenAIService {
         try {
             console.log('🤖 Début analyse IA du document décompte...');
             
+            // Préparer le tableau des magasins au format attendu par le prompt
+            let magasinsArray = [];
+            
+            // Si magasinsData est un objet (format Firebase)
+            if (!Array.isArray(magasinsData) && typeof magasinsData === 'object') {
+                magasinsArray = Object.entries(magasinsData).map(([code, data]) => ({
+                    "FINESS": data.finess || data.FINESS || '',
+                    "CODE MAGASIN": code,
+                    "SOCIETE": data.societe || data.nom || '',
+                    "ADRESSE": data.adresse || '',
+                    "VILLE": data.ville || ''
+                }));
+            } 
+            // Si c'est déjà un tableau
+            else if (Array.isArray(magasinsData)) {
+                magasinsArray = magasinsData;
+            }
+            
+            console.log(`📍 ${magasinsArray.length} magasins pour recherche FINESS`);
+            
             // Convertir le document en image(s) base64
             const images = await this.prepareDocumentImages(documentUrl, documentType);
             
             // Extraire les données via GPT-4
-            const donneesExtraites = await this.extractDecompteData(images, magasinsData);
+            const donneesExtraites = await this.extractDecompteData(images, magasinsArray);
             
             // Formater pour notre structure Firestore
             const donneesFormatees = this.formaterPourFirestore(donneesExtraites);
@@ -66,39 +86,133 @@ export class DecompteOpenAIService {
      * @returns {Promise<Object>} Données brutes extraites
      */
     static async extractDecompteData(images, magasinsArray = []) {
-    try {
-        console.log(`🤖 Appel Cloud Function pour ${images.length} image(s)...`);
-        
-        // Appeler la Cloud Function
-        const response = await fetch(CLOUD_FUNCTION_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                images: images,
-                magasinsArray: magasinsArray
-            })
-        });
-        
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Erreur Cloud Function');
-        }
-        
-        const result = await response.json();
-        
-        // Pour l'instant, la fonction retourne des données de test
-        console.log('✅ Réponse Cloud Function:', result);
-        
-        // Retourner les données (actuellement mockées)
-        return result.data || {};
-        
-    } catch (error) {
-        console.error('❌ Erreur appel Cloud Function:', error);
-        throw error;
+        try {
+            console.log(`🤖 Appel Cloud Function pour ${images.length} image(s)...`);
+            
+            // VOTRE PROMPT COMPLET
+            const prompt = `Tu es un expert en traitement des relevés de remboursement des réseaux de soins et mutuelles.
+    Tu analyses ${images.length} image(s) d'un document PDF et tu dois retourner UNIQUEMENT un objet JSON valide, sans aucun texte ni balise.
+
+    FORMAT JSON OBLIGATOIRE :
+    {
+    "timestamp_analyse": "yyyy-MM-ddTHH:mm:ss",
+    "societe": "string",
+    "centre": "string",
+    "periode": "yyyy-MM",
+    "MoisLettre": "string",
+    "Annee": 0,
+    "organisme_mutuelle": "string",
+    "reseau_soins": "string",
+    "virements": [{
+        "DateVirement": "yyyy-MM-dd",
+        "MoisLettre": "string",
+        "Annee": 0,
+        "MontantVirementGlobal": 0.0,
+        "VirementLibelle": "string",
+        "nb_clients": 0,
+        "clients": [{
+        "ClientNom": "string",
+        "ClientPrenom": "string",
+        "NumeroAdherent": "string",
+        "Montant": 0.0,
+        "typeVirement": "string"
+        }]
+    }]
     }
-}
+
+    EXTRACTION DU FINESS ET RECHERCHE SOCIÉTÉ :
+    1. Chercher "Votre numéro AM :", "N° AM", "Numéro AMC" ou "FINESS"
+    2. Extraire le nombre qui suit (exactement 9 chiffres)
+    3. Supprimer tous les zéros initiaux
+    4. Rechercher ce FINESS dans le tableau fourni
+    5. Si trouvé : centre = "CODE MAGASIN", societe = "SOCIETE"
+    6. Si non trouvé, chercher l'ADRESSE du destinataire et chercher une correspondance
+    7. Si trouvé par adresse : centre = "CODE MAGASIN", societe = "SOCIETE"
+    8. Sinon : centre = "INCONNU", societe = ""
+
+    EXTRACTION DE LA MUTUELLE :
+    - Chercher "AMC :", "Mutuelle :", "Assurance :", "Organisme complémentaire"
+    - Si non trouvé, chercher dans l'en-tête du document
+    - NE PAS confondre avec le réseau de soins
+    - NE PAS prendre le destinataire (professionnel de santé)
+    - organisme_mutuelle NE PEUT PAS être égal à societe
+    - En MAJUSCULES
+
+    EXTRACTION DU RÉSEAU DE SOINS :
+    - Chercher dans l'EN-TÊTE du document (partie haute)
+    - C'est l'organisme qui EXPÉDIE le document (logo, raison sociale)
+    - JAMAIS le destinataire
+    - Exemples : "ABEILLE", "ALMERYS", "HARMONIE", "SANTECLAIR"
+    - IGNORER les noms de magasins/professionnels
+    - reseau_soins NE PEUT JAMAIS être un nom de magasin
+    - En MAJUSCULES
+
+    EXTRACTION DES VIREMENTS :
+    - Chercher les dates de virement/paiement
+    - VirementLibelle : numéro ou référence du virement
+    - MontantVirementGlobal : montant total du virement
+    - nb_clients : nombre de bénéficiaires uniques
+
+    EXTRACTION DES BÉNÉFICIAIRES :
+    Pour chaque bénéficiaire visible dans le document :
+    - ClientNom : nom en MAJUSCULES
+    - ClientPrenom : prénom en MAJUSCULES
+    - NumeroAdherent : numéro d'adhérent mutuelle (ou numero SS si pas d'adhérent)
+    - Montant : montant remboursé pour ce bénéficiaire
+    - typeVirement : "Individuel" si 1 client, "Groupé" si plusieurs
+
+    IMPORTANT pour les documents multi-pages :
+    - Parcourir TOUTES les pages pour extraire TOUS les bénéficiaires
+    - Ne pas dupliquer les informations si elles apparaissent sur plusieurs pages
+    - Consolider les données de toutes les pages en un seul JSON
+
+    DATES ET PÉRIODES :
+    - timestamp_analyse : moment actuel (format ISO)
+    - periode : mois des prestations (format yyyy-MM)
+    - MoisLettre : mois en MAJUSCULES (JANVIER, FÉVRIER...)
+    - Annee : année de la période
+
+    Tableau des magasins pour la recherche FINESS :
+    ${JSON.stringify(magasinsArray)}
+
+    RAPPELS CRITIQUES :
+    - RÉSEAU DE SOINS = EXPÉDITEUR du document (en-tête)
+    - SOCIÉTÉ = DESTINATAIRE (professionnel qui reçoit)
+    - MUTUELLE = organisme complémentaire payeur
+    - Ne JAMAIS confondre ces trois entités
+    - periode basée sur les dates de soins/prestations
+    - Analyser TOUTES les pages fournies`;
+            
+            // Appeler la Cloud Function avec votre prompt
+            const response = await fetch(CLOUD_FUNCTION_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    images: images,
+                    prompt: prompt,
+                    type: 'mutuelle'
+                })
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Erreur Cloud Function');
+            }
+            
+            const result = await response.json();
+            
+            console.log('✅ Réponse Cloud Function:', result);
+            
+            // Retourner les données extraites
+            return result.data || {};
+            
+        } catch (error) {
+            console.error('❌ Erreur appel Cloud Function:', error);
+            throw error;
+        }
+    }
     
     /**
      * Analyser un décompte déjà existant
@@ -278,7 +392,7 @@ export class DecompteOpenAIService {
 // ========================================
 
 export default {
-    initializeService: DecompteOpenAIService.initializeService.bind(DecompteOpenAIService),
+    // initializeService supprimé car plus utilisé
     analyserDocument: DecompteOpenAIService.analyserDocument.bind(DecompteOpenAIService),
     analyserDocumentExistant: DecompteOpenAIService.analyserDocumentExistant.bind(DecompteOpenAIService),
     extractDecompteData: DecompteOpenAIService.extractDecompteData.bind(DecompteOpenAIService)
