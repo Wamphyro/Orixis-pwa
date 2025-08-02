@@ -43,6 +43,9 @@ export { DataTableFilters } from './ui/datatable-filters/datatable-filters.compo
 // Loading
 export { LoadingOverlay, loader } from './ui/loading-overlay/loading-overlay.component.js';
 
+// DropZone
+export { DropZone } from './ui/dropzone/dropzone.component.js';
+
 // ========================================
 // FONCTIONS UTILITAIRES
 // ========================================
