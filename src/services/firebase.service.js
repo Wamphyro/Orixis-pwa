@@ -4,6 +4,7 @@ import { firebaseConfig } from '../config/firebase-config.js';
 // Variables pour Firebase
 let db;
 let auth;
+let storage;
 
 // Cache pour les rôles
 let rolesCache = null;
@@ -15,18 +16,20 @@ async function initFirebase() {
         const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
         const { getFirestore } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
         const { getAuth, signInAnonymously } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+        const { getStorage } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js');
         
         // Initialiser Firebase
         const app = initializeApp(firebaseConfig);
         db = getFirestore(app);
         auth = getAuth(app);
+        storage = getStorage(app);
         
         // Se connecter anonymement
         await signInAnonymously(auth);
         console.log('✅ Authentification anonyme réussie');
         
         console.log('✅ Firebase initialisé avec succès');
-        return { db, auth };
+        return { db, auth, storage };
     } catch (error) {
         console.error('❌ Erreur initialisation Firebase:', error);
         throw error;
@@ -241,5 +244,6 @@ export {
     chargerRoles,           // NOUVEAU
     getRoleDetails,         // NOUVEAU
     userHasPermission,      // NOUVEAU
-    db // Exporter aussi la base de données
+    db, // Exporter aussi la base de données
+    storage // Exporter aussi le storage
 };

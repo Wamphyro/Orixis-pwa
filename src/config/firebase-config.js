@@ -9,5 +9,11 @@ const firebaseConfig = {
   measurementId: "G-PJ8K3Q4W4E"
 };
 
+// Variables pour les services Firebase
+let app;
+let db;
+let auth;
+let storage;
+
 // Export pour utilisation dans d'autres fichiers
-export { firebaseConfig };
+export { firebaseConfig, app, db, auth, storage };
