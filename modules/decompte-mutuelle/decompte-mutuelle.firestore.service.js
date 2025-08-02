@@ -55,6 +55,11 @@ export async function creerDecompte(data) {
         // Récupérer les infos utilisateur
         const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
         
+        // DEBUG - À ENLEVER APRÈS
+        console.log('🔍 DEBUG Auth:', auth);
+        console.log('🔍 DEBUG raisonSociale dans auth:', auth.raisonSociale);
+        console.log('🔍 DEBUG magasin:', auth.magasin);
+        
         // Cloner le template pour garantir la structure
         const decompteData = JSON.parse(JSON.stringify(DECOMPTE_TEMPLATE));
         
