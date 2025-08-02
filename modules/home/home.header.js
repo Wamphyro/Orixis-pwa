@@ -40,7 +40,8 @@ function createMagasinDropdown(dropdownId, userData) {
         value: userData.magasin,
         searchable: userData.magasins.length > 5,
         size: 'small',
-        theme: 'glass-dark',  // Thème glassmorphism
+        theme: 'minimal',     // Thème minimal qu'on va customiser
+        className: 'dropdown-header-transparent', // Classe custom
         width: '140px',       // Largeur fixe
         onChange: (value) => {
             if (window.changeMagasin) {
