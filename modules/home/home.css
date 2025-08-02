@@ -133,86 +133,93 @@
 }
 
 /* ========================================
-   DROPDOWN MAGASIN - OVERRIDE TOTAL
+   DROPDOWN MAGASIN SIMPLE ET ÉLÉGANT
    ======================================== */
 
-/* Force l'override du thème minimal avec sélecteur ultra-spécifique */
-body .dropdown-header-transparent.dropdown-list-minimal .dropdown-list-trigger {
-    all: unset !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 4px !important;
-    cursor: pointer !important;
-    color: white !important;
-    font-size: 14px !important;
-    font-weight: 600 !important;
-    font-family: inherit !important;
-    background: none !important;
-    border: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    box-shadow: none !important;
+.simple-dropdown {
+    position: relative;
+    display: inline-block;
 }
 
-body .dropdown-header-transparent .dropdown-list-value {
-    color: white !important;
+.simple-dropdown-trigger {
+    all: unset;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    transition: opacity 0.2s;
 }
 
-body .dropdown-header-transparent .dropdown-list-arrow {
-    color: rgba(255, 255, 255, 0.7) !important;
+.simple-dropdown-trigger:hover {
+    opacity: 0.8;
 }
 
-body .dropdown-header-transparent .dropdown-list-arrow svg {
-    fill: currentColor !important;
+.dropdown-arrow {
+    font-size: 10px;
+    opacity: 0.7;
+    transition: transform 0.2s;
 }
 
-/* Panel glassmorphism - ultra spécifique pour override minimal theme */
-body .dropdown-header-transparent.dropdown-list-minimal .dropdown-list-panel {
-    background: linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.92),
-        rgba(248, 250, 255, 0.88)
-    ) !important;
-    backdrop-filter: blur(20px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+.simple-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 15px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 12px;
     box-shadow: 
-        0 0 0 1px rgba(102, 126, 234, 0.1),
-        0 8px 32px rgba(102, 126, 234, 0.25),
-        0 2px 4px rgba(0, 0, 0, 0.05) !important;
-    border-radius: 16px !important;
+        0 8px 32px rgba(102, 126, 234, 0.2),
+        0 2px 8px rgba(0, 0, 0, 0.1);
+    min-width: 120px;
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Options */
-body .dropdown-header-transparent .dropdown-list-options {
-    background: transparent !important;
+.simple-dropdown-menu.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
 }
 
-body .dropdown-header-transparent .dropdown-list-option {
-    color: #2c3e50 !important;
-    padding: 14px 20px !important;
-    background: transparent !important;
-    font-weight: 500 !important;
+.dropdown-option {
+    padding: 12px 20px;
+    cursor: pointer;
+    color: #2c3e50;
+    transition: all 0.2s;
+    font-size: 14px;
+    font-weight: 500;
 }
 
-body .dropdown-header-transparent .dropdown-list-option:hover {
-    background: linear-gradient(
-        90deg,
-        rgba(102, 126, 234, 0.12),
-        rgba(118, 75, 162, 0.08)
-    ) !important;
-    color: #667eea !important;
+.dropdown-option:hover {
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
 }
 
-body .dropdown-header-transparent .dropdown-list-option.selected {
-    background: linear-gradient(
-        90deg,
-        rgba(102, 126, 234, 0.15),
-        rgba(118, 75, 162, 0.1)
-    ) !important;
-    color: #667eea !important;
+.dropdown-option.selected {
+    color: #667eea;
+    font-weight: 600;
+    position: relative;
+}
+
+.dropdown-option.selected::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60%;
+    background: linear-gradient(to bottom, #667eea, #764ba2);
+    border-radius: 0 2px 2px 0;
 }
 
 /* ========================================

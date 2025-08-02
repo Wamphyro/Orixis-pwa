@@ -29,24 +29,48 @@ export async function initHeader() {
 
 // Fonction pour créer le dropdown
 function createMagasinDropdown(dropdownId, userData) {
-    // Créer le dropdown
-    new DropdownList({
-        container: `#${dropdownId}`,
-        options: userData.magasins.map(mag => ({
-            value: mag,
-            label: mag,
-            icon: '🏪'
-        })),
-        value: userData.magasin,
-        searchable: userData.magasins.length > 5,
-        size: 'small',
-        theme: '',            // PAS de thème, on utilise juste notre classe
-        className: 'dropdown-header-transparent', // Classe custom
-        width: '140px',       // Largeur fixe
-        onChange: (value) => {
+    const container = document.getElementById(dropdownId);
+    if (!container) return;
+    
+    // Créer un dropdown HTML simple et élégant
+    container.innerHTML = `
+        <div class="simple-dropdown">
+            <button class="simple-dropdown-trigger" type="button">
+                <span class="dropdown-value">${userData.magasin}</span>
+                <span class="dropdown-arrow">▼</span>
+            </button>
+            <div class="simple-dropdown-menu">
+                ${userData.magasins.map(mag => `
+                    <div class="dropdown-option ${mag === userData.magasin ? 'selected' : ''}" 
+                         data-value="${mag}">
+                        🏪 ${mag}
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+    
+    // Gestion simple des événements
+    const trigger = container.querySelector('.simple-dropdown-trigger');
+    const menu = container.querySelector('.simple-dropdown-menu');
+    
+    trigger.addEventListener('click', () => {
+        menu.classList.toggle('show');
+    });
+    
+    container.querySelectorAll('.dropdown-option').forEach(option => {
+        option.addEventListener('click', () => {
+            const value = option.dataset.value;
             if (window.changeMagasin) {
                 window.changeMagasin(value);
             }
+        });
+    });
+    
+    // Fermer au clic extérieur
+    document.addEventListener('click', (e) => {
+        if (!container.contains(e.target)) {
+            menu.classList.remove('show');
         }
     });
 }
