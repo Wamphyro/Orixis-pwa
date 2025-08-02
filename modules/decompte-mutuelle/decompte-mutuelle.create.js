@@ -20,6 +20,7 @@
 
 import config from './decompte-mutuelle.config.js';
 import { afficherSucces, afficherErreur } from './decompte-mutuelle.main.js';
+import uploadService from './decompte-mutuelle.upload.service.js';
 
 // ========================================
 // ÉTAT LOCAL DU MODULE
@@ -98,6 +99,16 @@ function afficherPlaceholder() {
                         <span>📝 Formulaire à implémenter</span>
                     </div>
                 </div>
+                
+                <!-- Boutons d'action -->
+                <div class="form-actions">
+                    <button class="btn btn-ghost btn-pill" onclick="window.modalManager.close('modalNouveauDecompte')">
+                        Annuler
+                    </button>
+                    <button id="btnEnregistrerDecompte" class="btn btn-primary btn-pill" disabled>
+                        💾 Enregistrer
+                    </button>
+                </div>
             </div>
         `;
         
@@ -112,6 +123,12 @@ function afficherPlaceholder() {
                     console.log('📎 Fichiers déposés:', files);
                     nouveauDecompte.documents = files;
                     
+                    // Activer le bouton si au moins un fichier
+                    const btnEnregistrer = document.getElementById('btnEnregistrerDecompte');
+                    if (btnEnregistrer && files.length > 0) {
+                        btnEnregistrer.disabled = false;
+                    }
+                    
                     // Afficher un message temporaire
                     config.notify.success(`${files.length} fichier(s) ajouté(s)`);
                 },
@@ -122,6 +139,12 @@ function afficherPlaceholder() {
                     nouveauDecompte.documents = files;
                 }
             });
+            
+            // Gérer le clic sur enregistrer
+            const btnEnregistrer = document.getElementById('btnEnregistrerDecompte');
+            if (btnEnregistrer) {
+                btnEnregistrer.onclick = enregistrerDecompte;
+            }
         }, 100);
     }
 }
@@ -157,6 +180,80 @@ function resetNouveauDecompte() {
     if (dropdownPrestataire) {
         dropdownPrestataire.destroy();
         dropdownPrestataire = null;
+    }
+}
+
+// ========================================
+// ENREGISTREMENT DU DÉCOMPTE
+// ========================================
+
+async function enregistrerDecompte() {
+    try {
+        // Vérifier qu'il y a des documents
+        if (!nouveauDecompte.documents || nouveauDecompte.documents.length === 0) {
+            afficherErreur('Veuillez ajouter au moins un document');
+            return;
+        }
+        
+        // Récupérer le magasin de l'utilisateur
+        const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
+        const magasin = auth.magasin || auth.collaborateur?.magasin || '9XXX';
+        
+        // Désactiver le bouton et afficher un loader
+        const btnEnregistrer = document.getElementById('btnEnregistrerDecompte');
+        const texteOriginal = btnEnregistrer.innerHTML;
+        btnEnregistrer.disabled = true;
+        btnEnregistrer.innerHTML = '⏳ Upload en cours...';
+        
+        try {
+            // Upload des documents
+            console.log(`📤 Upload de ${nouveauDecompte.documents.length} fichiers vers le magasin ${magasin}`);
+            
+            const resultats = await uploadService.uploadMultipleDocuments(
+                nouveauDecompte.documents,
+                magasin
+            );
+            
+            // Vérifier les résultats
+            if (resultats.erreurs.length > 0) {
+                console.error('⚠️ Erreurs upload:', resultats.erreurs);
+                resultats.erreurs.forEach(err => {
+                    afficherErreur(`${err.fichier}: ${err.erreur}`);
+                });
+            }
+            
+            if (resultats.reussis.length > 0) {
+                afficherSucces(`${resultats.reussis.length} document(s) uploadé(s) avec succès`);
+                
+                // Pour l'instant, on affiche juste les URLs
+                console.log('📎 Documents uploadés:', resultats.reussis);
+                
+                // TODO: Créer le décompte dans Firestore
+                // const decompteId = await DecomptesMutuellesService.creerDecompte({
+                //     ...nouveauDecompte,
+                //     documents: resultats.reussis,
+                //     magasin: magasin
+                // });
+                
+                // Fermer la modal
+                setTimeout(() => {
+                    window.modalManager.close('modalNouveauDecompte');
+                    resetNouveauDecompte();
+                }, 2000);
+            }
+            
+        } catch (error) {
+            console.error('❌ Erreur upload:', error);
+            afficherErreur(`Erreur lors de l'upload: ${error.message}`);
+            
+            // Réactiver le bouton
+            btnEnregistrer.disabled = false;
+            btnEnregistrer.innerHTML = texteOriginal;
+        }
+        
+    } catch (error) {
+        console.error('❌ Erreur générale:', error);
+        afficherErreur('Une erreur est survenue');
     }
 }
 

@@ -496,6 +496,25 @@
     padding: 30px 20px;
 }
 
+/* Boutons d'action du formulaire */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #e9ecef;
+}
+
+.form-actions .btn {
+    min-width: 140px;
+}
+
+#btnEnregistrerDecompte:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 /* ========================================
    HISTORIQUE DES DIFFICULTÉS
    
