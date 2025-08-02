@@ -171,7 +171,7 @@ async function handlePinSubmit(pin) {
 // GESTION SUCCÈS/ÉCHEC
 // ========================================
 
-function handleSuccess() {
+async function handleSuccess() {
     console.log('✅ Connexion réussie');
     
     // Animation
@@ -180,7 +180,7 @@ function handleSuccess() {
     
     // Sauvegarder
     const remember = document.getElementById('remember').checked;
-    saveAuthentication(selectedUser, remember);
+    await saveAuthentication(selectedUser, remember);  // AWAIT ajouté
     
     // Redirection
     setTimeout(() => {

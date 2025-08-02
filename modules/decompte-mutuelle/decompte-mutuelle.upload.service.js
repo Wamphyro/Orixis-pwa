@@ -14,7 +14,7 @@
 // - calculateFileHash(file) : Calculer le hash SHA-256
 //
 // STRUCTURE STORAGE:
-// decomptes-mutuelles/[magasin]/[année]/[mois]/[fichier]
+// decomptes-mutuelles/[société]/inbox/[année]/[mois]/[jour]/[fichier]
 // ========================================
 
 import { storage } from '../../src/services/firebase.service.js';
@@ -37,7 +37,7 @@ const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
  * @param {string} magasin - Code du magasin (ex: '9PAR')
  * @returns {Promise<Object>} Métadonnées du document uploadé
  */
-export async function uploadDecompteDocument(file, magasin) {
+export async function uploadDecompteDocument(file) {
     try {
         // Importer les fonctions Firebase Storage dynamiquement
         const { ref, uploadBytes, getDownloadURL } = await import(
@@ -55,13 +55,17 @@ export async function uploadDecompteDocument(file, magasin) {
         const date = new Date();
         const annee = date.getFullYear();
         const mois = String(date.getMonth() + 1).padStart(2, '0');
+        const jour = String(date.getDate()).padStart(2, '0');
         
         // Nettoyer le nom du fichier
         const nomNettoye = cleanFileName(file.name);
         const nomFichier = `${timestamp}_${nomNettoye}`;
         
-        // Chemin complet : decomptes-mutuelles/9PAR/2025/02/1234567890_decompte.pdf
-        const chemin = `${STORAGE_BASE_PATH}/${magasin}/${annee}/${mois}/${nomFichier}`;
+        // Récupérer les infos utilisateur (avec société)
+        const userInfo = getUserInfo();
+        
+        // Chemin complet : decomptes-mutuelles/BA/inbox/2025/02/03/1234567890_decompte.pdf
+        const chemin = `${STORAGE_BASE_PATH}/${userInfo.societe}/inbox/${annee}/${mois}/${jour}/${nomFichier}`;
         
         console.log('📤 Upload vers:', chemin);
         
@@ -72,7 +76,9 @@ export async function uploadDecompteDocument(file, magasin) {
         const metadata = {
             contentType: file.type,
             customMetadata: {
-                magasin: magasin,
+                uploadePar: userInfo.name,
+                magasinUploadeur: userInfo.magasin,
+                societeUploadeur: userInfo.societe,  // AJOUT de la société
                 nomOriginal: file.name,
                 hash: hash,
                 dateUpload: new Date().toISOString(),
@@ -96,8 +102,7 @@ export async function uploadDecompteDocument(file, magasin) {
             taille: file.size,
             type: file.type,
             hash: hash,
-            dateUpload: new Date(),
-            magasin: magasin
+            dateUpload: new Date()
         };
         
     } catch (error) {
@@ -112,13 +117,13 @@ export async function uploadDecompteDocument(file, magasin) {
  * @param {string} magasin - Code du magasin
  * @returns {Promise<Object[]>} Tableau des métadonnées
  */
-export async function uploadMultipleDocuments(files, magasin) {
+export async function uploadMultipleDocuments(files) {
     const resultats = [];
     const erreurs = [];
     
     for (const file of files) {
         try {
-            const metadata = await uploadDecompteDocument(file, magasin);
+            const metadata = await uploadDecompteDocument(file);
             resultats.push(metadata);
         } catch (error) {
             erreurs.push({
@@ -252,6 +257,19 @@ function cleanFileName(fileName) {
         .replace(/\s+/g, '_')       // Espaces → underscores
         .replace(/_+/g, '_')        // Multiple underscores → un seul
         .replace(/^_|_$/g, '');     // Retirer underscores début/fin
+}
+
+/**
+ * Récupérer les infos de l'utilisateur connecté
+ */
+function getUserInfo() {
+    const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
+    return {
+        name: auth.collaborateur ? `${auth.collaborateur.prenom} ${auth.collaborateur.nom}` : 'Inconnu',
+        magasin: auth.magasin || auth.collaborateur?.magasin || 'XXX',
+        societe: auth.societe || 'XXX',  // AJOUT de la société
+        id: auth.collaborateur?.id || 'unknown'
+    };
 }
 
 // ========================================

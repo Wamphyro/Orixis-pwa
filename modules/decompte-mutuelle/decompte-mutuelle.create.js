@@ -194,11 +194,7 @@ async function enregistrerDecompte() {
             afficherErreur('Veuillez ajouter au moins un document');
             return;
         }
-        
-        // Récupérer le magasin de l'utilisateur
-        const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
-        const magasin = auth.magasin || auth.collaborateur?.magasin || '9XXX';
-        
+
         // Désactiver le bouton et afficher un loader
         const btnEnregistrer = document.getElementById('btnEnregistrerDecompte');
         const texteOriginal = btnEnregistrer.innerHTML;
@@ -210,8 +206,7 @@ async function enregistrerDecompte() {
             console.log(`📤 Upload de ${nouveauDecompte.documents.length} fichiers vers le magasin ${magasin}`);
             
             const resultats = await uploadService.uploadMultipleDocuments(
-                nouveauDecompte.documents,
-                magasin
+                nouveauDecompte.documents
             );
             
             // Vérifier les résultats
