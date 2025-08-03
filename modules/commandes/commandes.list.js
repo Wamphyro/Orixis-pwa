@@ -19,25 +19,20 @@
 // - Intégration de ui.config.js pour les styles de boutons
 // ========================================
 
-import { DecomptesMutuellesService } from './decompte-mutuelle.service.js';
-import { Button } from '../../src/components/ui/button/button.component.js';
+import { CommandesService } from './commandes.service.js';
 import { 
-    DECOMPTES_CONFIG,
-    formaterDate,
-    formaterMontant,
-    formaterNSS,
-    getListeMutuelles,
-    getListePrestataires,
-    mettreAJourMutuelles,
-    mettreAJourReseauxTP
-} from './decompte-mutuelle.data.js';
+    COMMANDES_CONFIG,
+    calculerDelaiLivraison,
+    genererNumeroCommande,
+    formaterPrix
+} from './commandes.data.js';
 import { formatDate as formatDateUtil } from '../../src/components/index.js';
-import config from './decompte-mutuelle.config.js';
-import { state } from './decompte-mutuelle.main.js';
+import config from './commandes.config.js';
+import { state } from './commandes.main.js';
 import { chargerMagasins } from '../../src/services/firebase.service.js';
 
 // ========================================
-// CONFIGURATION UI (L'ORCHESTRATEUR DÉCIDE)
+// CONFIGURATION UI (DÉPLACÉE ICI DEPUIS COMMANDES.DATA.JS)
 // ========================================
 
 // Configuration des filtres - L'ORCHESTRATEUR décide

@@ -30,7 +30,7 @@ import {
     mettreAJourMutuelles,
     mettreAJourReseauxTP
 } from './decompte-mutuelle.data.js';
-import { formatDate as formatDateUtil } from '../../src/components/index.js';
+import { formatDate as formatDateUtil, Button } from '../../src/components/index.js';
 import config from './decompte-mutuelle.config.js';
 import { state } from './decompte-mutuelle.main.js';
 import { chargerMagasins } from '../../src/services/firebase.service.js';
