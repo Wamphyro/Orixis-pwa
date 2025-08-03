@@ -301,6 +301,13 @@ export async function ajouterDonneesExtraites(id, donnees) {
             'dates.transmissionIA': serverTimestamp(),
             'dates.traitementEffectue': serverTimestamp(),
             
+            // Type de décompte (important de l'ajouter ici)
+            typeDecompte: donnees.typeDecompte || 'individuel',
+            
+            // Références de virement
+            virementId: donnees.virementId || null,
+            dateVirement: donnees.dateVirement || null,
+            
             // Mise à jour du statut
             statut: STATUTS.TRAITE,
             

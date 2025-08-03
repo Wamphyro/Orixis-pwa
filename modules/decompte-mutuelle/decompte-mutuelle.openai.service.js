@@ -371,6 +371,9 @@ static async extractDecompteData(images, magasinsArray = []) {
                 });
             }
             
+            // Stocker les magasins en localStorage pour la conversion FINESS → Code
+            localStorage.setItem('orixis_magasins', JSON.stringify(magasinsData));
+            
             // Analyser le premier document
             const document = decompte.documents[0];
             const donneesExtraites = await this.analyserDocument(
@@ -504,8 +507,10 @@ static async prepareDocumentImages(documentUrl, documentType) {
         virementId: premierVirement.VirementLibelle || null,
         dateVirement: this.parseDate(premierVirement.DateVirement),
         
-        // Magasin
-        codeMagasin: donneesBrutes.centre !== 'INCONNU' ? donneesBrutes.centre : null,
+        // Magasin - Convertir FINESS en code magasin
+        codeMagasin: donneesBrutes.centre !== 'INCONNU' ? 
+            this.findCodeMagasinByFiness(donneesBrutes.centre) : 
+            null,
         
         // Tous les clients (pour référence)
         clientsDetails: premierVirement.clients || [],
@@ -528,6 +533,32 @@ static async prepareDocumentImages(documentUrl, documentType) {
         if (!nss) return null;
         const cleaned = String(nss).replace(/\D/g, '');
         return (cleaned.length === 13 || cleaned.length === 15) ? cleaned : nss;
+    }
+    
+    /**
+     * Trouver le code magasin à partir du FINESS
+     * @private
+     */
+    static findCodeMagasinByFiness(finess) {
+        // Récupérer les magasins depuis le localStorage ou une variable globale
+        const magasinsStored = localStorage.getItem('orixis_magasins');
+        if (!magasinsStored) return finess;
+        
+        try {
+            const magasins = JSON.parse(magasinsStored);
+            // Chercher le magasin par FINESS
+            for (const [code, data] of Object.entries(magasins)) {
+                if (data.numeroFINESS === finess) {
+                    console.log(`✅ FINESS ${finess} → Code magasin ${code}`);
+                    return code;
+                }
+            }
+        } catch (error) {
+            console.error('❌ Erreur recherche code magasin:', error);
+        }
+        
+        console.warn(`⚠️ Code magasin non trouvé pour FINESS ${finess}`);
+        return finess; // Retourner le FINESS si pas trouvé
     }
     
     /**
