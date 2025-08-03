@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAV Audio - Décomptes Sécurité Sociale</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SAV Audio">
+    <link rel="manifest" href="../../manifest.json">
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- ========================================
+         CSS - Ordre de chargement optimisé
+         ======================================== -->
+    
+    <!-- 1. Base et layout -->
+    <link rel="stylesheet" href="../../src/css/main.css">
+
+    <!-- 2. CSS utilitaires partagés -->
+    <link rel="stylesheet" href="../../src/components/ui/common/animation.css">
+    <link rel="stylesheet" href="../../src/components/ui/common/form.css">
+    <link rel="stylesheet" href="../../src/components/ui/button/button.css">
+
+    <!-- 3. Composants UI -->
+    <link rel="stylesheet" href="../../src/components/ui/modal/modal.css">
+    <link rel="stylesheet" href="../../src/components/ui/dialog/dialog.css">
+    <link rel="stylesheet" href="../../src/components/ui/notification/notification.css">
+    <link rel="stylesheet" href="../../src/components/ui/timeline/timeline.css">
+    <link rel="stylesheet" href="../../src/components/ui/search-dropdown/search-dropdown.css">
+    <link rel="stylesheet" href="../../src/components/ui/datatable/datatable.css">
+    <link rel="stylesheet" href="../../src/components/ui/datatable-filters/datatable-filters.css">
+    <link rel="stylesheet" href="../../src/components/ui/dropdown-list/dropdown-list.css">
+    <link rel="stylesheet" href="../../src/components/ui/stats-cards/stats-cards.css">
+    <link rel="stylesheet" href="../../src/components/ui/app-header/app-header.css">
+    <link rel="stylesheet" href="../../src/components/ui/badge/badge.css">
+
+    <!-- 4. CSS spécifique au module décomptes sécurité sociale -->
+    <link rel="stylesheet" href="./decompte-secu.css">
+</head>
+<body>
+    <!-- Container pour le composant AppHeader -->
+    <!-- AppHeader sera injecté ici par JavaScript -->
+    
+    <div class="container">
+        <!-- Barre d'actions et statistiques -->
+        <div class="decomptes-secu-header">
+            <div class="decomptes-secu-stats">
+                <!-- StatsCards va générer le contenu ici -->
+            </div>
+            
+            <div class="decomptes-secu-actions">
+                <button class="btn btn-primary btn-with-icon btn-lg pill" onclick="ouvrirNouveauDecompteSecu()">
+                    <span>➕</span> Nouveau décompte
+                </button>
+            </div>
+        </div>
+
+        <!-- Filtres -->
+        <div class="decomptes-secu-filters section">
+            <!-- DataTableFilters va générer le contenu ici -->
+        </div>
+
+        <!-- Container pour DataTable -->
+        <div class="decomptes-secu-table-container section">
+            <!-- DataTable sera généré ici -->
+        </div>
+    </div>
+
+    <!-- Modal Nouveau Décompte Sécu -->
+    <div id="modalNouveauDecompteSecu" class="modal" style="display: none;">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>Nouveau Décompte Sécurité Sociale</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Le contenu sera généré par decompte-secu.create.js -->
+            </div>
+            
+            <div class="modal-footer">
+                <!-- Le bouton sera ajouté dynamiquement par JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Détail Décompte Sécu -->
+    <div id="modalDetailDecompteSecu" class="modal" style="display: none;">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>Détail du décompte <span id="detailNumDecompteSecu"></span></h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Timeline du statut -->
+                <div class="timeline-container">
+                    <div class="timeline" id="timeline-secu">
+                        <!-- Timeline générée dynamiquement -->
+                    </div>
+                </div>
+                
+                <!-- Sections détail -->
+                <div class="detail-sections">
+                    <!-- Colonne de gauche : Bénéficiaire + Remboursements -->
+                    <div class="detail-column-left">
+                        <!-- Section Bénéficiaire -->
+                        <div class="detail-section">
+                            <h3>👤 Bénéficiaire</h3>
+                            <div id="detailBeneficiaire">
+                                <!-- Contenu généré dynamiquement -->
+                            </div>
+                        </div>
+                        
+                        <!-- Section Remboursements -->
+                        <div class="detail-section">
+                            <h3>💰 Remboursements</h3>
+                            <div id="detailRemboursements">
+                                <!-- Contenu généré dynamiquement -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Colonne de droite : Caisse + Informations -->
+                    <div class="detail-column-right">
+                        <!-- Section Caisse et Régime -->
+                        <div class="detail-section">
+                            <h3>🏥 Caisse et régime</h3>
+                            <div id="detailCaisse">
+                                <!-- Contenu généré dynamiquement -->
+                            </div>
+                        </div>
+                        
+                        <!-- Section Informations décompte -->
+                        <div class="detail-section">
+                            <h3>📋 Informations décompte</h3>
+                            <div id="detailInformationsSecu">
+                                <!-- Contenu généré dynamiquement -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Section Actes médicaux en pleine largeur -->
+                <div class="detail-section" style="margin-top: 20px;">
+                    <h3>🏥 Détail des actes médicaux</h3>
+                    <div id="detailActesMedicaux">
+                        <!-- Tableau des actes généré dynamiquement -->
+                    </div>
+                </div>
+                
+                <!-- Nouvelle ligne pour Traçabilité et Documents -->
+                <div class="detail-sections" style="margin-top: 20px;">
+                    <!-- Colonne de gauche : Traçabilité -->
+                    <div class="detail-column-left">
+                        <div class="detail-section">
+                            <h3>📋 Traçabilité</h3>
+                            <div id="detailTracabiliteSecu">
+                                <!-- Contenu généré dynamiquement -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Colonne de droite : Documents -->
+                    <div class="detail-column-right">
+                        <div class="detail-section">
+                            <h3>📄 Documents</h3>
+                            <div id="detailDocumentsSecu">
+                                <!-- Contenu généré dynamiquement -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Section Historique en pleine largeur -->
+                <div class="detail-section" style="margin-top: 20px;">
+                    <h3>📜 Historique des actions</h3>
+                    <div id="detailHistoriqueSecu" style="max-height: 300px; overflow-y: auto;">
+                        <!-- Contenu généré dynamiquement -->
+                    </div>
+                </div>
+                
+                <!-- Actions selon le statut -->
+                <div class="detail-actions" id="detailActionsSecu">
+                    <!-- Boutons d'action générés selon le statut -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container pour les dialogs custom -->
+    <div id="dialog-container" class="dialog-container"></div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Orixis - © 2025</p>
+    </div>
+
+    <!-- JavaScript local au module -->
+    <script type="module" src="./decompte-secu.main.js"></script>
+</body>
+</html>
