@@ -277,17 +277,16 @@ static async extractDecompteData(images, magasinsArray = []) {
             // Charger les magasins pour la recherche FINESS
             const { chargerMagasins } = await import('../../src/services/firebase.service.js');
             const magasinsData = await chargerMagasins();
-            const magasinsArray = Object.entries(magasinsData).map(([code, data]) => ({
-                code,
-                ...data
-            }));
+            
+            console.log('🏪 Magasins chargés:', Object.keys(magasinsData).length);
+            console.log('🏪 Exemple de magasin:', Object.values(magasinsData)[0]); // Pour debug
             
             // Analyser le premier document
             const document = decompte.documents[0];
             const donneesExtraites = await this.analyserDocument(
                 document.url,
                 document.type,
-                magasinsArray
+                magasinsData  // Passer directement magasinsData, pas magasinsArray
             );
             
             // Mettre à jour le décompte
