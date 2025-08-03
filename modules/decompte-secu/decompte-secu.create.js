@@ -63,7 +63,14 @@ export function ouvrirNouveauDecompteSecu() {
             // Ouvrir la modal
             console.log('🚀 Tentative ouverture modal');
             window.modalManager.open('modalNouveauDecompteSecu');
-            console.log('✅ Modal devrait être ouvert');
+            
+            // FORCER l'affichage si nécessaire
+            const modalElement = document.getElementById('modalNouveauDecompteSecu');
+            if (modalElement) {
+                modalElement.style.display = 'flex';
+                console.log('✅ Modal forcé en display: flex');
+            }
+            
         }, 100);
         
     } catch (error) {
