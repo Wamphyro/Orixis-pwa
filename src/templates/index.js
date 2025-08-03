@@ -46,6 +46,17 @@ export {
     DECOMPTE_RULES 
 } from './firestore/decomptes.firestore.template.js';
 
+// NOUVEAU : Templates décomptes sécurité sociale
+export { 
+    DECOMPTE_SECU_TEMPLATE,
+    ACTE_MEDICAL_SECU_TEMPLATE,
+    HISTORIQUE_ENTRY_SECU_TEMPLATE,
+    DOCUMENT_SECU_TEMPLATE,
+    DECOMPTE_SECU_RULES,
+    TAUX_STANDARDS_SECU,
+    PARTICIPATIONS_SECU
+} from './firestore/decomptes-secu.firestore.template.js';
+
 export { 
     PACK_TEMPLATE_TEMPLATE, 
     PACK_TEMPLATE_RULES 
@@ -104,6 +115,9 @@ export function getTemplatesByType(type) {
             FACTURE_TEMPLATE,
             FOURNISSEUR_TEMPLATE,
             DECOMPTE_TEMPLATE,
+            // NOUVEAU : Ajout des templates sécu
+            DECOMPTE_SECU_TEMPLATE,
+            ACTE_MEDICAL_SECU_TEMPLATE,
             PACK_TEMPLATE_TEMPLATE,
             REGLE_AUTOMATIQUE_TEMPLATE,
             PARAMETRES_COMMANDES_TEMPLATE
