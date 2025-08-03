@@ -50,29 +50,18 @@ export async function voirDetailDecompte(decompteId) {
         if (!decompte) return;
         
         decompteActuel = decompte;
-        
-        // DEBUG : Capturer tous les événements de scroll
-        const scrollHandler = (e) => {
-            console.log('🔴 SCROLL DETECTÉ:', {
-                target: e.target,
-                scrollTop: e.target.scrollTop || window.pageYOffset,
-                timeStamp: e.timeStamp,
-                element: e.target.tagName || 'window'
-            });
-            console.trace('Stack trace du scroll');
-        };
-        
-        window.addEventListener('scroll', scrollHandler, true);
-        document.addEventListener('scroll', scrollHandler, true);
-        
         afficherDetailDecompte(decompte);
+        
+        // Ouvrir le modal
         window.modalManager.open('modalDetailDecompte');
         
-        // Retirer les listeners après 2 secondes
+        // FORCER le scroll à 0 APRÈS que le modal ait fait son scroll
         setTimeout(() => {
-            window.removeEventListener('scroll', scrollHandler, true);
-            document.removeEventListener('scroll', scrollHandler, true);
-        }, 2000);
+            const modalBody = document.querySelector('#modalDetailDecompte .modal-body');
+            if (modalBody) {
+                modalBody.scrollTop = 0;
+            }
+        }, 100);
         
     } catch (error) {
         console.error('Erreur chargement détail:', error);
