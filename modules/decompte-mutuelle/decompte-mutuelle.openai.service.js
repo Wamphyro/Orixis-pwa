@@ -113,6 +113,7 @@ export class DecompteOpenAIService {
         "clients": [{
         "ClientNom": "string",
         "ClientPrenom": "string",
+        "NumeroSecuriteSociale": "string",
         "NumeroAdherent": "string",
         "Montant": 0.0,
         "typeVirement": "string"
@@ -157,7 +158,12 @@ export class DecompteOpenAIService {
     Pour chaque bénéficiaire visible dans le document :
     - ClientNom : nom en MAJUSCULES
     - ClientPrenom : prénom en MAJUSCULES
-    - NumeroAdherent : numéro d'adhérent mutuelle (ou numero SS si pas d'adhérent)
+    - NumeroSecuriteSociale : numéro de sécurité sociale (13 ou 15 chiffres)
+      Chercher : "N° SS", "NSS", "N° Sécu", "Sécurité Sociale", "N° Assuré"
+      Format : 1 ou 2 + 12 ou 14 chiffres (ex: 1 85 05 78 006 048)
+    - NumeroAdherent : numéro d'adhérent mutuelle si présent
+      Chercher : "N° Adhérent", "Adhérent", "N° Mutuelle"
+      Peut être vide si non trouvé
     - Montant : montant remboursé pour ce bénéficiaire
     - typeVirement : "Individuel" si 1 client, "Groupé" si plusieurs
 
@@ -174,6 +180,13 @@ export class DecompteOpenAIService {
 
     Tableau des magasins pour la recherche FINESS :
     ${JSON.stringify(magasinsArray)}
+
+    VALIDATION NSS :
+    - Le NSS doit avoir 13 chiffres (ou 15 avec la clé)
+    - Commence par 1 (homme) ou 2 (femme)
+    - Format : [1-2] AA MM DD DDD CCC [CC]
+    - Si le NSS trouvé n'a pas le bon format, chercher ailleurs
+    - Ne PAS confondre avec le numéro d'adhérent
 
     RAPPELS CRITIQUES :
     - RÉSEAU DE SOINS = EXPÉDITEUR du document (en-tête)
@@ -354,7 +367,8 @@ static async prepareDocumentImages(documentUrl, documentType) {
         client: {
             nom: premierClient.ClientNom || null,
             prenom: premierClient.ClientPrenom || null,
-            numeroSecuriteSociale: this.nettoyerNSS(premierClient.NumeroSecuriteSociale)
+            numeroSecuriteSociale: this.nettoyerNSS(premierClient.NumeroSecuriteSociale),
+            numeroAdherent: premierClient.NumeroAdherent || null
         },
         
         // Mutuelle et prestataire
