@@ -520,7 +520,7 @@ function formatFonctionnaliteName(fonc) {
 
 window.addEventListener('load', async () => {
     if (!checkAuth()) {
-        window.location.href = '/modules/login/login.html';  // ou le bon chemin vers login
+        window.location.href = '../login/login.html';
         return;
     }
     

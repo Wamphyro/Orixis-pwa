@@ -49,7 +49,7 @@ export function createCompteHeader(userData) {
             if (confirme) {
                 localStorage.removeItem('sav_auth');
                 localStorage.removeItem('sav_user_permissions');
-                window.location.href = '../../index.html';
+                window.location.href = '../login/login.html';
             }
         }
     });

@@ -245,6 +245,9 @@ window.refreshDecomptesSecuList = async () => {
     }
 };
 
+// Exposer chargerDonnees pour refresh
+window.chargerDonnees = chargerDonnees;
+
 // ========================================
 // FONCTIONS UTILITAIRES EXPORTÉES
 // ========================================
