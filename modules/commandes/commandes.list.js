@@ -20,6 +20,7 @@
 // ========================================
 
 import { DecomptesMutuellesService } from './decompte-mutuelle.service.js';
+import { Button } from '../../src/components/ui/button/button.component.js';
 import { 
     DECOMPTES_CONFIG,
     formaterDate,
@@ -34,7 +35,6 @@ import { formatDate as formatDateUtil } from '../../src/components/index.js';
 import config from './decompte-mutuelle.config.js';
 import { state } from './decompte-mutuelle.main.js';
 import { chargerMagasins } from '../../src/services/firebase.service.js';
-import { Button } from '../../src/components/ui/button/button.component.js';
 
 // ========================================
 // CONFIGURATION UI (L'ORCHESTRATEUR DÉCIDE)
