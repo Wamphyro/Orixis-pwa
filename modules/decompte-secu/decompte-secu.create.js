@@ -49,21 +49,28 @@ export function initCreationDecompteSecu() {
 // ========================================
 
 export function ouvrirNouveauDecompteSecu() {
-    console.log('🔵 Ouverture nouveau décompte sécu...');
+    console.log('🔵 === DEBUT ouvrirNouveauDecompteSecu ===');
     
-    // Vérifier si le modal est déjà ouvert
-    const modal = window.modalManager.get('modalNouveauDecompteSecu');
-    if (modal && modal.isOpen) {
-        console.log('⚠️ Modal déjà ouvert');
-        return;
+    try {
+        // Reset d'abord
+        resetNouveauDecompteSecu();
+        
+        // Attendre un peu pour que le DOM se stabilise
+        setTimeout(() => {
+            console.log('⏱️ Affichage après timeout');
+            afficherPlaceholder();
+            
+            // Ouvrir la modal
+            console.log('🚀 Tentative ouverture modal');
+            window.modalManager.open('modalNouveauDecompteSecu');
+            console.log('✅ Modal devrait être ouvert');
+        }, 100);
+        
+    } catch (error) {
+        console.error('❌ ERREUR dans ouvrirNouveauDecompteSecu:', error);
     }
     
-    // Reset et afficher
-    resetNouveauDecompteSecu();
-    afficherPlaceholder();
-    
-    // Ouvrir la modal
-    window.modalManager.open('modalNouveauDecompteSecu');
+    console.log('🔵 === FIN ouvrirNouveauDecompteSecu ===');
 }
 
 // ========================================
@@ -249,14 +256,24 @@ window.removeFileSecu = function(index) {
 // ========================================
 
 function resetNouveauDecompteSecu() {
+    console.log('🔄 Reset nouveau décompte sécu...');
+    
     nouveauDecompteSecu = {
-        documents: []  // Seulement les fichiers
+        documents: []
     };
     
     // Détruire le composant s'il existe
     if (dropzoneDocuments) {
+        console.log('🧹 Destruction dropzone existante');
         dropzoneDocuments.destroy();
         dropzoneDocuments = null;
+    }
+    
+    // Vider le contenu du modal
+    const modalBody = document.querySelector('#modalNouveauDecompteSecu .modal-body');
+    if (modalBody) {
+        console.log('🧹 Nettoyage modal body');
+        modalBody.innerHTML = '';
     }
 }
 
