@@ -75,6 +75,9 @@ function afficherDetailDecompte(decompte) {
     afficherSectionMutuelle(decompte);
     afficherSectionMontants(decompte);
     afficherSectionInformations(decompte);
+    afficherSectionTracabilite(decompte);
+    afficherSectionDocuments(decompte);
+    afficherSectionHistorique(decompte);
     
     // Actions disponibles
     afficherActionsDecompte(decompte);
@@ -294,6 +297,121 @@ function afficherSectionInformations(decompte) {
             </div>
         ` : ''}
     `;
+}
+
+// ========================================
+// NOUVELLES SECTIONS
+// ========================================
+
+function afficherSectionTracabilite(decompte) {
+    const detailTracabilite = document.getElementById('detailTracabilite');
+    
+    // Formater les intervenants
+    const creePar = decompte.intervenants?.creePar ? 
+        `${decompte.intervenants.creePar.prenom} ${decompte.intervenants.creePar.nom}` : '-';
+    
+    const traitePar = decompte.intervenants?.traitePar ? 
+        `${decompte.intervenants.traitePar.prenom} ${decompte.intervenants.traitePar.nom}` : '-';
+    
+    detailTracabilite.innerHTML = `
+        <div class="detail-info-grid">
+            <div class="detail-info-item">
+                <span class="detail-label">Créé par</span>
+                <span class="detail-value">${creePar}</span>
+            </div>
+            <div class="detail-info-item">
+                <span class="detail-label">Date création</span>
+                <span class="detail-value">${formaterDate(decompte.dates.creation, 'complet')}</span>
+            </div>
+            <div class="detail-info-item">
+                <span class="detail-label">Traité par</span>
+                <span class="detail-value">${traitePar}</span>
+            </div>
+            <div class="detail-info-item">
+                <span class="detail-label">Magasin uploadeur</span>
+                <span class="detail-value">${decompte.magasinUploadeur || '-'}</span>
+            </div>
+        </div>
+    `;
+}
+
+function afficherSectionDocuments(decompte) {
+    const detailDocuments = document.getElementById('detailDocuments');
+    
+    if (!decompte.documents || decompte.documents.length === 0) {
+        detailDocuments.innerHTML = '<p style="color: #666;">Aucun document</p>';
+        return;
+    }
+    
+    const documentsHtml = decompte.documents.map(doc => `
+        <div class="document-item" style="padding: 10px; border: 1px solid #e0e0e0; border-radius: 6px; margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <strong>${doc.nomOriginal || doc.nom}</strong>
+                    <div style="font-size: 12px; color: #666; margin-top: 4px;">
+                        Uploadé le ${formaterDate(doc.dateUpload, 'complet')} • ${(doc.taille / 1024).toFixed(1)} KB
+                    </div>
+                </div>
+                <a href="${doc.url}" target="_blank" class="btn btn-sm btn-secondary">
+                    📄 Voir
+                </a>
+            </div>
+        </div>
+    `).join('');
+    
+    detailDocuments.innerHTML = documentsHtml;
+}
+
+function afficherSectionHistorique(decompte) {
+    const detailHistorique = document.getElementById('detailHistorique');
+    
+    if (!decompte.historique || decompte.historique.length === 0) {
+        detailHistorique.innerHTML = '<p style="color: #666;">Aucun historique</p>';
+        return;
+    }
+    
+    // Trier par date décroissante (plus récent en premier)
+    const historiqueTrie = [...decompte.historique].sort((a, b) => {
+        const dateA = a.date?.toDate ? a.date.toDate() : new Date(a.date);
+        const dateB = b.date?.toDate ? b.date.toDate() : new Date(b.date);
+        return dateB - dateA;
+    });
+    
+    const historiqueHtml = historiqueTrie.map(entry => {
+        const utilisateur = entry.utilisateur ? 
+            `${entry.utilisateur.prenom} ${entry.utilisateur.nom}` : 'Système';
+        
+        const actionIcon = {
+            'creation': '🆕',
+            'extraction_ia': '🤖',
+            'changement_statut': '🔄',
+            'validation': '✅',
+            'traitement_manuel': '✏️',
+            'rapprochement': '🔗',
+            'suppression': '🗑️'
+        }[entry.action] || '📝';
+        
+        return `
+            <div class="historique-item" style="padding: 12px; border-left: 3px solid #667eea; margin-bottom: 10px; background: #f7f9fb;">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div>
+                        <strong>${actionIcon} ${entry.action.replace(/_/g, ' ').charAt(0).toUpperCase() + entry.action.replace(/_/g, ' ').slice(1)}</strong>
+                        <div style="color: #666; font-size: 12px; margin-top: 4px;">
+                            ${entry.details || ''}
+                        </div>
+                        <div style="color: #999; font-size: 11px; margin-top: 4px;">
+                            Par ${utilisateur}
+                        </div>
+                    </div>
+                    <div style="text-align: right; font-size: 12px; color: #666;">
+                        ${formaterDate(entry.date, 'complet')}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    detailHistorique.innerHTML = historiqueHtml;
 }
 
 // ========================================
