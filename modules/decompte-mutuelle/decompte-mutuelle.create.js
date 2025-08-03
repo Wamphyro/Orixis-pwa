@@ -54,6 +54,8 @@ const modalStyles = `
             background: #e3f2fd;
             border-radius: 8px;
             border-left: 4px solid #2196f3;
+            position: relative;
+            z-index: 1;  /* Ajout du z-index */
         }
         
         .dropzone-description p {
@@ -70,6 +72,18 @@ const modalStyles = `
         /* Dropzone qui prend le reste de l'espace */
         #modalNouveauDecompte #decompte-dropzone {
             flex: 1;
+            position: relative;
+            z-index: 2;  /* Z-index plus élevé que la description */
+        }
+        
+        /* Fix pour l'effet de hover de la dropzone */
+        #modalNouveauDecompte .dropzone-area {
+            position: relative;
+            z-index: 10;  /* Z-index encore plus élevé pour le hover */
+        }
+        
+        #modalNouveauDecompte .dropzone-area:hover {
+            z-index: 11;  /* Assurer que le hover passe au-dessus */
         }
         
         /* Footer aligné à droite (déjà fait par modal.css) */
