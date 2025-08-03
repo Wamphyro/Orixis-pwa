@@ -27,58 +27,54 @@ import firestoreService from './decompte-mutuelle.firestore.service.js';
 // STYLES POUR LE MODAL
 // ========================================
 
-// Injecter les styles pour le header du modal
+// Injecter les styles pour le modal
 const modalStyles = `
     <style>
-        /* Header avec bouton */
-        #modalNouveauDecompte .modal-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: relative;
-            gap: 16px;
+        /* Ajustements spécifiques pour le modal de nouveau décompte */
+        #modalNouveauDecompte .modal-content {
+            height: 80vh;
         }
         
-        #modalNouveauDecompte .modal-header h2 {
-            flex: 1;
-            margin: 0;
-        }
-        
-        #modalNouveauDecompte .modal-header-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        /* Body ajusté pour la dropzone */
+        /* Body avec padding personnalisé */
         #modalNouveauDecompte .modal-body {
             padding: 0;
-            display: flex;
-            flex-direction: column;
-            min-height: 400px;
         }
         
         #modalNouveauDecompte .nouveau-decompte-form {
-            flex: 1;
+            height: 100%;
             display: flex;
             flex-direction: column;
-            padding: 20px;
+            padding: 30px;
         }
         
-        /* Dropzone pleine largeur */
+        /* Description au-dessus de la dropzone */
+        .dropzone-description {
+            margin-bottom: 20px;
+            padding: 16px 20px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .dropzone-description p {
+            margin: 0;
+            color: #1565c0;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+        
+        .dropzone-description strong {
+            color: #0d47a1;
+        }
+        
+        /* Dropzone qui prend le reste de l'espace */
         #modalNouveauDecompte #decompte-dropzone {
             flex: 1;
-            min-height: 350px;
         }
         
-        /* Cacher le footer */
+        /* Footer aligné à droite (déjà fait par modal.css) */
         #modalNouveauDecompte .modal-footer {
-            display: none !important;
-        }
-        
-        /* Bouton dans le header */
-        #modalNouveauDecompte .modal-header .btn {
-            white-space: nowrap;
+            justify-content: flex-end;
         }
     </style>
 `;
@@ -132,44 +128,27 @@ export function ouvrirNouveauDecompte() {
 // ========================================
 
 function afficherPlaceholder() {
-    // D'abord, nettoyer le footer s'il existe
+    // Mettre à jour le footer avec le bouton
     const modalFooter = document.querySelector('#modalNouveauDecompte .modal-footer');
     if (modalFooter) {
-        modalFooter.style.display = 'none';
+        modalFooter.innerHTML = `
+            <button id="btnEnregistrerDecompte" class="btn btn-primary btn-pill" disabled>
+                💾 Enregistrer et analyser
+            </button>
+        `;
     }
     
-    // Ensuite, ajouter le bouton dans le header AVANT de toucher au body
-    const modalHeader = document.querySelector('#modalNouveauDecompte .modal-header');
-    if (modalHeader) {
-        // Vérifier si le bouton existe déjà
-        if (!modalHeader.querySelector('#btnEnregistrerDecompte')) {
-            // Créer un wrapper pour le bouton si nécessaire
-            let actionsWrapper = modalHeader.querySelector('.modal-header-actions');
-            if (!actionsWrapper) {
-                actionsWrapper = document.createElement('div');
-                actionsWrapper.className = 'modal-header-actions';
-                
-                // Insérer avant le bouton close
-                const closeBtn = modalHeader.querySelector('.modal-close');
-                modalHeader.insertBefore(actionsWrapper, closeBtn);
-            }
-            
-            // Créer le bouton avec les bonnes classes
-            const btnEnregistrer = document.createElement('button');
-            btnEnregistrer.id = 'btnEnregistrerDecompte';
-            btnEnregistrer.className = 'btn btn-primary btn-sm';
-            btnEnregistrer.disabled = true;
-            btnEnregistrer.innerHTML = '💾 Enregistrer et analyser';
-            
-            actionsWrapper.appendChild(btnEnregistrer);
-        }
-    }
-    
-    // Maintenant, mettre à jour le body
+    // Mettre à jour le body avec la description et la dropzone
     const modalBody = document.querySelector('#modalNouveauDecompte .modal-body');
     if (modalBody) {
         modalBody.innerHTML = `
             <div class="nouveau-decompte-form">
+                <div class="dropzone-description">
+                    <p>
+                        💡 <strong>L'intelligence artificielle extraira automatiquement toutes les informations</strong><br>
+                        Client, numéro de sécurité sociale, mutuelle, montants... Tout sera détecté et rempli automatiquement à partir de vos documents.
+                    </p>
+                </div>
                 <div id="decompte-dropzone"></div>
             </div>
         `;
@@ -354,6 +333,7 @@ window.refreshDecomptesList = async () => {
    - Suppression des champs client/mutuelle/montant
    - Upload direct des documents uniquement
    - L'IA extrait toutes les informations
+   - Ajout description et bouton dans footer
    
    NOTES:
    - Workflow simplifié : Upload → IA → Validation
