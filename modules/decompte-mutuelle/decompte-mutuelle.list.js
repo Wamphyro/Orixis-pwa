@@ -134,10 +134,13 @@ let statsCards = null;
 export async function initListeDecomptes() {
     console.log('🚀 Initialisation orchestrateur liste décomptes...');
     
+    // 0. Charger les données d'abord pour avoir les mutuelles/prestataires
+    await chargerDonneesInitiales();
+    
     // 1. Créer l'instance DataTable
     initDataTable();
     
-    // 2. Créer les filtres
+    // 2. Créer les filtres (avec les bonnes options maintenant)
     await initFiltres();
     
     // 3. Créer les cartes de statistiques
@@ -147,6 +150,30 @@ export async function initListeDecomptes() {
     connectComponents();
     
     console.log('✅ Orchestrateur liste décomptes initialisé');
+}
+
+// Nouvelle fonction pour charger juste les données sans afficher
+async function chargerDonneesInitiales() {
+    try {
+        // Charger les décomptes
+        state.decomptesData = await DecomptesMutuellesService.getDecomptes();
+        
+        if (!state.decomptesData) {
+            state.decomptesData = [];
+        }
+        
+        // Mettre à jour les mutuelles et réseaux TP dynamiques
+        if (state.decomptesData.length > 0) {
+            mettreAJourMutuelles(state.decomptesData);
+            mettreAJourReseauxTP(state.decomptesData);
+        }
+        
+        console.log('✅ Données initiales chargées');
+        
+    } catch (error) {
+        console.error('❌ Erreur chargement initial:', error);
+        state.decomptesData = [];
+    }
 }
 
 // ========================================
@@ -408,26 +435,10 @@ export async function chargerDonnees() {
             mettreAJourMutuelles(state.decomptesData);
             mettreAJourReseauxTP(state.decomptesData);
             
-            // Mettre à jour les options des filtres SANS recréer le composant
-            if (filtresDecomptes) {
-                // Mettre à jour uniquement les options des dropdowns mutuelle et reseauTP
-                const mutuelleDropdown = filtresDecomptes.filterComponents.mutuelle;
-                const reseauTPDropdown = filtresDecomptes.filterComponents.reseauTP;
-                
-                if (mutuelleDropdown) {
-                    mutuelleDropdown.updateOptions([
-                        { value: '', label: 'Toutes les mutuelles' },
-                        ...getListeMutuelles().map(m => ({ value: m, label: m }))
-                    ]);
-                }
-                
-                if (reseauTPDropdown) {
-                    reseauTPDropdown.updateOptions([
-                        { value: '', label: 'Tous les réseaux' },
-                        ...getListePrestataires().map(r => ({ value: r, label: r }))
-                    ]);
-                }
-            }
+            // Ne pas recréer les filtres, ils seront mis à jour au prochain init
+            // Les mutuelles et prestataires ont été mis à jour dans les Sets
+            console.log('✅ Mutuelles disponibles:', getListeMutuelles());
+            console.log('✅ Prestataires disponibles:', getListePrestataires());
         }
         
         // Charger les statistiques
