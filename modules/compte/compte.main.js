@@ -11,6 +11,13 @@
 // - service.js : Sauvegarde des modifications
 // ========================================
 
+// GUARD ANTI-BOUCLE
+if (window.compteLoaded) {
+    console.error('⚠️ BOUCLE DÉTECTÉE - Arrêt du chargement');
+    throw new Error('Page déjà chargée');
+}
+window.compteLoaded = true;
+
 import { initFirebase } from '../../src/services/firebase.service.js';
 import config from './compte.config.js';
 import { CompteService } from './compte.service.js';
@@ -442,10 +449,11 @@ async function changerMagasin(nouveauMagasin) {
         
         config.notify.success(`Changement vers le magasin ${nouveauMagasin}`);
         
-        // Recharger après 1 seconde
-        setTimeout(() => {
-            location.reload();
-        }, 1000);
+        // RELOAD DÉSACTIVÉ TEMPORAIREMENT
+        console.log('⚠️ Reload désactivé - Rechargez manuellement');
+        // setTimeout(() => {
+        //     location.reload();
+        // }, 1000);
         
     } catch (error) {
         console.error('❌ Erreur changement magasin:', error);
