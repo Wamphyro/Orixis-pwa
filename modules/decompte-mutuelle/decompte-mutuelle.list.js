@@ -313,6 +313,21 @@ async function initFiltres() {
         (filters) => handleFilterChange(filters)
     );
     
+    // Remplacer le bouton reset par un composant Button stylisé
+    const resetBtnElement = filtresDecomptes.getResetButtonElement();
+    if (resetBtnElement) {
+        const styledResetBtn = new Button({
+            text: '🔄 Réinitialiser',
+            variant: 'secondary',  // Gris neutre
+            size: 'sm',
+            textColor: 'dark',     // Texte noir
+            onClick: () => filtresDecomptes.reset()
+        });
+        
+        // Remplacer l'élément
+        resetBtnElement.replaceWith(styledResetBtn.getElement());
+    }
+    
     console.log('🔍 Filtres créés avec config locale');
 }
 

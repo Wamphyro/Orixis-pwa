@@ -148,12 +148,13 @@ export class DataTableFilters {
             }
         });
         
-        // 🔑 BOUTON RESET AVEC CLASSE INJECTABLE
+        // 🔑 BOUTON RESET NEUTRE (sera stylisé par l'orchestrateur)
         if (this.config.resetButton && this.config.filters.length > 0) {
             const resetBtn = document.createElement('button');
             resetBtn.type = 'button';
-            resetBtn.className = this.config.buttonClasses.reset;
-            resetBtn.innerHTML = '🔄 Réinitialiser';
+            resetBtn.className = 'datatable-filters-reset-btn'; // Classe neutre minimale
+            resetBtn.style.cssText = 'all: unset; cursor: pointer;'; // Reset total des styles
+            resetBtn.innerHTML = 'Réinitialiser';
             resetBtn.onclick = () => this.reset();
             
             filtersRow.appendChild(resetBtn);
@@ -318,6 +319,13 @@ export class DataTableFilters {
         
         // Déclencher le callback
         this.triggerFilter();
+    }
+    
+    /**
+     * Obtenir l'élément bouton reset pour le remplacer
+     */
+    getResetButtonElement() {
+        return this.elements.resetButton;
     }
     
     /**

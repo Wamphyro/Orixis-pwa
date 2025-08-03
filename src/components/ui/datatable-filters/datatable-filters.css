@@ -140,40 +140,13 @@
     background-size: 16px;
     padding-right: 40px;
 }
-
 /* ========================================
-   BOUTON RESET
+   BOUTON RESET NEUTRE
    ======================================== */
 
-.btn-reset-filters {
-    flex: 0 0 auto;
-    height: 40px;  /* IMPORTANT: Même hauteur que les inputs */
-    align-self: flex-end;  /* S'assure qu'il est en bas */
-    margin-left: auto;  /* Le pousse à droite */
-    background: #f8f9fa;
-    color: #495057;
-    border: 2px solid #e9ecef;
-    padding: 0 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    white-space: nowrap;
-}
-
-.btn-reset-filters:hover {
-    background: #e9ecef;
-    border-color: #dee2e6;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.btn-reset-filters:active {
-    transform: translateY(0);
+.datatable-filters-reset-btn {
+    /* Seulement le positionnement, pas de style */
+    margin-left: auto;
 }
 
 /* ========================================
