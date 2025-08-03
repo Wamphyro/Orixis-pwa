@@ -54,7 +54,7 @@ export function createDecomptesHeader(userData) {
         // Classes pour les boutons
         buttonClasses: {
             back: 'btn on-dark btn-pill',
-            logout: 'btn btn-danger btn-sm',
+            logout: 'btn btn-danger btn-sm text-white',
             userSection: 'header-user-section'
         },
         onLogout: async () => {
