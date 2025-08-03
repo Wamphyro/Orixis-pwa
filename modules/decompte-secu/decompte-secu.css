@@ -442,211 +442,365 @@
 }
 
 /* ========================================
-   10. MODAL NOUVEAU DÉCOMPTE
+   10. MODAL NOUVEAU DÉCOMPTE - DESIGN MODERNE
    ======================================== */
 
-/* Wrapper principal */
-.nouveau-decompte-secu-wrapper {
+/* Configuration du modal */
+#modalNouveauDecompteSecu .modal-content {
+    width: 800px;
+    max-width: 95%;
+    height: 85vh;
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    min-height: 400px;
 }
 
-/* Zone description IA */
-.zone-description-ia {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 15px;
-    padding: 30px;
-    color: white;
-    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-}
-
-.zone-description-ia .content {
-    display: flex;
-    gap: 20px;
-    align-items: center;
-}
-
-.zone-description-ia .icon-wrapper {
-    min-width: 80px;
-    height: 80px;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.zone-description-ia .icon {
-    font-size: 48px;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-}
-
-.zone-description-ia .text h4 {
-    margin: 0 0 10px 0;
-    font-size: 22px;
-    font-weight: 600;
-}
-
-.zone-description-ia .text p {
-    margin: 0;
-    font-size: 16px;
-    line-height: 1.6;
-    opacity: 0.95;
-}
-
-/* Zone dropzone */
-.zone-dropzone {
+/* Body principal */
+#modalNouveauDecompteSecu .modal-body {
+    padding: 0;
     flex: 1;
+    overflow: hidden;
     background: #f8f9fa;
-    border-radius: 15px;
-    padding: 20px;
-    border: 2px dashed #e0e0e0;
 }
 
-/* Zone fichiers */
-.zone-fichiers {
-    background: white;
-    border-radius: 15px;
-    border: 1px solid #e0e0e0;
+/* Container avec les 3 zones */
+.nouveau-decompte-secu-wrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    gap: 20px;
+}
+
+/* Zone 1 : Description IA */
+.zone-description-ia {
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #f5f3ff 0%, #e9e7ff 100%);
+    border: 1px solid #d4d2ff;
+    border-radius: 12px;
+    padding: 20px 24px;
+    position: relative;
     overflow: hidden;
 }
 
+.zone-description-ia::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+    border-radius: 50%;
+}
+
+.zone-description-ia .content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.zone-description-ia .icon-wrapper {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    background: white;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+}
+
+.zone-description-ia .icon-wrapper .icon {
+    font-size: 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.zone-description-ia .text {
+    flex: 1;
+}
+
+.zone-description-ia h4 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #5b21b6;
+}
+
+.zone-description-ia p {
+    margin: 0;
+    font-size: 14px;
+    color: #6b46c1;
+    line-height: 1.5;
+}
+
+/* Zone 2 : Dropzone */
+.zone-dropzone {
+    flex-shrink: 0;
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.zone-dropzone .dropzone-area {
+    background: #fafbfc;
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    min-height: 140px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.zone-dropzone .dropzone-area:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.zone-dropzone .dropzone-area.dragover {
+    background: #ede9fe;
+    border-color: #7c3aed;
+    border-style: solid;
+}
+
+.zone-dropzone .dropzone-content {
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.zone-dropzone .dropzone-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    opacity: 0.4;
+}
+
+.zone-dropzone .dropzone-text {
+    text-align: center;
+}
+
+.zone-dropzone .dropzone-text p:first-child {
+    font-size: 16px;
+    font-weight: 500;
+    color: #1f2937;
+    margin: 0 0 4px 0;
+}
+
+.zone-dropzone .dropzone-text p:last-child {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0;
+}
+
+/* Zone 3 : Liste des fichiers */
+.zone-fichiers {
+    flex: 1;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
 .zone-fichiers-header {
-    background: #f8f9fa;
-    padding: 15px 20px;
-    border-bottom: 1px solid #e0e0e0;
+    flex-shrink: 0;
+    padding: 16px 24px;
+    border-bottom: 1px solid #e5e7eb;
 }
 
 .zone-fichiers-header h5 {
     margin: 0;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
+    color: #374151;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
 .zone-fichiers-header .count {
-    background: var(--secu-primary);
-    color: white;
+    background: #f3f4f6;
+    color: #6b7280;
+    font-size: 12px;
     padding: 2px 8px;
     border-radius: 12px;
-    font-size: 14px;
     font-weight: 500;
-    min-width: 24px;
-    text-align: center;
 }
 
 .zone-fichiers-content {
-    padding: 20px;
-    max-height: 250px;
+    flex: 1;
+    padding: 16px;
     overflow-y: auto;
+    min-height: 0;
 }
 
-/* État vide */
+/* Message quand pas de fichiers */
 .empty-state {
     text-align: center;
-    padding: 40px;
-    color: #999;
+    padding: 40px 20px;
 }
 
 .empty-state .icon {
     font-size: 48px;
-    margin-bottom: 10px;
-    opacity: 0.5;
+    opacity: 0.2;
+    margin-bottom: 12px;
 }
 
 .empty-state p {
-    margin: 0;
+    color: #9ca3af;
     font-size: 14px;
+    margin: 0;
 }
 
 /* Liste des fichiers */
 .files-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
 }
 
 .file-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px;
-    background: #f8f9fa;
+    padding: 12px 16px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
     border-radius: 8px;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
+    gap: 12px;
 }
 
 .file-item:hover {
-    background: #e9ecef;
+    background: #f3f4f6;
+    border-color: #d1d5db;
 }
 
-.file-icon {
-    font-size: 24px;
-    opacity: 0.8;
+.file-item .file-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
 }
 
-.file-info {
+.file-item .file-info {
     flex: 1;
     min-width: 0;
 }
 
-.file-name {
-    font-weight: 500;
+.file-item .file-name {
     font-size: 14px;
+    font-weight: 500;
+    color: #1f2937;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.file-size {
+.file-item .file-size {
     font-size: 12px;
-    color: #666;
+    color: #6b7280;
     margin-top: 2px;
 }
 
-.file-remove {
+.file-item .file-remove {
+    flex-shrink: 0;
     width: 32px;
     height: 32px;
     border: none;
     background: transparent;
-    border-radius: 6px;
+    color: #6b7280;
     cursor: pointer;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
-    color: #999;
+    transition: all 0.2s ease;
 }
 
-.file-remove:hover {
-    background: #dc3545;
-    color: white;
+.file-item .file-remove:hover {
+    background: #fee2e2;
+    color: #dc2626;
 }
 
-/* ========================================
-   9. PRINT STYLES
-   ======================================== */
+/* Footer */
+#modalNouveauDecompteSecu .modal-footer {
+    background: white;
+    border-top: 1px solid #e5e7eb;
+    padding: 16px 24px;
+    justify-content: flex-end;
+}
 
-@media print {
-    .decompte-secu-card {
-        box-shadow: none;
-        border: 1px solid #dee2e6;
+/* Scrollbar personnalisée */
+.zone-fichiers-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.zone-fichiers-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.zone-fichiers-content::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+}
+
+.zone-fichiers-content::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+/* Fix pour éviter que la dropzone mange les éléments du dessus */
+.zone-dropzone {
+    z-index: 1;
+}
+
+.zone-description-ia {
+    z-index: 2;
+}
+
+/* Ajustement de la DropZone dans le formulaire */
+#decompte-secu-dropzone .dropzone-area {
+    min-height: 150px;
+}
+
+#decompte-secu-dropzone .dropzone-content {
+    min-height: 150px;
+    padding: 30px 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #modalNouveauDecompteSecu .modal-content {
+        width: 100%;
+        height: 100vh;
+        border-radius: 0;
     }
     
-    .decompte-secu-header {
-        background: none;
-        color: #212529;
-        border-bottom: 2px solid #212529;
+    .nouveau-decompte-secu-wrapper {
+        padding: 16px;
+        gap: 16px;
     }
     
-    .badge {
-        border: 1px solid currentColor;
-        background: white !important;
-        color: #212529 !important;
+    .zone-description-ia {
+        padding: 16px;
+    }
+    
+    .zone-description-ia .content {
+        flex-direction: column;
+        text-align: center;
     }
 }
