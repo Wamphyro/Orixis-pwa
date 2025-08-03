@@ -97,7 +97,19 @@ function getPermissions() {
 function checkMenuPermission(item, permissions) {
     // Si pas de permissions requises, toujours afficher
     if (!item.permissions || item.permissions.length === 0) {
+        // Sauf si c'est admin-only
+        if (item.requiresAdmin) {
+            // Vérifier si l'utilisateur a le groupe admin_general
+            const userGroups = permissions.groupes || [];
+            return userGroups.includes('admin_general');
+        }
         return true;
+    }
+    
+    // Pour la page admin, vérification spéciale
+    if (item.requiresAdmin) {
+        const userGroups = permissions.groupes || [];
+        return userGroups.includes('admin_general');
     }
     
     // Vérifier si l'utilisateur a au moins une des permissions

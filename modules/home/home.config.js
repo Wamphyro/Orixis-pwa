@@ -125,10 +125,18 @@ export const MENU_ITEMS = [
         description: 'Numéros et contacts importants'
     },
     {
-        href: '../../pages/compte.html',
-        icon: '⚙️',
+        href: '../compte/compte.html',  // 🔄 MODIFIÉ : Pointe vers le nouveau module
+        icon: '👤',  // 🔄 MODIFIÉ : Icône cohérente avec le nouveau module
         title: 'Mon Compte',
-        description: 'Gérer mes informations personnelles'
+        description: 'Gérer mon profil, mes groupes et permissions'  // 🔄 MODIFIÉ : Description plus détaillée
+    },
+    {
+        href: '../admin/admin.html',  // 🆕 NOUVEAU : Lien vers la page admin
+        icon: '👑',  // 🆕 NOUVEAU
+        title: 'Administration',  // 🆕 NOUVEAU
+        description: 'Gérer les utilisateurs, groupes et permissions',  // 🆕 NOUVEAU
+        permissions: ['admin.access'],  // 🆕 NOUVEAU : Permission spéciale admin
+        requiresAdmin: true  // 🆕 NOUVEAU : Flag pour vérification admin
     }
 ];
 
