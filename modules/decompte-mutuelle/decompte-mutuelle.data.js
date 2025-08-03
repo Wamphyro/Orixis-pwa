@@ -313,12 +313,36 @@ export function calculerDelaiTraitement(mutuelle) {
 
 // Fonction helper pour obtenir la liste des mutuelles
 export function getListeMutuelles() {
+    // Si on a des mutuelles dynamiques, on les utilise
+    if (mutuellesDynamiques.size > 0) {
+        return Array.from(mutuellesDynamiques).sort();
+    }
+    
+    // Sinon, on retourne la liste fixe comme fallback
     return Object.values(DECOMPTES_CONFIG.MUTUELLES).map(m => m.nom);
 }
 
 // Fonction helper pour obtenir la liste des prestataires
 export function getListePrestataires() {
     return Object.values(DECOMPTES_CONFIG.PRESTATAIRES_TP).map(p => p.nom);
+}
+
+// ========================================
+// DONNÉES DYNAMIQUES (mises à jour depuis Firestore)
+// ========================================
+
+// Stockage des mutuelles extraites des décomptes réels
+let mutuellesDynamiques = new Set();
+
+// Fonction pour mettre à jour les mutuelles depuis les décomptes
+export function mettreAJourMutuelles(decomptes) {
+    mutuellesDynamiques.clear();
+    
+    decomptes.forEach(decompte => {
+        if (decompte.mutuelle && decompte.mutuelle !== '') {
+            mutuellesDynamiques.add(decompte.mutuelle);
+        }
+    });
 }
 
 /* ========================================

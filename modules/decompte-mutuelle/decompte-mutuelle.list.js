@@ -25,7 +25,8 @@ import {
     formaterDate,
     formaterMontant,
     formaterNSS,
-    getListeMutuelles
+    getListeMutuelles,
+    mettreAJourMutuelles
 } from './decompte-mutuelle.data.js';
 import { formatDate as formatDateUtil } from '../../src/components/index.js';
 import config from './decompte-mutuelle.config.js';
@@ -377,6 +378,18 @@ export async function chargerDonnees() {
         
         if (!state.decomptesData) {
             state.decomptesData = [];
+        }
+        
+        // Mettre à jour les mutuelles dynamiques
+        if (state.decomptesData.length > 0) {
+            mettreAJourMutuelles(state.decomptesData);
+            
+            // Recharger les options du filtre mutuelle
+            const filtresConfig = genererOptionsFiltres();
+            const mutuelleFilter = filtresConfig.find(f => f.key === 'mutuelle');
+            if (filtresDecomptes && mutuelleFilter) {
+                filtresDecomptes.updateFilterOptions('mutuelle', mutuelleFilter.options);
+            }
         }
         
         // Charger les statistiques
