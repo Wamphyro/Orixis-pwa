@@ -516,6 +516,118 @@
 }
 
 /* ========================================
+   MODAL NOUVEAU DÉCOMPTE - STYLES SPÉCIFIQUES
+   ======================================== */
+
+/* Configuration du modal */
+#modalNouveauDecompte .modal-content {
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Body sans padding pour utiliser tout l'espace */
+#modalNouveauDecompte .modal-body {
+    padding: 0;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+/* Formulaire avec padding et scroll si nécessaire */
+#modalNouveauDecompte .nouveau-decompte-form {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 30px;
+}
+
+/* Description informative */
+.dropzone-description {
+    flex-shrink: 0;
+    margin-bottom: 20px;
+    padding: 16px 20px;
+    background: #e3f2fd;
+    border-radius: 8px;
+    border-left: 4px solid #2196f3;
+}
+
+.dropzone-description p {
+    margin: 0;
+    color: #1565c0;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.dropzone-description strong {
+    color: #0d47a1;
+}
+
+/* Container de la dropzone avec scroll */
+#modalNouveauDecompte #decompte-dropzone {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    position: relative;
+}
+
+/* Fix z-index pour la dropzone */
+#modalNouveauDecompte .dropzone-area {
+    position: relative;
+    z-index: 1;
+}
+
+#modalNouveauDecompte .dropzone-area.dragover {
+    z-index: 2;
+}
+
+/* Ajustement de la hauteur minimale de la dropzone */
+#modalNouveauDecompte .dropzone-content {
+    min-height: 200px;
+}
+
+/* Footer avec bouton aligné à droite */
+#modalNouveauDecompte .modal-footer {
+    justify-content: flex-end;
+    flex-shrink: 0;
+}
+
+/* Fix pour le scroll des fichiers */
+#modalNouveauDecompte .dropzone-files-list {
+    max-height: none; /* Pas de limite de hauteur */
+}
+
+/* Fix modal détail - empêcher le saut */
+#modalDetailDecompte .modal-content {
+    height: 85vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#modalDetailDecompte .modal-body {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+#modalDetailDecompte .timeline-container {
+    flex-shrink: 0;
+}
+
+/* Responsive pour les modaux */
+@media (max-width: 768px) {
+    #modalNouveauDecompte .modal-content,
+    #modalDetailDecompte .modal-content {
+        height: 100vh;
+        max-height: 100vh;
+    }
+    
+    #modalNouveauDecompte .nouveau-decompte-form {
+        padding: 20px;
+    }
+}
+
+/* ========================================
    HISTORIQUE DES DIFFICULTÉS
    
    [02/02/2025] - Création initiale

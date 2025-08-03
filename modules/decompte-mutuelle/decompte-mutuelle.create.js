@@ -4,102 +4,23 @@
 //
 // DESCRIPTION:
 // Module de création de décomptes mutuelles
-// Pour l'instant : structure vide préparée pour implémentation future
+// Upload direct des documents avec analyse IA automatique
 //
 // ARCHITECTURE:
-// - Préparé pour SearchDropdown (clients)
-// - Préparé pour DropdownList (mutuelles, prestataires)
-// - Structure pour saisie des montants
-// - Workflow de création en étapes si nécessaire
+// - Upload via DropZone
+// - Analyse automatique par IA
+// - Pas de saisie manuelle nécessaire
 //
-// DÉPENDANCES FUTURES:
-// - ClientsService pour la recherche de clients
-// - DecomptesMutuellesService pour la création
+// DÉPENDANCES:
 // - config pour les factories de composants
+// - uploadService pour l'upload des fichiers
+// - firestoreService pour la création du décompte
 // ========================================
 
 import config from './decompte-mutuelle.config.js';
 import { afficherSucces, afficherErreur } from './decompte-mutuelle.main.js';
 import uploadService from './decompte-mutuelle.upload.service.js';
 import firestoreService from './decompte-mutuelle.firestore.service.js';
-
-// ========================================
-// STYLES POUR LE MODAL
-// ========================================
-
-// Injecter les styles pour le modal
-const modalStyles = `
-    <style>
-        /* Ajustements spécifiques pour le modal de nouveau décompte */
-        #modalNouveauDecompte .modal-content {
-            height: 80vh;
-        }
-        
-        /* Body avec padding personnalisé */
-        #modalNouveauDecompte .modal-body {
-            padding: 0;
-        }
-        
-        #modalNouveauDecompte .nouveau-decompte-form {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            padding: 30px;
-        }
-        
-        /* Description au-dessus de la dropzone */
-        .dropzone-description {
-            margin-bottom: 20px;
-            padding: 16px 20px;
-            background: #e3f2fd;
-            border-radius: 8px;
-            border-left: 4px solid #2196f3;
-            position: relative;
-            z-index: 1;  /* Ajout du z-index */
-        }
-        
-        .dropzone-description p {
-            margin: 0;
-            color: #1565c0;
-            font-size: 15px;
-            line-height: 1.6;
-        }
-        
-        .dropzone-description strong {
-            color: #0d47a1;
-        }
-        
-        /* Dropzone qui prend le reste de l'espace */
-        #modalNouveauDecompte #decompte-dropzone {
-            flex: 1;
-            position: relative;
-            z-index: 2;  /* Z-index plus élevé que la description */
-        }
-        
-        /* Fix pour l'effet de hover de la dropzone */
-        #modalNouveauDecompte .dropzone-area {
-            position: relative;
-            z-index: 10;  /* Z-index encore plus élevé pour le hover */
-        }
-        
-        #modalNouveauDecompte .dropzone-area:hover {
-            z-index: 11;  /* Assurer que le hover passe au-dessus */
-        }
-        
-        /* Footer aligné à droite (déjà fait par modal.css) */
-        #modalNouveauDecompte .modal-footer {
-            justify-content: flex-end;
-        }
-    </style>
-`;
-
-// Injecter les styles au chargement
-if (!document.getElementById('modal-decompte-styles')) {
-    const styleElement = document.createElement('div');
-    styleElement.id = 'modal-decompte-styles';
-    styleElement.innerHTML = modalStyles;
-    document.head.appendChild(styleElement);
-}
 
 // ========================================
 // ÉTAT LOCAL DU MODULE
@@ -117,7 +38,7 @@ let dropzoneDocuments = null;
 // ========================================
 
 export function initCreationDecompte() {
-    console.log('Module création décompte initialisé (vide pour l\'instant)');
+    console.log('Module création décompte initialisé');
     
     // Préparer les listeners futurs
     window.resetNouveauDecompte = resetNouveauDecompte;
@@ -130,7 +51,7 @@ export function initCreationDecompte() {
 export function ouvrirNouveauDecompte() {
     resetNouveauDecompte();
     
-    // Pour l'instant, afficher juste le placeholder
+    // Afficher le formulaire
     afficherPlaceholder();
     
     // Ouvrir la modal
@@ -342,14 +263,12 @@ window.refreshDecomptesList = async () => {
 /* ========================================
    HISTORIQUE DES MODIFICATIONS
    
-   [02/02/2025] - Création initiale (structure vide)
+   [02/02/2025] - Création initiale
    [03/02/2025] - Simplification du modal
-   - Suppression des champs client/mutuelle/montant
-   - Upload direct des documents uniquement
-   - L'IA extrait toutes les informations
-   - Ajout description et bouton dans footer
+   [03/02/2025] - Déplacement du CSS vers decompte-mutuelle.css
    
    NOTES:
-   - Workflow simplifié : Upload → IA → Validation
-   - Plus besoin de saisie manuelle
+   - CSS dans decompte-mutuelle.css uniquement
+   - Workflow : Upload → IA → Validation
+   - Plus de saisie manuelle
    ======================================== */
