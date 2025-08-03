@@ -56,7 +56,7 @@
     /* Typographie */
     font-size: var(--btn-font-md);
     font-weight: 600;
-    color: white;
+    color: #333;  /* CHANGÉ : Noir par défaut au lieu de blanc */
     text-decoration: none;
     font-family: inherit;
     
@@ -98,6 +98,22 @@
 .btn:active {
     transform: translateY(0);
     box-shadow: var(--glass-shadow);
+}
+
+/* ========================================
+   TEXTE BLANC POUR VARIANTES SPÉCIFIQUES
+   ======================================== */
+
+/* Variantes avec texte blanc obligatoire */
+.btn-primary,
+.btn-danger,
+.btn-success {
+    color: white;
+}
+
+/* Boutons d'action restent avec texte noir sauf cas spéciaux */
+.btn-action-danger {
+    color: white;
 }
 
 /* ========================================
