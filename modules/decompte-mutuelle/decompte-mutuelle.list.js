@@ -107,6 +107,7 @@ const EXPORT_CONFIG = {
     colonnes: [
         { key: 'dateVirement', label: 'Date virement', formatter: 'date' },
         { key: 'numeroDecompte', label: 'N° Décompte' },
+        { key: 'codeMagasin', label: 'Code magasin' },
         { key: 'client', label: 'Client', formatter: 'client' },
         { key: 'nss', label: 'NSS', formatter: 'nss' },
         { key: 'mutuelle', label: 'Mutuelle' },
@@ -161,6 +162,13 @@ function initDataTable() {
                 sortable: true,
                 width: 110,
                 formatter: (value) => formatDate(value, 'jour')
+            },
+            {
+                key: 'codeMagasin',
+                label: 'Code magasin',
+                sortable: true,
+                width: 100,
+                formatter: (value) => value || '-'
             },
             {
                 key: 'client',
