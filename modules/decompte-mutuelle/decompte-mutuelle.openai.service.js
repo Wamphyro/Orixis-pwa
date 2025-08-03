@@ -46,13 +46,45 @@ export class DecompteOpenAIService {
             
             // Si magasinsData est un objet (format Firebase)
             if (!Array.isArray(magasinsData) && typeof magasinsData === 'object') {
-                magasinsArray = Object.entries(magasinsData).map(([code, data]) => ({
-                    "FINESS": data.numeroFINESS || data.finess || data.FINESS || '',
-                    "CODE MAGASIN": code,
-                    "SOCIETE": data.societe?.raisonSociale || data.societe || data.nom || '',
-                    "ADRESSE": `${data.adresse?.rue || ''} ${data.adresse?.codePostal || ''} ${data.adresse?.ville || ''}`.trim(),
-                    "VILLE": data.adresse?.ville || data.ville || ''
-                }));
+                console.log('🔍 Transformation des magasins Firebase vers format FINESS...');
+                
+                // Vérifier la structure d'un magasin exemple
+                const exempleMagasin = Object.values(magasinsData)[0];
+                console.log('📊 Structure d\'un magasin:', {
+                    aNumeroFINESS: !!exempleMagasin?.numeroFINESS,
+                    aFiness: !!exempleMagasin?.finess,
+                    aFINESS: !!exempleMagasin?.FINESS,
+                    aSociete: !!exempleMagasin?.societe,
+                    aRaisonSociale: !!exempleMagasin?.societe?.raisonSociale,
+                    aNom: !!exempleMagasin?.nom,
+                    aAdresse: !!exempleMagasin?.adresse
+                });
+                
+                magasinsArray = Object.entries(magasinsData).map(([code, data]) => {
+                    // Extraction sécurisée des données
+                    const finess = data.numeroFINESS || data.finess || data.FINESS || '';
+                    const societe = data.societe?.raisonSociale || data.raisonSociale || data.societe || data.nom || '';
+                    const rue = data.adresse?.rue || data.rue || '';
+                    const codePostal = data.adresse?.codePostal || data.codePostal || '';
+                    const ville = data.adresse?.ville || data.ville || '';
+                    const adresse = `${rue} ${codePostal} ${ville}`.trim();
+                    
+                    const magasinFormatte = {
+                        "FINESS": finess,
+                        "CODE MAGASIN": code,
+                        "SOCIETE": societe,
+                        "ADRESSE": adresse,
+                        "VILLE": ville
+                    };
+                    
+                    // Log si données manquantes pour debug
+                    if (!finess) {
+                        console.warn(`⚠️ FINESS manquant pour ${code}`);
+                    }
+                    
+                    return magasinFormatte;
+                });
+                console.log('✅ Magasins transformés:', JSON.stringify(magasinsArray.slice(0, 2), null, 2));
             } 
             // Si c'est déjà un tableau
             else if (Array.isArray(magasinsData)) {
@@ -66,13 +98,15 @@ export class DecompteOpenAIService {
             }
             
             console.log(`📍 ${magasinsArray.length} magasins pour recherche FINESS`);
-            console.log('📍 Exemple magasin:', magasinsArray[0]); // Pour debug
+            console.log('📍 Exemple magasin:', JSON.stringify(magasinsArray[0], null, 2)); // Pour debug
+            console.log('📍 Tous les magasins:', JSON.stringify(magasinsArray.slice(0, 3), null, 2)); // Debug premiers magasins
             
             // Convertir le document en image(s) base64
             const images = await this.prepareDocumentImages(documentUrl, documentType);
             
             // Extraire les données via GPT-4
-            const donneesExtraites = await this.extractDecompteData(images, magasinsArray);
+            console.log('🚀 Appel extractDecompteData avec', magasinsArray.length, 'magasins');
+            const donneesExtraites = await DecompteOpenAIService.extractDecompteData(images, magasinsArray);
             
             // Formater pour notre structure Firestore
             const donneesFormatees = this.formaterPourFirestore(donneesExtraites);
@@ -95,6 +129,10 @@ export class DecompteOpenAIService {
 static async extractDecompteData(images, magasinsArray = []) {
         try {
             console.log(`🤖 Appel Cloud Function pour ${images.length} image(s)...`);
+            
+            // Préparer la chaîne JSON des magasins
+            const magasinsJSON = JSON.stringify(magasinsArray, null, 2);
+            console.log('📋 Magasins qui seront envoyés dans le prompt:', magasinsJSON);
             
             // VOTRE PROMPT COMPLET
             const prompt = `Tu es un expert en traitement des relevés de remboursement des réseaux de soins et mutuelles.
@@ -186,7 +224,7 @@ static async extractDecompteData(images, magasinsArray = []) {
     - Annee : année de la période
 
     Tableau des magasins pour la recherche FINESS :
-    ${JSON.stringify(magasinsArray)}
+    ${magasinsJSON}
 
     VALIDATION NSS :
     - Le NSS doit avoir 13 chiffres (ou 15 avec la clé)
@@ -279,7 +317,8 @@ static async extractDecompteData(images, magasinsArray = []) {
             const magasinsData = await chargerMagasins();
             
             console.log('🏪 Magasins chargés:', Object.keys(magasinsData).length);
-            console.log('🏪 Exemple de magasin:', Object.values(magasinsData)[0]); // Pour debug
+            console.log('🏪 Structure d\'un magasin Firebase:', JSON.stringify(Object.values(magasinsData)[0], null, 2)); // Pour debug
+            console.log('🏪 Clés disponibles:', Object.keys(Object.values(magasinsData)[0] || {}));
             
             // Analyser le premier document
             const document = decompte.documents[0];
