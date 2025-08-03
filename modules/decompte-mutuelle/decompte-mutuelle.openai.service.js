@@ -322,37 +322,54 @@ static async extractDecompteData(images, magasinsArray = []) {
                 throw new Error('Aucun document à analyser');
             }
             
-            // Charger les magasins directement depuis Firestore
-            console.log('🏪 Chargement des magasins depuis Firestore...');
+            // NE PAS utiliser chargerMagasins() qui retourne une version simplifiée
+            // Charger DIRECTEMENT depuis Firestore pour avoir TOUTES les données
+            console.log('🏪 Chargement COMPLET des magasins depuis Firestore...');
             
-            const { collection, getDocs } = await import(
+            const { collection, getDocs, query, where } = await import(
                 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js'
             );
             const { db } = await import('../../src/services/firebase.service.js');
             
-            // Récupérer TOUS les champs des magasins
-            const magasinsSnapshot = await getDocs(collection(db, 'magasins'));
+            // Créer une requête pour récupérer TOUS les magasins actifs
+            const magasinsRef = collection(db, 'magasins');
+            const q = query(magasinsRef, where('actif', '==', true));
+            
+            // Récupérer TOUS les documents
+            const magasinsSnapshot = await getDocs(q);
             const magasinsData = {};
             
+            console.log(`📊 ${magasinsSnapshot.size} magasins trouvés dans Firestore`);
+            
             magasinsSnapshot.forEach((doc) => {
-                const docData = doc.data();
-                console.log(`📄 Document ${doc.id}:`, {
-                    code: docData.code,
-                    numeroFINESS: docData.numeroFINESS,
-                    societe: docData.societe,
-                    adresse: docData.adresse
+                const data = doc.data();
+                console.log(`📄 Magasin ${doc.id}:`, {
+                    code: data.code,
+                    numeroFINESS: data.numeroFINESS,
+                    societe: data.societe,
+                    adresse: data.adresse,
+                    'keys': Object.keys(data).join(', ')
                 });
                 
-                magasinsData[docData.code] = {
-                    ...docData,
-                    id: doc.id
-                };
+                // Stocker par code pour faciliter l'accès
+                if (data.code) {
+                    magasinsData[data.code] = {
+                        ...data,
+                        id: doc.id
+                    };
+                }
             });
             
             console.log('🏪 Magasins chargés:', Object.keys(magasinsData).length);
-            console.log('🏪 Structure complète d\'un magasin:', JSON.stringify(Object.values(magasinsData)[0], null, 2));
-            console.log('🏪 Vérification numeroFINESS:', Object.values(magasinsData)[0]?.numeroFINESS);
-            console.log('🏪 Vérification société:', Object.values(magasinsData)[0]?.societe);
+            const exempleMagasin = Object.values(magasinsData)[0];
+            if (exempleMagasin) {
+                console.log('🏪 Structure complète d\'un magasin:', JSON.stringify(exempleMagasin, null, 2));
+                console.log('🏪 Vérification champs importants:', {
+                    numeroFINESS: exempleMagasin.numeroFINESS,
+                    societe: exempleMagasin.societe,
+                    adresse: exempleMagasin.adresse
+                });
+            }
             
             // Analyser le premier document
             const document = decompte.documents[0];
