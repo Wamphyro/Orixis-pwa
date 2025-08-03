@@ -23,7 +23,8 @@ import { initFirebase } from '../../src/services/firebase.service.js';
 import { 
     initListeDecomptes, 
     chargerDonnees, 
-    resetFiltres
+    resetFiltres,
+    afficherDecomptes
 } from './decompte-mutuelle.list.js';
 import { 
     initCreationDecompte,
@@ -203,7 +204,10 @@ window.addEventListener('load', async () => {
         await initListeDecomptes();
         initCreationDecompte();
         
-        // 5. Charger les données initiales
+        // 5. Afficher les décomptes déjà chargés
+        afficherDecomptes();
+        
+        // 6. Recharger pour les stats
         await chargerDonnees();
         
         // 6. Activer les animations

@@ -695,6 +695,8 @@ function prepareExportData(data) {
 // EXPORTS POUR COMPATIBILITÉ
 // ========================================
 
+export { afficherDecomptes };
+
 export function resetFiltres() {
     if (filtresDecomptes) {
         filtresDecomptes.reset();
