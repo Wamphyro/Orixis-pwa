@@ -1,0 +1,650 @@
+/* ========================================
+   DECOMPTE-SECU.CSS - Styles du module décomptes sécurité sociale
+   Chemin: modules/decompte-secu/decompte-secu.css
+   
+   DESCRIPTION:
+   Adaptation des styles pour le module décomptes sécurité sociale
+   Classes préfixées .decomptes-secu-* pour éviter les conflits
+   
+   TABLE DES MATIÈRES:
+   1. Fix FOUC - Masquage initial des modales
+   2. En-tête et statistiques
+   3. Tableau des décomptes
+   4. Badges et statuts spécifiques
+   5. Modales décomptes
+   6. Timeline
+   7. Formatage des montants et taux
+   8. Section actes médicaux
+   9. Responsive
+   
+   DÉPENDANCES:
+   - Réutilise les composants UI (button.css, badge.css, etc.)
+   - Styles spécifiques au module uniquement
+   ======================================== */
+
+/* ========================================
+   FIX FOUC - Cacher les modales au chargement
+   ======================================== */
+#modalNouveauDecompteSecu,
+#modalDetailDecompteSecu {
+    display: none !important;
+}
+
+#modalNouveauDecompteSecu.active,
+#modalDetailDecompteSecu.active {
+    display: flex !important;
+}
+
+/* ========================================
+   EN-TÊTE ET STATISTIQUES
+   ======================================== */
+.decomptes-secu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.decomptes-secu-stats {
+    display: flex;
+    gap: 20px;
+    flex: 1;
+    flex-wrap: wrap;
+}
+
+.decomptes-secu-actions {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+/* ========================================
+   TABLEAU DES DÉCOMPTES
+   ======================================== */
+.decomptes-secu-table-container {
+    background: white;
+    border-radius: 15px;
+    padding: 0;
+    margin-bottom: 30px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.decomptes-secu-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.decomptes-secu-table thead {
+    background: linear-gradient(135deg, #0066cc 0%, #004d99 100%);
+    color: white;
+}
+
+.decomptes-secu-table th {
+    padding: 15px 20px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 15px;
+    white-space: nowrap;
+}
+
+.decomptes-secu-table tbody tr {
+    border-bottom: 1px solid #f1f3f5;
+    transition: all 0.2s ease;
+}
+
+.decomptes-secu-table tbody tr:hover {
+    background: #f8f9fa;
+    transform: scale(1.01);
+}
+
+.decomptes-secu-table td {
+    padding: 15px 20px;
+    font-size: 15px;
+    color: #495057;
+}
+
+/* Harmonisation des éléments */
+.decomptes-secu-table .badge {
+    font-size: 13px;
+}
+
+.decomptes-secu-table .btn-action {
+    font-size: 16px;
+}
+
+/* ========================================
+   BADGES ET STATUTS SPÉCIFIQUES
+   ======================================== */
+
+/* Statuts décomptes sécu */
+.badge-nouveau {
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+.badge-traitement-ia {
+    background-color: #cfe2ff;
+    color: #084298;
+}
+
+.badge-controle-taux {
+    background-color: #fff3cd;
+    color: #664d03;
+}
+
+.badge-traitement-effectue {
+    background-color: #d1e7dd;
+    color: #0f5132;
+}
+
+.badge-paiement-effectue {
+    background-color: #e7f1ff;
+    color: #0c63e4;
+}
+
+.badge-rejet {
+    background-color: #f8d7da;
+    color: #842029;
+}
+
+.badge-supprime {
+    background-color: #f8d7da;
+    color: #842029;
+}
+
+/* Taux de remboursement */
+.taux-value {
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: #f0f0f0;
+    color: #333;
+    white-space: nowrap;
+}
+
+.taux-value.taux-100 {
+    background: #d1e7dd;
+    color: #0f5132;
+    font-weight: 700;
+}
+
+/* Régimes */
+.regime-secu {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 14px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: #e9ecef;
+}
+
+/* Types d'actes */
+.type-acte {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 14px;
+}
+
+/* Montants */
+.montant-value {
+    font-weight: 600;
+    color: #2c3e50;
+    white-space: nowrap;
+}
+
+.montant-base {
+    color: #6c757d;
+    font-size: 13px;
+}
+
+.montant-rembourse {
+    color: #28a745;
+    font-weight: 700;
+}
+
+.montant-participation {
+    color: #dc3545;
+    font-size: 13px;
+}
+
+/* NSS */
+.nss-value {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+}
+
+/* Icônes statuts */
+.statut-icon-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+}
+
+.statut-icon {
+    font-size: 18px;
+}
+
+.statut-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    margin-bottom: 5px;
+}
+
+.statut-icon-wrapper:hover .statut-tooltip {
+    display: block;
+}
+
+/* ========================================
+   MODAL DÉTAIL DÉCOMPTE
+   ======================================== */
+
+/* Taille des modales */
+#modalNouveauDecompteSecu .modal-content,
+#modalDetailDecompteSecu .modal-content {
+    width: 1000px;
+    max-width: 95%;
+    height: 85vh;
+    max-height: 90vh;
+}
+
+/* Sections détail */
+.detail-sections {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.detail-column-left,
+.detail-column-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.detail-section {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.detail-section h3 {
+    font-size: 18px;
+    color: #0066cc;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Info détaillées */
+.detail-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.detail-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 13px;
+}
+
+.detail-value {
+    color: #2c3e50;
+    font-size: 15px;
+}
+
+/* ========================================
+   SECTION ACTES MÉDICAUX
+   ======================================== */
+.actes-medicaux-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.actes-medicaux-table thead {
+    background: #e9ecef;
+}
+
+.actes-medicaux-table th {
+    padding: 10px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.actes-medicaux-table td {
+    padding: 10px;
+    font-size: 14px;
+    border-bottom: 1px solid #f1f3f5;
+}
+
+.actes-medicaux-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+/* Colonnes spécifiques */
+.actes-medicaux-table .col-code {
+    font-family: monospace;
+    font-weight: 600;
+    color: #0066cc;
+}
+
+.actes-medicaux-table .col-montant {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.actes-medicaux-table .col-taux {
+    text-align: center;
+}
+
+/* Section remboursements spéciale */
+.remboursements-detail {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 10px;
+}
+
+.remboursement-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+}
+
+.remboursement-row:not(:last-child) {
+    border-bottom: 1px solid #f1f3f5;
+}
+
+.remboursement-label {
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.remboursement-value {
+    font-weight: 600;
+}
+
+.remboursement-base {
+    color: #6c757d;
+}
+
+.remboursement-taux {
+    color: #0066cc;
+}
+
+.remboursement-brut {
+    color: #28a745;
+}
+
+.remboursement-participation {
+    color: #dc3545;
+}
+
+.remboursement-total {
+    font-weight: 700;
+    font-size: 18px;
+    color: #0066cc;
+    border-top: 2px solid #0066cc;
+    padding-top: 10px;
+    margin-top: 10px;
+}
+
+/* ========================================
+   TIMELINE SPÉCIFIQUE SÉCU
+   ======================================== */
+.timeline-container {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+/* ========================================
+   MODAL NOUVEAU DÉCOMPTE
+   ======================================== */
+.nouveau-decompte-secu-wrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    gap: 20px;
+}
+
+/* Zone description IA adaptée */
+.zone-description-ia {
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #e6f2ff 0%, #cce5ff 100%);
+    border: 1px solid #b3d9ff;
+    border-radius: 12px;
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.zone-description-ia .icon-wrapper .icon {
+    background: linear-gradient(135deg, #0066cc 0%, #004d99 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.zone-description-ia h4 {
+    color: #004d99;
+}
+
+.zone-description-ia p {
+    color: #0056b3;
+}
+
+/* ========================================
+   ACTIONS DÉTAIL
+   ======================================== */
+.detail-actions {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.detail-actions .btn {
+    min-width: 160px;
+}
+
+/* ========================================
+   FILTRES DÉCOMPTES
+   ======================================== */
+.decomptes-secu-filters {
+    margin-bottom: 25px;
+}
+
+/* ========================================
+   BADGES CONTEXTE MÉDICAL
+   ======================================== */
+.badge-ald {
+    background-color: #28a745;
+    color: white;
+    font-weight: 600;
+}
+
+.badge-maternite {
+    background-color: #e83e8c;
+    color: white;
+}
+
+.badge-accident-travail {
+    background-color: #fd7e14;
+    color: white;
+}
+
+.badge-invalidite {
+    background-color: #6f42c1;
+    color: white;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 1200px) {
+    .decomptes-secu-table-container {
+        overflow-x: auto;
+    }
+    
+    .decomptes-secu-table {
+        min-width: 1000px;
+    }
+    
+    .actes-medicaux-table {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 768px) {
+    /* En-tête */
+    .decomptes-secu-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .decomptes-secu-stats {
+        justify-content: space-between;
+    }
+    
+    /* Modales */
+    #modalNouveauDecompteSecu .modal-content,
+    #modalDetailDecompteSecu .modal-content {
+        width: 100%;
+        height: 100%;
+        max-height: 100%;
+        border-radius: 0;
+    }
+    
+    /* Détail */
+    .detail-sections {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .detail-info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .detail-actions {
+        padding: 15px;
+    }
+    
+    .detail-actions .btn {
+        min-width: 100%;
+    }
+    
+    /* Tableau actes médicaux responsive */
+    .actes-medicaux-table {
+        font-size: 12px;
+    }
+    
+    .actes-medicaux-table th,
+    .actes-medicaux-table td {
+        padding: 8px 5px;
+    }
+    
+    /* Tableau principal */
+    .decomptes-secu-table {
+        font-size: 14px;
+    }
+    
+    .decomptes-secu-table th,
+    .decomptes-secu-table td {
+        padding: 12px 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stat-card {
+        min-width: 100%;
+    }
+    
+    .decomptes-secu-actions .btn {
+        font-size: 14px;
+        padding: 12px 20px;
+    }
+    
+    .montant-value {
+        font-size: 14px;
+    }
+    
+    /* Table actes sur mobile */
+    .actes-medicaux-table {
+        display: block;
+        overflow-x: auto;
+    }
+}
+
+/* ========================================
+   ANIMATIONS SPÉCIFIQUES
+   ======================================== */
+@keyframes pulse-blue {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 102, 204, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(0, 102, 204, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 102, 204, 0);
+    }
+}
+
+.badge-controle-taux {
+    animation: pulse-blue 2s infinite;
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [03/02/2025] - Création initiale
+   - Adaptation des styles pour sécurité sociale
+   - Classes préfixées .decomptes-secu-*
+   - Couleurs bleues pour thème CPAM
+   - Styles spécifiques taux et régimes
+   - Section actes médicaux avec tableau
+   
+   NOTES POUR REPRISES FUTURES:
+   - Les composants réutilisables ont leur propre CSS
+   - Ne pas dupliquer les styles des composants
+   - Utiliser les classes .decomptes-secu-* pour ce module
+   - Le thème bleu est cohérent avec la sécu
+   ======================================== */
