@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAV Audio - Mon Compte</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SAV Audio">
+    <link rel="manifest" href="../../manifest.json">
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- ========================================
+         CSS - Ordre de chargement optimisé
+         ======================================== -->
+    
+    <!-- 1. Base et layout -->
+    <link rel="stylesheet" href="../../src/css/main.css">
+
+    <!-- 2. CSS utilitaires partagés -->
+    <link rel="stylesheet" href="../../src/components/ui/common/animation.css">
+    <link rel="stylesheet" href="../../src/components/ui/common/form.css">
+    <link rel="stylesheet" href="../../src/components/ui/button/button.css">
+
+    <!-- 3. Composants UI -->
+    <link rel="stylesheet" href="../../src/components/ui/modal/modal.css">
+    <link rel="stylesheet" href="../../src/components/ui/dialog/dialog.css">
+    <link rel="stylesheet" href="../../src/components/ui/notification/notification.css">
+    <link rel="stylesheet" href="../../src/components/ui/dropdown-list/dropdown-list.css">
+    <link rel="stylesheet" href="../../src/components/ui/badge/badge.css">
+    <link rel="stylesheet" href="../../src/components/ui/numpad/numpad.css">
+    <link rel="stylesheet" href="../../src/components/ui/app-header/app-header.css">
+
+    <!-- 4. CSS spécifique au module compte -->
+    <link rel="stylesheet" href="./compte.css">
+</head>
+<body>
+    <!-- Container pour le composant AppHeader -->
+    <!-- AppHeader sera injecté ici par JavaScript -->
+    
+    <div class="container">
+        <!-- Section Informations personnelles -->
+        <div class="compte-section">
+            <div class="compte-section-header">
+                <h2>👤 Informations personnelles</h2>
+            </div>
+            <div class="compte-section-content">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Nom</label>
+                        <span id="userNom">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Prénom</label>
+                        <span id="userPrenom">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Code d'accès</label>
+                        <div class="info-with-action">
+                            <span>••••</span>
+                            <button class="btn btn-sm btn-secondary" onclick="ouvrirModalPin()">
+                                🔐 Modifier
+                            </button>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <label>Magasin actuel</label>
+                        <div id="magasinSelector" class="magasin-selector-container">
+                            <!-- Dropdown sera injecté ici -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Mes groupes -->
+        <div class="compte-section">
+            <div class="compte-section-header">
+                <h2>👥 Mes groupes</h2>
+            </div>
+            <div class="compte-section-content">
+                <div id="userGroupes" class="groupes-container">
+                    <!-- Badges des groupes générés dynamiquement -->
+                </div>
+                <div id="groupesDescription" class="groupes-description">
+                    <!-- Description des groupes -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Mes permissions -->
+        <div class="compte-section">
+            <div class="compte-section-header">
+                <h2>🔐 Mes permissions</h2>
+            </div>
+            <div class="compte-section-content">
+                <div class="permissions-sections">
+                    <!-- Pages accessibles -->
+                    <div class="permissions-subsection">
+                        <h3>📄 Pages accessibles</h3>
+                        <div id="permissionsPages" class="permissions-list">
+                            <!-- Liste générée dynamiquement -->
+                        </div>
+                    </div>
+                    
+                    <!-- Permissions spéciales -->
+                    <div class="permissions-subsection">
+                        <h3>⭐ Permissions spéciales</h3>
+                        <div id="permissionsSpeciales" class="permissions-list">
+                            <!-- Liste générée dynamiquement -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Magasins autorisés -->
+        <div class="compte-section">
+            <div class="compte-section-header">
+                <h2>🏪 Magasins autorisés</h2>
+            </div>
+            <div class="compte-section-content">
+                <div id="magasinsAutorises" class="magasins-grid">
+                    <!-- Cartes des magasins générées dynamiquement -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Modification PIN -->
+    <div id="modalModifierPin" class="modal" style="display: none;">
+        <div class="modal-content modal-medium">
+            <div class="modal-header">
+                <h2>🔐 Modifier mon code PIN</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="pin-modification-flow">
+                    <!-- Étape 1 : Ancien code -->
+                    <div id="stepAncienCode" class="pin-step active">
+                        <h3>Saisissez votre code actuel</h3>
+                        <div class="pin-display">
+                            <div class="pin-dot" data-index="0"></div>
+                            <div class="pin-dot" data-index="1"></div>
+                            <div class="pin-dot" data-index="2"></div>
+                            <div class="pin-dot" data-index="3"></div>
+                        </div>
+                        <div id="numpadAncien" class="numpad-container"></div>
+                        <div class="error-message" id="errorAncien"></div>
+                    </div>
+                    
+                    <!-- Étape 2 : Nouveau code -->
+                    <div id="stepNouveauCode" class="pin-step">
+                        <h3>Saisissez votre nouveau code</h3>
+                        <div class="pin-display">
+                            <div class="pin-dot" data-index="0"></div>
+                            <div class="pin-dot" data-index="1"></div>
+                            <div class="pin-dot" data-index="2"></div>
+                            <div class="pin-dot" data-index="3"></div>
+                        </div>
+                        <div id="numpadNouveau" class="numpad-container"></div>
+                        <div class="info-message">Le code doit contenir 4 chiffres</div>
+                    </div>
+                    
+                    <!-- Étape 3 : Confirmation -->
+                    <div id="stepConfirmation" class="pin-step">
+                        <h3>Confirmez votre nouveau code</h3>
+                        <div class="pin-display">
+                            <div class="pin-dot" data-index="0"></div>
+                            <div class="pin-dot" data-index="1"></div>
+                            <div class="pin-dot" data-index="2"></div>
+                            <div class="pin-dot" data-index="3"></div>
+                        </div>
+                        <div id="numpadConfirm" class="numpad-container"></div>
+                        <div class="error-message" id="errorConfirm"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn btn-ghost btn-pill" onclick="fermerModalPin()">
+                    Annuler
+                </button>
+                <button id="btnValiderPin" class="btn btn-primary btn-pill" disabled style="display: none;">
+                    ✅ Valider
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container pour les dialogs custom -->
+    <div id="dialog-container" class="dialog-container"></div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Orixis - © 2025</p>
+    </div>
+
+    <!-- JavaScript local au module -->
+    <script type="module" src="./compte.main.js"></script>
+</body>
+</html>

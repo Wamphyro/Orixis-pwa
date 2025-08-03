@@ -12,6 +12,51 @@
    ======================================== */
 
 /* ========================================
+   EN-TÊTE ET STATISTIQUES
+   ======================================== */
+.decomptes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.decomptes-stats {
+    display: flex;
+    gap: 20px;
+    flex: 1;
+    flex-wrap: wrap;
+}
+
+.decomptes-actions {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+/* ========================================
+   TABLEAU DES DÉCOMPTES
+   ======================================== */
+.decomptes-table-container {
+    background: white;
+    border-radius: 15px;
+    padding: 0;
+    margin-bottom: 30px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* ========================================
+   FILTRES DÉCOMPTES
+   ======================================== */
+.decomptes-filters {
+    margin-bottom: 25px;
+}
+
+
+/* ========================================
    1. VARIABLES SPÉCIFIQUES SÉCU
    ======================================== */
 
