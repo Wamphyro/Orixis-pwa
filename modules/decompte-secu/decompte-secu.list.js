@@ -539,6 +539,7 @@ export function afficherDecomptesSecu() {
     tableDecomptesSecu.setData(decomptesFiltres);
 }
 
+
 // ========================================
 // FILTRAGE LOCAL
 // ========================================
@@ -764,7 +765,8 @@ function prepareExportData(data) {
 // EXPORTS POUR COMPATIBILITÉ
 // ========================================
 
-export { afficherDecomptesSecu };
+// La fonction afficherDecomptesSecu est déjà exportée directement plus haut
+// Pas besoin de la ré-exporter ici
 
 export function resetFiltres() {
     if (filtresDecomptesSecu) {
