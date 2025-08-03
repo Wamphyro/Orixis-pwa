@@ -77,6 +77,13 @@ export function ouvrirNouveauDecompteSecu() {
 // ========================================
 
 function afficherPlaceholder() {
+    // Vérifier si le contenu est déjà affiché
+    const existingContent = document.querySelector('.nouveau-decompte-secu-wrapper');
+    if (existingContent) {
+        console.log('⚠️ Contenu déjà affiché, pas de recréation');
+        return;
+    }
+    
     // Mettre à jour le footer avec le bouton
     const modalFooter = document.querySelector('#modalNouveauDecompteSecu .modal-footer');
     if (modalFooter) {
