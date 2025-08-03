@@ -45,30 +45,30 @@
     <!-- Container pour le composant AppHeader -->
     <!-- AppHeader sera injecté ici par JavaScript -->
     
-    <div class="container">
-        <!-- Barre d'actions et statistiques -->
-        <div class="decomptes-secu-header">
-            <div class="decomptes-secu-stats">
-                <!-- StatsCards va générer le contenu ici -->
+        <div class="container">
+            <!-- Barre d'actions et statistiques -->
+            <div class="decomptes-header">
+                <div class="decomptes-stats">
+                    <!-- StatsCards va générer le contenu ici -->
+                </div>
+                
+                <div class="decomptes-actions">
+                    <button class="btn btn-primary btn-with-icon btn-lg pill" onclick="ouvrirNouveauDecompteSecu()">
+                        <span>➕</span> Nouveau décompte
+                    </button>
+                </div>
             </div>
-            
-            <div class="decomptes-secu-actions">
-                <button class="btn btn-primary btn-with-icon btn-lg pill" onclick="ouvrirNouveauDecompteSecu()">
-                    <span>➕</span> Nouveau décompte
-                </button>
+
+            <!-- Filtres -->
+            <div class="decomptes-filters section">
+                <!-- DataTableFilters va générer le contenu ici -->
+            </div>
+
+            <!-- Container pour DataTable -->
+            <div class="decomptes-table-container section">
+                <!-- DataTable sera généré ici -->
             </div>
         </div>
-
-        <!-- Filtres -->
-        <div class="decomptes-secu-filters section">
-            <!-- DataTableFilters va générer le contenu ici -->
-        </div>
-
-        <!-- Container pour DataTable -->
-        <div class="decomptes-secu-table-container section">
-            <!-- DataTable sera généré ici -->
-        </div>
-    </div>
 
     <!-- Modal Nouveau Décompte Sécu -->
     <div id="modalNouveauDecompteSecu" class="modal" style="display: none;">
