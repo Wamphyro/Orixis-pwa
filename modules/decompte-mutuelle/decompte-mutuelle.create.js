@@ -73,18 +73,38 @@ function afficherPlaceholder() {
         `;
     }
     
-    // Mettre à jour le body avec la description et la dropzone
+    // Créer la nouvelle structure du body
     const modalBody = document.querySelector('#modalNouveauDecompte .modal-body');
     if (modalBody) {
         modalBody.innerHTML = `
-            <div class="nouveau-decompte-form">
-                <div class="dropzone-description">
-                    <p>
-                        💡 <strong>L'intelligence artificielle extraira automatiquement toutes les informations</strong><br>
-                        Client, numéro de sécurité sociale, mutuelle, montants... Tout sera détecté et rempli automatiquement à partir de vos documents.
-                    </p>
+            <div class="nouveau-decompte-container">
+                <!-- Zone 1 : Dropzone avec info IA -->
+                <div class="dropzone-section">
+                    <div class="info-ia">
+                        <p>
+                            <span class="icon">✨</span>
+                            <strong>Intelligence artificielle intégrée</strong><br>
+                            L'IA extraira automatiquement toutes les informations de vos documents : 
+                            client, NSS, mutuelle, montants... Aucune saisie manuelle nécessaire !
+                        </p>
+                    </div>
+                    <div class="dropzone-wrapper">
+                        <div id="decompte-dropzone"></div>
+                    </div>
                 </div>
-                <div id="decompte-dropzone"></div>
+                
+                <!-- Zone 2 : Liste des fichiers -->
+                <div class="files-section">
+                    <div class="files-header">
+                        <h4>📄 Documents ajoutés</h4>
+                    </div>
+                    <div class="files-list-container" id="files-list">
+                        <div class="no-files-message">
+                            <div class="icon">📁</div>
+                            <p>Aucun document ajouté pour le moment</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         `;
     }
@@ -103,10 +123,13 @@ function afficherPlaceholder() {
                 sizeError: 'Fichier trop volumineux (max 10MB)',
                 maxFilesError: 'Maximum 10 fichiers autorisés'
             },
-            previewSize: 'large',
+            previewSize: 'none', // Pas de preview dans la dropzone
             onDrop: (files) => {
                 console.log('📎 Fichiers déposés:', files);
                 nouveauDecompte.documents = files;
+                
+                // Mettre à jour la liste des fichiers
+                updateFilesList(files);
                 
                 // Activer le bouton si au moins un fichier
                 const btnEnregistrer = document.getElementById('btnEnregistrerDecompte');
@@ -120,6 +143,9 @@ function afficherPlaceholder() {
             onRemove: (file, index) => {
                 console.log('🗑️ Fichier retiré:', file.name);
                 
+                // Mettre à jour la liste
+                updateFilesList(nouveauDecompte.documents);
+                
                 // Désactiver le bouton si plus de fichiers
                 if (nouveauDecompte.documents.length === 0) {
                     const btnEnregistrer = document.getElementById('btnEnregistrerDecompte');
@@ -130,6 +156,7 @@ function afficherPlaceholder() {
             },
             onChange: (files) => {
                 nouveauDecompte.documents = files;
+                updateFilesList(files);
                 
                 // Gérer l'état du bouton
                 const btnEnregistrer = document.getElementById('btnEnregistrerDecompte');
@@ -146,6 +173,49 @@ function afficherPlaceholder() {
         }
     }, 100);
 }
+
+// Nouvelle fonction pour mettre à jour la liste des fichiers
+function updateFilesList(files) {
+    const filesList = document.getElementById('files-list');
+    if (!filesList) return;
+    
+    if (files.length === 0) {
+        filesList.innerHTML = `
+            <div class="no-files-message">
+                <div class="icon">📁</div>
+                <p>Aucun document ajouté pour le moment</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const filesHtml = files.map((file, index) => {
+        const fileIcon = file.type === 'application/pdf' ? '📄' : '🖼️';
+        const fileSize = (file.size / 1024).toFixed(1) + ' KB';
+        
+        return `
+            <div class="file-preview-item">
+                <div class="file-icon">${fileIcon}</div>
+                <div class="file-info">
+                    <div class="file-name">${file.name}</div>
+                    <div class="file-size">${fileSize}</div>
+                </div>
+                <button class="file-remove" onclick="removeFile(${index})" title="Retirer">
+                    ✕
+                </button>
+            </div>
+        `;
+    }).join('');
+    
+    filesList.innerHTML = filesHtml;
+}
+
+// Fonction globale pour retirer un fichier
+window.removeFile = function(index) {
+    if (dropzoneDocuments) {
+        dropzoneDocuments.removeFile(index);
+    }
+};
 
 // ========================================
 // RESET DU FORMULAIRE
