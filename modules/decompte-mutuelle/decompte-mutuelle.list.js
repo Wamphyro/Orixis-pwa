@@ -179,12 +179,7 @@ function initDataTable() {
                 key: 'mutuelle',
                 label: 'Mutuelle',
                 sortable: true,
-                formatter: (value) => {
-                    const badge = config.createBadge(value, {
-                        type: 'info'
-                    });
-                    return badge.toString();
-                }
+                formatter: (value) => value || '-'
             },
             {
                 key: 'prestataireTP',
