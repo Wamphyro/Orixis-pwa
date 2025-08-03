@@ -63,6 +63,10 @@ function checkAuth() {
     return authData.authenticated;
 }
 
+// DEBUG TEMPORAIRE - À RETIRER APRÈS
+console.log('🔍 Page compte chargée, URL:', window.location.href);
+console.log('🔍 Auth dans localStorage:', localStorage.getItem('sav_auth'));
+
 // Obtenir les données utilisateur
 function getUserData() {
     const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
