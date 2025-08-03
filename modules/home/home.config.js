@@ -81,7 +81,7 @@ export const MENU_ITEMS = [
         permissions: ['mutuelle.view']
     },
     {
-        href: '#',
+        href: '../decompte-secu/decompte-secu.html',
         icon: '🏥',
         title: 'Sécurité Sociale',
         description: 'Gérer les décomptes sécurité sociale',
