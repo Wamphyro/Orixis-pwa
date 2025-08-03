@@ -61,6 +61,14 @@ export class DecompteOpenAIService {
                 });
                 
                 magasinsArray = Object.entries(magasinsData).map(([code, data]) => {
+                    // Debug détaillé pour comprendre le problème
+                    console.log(`🔍 Traitement magasin ${code}:`, {
+                        data_numeroFINESS: data.numeroFINESS,
+                        data_societe: data.societe,
+                        data_societe_raisonSociale: data.societe?.raisonSociale,
+                        data_adresse: data.adresse
+                    });
+                    
                     // Extraction sécurisée des données
                     const finess = data.numeroFINESS || data.finess || data.FINESS || '';
                     const societe = data.societe?.raisonSociale || data.raisonSociale || data.societe || data.nom || '';
@@ -76,6 +84,8 @@ export class DecompteOpenAIService {
                         "ADRESSE": adresse,
                         "VILLE": ville
                     };
+                    
+                    console.log(`✅ Magasin ${code} formatté:`, magasinFormatte);
                     
                     // Log si données manquantes pour debug
                     if (!finess) {
@@ -312,13 +322,37 @@ static async extractDecompteData(images, magasinsArray = []) {
                 throw new Error('Aucun document à analyser');
             }
             
-            // Charger les magasins pour la recherche FINESS
-            const { chargerMagasins } = await import('../../src/services/firebase.service.js');
-            const magasinsData = await chargerMagasins();
+            // Charger les magasins directement depuis Firestore
+            console.log('🏪 Chargement des magasins depuis Firestore...');
+            
+            const { collection, getDocs } = await import(
+                'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js'
+            );
+            const { db } = await import('../../src/services/firebase.service.js');
+            
+            // Récupérer TOUS les champs des magasins
+            const magasinsSnapshot = await getDocs(collection(db, 'magasins'));
+            const magasinsData = {};
+            
+            magasinsSnapshot.forEach((doc) => {
+                const docData = doc.data();
+                console.log(`📄 Document ${doc.id}:`, {
+                    code: docData.code,
+                    numeroFINESS: docData.numeroFINESS,
+                    societe: docData.societe,
+                    adresse: docData.adresse
+                });
+                
+                magasinsData[docData.code] = {
+                    ...docData,
+                    id: doc.id
+                };
+            });
             
             console.log('🏪 Magasins chargés:', Object.keys(magasinsData).length);
-            console.log('🏪 Structure d\'un magasin Firebase:', JSON.stringify(Object.values(magasinsData)[0], null, 2)); // Pour debug
-            console.log('🏪 Clés disponibles:', Object.keys(Object.values(magasinsData)[0] || {}));
+            console.log('🏪 Structure complète d\'un magasin:', JSON.stringify(Object.values(magasinsData)[0], null, 2));
+            console.log('🏪 Vérification numeroFINESS:', Object.values(magasinsData)[0]?.numeroFINESS);
+            console.log('🏪 Vérification société:', Object.values(magasinsData)[0]?.societe);
             
             // Analyser le premier document
             const document = decompte.documents[0];
