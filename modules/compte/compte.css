@@ -1,0 +1,384 @@
+/* ========================================
+   COMPTE.CSS - Styles du module compte
+   Chemin: modules/compte/compte.css
+   
+   DESCRIPTION:
+   Styles spécifiques au module compte utilisateur
+   Classes préfixées .compte-* pour éviter les conflits
+   ======================================== */
+
+/* ========================================
+   SECTIONS PRINCIPALES
+   ======================================== */
+.compte-section {
+    background: white;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.compte-section-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px 25px;
+}
+
+.compte-section-header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.compte-section-content {
+    padding: 25px;
+}
+
+/* ========================================
+   GRILLE D'INFORMATIONS
+   ======================================== */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.info-item label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-item span {
+    font-size: 16px;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.info-with-action {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* ========================================
+   GROUPES
+   ======================================== */
+.groupes-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.groupe-badge-wrapper {
+    display: inline-flex;
+}
+
+.groupes-description {
+    border-top: 1px solid #e9ecef;
+    padding-top: 20px;
+    margin-top: 20px;
+}
+
+.groupe-desc {
+    margin-bottom: 12px;
+    color: #495057;
+    line-height: 1.6;
+}
+
+.groupe-desc strong {
+    color: #2c3e50;
+}
+
+/* ========================================
+   PERMISSIONS
+   ======================================== */
+.permissions-sections {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.permissions-subsection {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.permissions-subsection h3 {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    color: #495057;
+}
+
+.permissions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.permission-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s ease;
+}
+
+.permission-granted {
+    border-color: #28a745;
+    background: #f4fef5;
+}
+
+.permission-denied {
+    border-color: #dc3545;
+    background: #fef4f4;
+}
+
+.permission-icon {
+    font-size: 18px;
+}
+
+.permission-label {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.permission-details {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+/* ========================================
+   MAGASINS
+   ======================================== */
+.magasins-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.magasin-card {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.magasin-card:hover {
+    border-color: #667eea;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.15);
+}
+
+.magasin-card.active {
+    background: #e7f1ff;
+    border-color: #667eea;
+}
+
+.magasin-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.magasin-header h4 {
+    margin: 0;
+    font-size: 18px;
+    color: #2c3e50;
+}
+
+.badge-active {
+    background: #28a745;
+    color: white;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.badge-resp {
+    background: #ffc107;
+    color: #000;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.magasin-info {
+    margin-bottom: 15px;
+}
+
+.magasin-nom {
+    font-size: 14px;
+    color: #6c757d;
+    margin: 0 0 10px 0;
+}
+
+.magasin-permissions {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #dee2e6;
+}
+
+.magasin-permissions strong {
+    font-size: 13px;
+    color: #495057;
+}
+
+.magasin-permissions ul {
+    margin: 5px 0 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.magasin-permissions li {
+    font-size: 12px;
+    color: #6c757d;
+    margin: 3px 0;
+}
+
+/* ========================================
+   MODAL MODIFICATION PIN
+   ======================================== */
+.pin-modification-flow {
+    position: relative;
+}
+
+.pin-step {
+    display: none;
+    padding: 20px;
+    text-align: center;
+}
+
+.pin-step.active {
+    display: block;
+}
+
+.pin-step h3 {
+    margin: 0 0 20px 0;
+    font-size: 18px;
+    color: #495057;
+}
+
+.pin-display {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.pin-dot {
+    width: 15px;
+    height: 15px;
+    border: 2px solid #dee2e6;
+    border-radius: 50%;
+    background: transparent;
+    transition: all 0.2s ease;
+}
+
+.pin-dot.filled {
+    background: #667eea;
+    border-color: #667eea;
+}
+
+.numpad-container {
+    max-width: 300px;
+    margin: 20px auto;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 14px;
+    margin-top: 10px;
+    min-height: 20px;
+}
+
+.info-message {
+    color: #6c757d;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+/* ========================================
+   DROPDOWN MAGASIN
+   ======================================== */
+.magasin-selector-container {
+    max-width: 300px;
+}
+
+.magasin-selector-container .dropdown-list {
+    width: 100%;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 768px) {
+    .compte-section-content {
+        padding: 20px;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .permissions-sections {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .magasins-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .info-with-action {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* ========================================
+   UTILITAIRES
+   ======================================== */
+.no-data {
+    text-align: center;
+    color: #6c757d;
+    padding: 40px 20px;
+    font-style: italic;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.compte-section {
+    animation: slideIn 0.3s ease-out;
+}
