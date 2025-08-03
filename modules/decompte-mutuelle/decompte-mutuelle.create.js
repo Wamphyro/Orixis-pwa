@@ -73,35 +73,43 @@ function afficherPlaceholder() {
         `;
     }
     
-    // Créer la nouvelle structure du body
+    // Créer la structure avec les 3 zones
     const modalBody = document.querySelector('#modalNouveauDecompte .modal-body');
     if (modalBody) {
         modalBody.innerHTML = `
-            <div class="nouveau-decompte-container">
-                <!-- Zone 1 : Dropzone avec info IA -->
-                <div class="dropzone-section">
-                    <div class="info-ia">
-                        <p>
-                            <span class="icon">✨</span>
-                            <strong>Intelligence artificielle intégrée</strong><br>
-                            L'IA extraira automatiquement toutes les informations de vos documents : 
-                            client, NSS, mutuelle, montants... Aucune saisie manuelle nécessaire !
-                        </p>
-                    </div>
-                    <div class="dropzone-wrapper">
-                        <div id="decompte-dropzone"></div>
+            <div class="nouveau-decompte-wrapper">
+                <!-- Zone 1 : Description IA -->
+                <div class="zone-description-ia">
+                    <div class="content">
+                        <div class="icon-wrapper">
+                            <span class="icon">🤖</span>
+                        </div>
+                        <div class="text">
+                            <h4>Intelligence artificielle intégrée</h4>
+                            <p>Notre IA analyse automatiquement vos documents et extrait toutes les informations : client, NSS, mutuelle, montants... Aucune saisie manuelle nécessaire !</p>
+                        </div>
                     </div>
                 </div>
                 
-                <!-- Zone 2 : Liste des fichiers -->
-                <div class="files-section">
-                    <div class="files-header">
-                        <h4>📄 Documents ajoutés</h4>
+                <!-- Zone 2 : Dropzone -->
+                <div class="zone-dropzone">
+                    <div id="decompte-dropzone"></div>
+                </div>
+                
+                <!-- Zone 3 : Liste des fichiers -->
+                <div class="zone-fichiers">
+                    <div class="zone-fichiers-header">
+                        <h5>
+                            📁 Documents ajoutés
+                            <span class="count" id="files-count">0</span>
+                        </h5>
                     </div>
-                    <div class="files-list-container" id="files-list">
-                        <div class="no-files-message">
-                            <div class="icon">📁</div>
-                            <p>Aucun document ajouté pour le moment</p>
+                    <div class="zone-fichiers-content">
+                        <div id="files-list">
+                            <div class="empty-state">
+                                <div class="icon">📄</div>
+                                <p>Aucun document ajouté</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -117,52 +125,30 @@ function afficherPlaceholder() {
         
         dropzoneDocuments = config.createDecompteDropzone('#decompte-dropzone', {
             messages: {
-                drop: '📄 Glissez vos décomptes mutuelles ici',
+                drop: '📤 Glissez vos décomptes mutuelles ici',
                 browse: 'ou cliquez pour parcourir',
                 typeError: 'Seuls les PDF et images (JPG, PNG) sont acceptés',
                 sizeError: 'Fichier trop volumineux (max 10MB)',
                 maxFilesError: 'Maximum 10 fichiers autorisés'
             },
-            previewSize: 'none', // Pas de preview dans la dropzone
+            previewSize: 'none',
+            showPreview: false,
             onDrop: (files) => {
                 console.log('📎 Fichiers déposés:', files);
                 nouveauDecompte.documents = files;
-                
-                // Mettre à jour la liste des fichiers
                 updateFilesList(files);
-                
-                // Activer le bouton si au moins un fichier
-                const btnEnregistrer = document.getElementById('btnEnregistrerDecompte');
-                if (btnEnregistrer && files.length > 0) {
-                    btnEnregistrer.disabled = false;
-                }
-                
-                // Message de confirmation
+                updateButton(files);
                 config.notify.success(`${files.length} fichier(s) ajouté(s)`);
             },
             onRemove: (file, index) => {
                 console.log('🗑️ Fichier retiré:', file.name);
-                
-                // Mettre à jour la liste
                 updateFilesList(nouveauDecompte.documents);
-                
-                // Désactiver le bouton si plus de fichiers
-                if (nouveauDecompte.documents.length === 0) {
-                    const btnEnregistrer = document.getElementById('btnEnregistrerDecompte');
-                    if (btnEnregistrer) {
-                        btnEnregistrer.disabled = true;
-                    }
-                }
+                updateButton(nouveauDecompte.documents);
             },
             onChange: (files) => {
                 nouveauDecompte.documents = files;
                 updateFilesList(files);
-                
-                // Gérer l'état du bouton
-                const btnEnregistrer = document.getElementById('btnEnregistrerDecompte');
-                if (btnEnregistrer) {
-                    btnEnregistrer.disabled = files.length === 0;
-                }
+                updateButton(files);
             }
         });
         
@@ -174,40 +160,66 @@ function afficherPlaceholder() {
     }, 100);
 }
 
-// Nouvelle fonction pour mettre à jour la liste des fichiers
+// Fonction pour mettre à jour la liste des fichiers
 function updateFilesList(files) {
     const filesList = document.getElementById('files-list');
+    const filesCount = document.getElementById('files-count');
+    
     if (!filesList) return;
+    
+    // Mettre à jour le compteur
+    if (filesCount) {
+        filesCount.textContent = files.length;
+    }
     
     if (files.length === 0) {
         filesList.innerHTML = `
-            <div class="no-files-message">
-                <div class="icon">📁</div>
-                <p>Aucun document ajouté pour le moment</p>
+            <div class="empty-state">
+                <div class="icon">📄</div>
+                <p>Aucun document ajouté</p>
             </div>
         `;
         return;
     }
     
     const filesHtml = files.map((file, index) => {
-        const fileIcon = file.type === 'application/pdf' ? '📄' : '🖼️';
-        const fileSize = (file.size / 1024).toFixed(1) + ' KB';
+        const fileIcon = file.type === 'application/pdf' ? '📑' : '🖼️';
+        const fileSize = formatFileSize(file.size);
         
         return `
-            <div class="file-preview-item">
+            <div class="file-item">
                 <div class="file-icon">${fileIcon}</div>
                 <div class="file-info">
-                    <div class="file-name">${file.name}</div>
+                    <div class="file-name" title="${file.name}">${file.name}</div>
                     <div class="file-size">${fileSize}</div>
                 </div>
-                <button class="file-remove" onclick="removeFile(${index})" title="Retirer">
-                    ✕
+                <button class="file-remove" onclick="removeFile(${index})" title="Supprimer">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                    </svg>
                 </button>
             </div>
         `;
     }).join('');
     
-    filesList.innerHTML = filesHtml;
+    filesList.innerHTML = `<div class="files-list">${filesHtml}</div>`;
+}
+
+// Fonction pour formater la taille du fichier
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
+// Fonction pour mettre à jour le bouton
+function updateButton(files) {
+    const btnEnregistrer = document.getElementById('btnEnregistrerDecompte');
+    if (btnEnregistrer) {
+        btnEnregistrer.disabled = files.length === 0;
+    }
 }
 
 // Fonction globale pour retirer un fichier
