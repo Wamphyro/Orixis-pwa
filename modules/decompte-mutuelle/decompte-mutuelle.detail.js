@@ -53,6 +53,15 @@ export async function voirDetailDecompte(decompteId) {
         afficherDetailDecompte(decompte);
         window.modalManager.open('modalDetailDecompte');
         
+        // Fix pour éviter le scroll intempestif
+        setTimeout(() => {
+            const modalElement = document.getElementById('modalDetailDecompte');
+            if (modalElement) {
+                modalElement.scrollTop = 0;
+            }
+            window.scrollTo(0, 0);
+        }, 50);
+        
     } catch (error) {
         console.error('Erreur chargement détail:', error);
         afficherErreur('Erreur lors du chargement des détails');
