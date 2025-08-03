@@ -95,11 +95,12 @@ const STATS_CARDS_CONFIG = {
 // Configuration de l'export
 const EXPORT_CONFIG = {
     colonnes: [
-        { key: 'numeroDecompte', label: 'N° Décompte' },
         { key: 'dateVirement', label: 'Date virement', formatter: 'date' },
+        { key: 'numeroDecompte', label: 'N° Décompte' },
         { key: 'client', label: 'Client', formatter: 'client' },
         { key: 'nss', label: 'NSS', formatter: 'nss' },
         { key: 'mutuelle', label: 'Mutuelle' },
+        { key: 'prestataireTP', label: 'Réseau TP' },
         { key: 'montantRemboursementClient', label: 'Remboursement', formatter: 'montant' },
         { key: 'montantVirement', label: 'Virement', formatter: 'montant' },
         { key: 'typeDecompte', label: 'Type' },
@@ -146,17 +147,10 @@ function initDataTable() {
         columns: [
             {
                 key: 'dateVirement',
-                label: 'Date',
+                label: 'Date virement',
                 sortable: true,
-                width: 100,
+                width: 110,
                 formatter: (value) => formatDate(value, 'jour')
-            },
-            {
-                key: 'virementId',
-                label: 'Virement',
-                sortable: true,
-                width: 120,
-                formatter: (value) => `<small>${value || '-'}</small>`
             },
             {
                 key: 'client',
@@ -193,16 +187,16 @@ function initDataTable() {
                 }
             },
             {
+                key: 'prestataireTP',
+                label: 'Réseau TP',
+                sortable: true,
+                formatter: (value) => value || '-'
+            },
+            {
                 key: 'montantVirement',
                 label: 'Montant',
                 sortable: true,
                 formatter: (value) => config.HTML_TEMPLATES.montant(value)
-            },
-            {
-                key: 'typeDecompte',
-                label: 'Type',
-                sortable: true,
-                formatter: (value) => config.HTML_TEMPLATES.typeDecompte(value)
             },
             {
                 key: 'statut',
