@@ -47,19 +47,26 @@ export class DecompteOpenAIService {
             // Si magasinsData est un objet (format Firebase)
             if (!Array.isArray(magasinsData) && typeof magasinsData === 'object') {
                 magasinsArray = Object.entries(magasinsData).map(([code, data]) => ({
-                    "FINESS": data.finess || data.FINESS || '',
+                    "FINESS": data.numeroFINESS || data.finess || data.FINESS || '',
                     "CODE MAGASIN": code,
-                    "SOCIETE": data.societe || data.nom || '',
-                    "ADRESSE": data.adresse || '',
-                    "VILLE": data.ville || ''
+                    "SOCIETE": data.societe?.raisonSociale || data.societe || data.nom || '',
+                    "ADRESSE": `${data.adresse?.rue || ''} ${data.adresse?.codePostal || ''} ${data.adresse?.ville || ''}`.trim(),
+                    "VILLE": data.adresse?.ville || data.ville || ''
                 }));
             } 
             // Si c'est déjà un tableau
             else if (Array.isArray(magasinsData)) {
-                magasinsArray = magasinsData;
+                magasinsArray = magasinsData.map(data => ({
+                    "FINESS": data.numeroFINESS || data.finess || data.FINESS || '',
+                    "CODE MAGASIN": data.code || '',
+                    "SOCIETE": data.societe?.raisonSociale || data.societe || data.nom || '',
+                    "ADRESSE": `${data.adresse?.rue || ''} ${data.adresse?.codePostal || ''} ${data.adresse?.ville || ''}`.trim(),
+                    "VILLE": data.adresse?.ville || data.ville || ''
+                }));
             }
             
             console.log(`📍 ${magasinsArray.length} magasins pour recherche FINESS`);
+            console.log('📍 Exemple magasin:', magasinsArray[0]); // Pour debug
             
             // Convertir le document en image(s) base64
             const images = await this.prepareDocumentImages(documentUrl, documentType);
