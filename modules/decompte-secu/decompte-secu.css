@@ -12,6 +12,19 @@
    ======================================== */
 
 /* ========================================
+   FIX FOUC - Cacher les modales au chargement
+   ======================================== */
+#modalNouveauDecompteSecu,
+#modalDetailDecompteSecu {
+    display: none !important;
+}
+
+#modalNouveauDecompteSecu.active,
+#modalDetailDecompteSecu.active {
+    display: flex !important;
+}
+
+/* ========================================
    EN-TÊTE ET STATISTIQUES
    ======================================== */
 .decomptes-header {

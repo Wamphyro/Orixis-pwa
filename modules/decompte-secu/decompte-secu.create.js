@@ -49,35 +49,21 @@ export function initCreationDecompteSecu() {
 // ========================================
 
 export function ouvrirNouveauDecompteSecu() {
-    console.log('🔵 === DEBUT ouvrirNouveauDecompteSecu ===');
-    
     try {
         // Reset d'abord
         resetNouveauDecompteSecu();
         
         // Attendre un peu pour que le DOM se stabilise
         setTimeout(() => {
-            console.log('⏱️ Affichage après timeout');
             afficherPlaceholder();
             
             // Ouvrir la modal
-            console.log('🚀 Tentative ouverture modal');
             window.modalManager.open('modalNouveauDecompteSecu');
-            
-            // FORCER l'affichage si nécessaire
-            const modalElement = document.getElementById('modalNouveauDecompteSecu');
-            if (modalElement) {
-                modalElement.style.display = 'flex';
-                console.log('✅ Modal forcé en display: flex');
-            }
-            
         }, 100);
         
     } catch (error) {
         console.error('❌ ERREUR dans ouvrirNouveauDecompteSecu:', error);
     }
-    
-    console.log('🔵 === FIN ouvrirNouveauDecompteSecu ===');
 }
 
 // ========================================
