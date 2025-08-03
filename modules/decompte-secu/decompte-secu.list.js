@@ -59,21 +59,6 @@ const FILTERS_CONFIG = {
         keepPlaceholder: true,
         options: [] // Généré depuis les constantes + dynamique
     },
-    regime: {
-        type: 'select',
-        key: 'regime',
-        label: 'Régime',
-        keepPlaceholder: true,
-        options: [] // Généré depuis les constantes
-    },
-    typeActe: {
-        type: 'select',
-        key: 'typeActe',
-        label: 'Type d\'acte',
-        keepPlaceholder: true,
-        showIcons: true,
-        options: [] // Généré depuis les constantes
-    },
     periode: {
         type: 'select',
         key: 'periode',
@@ -87,14 +72,6 @@ const FILTERS_CONFIG = {
             { value: 'month', label: 'Ce mois' },
             { value: 'trimester', label: 'Ce trimestre' }
         ]
-    },
-    statut: {
-        type: 'select',
-        key: 'statut',
-        label: 'Statut',
-        keepPlaceholder: true,
-        showIcons: true,
-        options: [] // Généré depuis les constantes
     }
 };
 
