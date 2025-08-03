@@ -384,12 +384,8 @@ export async function chargerDonnees() {
         if (state.decomptesData.length > 0) {
             mettreAJourMutuelles(state.decomptesData);
             
-            // Recharger les options du filtre mutuelle
-            const filtresConfig = genererOptionsFiltres();
-            const mutuelleFilter = filtresConfig.find(f => f.key === 'mutuelle');
-            if (filtresDecomptes && mutuelleFilter) {
-                filtresDecomptes.updateFilterOptions('mutuelle', mutuelleFilter.options);
-            }
+            // Recréer les filtres avec les nouvelles options
+            await initFiltres();
         }
         
         // Charger les statistiques
