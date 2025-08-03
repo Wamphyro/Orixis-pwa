@@ -86,7 +86,7 @@ export const MENU_ITEMS = [
         title: 'Sécurité Sociale',
         description: 'Gérer les décomptes sécurité sociale',
         permissions: ['secu.view'],
-        disabled: true
+        disabled: false
     },
     {
         href: '#',
