@@ -626,38 +626,6 @@ function genererOptionsFiltres() {
         }))
     ];
     
-    // Générer les options de régime
-    config.regime.options = [
-        { value: '', label: 'Tous les régimes' },
-        ...Object.entries(DECOMPTES_SECU_CONFIG.REGIMES).map(([key, regime]) => ({
-            value: key,
-            label: regime.label,
-            icon: regime.icon
-        }))
-    ];
-    
-    // Générer les options de type d'acte
-    config.typeActe.options = [
-        { value: '', label: 'Tous les types' },
-        ...Object.entries(DECOMPTES_SECU_CONFIG.TYPES_ACTES).map(([key, type]) => ({
-            value: key,
-            label: type.label,
-            icon: type.icon
-        }))
-    ];
-    
-    // Générer les options de statut
-    config.statut.options = [
-        { value: '', label: 'Tous les statuts' },
-        ...Object.entries(DECOMPTES_SECU_CONFIG.STATUTS)
-            .filter(([key]) => key !== 'supprime')
-            .map(([key, statut]) => ({
-                value: key,
-                label: statut.label,
-                icon: statut.icon
-            }))
-    ];
-    
     return Object.values(config);
 }
 
