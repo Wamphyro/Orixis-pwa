@@ -85,7 +85,7 @@ export class DecompteOpenAIService {
      * @param {Array} magasinsArray - Tableau des magasins
      * @returns {Promise<Object>} Données brutes extraites
      */
-    static async extractDecompteData(images, magasinsArray = []) {
+static async extractDecompteData(images, magasinsArray = []) {
         try {
             console.log(`🤖 Appel Cloud Function pour ${images.length} image(s)...`);
             
@@ -196,17 +196,38 @@ export class DecompteOpenAIService {
     - periode basée sur les dates de soins/prestations
     - Analyser TOUTES les pages fournies`;
             
+            // LOG DU PROMPT POUR DEBUG
+            console.log('🤖 ===== PROMPT ENVOYÉ À GPT =====');
+            console.log(prompt);
+            console.log('🤖 ===== FIN DU PROMPT =====');
+            
+            // Log aussi la taille des images
+            console.log(`📸 Envoi de ${images.length} image(s)`);
+            images.forEach((img, index) => {
+                console.log(`📸 Image ${index + 1}: ${img.length} caractères base64`);
+            });
+            
+            // Préparer le body de la requête
+            const requestBody = {
+                images: images,
+                prompt: prompt,
+                type: 'mutuelle'
+            };
+            
+            console.log('📤 Requête Cloud Function:', {
+                url: CLOUD_FUNCTION_URL,
+                bodySize: JSON.stringify(requestBody).length,
+                promptLength: prompt.length,
+                imagesCount: images.length
+            });
+            
             // Appeler la Cloud Function avec votre prompt
             const response = await fetch(CLOUD_FUNCTION_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    images: images,
-                    prompt: prompt,
-                    type: 'mutuelle'
-                })
+                body: JSON.stringify(requestBody)
             });
             
             if (!response.ok) {
