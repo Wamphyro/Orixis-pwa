@@ -442,6 +442,193 @@
 }
 
 /* ========================================
+   10. MODAL NOUVEAU DÉCOMPTE
+   ======================================== */
+
+/* Wrapper principal */
+.nouveau-decompte-secu-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-height: 400px;
+}
+
+/* Zone description IA */
+.zone-description-ia {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    padding: 30px;
+    color: white;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.zone-description-ia .content {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.zone-description-ia .icon-wrapper {
+    min-width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.zone-description-ia .icon {
+    font-size: 48px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.zone-description-ia .text h4 {
+    margin: 0 0 10px 0;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.zone-description-ia .text p {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.6;
+    opacity: 0.95;
+}
+
+/* Zone dropzone */
+.zone-dropzone {
+    flex: 1;
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 20px;
+    border: 2px dashed #e0e0e0;
+}
+
+/* Zone fichiers */
+.zone-fichiers {
+    background: white;
+    border-radius: 15px;
+    border: 1px solid #e0e0e0;
+    overflow: hidden;
+}
+
+.zone-fichiers-header {
+    background: #f8f9fa;
+    padding: 15px 20px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.zone-fichiers-header h5 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.zone-fichiers-header .count {
+    background: var(--secu-primary);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    min-width: 24px;
+    text-align: center;
+}
+
+.zone-fichiers-content {
+    padding: 20px;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+/* État vide */
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+}
+
+.empty-state .icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+    opacity: 0.5;
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Liste des fichiers */
+.files-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.file-item:hover {
+    background: #e9ecef;
+}
+
+.file-icon {
+    font-size: 24px;
+    opacity: 0.8;
+}
+
+.file-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.file-name {
+    font-weight: 500;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-size {
+    font-size: 12px;
+    color: #666;
+    margin-top: 2px;
+}
+
+.file-remove {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    color: #999;
+}
+
+.file-remove:hover {
+    background: #dc3545;
+    color: white;
+}
+
+/* ========================================
    9. PRINT STYLES
    ======================================== */
 
