@@ -189,7 +189,7 @@ async function chargerDonneesInitiales() {
 // ========================================
 
 function initDataTable() {
-    tableDecomptesSecu = config.createDecomptesSecuTable('.decomptes-secu-table-container', {
+    tableDecomptesSecu = config.createDecomptesSecuTable('.decomptes-table-container', {
         columns: [
             {
                 key: 'datePaiement',
@@ -332,7 +332,7 @@ async function initFiltres() {
     
     // Créer l'instance DataTableFilters
     filtresDecomptesSecu = config.createDecomptesSecuFilters(
-        '.decomptes-secu-filters',
+        '.decomptes-filters',
         filtresConfig,
         (filters) => handleFilterChange(filters)
     );
@@ -363,7 +363,7 @@ function initStatsCards() {
     const cardsConfig = genererConfigStatsCards();
     
     statsCards = config.createDecomptesSecuStatsCards(
-        '.decomptes-secu-stats',
+        '.decomptes-stats',
         cardsConfig,
         (cardId) => handleStatsCardClick(cardId)
     );
