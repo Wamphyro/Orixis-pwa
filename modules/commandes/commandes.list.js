@@ -26,7 +26,7 @@ import {
     genererNumeroCommande,
     formaterPrix
 } from './commandes.data.js';
-import { formatDate as formatDateUtil } from '../../src/components/index.js';
+import { formatDate as formatDateUtil, Button } from '../../src/components/index.js';
 import config from './commandes.config.js';
 import { state } from './commandes.main.js';
 import { chargerMagasins } from '../../src/services/firebase.service.js';
@@ -269,11 +269,7 @@ function initDataTable() {
                         console.warn(`Type non trouvé: "${value}"`);
                         return value || '-';
                     }
-                    const badge = config.createBadge(configData.label, {
-    type: value.replace(/_/g, '-'),
-    icon: configData.icon
-});
-return badge.toString();
+                    return config.HTML_TEMPLATES.badge(value, configData.label, configData.icon);
                 }
             },
             {
@@ -363,6 +359,21 @@ async function initFiltres() {
         (filters) => handleFilterChange(filters)
     );
     
+    // Remplacer le bouton reset par un composant Button stylisé
+    const resetBtnElement = filtresCommandes.getResetButtonElement();
+    if (resetBtnElement) {
+        const styledResetBtn = new Button({
+            text: '🔄 Réinitialiser',
+            variant: 'secondary',  // Gris neutre
+            size: 'sm',
+            textColor: 'dark',     // Texte noir
+            onClick: () => filtresCommandes.reset()
+        });
+        
+        // Remplacer l'élément
+        resetBtnElement.replaceWith(styledResetBtn.getElement());
+    }
+    
     console.log('🔍 Filtres créés avec config locale');
 }
 
@@ -374,13 +385,18 @@ function initStatsCards() {
     // 🆕 Utiliser la fonction locale genererConfigStatsCards()
     const cardsConfig = genererConfigStatsCards();
     
-    statsCards = config.createCommandesStatsCards(
-        '.commandes-stats',
-        cardsConfig,
-        (cardId) => handleStatsCardClick(cardId)
-    );
+    statsCards = new StatsCards({
+        container: '.commandes-stats',
+        cards: cardsConfig,
+        animated: true,
+        
+        // 🔑 GESTION DU CLIC ICI DANS L'ORCHESTRATEUR
+        onClick: (cardId) => {
+            handleStatsCardClick(cardId);
+        }
+    });
     
-    console.log('📈 StatsCards créées avec config locale');
+    console.log('📈 StatsCards créées');
 }
 
 // ========================================
@@ -655,17 +671,19 @@ function formatDate(timestamp) {
 }
 
 function afficherUrgence(urgence) {
-    const configData = COMMANDES_CONFIG.NIVEAUX_URGENCE[urgence];
-    if (!configData) return urgence;
+    const config = COMMANDES_CONFIG.NIVEAUX_URGENCE[urgence];
+    if (!config) return urgence;
     
-    return config.HTML_TEMPLATES.urgence(configData);
+    // 🆕 Utiliser le template local DISPLAY_TEMPLATES
+    return DISPLAY_TEMPLATES.urgence.getHTML(config);
 }
 
 function afficherStatut(statut) {
-    const configData = COMMANDES_CONFIG.STATUTS[statut];
-    if (!configData) return statut;
+    const config = COMMANDES_CONFIG.STATUTS[statut];
+    if (!config) return statut;
     
-    return config.HTML_TEMPLATES.statut(configData);
+    // 🆕 Utiliser le template local DISPLAY_TEMPLATES
+    return DISPLAY_TEMPLATES.statut.getHTML(config);
 }
 
 /**
