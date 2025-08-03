@@ -153,7 +153,9 @@ export class Modal {
             const focusable = this.modalElement.querySelector(
                 'button:not(.modal-close), input, select, textarea'
             );
-            if (focusable) focusable.focus();
+            if (focusable) {
+                focusable.focus({ preventScroll: true });
+            }
         }, this.options.animationDuration);
     }
     
