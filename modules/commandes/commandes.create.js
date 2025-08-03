@@ -41,6 +41,7 @@ function genererOptionsTypesPreparation() {
     }));
 }
 import { ouvrirModal, afficherSucces, afficherErreur } from './commandes.main.js';
+import Dialog from '../../src/components/ui/dialog/dialog.component.js';
 
 // ========================================
 // ÉTAT LOCAL DU MODULE
@@ -272,13 +273,13 @@ async function validerEtape(etape) {
     switch (etape) {
         case 1:
             if (!nouvelleCommande.clientId) {
-                await config.Dialog.alert('Veuillez sélectionner un client', 'Attention');
+                await Dialog.alert('Veuillez ajouter au moins un produit', 'Attention');
                 return false;
             }
             break;
         case 2:
             if (nouvelleCommande.produits.length === 0) {
-                await Dialog.alert('Veuillez ajouter au moins un produit', 'Attention');
+                await Dialog.alert('Veuillez sélectionner un client', 'Attention');
                 return false;
             }
             break;
@@ -487,7 +488,7 @@ export async function creerNouveauClient() {
         
     } catch (error) {
         console.error('Erreur création client:', error);
-        await config.Dialog.error('Erreur lors de la création du client: ' + error.message);
+        await Dialog.error('Erreur lors de la création du client: ' + error.message);
     }
 }
 
