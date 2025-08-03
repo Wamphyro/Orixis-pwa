@@ -66,84 +66,7 @@ export const DECOMPTES_CONFIG = {
             description: 'Décompte supprimé'
         }
     },
-    
-    // ========================================
-    // MUTUELLES RÉFÉRENCÉES (données métier)
-    // ========================================
-    MUTUELLES: {
-        harmonie: {
-            nom: 'Harmonie Mutuelle',
-            code: 'HARM',
-            delaiTraitement: 5
-        },
-        mgen: {
-            nom: 'MGEN',
-            code: 'MGEN',
-            delaiTraitement: 7
-        },
-        malakoff: {
-            nom: 'Malakoff Humanis',
-            code: 'MALA',
-            delaiTraitement: 5
-        },
-        ag2r: {
-            nom: 'AG2R La Mondiale',
-            code: 'AG2R',
-            delaiTraitement: 6
-        },
-        allianz: {
-            nom: 'Allianz',
-            code: 'ALLI',
-            delaiTraitement: 4
-        },
-        swisslife: {
-            nom: 'SwissLife',
-            code: 'SWIS',
-            delaiTraitement: 5
-        },
-        generali: {
-            nom: 'Generali',
-            code: 'GENE',
-            delaiTraitement: 6
-        },
-        april: {
-            nom: 'April',
-            code: 'APRI',
-            delaiTraitement: 3
-        }
-    },
-    
-    // ========================================
-    // PRESTATAIRES TIERS PAYANT (données métier)
-    // ========================================
-    PRESTATAIRES_TP: {
-        viamedis: {
-            nom: 'Viamedis',
-            code: 'VIA',
-            formatId: /^VIA[0-9]{10}$/
-        },
-        almerys: {
-            nom: 'Almerys',
-            code: 'ALM',
-            formatId: /^ALM[0-9]{10}$/
-        },
-        sp_sante: {
-            nom: 'SP Santé',
-            code: 'SPS',
-            formatId: /^SPS[0-9]{10}$/
-        },
-        istya: {
-            nom: 'IstYa',
-            code: 'IST',
-            formatId: /^IST[0-9]{10}$/
-        },
-        tessi: {
-            nom: 'Tessi',
-            code: 'TES',
-            formatId: /^TES[0-9]{10}$/
-        }
-    },
-    
+
     // ========================================
     // TYPES DE DÉCOMPTE (données métier)
     // ========================================
@@ -339,30 +262,20 @@ export function peutEtreSupprime(statut) {
 
 // Fonction helper pour calculer le délai de traitement
 export function calculerDelaiTraitement(mutuelle) {
-    const config = Object.values(DECOMPTES_CONFIG.MUTUELLES).find(m => m.nom === mutuelle);
-    return config?.delaiTraitement || 5; // 5 jours par défaut
+    // Retourne toujours 5 jours par défaut car plus de config hardcodée
+    return 5;
 }
 
 // Fonction helper pour obtenir la liste des mutuelles
 export function getListeMutuelles() {
-    // Si on a des mutuelles dynamiques, on les utilise
-    if (mutuellesDynamiques.size > 0) {
-        return Array.from(mutuellesDynamiques).sort();
-    }
-    
-    // Sinon, on retourne la liste fixe comme fallback
-    return Object.values(DECOMPTES_CONFIG.MUTUELLES).map(m => m.nom);
+    // Retourne UNIQUEMENT les mutuelles extraites des décomptes réels
+    return Array.from(mutuellesDynamiques).sort();
 }
 
 // Fonction helper pour obtenir la liste des prestataires
 export function getListePrestataires() {
-    // Si on a des réseaux TP dynamiques, on les utilise
-    if (reseauxTPDynamiques.size > 0) {
-        return Array.from(reseauxTPDynamiques).sort();
-    }
-    
-    // Sinon, on retourne la liste fixe comme fallback
-    return Object.values(DECOMPTES_CONFIG.PRESTATAIRES_TP).map(p => p.nom);
+    // Retourne UNIQUEMENT les prestataires extraits des décomptes réels
+    return Array.from(reseauxTPDynamiques).sort();
 }
 
 /* ========================================

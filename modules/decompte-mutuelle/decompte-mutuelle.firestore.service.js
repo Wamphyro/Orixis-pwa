@@ -1,4 +1,13 @@
 // ========================================
+// DECOMPTE-MUTUELLE.FIRESTORE.SERVICE.JS - 🗄️ ACCÈS BASE DE DONNÉES
+// 
+// RÔLE : Communication directe avec Firestore
+// - CRUD des documents décomptes
+// - Génération des identifiants
+// - Gestion de l'historique
+// ========================================
+
+// ========================================
 // DECOMPTE-MUTUELLE.FIRESTORE.SERVICE.JS - Gestion Firestore des décomptes
 // Chemin: modules/decompte-mutuelle/decompte-mutuelle.firestore.service.js
 //

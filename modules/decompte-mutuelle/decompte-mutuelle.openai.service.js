@@ -1,4 +1,13 @@
 // ========================================
+// DECOMPTE-MUTUELLE.OPENAI.SERVICE.JS - 🤖 EXTRACTION IA
+// 
+// RÔLE : Analyse des documents via GPT-4
+// - Extraction des données (OCR + IA)
+// - Identification client, NSS, montants
+// - Détection du magasin via FINESS
+// ========================================
+
+// ========================================
 // DECOMPTE-MUTUELLE.OPENAI.SERVICE.JS - Service d'analyse IA des décomptes
 // Chemin: modules/decompte-mutuelle/decompte-mutuelle.openai.service.js
 //

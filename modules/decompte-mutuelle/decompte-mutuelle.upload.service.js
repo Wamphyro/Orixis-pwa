@@ -1,4 +1,13 @@
 // ========================================
+// DECOMPTE-MUTUELLE.UPLOAD.SERVICE.JS - 📁 GESTION STOCKAGE FICHIERS
+// 
+// RÔLE : Upload et gestion dans Firebase Storage
+// - Upload des PDF/images
+// - Calcul des hash SHA-256
+// - Organisation des dossiers
+// ========================================
+
+// ========================================
 // DECOMPTE-MUTUELLE.UPLOAD.SERVICE.JS - Gestion des uploads Firebase Storage
 // Chemin: modules/decompte-mutuelle/decompte-mutuelle.upload.service.js
 //

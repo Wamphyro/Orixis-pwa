@@ -1,4 +1,13 @@
 // ========================================
+// DECOMPTE-MUTUELLE.SERVICE.JS - 🎯 SERVICE MÉTIER PRINCIPAL
+// 
+// RÔLE : Logique business et workflow des décomptes
+// - Gestion des statuts et transitions
+// - Calcul des statistiques
+// - Orchestration des opérations métier
+// ========================================
+
+// ========================================
 // DECOMPTE-MUTUELLE.SERVICE.JS - Gestion des décomptes Firebase
 // Chemin: modules/decompte-mutuelle/decompte-mutuelle.service.js
 //
