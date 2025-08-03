@@ -47,6 +47,7 @@ export const state = {
         recherche: '',
         magasin: '',
         mutuelle: '',
+        reseauTP: '',
         periode: 'all',
         statut: '',
         statutsActifs: [] // Array pour filtrage multi-statuts depuis cards

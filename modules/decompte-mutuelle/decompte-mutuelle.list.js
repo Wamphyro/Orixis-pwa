@@ -26,7 +26,9 @@ import {
     formaterMontant,
     formaterNSS,
     getListeMutuelles,
-    mettreAJourMutuelles
+    getListePrestataires,
+    mettreAJourMutuelles,
+    mettreAJourReseauxTP
 } from './decompte-mutuelle.data.js';
 import { formatDate as formatDateUtil } from '../../src/components/index.js';
 import config from './decompte-mutuelle.config.js';
@@ -56,6 +58,13 @@ const FILTERS_CONFIG = {
         type: 'select',
         key: 'mutuelle',
         label: 'Mutuelle',
+        keepPlaceholder: true,
+        options: [] // Généré depuis les constantes
+    },
+    reseauTP: {
+        type: 'select',
+        key: 'reseauTP',
+        label: 'Réseau TP',
         keepPlaceholder: true,
         options: [] // Généré depuis les constantes
     },
@@ -306,6 +315,7 @@ function handleFilterChange(filters) {
     const isReset = !filters.recherche && 
                     !filters.magasin && 
                     !filters.mutuelle &&
+                    !filters.reseauTP &&
                     filters.periode === 'all' && 
                     !filters.statut;
     
@@ -315,6 +325,7 @@ function handleFilterChange(filters) {
             recherche: '',
             magasin: '',
             mutuelle: '',
+            reseauTP: '',
             periode: 'all',
             statut: '',
             statutsActifs: []
@@ -333,6 +344,7 @@ function handleFilterChange(filters) {
             recherche: filters.recherche || '',
             magasin: filters.magasin || '',
             mutuelle: filters.mutuelle || '',
+            reseauTP: filters.reseauTP || '',
             periode: filters.periode || 'all',
             statut: filters.statut || ''
         };
@@ -380,9 +392,10 @@ export async function chargerDonnees() {
             state.decomptesData = [];
         }
         
-        // Mettre à jour les mutuelles dynamiques
+        // Mettre à jour les mutuelles et réseaux TP dynamiques
         if (state.decomptesData.length > 0) {
             mettreAJourMutuelles(state.decomptesData);
+            mettreAJourReseauxTP(state.decomptesData);
             
             // Recréer les filtres avec les nouvelles options
             await initFiltres();
@@ -485,6 +498,11 @@ function filtrerDecomptesLocalement() {
             return false;
         }
         
+        // Filtre réseau TP
+        if (state.filtres.reseauTP && decompte.prestataireTP !== state.filtres.reseauTP) {
+            return false;
+        }
+        
         // Filtre statut (depuis select)
         if (state.filtres.statut && decompte.statut !== state.filtres.statut) {
             return false;
@@ -537,6 +555,15 @@ function genererOptionsFiltres() {
         ...getListeMutuelles().map(mutuelle => ({
             value: mutuelle,
             label: mutuelle
+        }))
+    ];
+    
+    // Générer les options de réseau TP
+    config.reseauTP.options = [
+        { value: '', label: 'Tous les réseaux' },
+        ...getListePrestataires().map(reseau => ({
+            value: reseau,
+            label: reseau
         }))
     ];
     

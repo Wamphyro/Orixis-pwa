@@ -229,6 +229,20 @@ export function mettreAJourMutuelles(decomptes) {
     });
 }
 
+// Stockage des réseaux TP extraits des décomptes réels
+let reseauxTPDynamiques = new Set();
+
+// Fonction pour mettre à jour les réseaux TP depuis les décomptes
+export function mettreAJourReseauxTP(decomptes) {
+    reseauxTPDynamiques.clear();
+    
+    decomptes.forEach(decompte => {
+        if (decompte.prestataireTP && decompte.prestataireTP !== '') {
+            reseauxTPDynamiques.add(decompte.prestataireTP);
+        }
+    });
+}
+
 // ========================================
 // FONCTIONS HELPERS MÉTIER (pas UI)
 // ========================================
@@ -342,6 +356,12 @@ export function getListeMutuelles() {
 
 // Fonction helper pour obtenir la liste des prestataires
 export function getListePrestataires() {
+    // Si on a des réseaux TP dynamiques, on les utilise
+    if (reseauxTPDynamiques.size > 0) {
+        return Array.from(reseauxTPDynamiques).sort();
+    }
+    
+    // Sinon, on retourne la liste fixe comme fallback
     return Object.values(DECOMPTES_CONFIG.PRESTATAIRES_TP).map(p => p.nom);
 }
 
