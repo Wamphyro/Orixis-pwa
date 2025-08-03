@@ -73,11 +73,14 @@ export async function voirDetailDecompte(decompteId) {
 // ========================================
 
 function afficherDetailDecompte(decompte) {
+    // Sauvegarder la position actuelle du scroll
+    const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+    
     // En-tête
     document.getElementById('detailNumDecompte').textContent = decompte.numeroDecompte;
     
-    // Timeline
-    afficherTimeline(decompte);
+    // Timeline - COMMENTÉE TEMPORAIREMENT
+    // afficherTimeline(decompte);
     
     // Sections d'information
     afficherSectionClient(decompte);
@@ -90,8 +93,18 @@ function afficherDetailDecompte(decompte) {
     
     // Actions disponibles
     afficherActionsDecompte(decompte);
+    
+    // Restaurer la position du scroll
+    setTimeout(() => {
+        window.scrollTo(0, scrollPosition);
+        document.getElementById('modalDetailDecompte').scrollTop = 0;
+    }, 0);
+    
+    // Réactiver la timeline après un délai
+    setTimeout(() => {
+        afficherTimeline(decompte);
+    }, 100);
 }
-
 // ========================================
 // TIMELINE
 // ========================================
