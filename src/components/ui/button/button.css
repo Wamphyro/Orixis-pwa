@@ -100,17 +100,6 @@
     box-shadow: var(--glass-shadow);
 }
 
-/* ========================================
-   TEXTE BLANC POUR VARIANTES SPÉCIFIQUES
-   ======================================== */
-
-/* Variantes avec texte blanc obligatoire */
-.btn-primary,
-.btn-danger,
-.btn-success {
-    color: white;
-}
-
 /* Boutons d'action restent avec texte noir sauf cas spéciaux */
 .btn-action-danger {
     color: white;
@@ -124,7 +113,6 @@
 .btn-primary {
     background: var(--primary-glass);
     border-color: rgba(102, 126, 234, 0.3);
-    color: white;
 }
 
 .btn-primary:hover {
@@ -139,7 +127,6 @@
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     border-color: rgba(220, 53, 69, 0.3);
-    color: white;
 }
 
 .btn-danger:hover {
@@ -170,7 +157,6 @@
 .btn-warning {
     background: var(--warning-glass);
     border-color: rgba(255, 193, 7, 0.3);
-    color: #333;
 }
 
 .btn-warning:hover {
@@ -398,4 +384,35 @@
         padding: 6px 12px;
         font-size: 12px;
     }
+}
+
+/* ========================================
+   CLASSES UTILITAIRES COULEUR TEXTE
+   ======================================== */
+.text-white { 
+    color: white !important; 
+}
+
+.text-dark { 
+    color: #333 !important; 
+}
+
+.text-primary { 
+    color: #667eea !important; 
+}
+
+.text-danger { 
+    color: #dc2626 !important; 
+}
+
+.text-success { 
+    color: #28a745 !important; 
+}
+
+.text-warning { 
+    color: #ffc107 !important; 
+}
+
+.text-muted { 
+    color: #6b7280 !important; 
 }

@@ -57,6 +57,7 @@ export class Button {
             variant: 'primary', // primary, secondary, danger, success, warning, ghost
             size: 'md', // sm, md, lg
             shape: 'default', // default, pill, square, circle
+            textColor: null, // null, 'white', 'dark', 'primary', 'danger', 'muted', etc.
             
             // États
             disabled: false,
@@ -238,6 +239,11 @@ export class Button {
         // Forme
         if (this.config.shape !== 'default') {
             classes.push(`btn-${this.config.shape}`);
+        }
+        
+        // Couleur du texte
+        if (this.config.textColor) {
+            classes.push(`text-${this.config.textColor}`);
         }
         
         // Contexte
