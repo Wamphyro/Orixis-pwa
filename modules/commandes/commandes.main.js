@@ -358,6 +358,8 @@ window.fermerModal = fermerModal;
 window.logout = handleLogout;
 window.selectionnerCote = selectionnerCote;
 window.annulerSelectionCote = annulerSelectionCote;
+// Exposer chargerDonnees globalement pour le module create
+window.chargerDonnees = chargerDonnees;
 
 // ========================================
 // UTILITAIRES GLOBAUX

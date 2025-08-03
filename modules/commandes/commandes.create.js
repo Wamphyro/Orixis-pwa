@@ -11,9 +11,7 @@
 // [01/02/2025] - Intégration de DropdownList pour tous les selects
 // ========================================
 
-
-// SUPPRIMÉ - Plus besoin
-
+// TOUS LES IMPORTS EN PREMIER (SANS INTERRUPTION)
 import { db } from '../../src/services/firebase.service.js';
 import { ClientsService } from '../../src/services/clients.service.js';
 import { ProduitsService } from '../../src/services/produits.service.js';
@@ -23,8 +21,11 @@ import {
     calculerDelaiLivraison
 } from './commandes.data.js';
 import config from './commandes.config.js';
+import { ouvrirModal, afficherSucces, afficherErreur } from './commandes.main.js';
+import Dialog from '../../src/components/ui/dialog/dialog.component.js';
+import { chargerDonnees } from './commandes.list.js';
 
-// ET AJOUTER ces fonctions dans le fichier (après les imports) :
+// MAINTENANT LES FONCTIONS (APRÈS TOUS LES IMPORTS)
 function genererOptionsUrgence() {
     return Object.entries(COMMANDES_CONFIG.NIVEAUX_URGENCE).map(([key, urgence]) => ({
         value: key,
@@ -40,8 +41,6 @@ function genererOptionsTypesPreparation() {
         icon: type.icon
     }));
 }
-import { ouvrirModal, afficherSucces, afficherErreur } from './commandes.main.js';
-import Dialog from '../../src/components/ui/dialog/dialog.component.js';
 
 // ========================================
 // ÉTAT LOCAL DU MODULE
@@ -952,7 +951,11 @@ export async function validerCommande() {
         
         window.fermerModal('modalNouvelleCommande');
         
-        await chargerDonnees();
+        // LIGNE SUPPRIMÉE : // Notifier le module principal pour rafraîchir les données
+if (window.chargerDonnees && typeof window.chargerDonnees === 'function') {
+    await window.chargerDonnees();
+}
+        window.location.reload();
         
         afficherSucces('Commande créée avec succès !');
         
