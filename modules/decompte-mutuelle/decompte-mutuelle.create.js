@@ -131,111 +131,106 @@ export function ouvrirNouveauDecompte() {
 // AFFICHAGE PLACEHOLDER
 // ========================================
 
-    function afficherPlaceholder() {
-        // D'abord, nettoyer le footer s'il existe
-        const modalFooter = document.querySelector('#modalNouveauDecompte .modal-footer');
-        if (modalFooter) {
-            modalFooter.style.display = 'none';
-        }
-        
-        // Ensuite, ajouter le bouton dans le header AVANT de toucher au body
-        const modalHeader = document.querySelector('#modalNouveauDecompte .modal-header');
-        if (modalHeader) {
-            // Vérifier si le bouton existe déjà
-            if (!modalHeader.querySelector('#btnEnregistrerDecompte')) {
-                // Créer un wrapper pour le bouton si nécessaire
-                let actionsWrapper = modalHeader.querySelector('.modal-header-actions');
-                if (!actionsWrapper) {
-                    actionsWrapper = document.createElement('div');
-                    actionsWrapper.className = 'modal-header-actions';
-                    
-                    // Insérer avant le bouton close
-                    const closeBtn = modalHeader.querySelector('.modal-close');
-                    modalHeader.insertBefore(actionsWrapper, closeBtn);
-                }
+function afficherPlaceholder() {
+    // D'abord, nettoyer le footer s'il existe
+    const modalFooter = document.querySelector('#modalNouveauDecompte .modal-footer');
+    if (modalFooter) {
+        modalFooter.style.display = 'none';
+    }
+    
+    // Ensuite, ajouter le bouton dans le header AVANT de toucher au body
+    const modalHeader = document.querySelector('#modalNouveauDecompte .modal-header');
+    if (modalHeader) {
+        // Vérifier si le bouton existe déjà
+        if (!modalHeader.querySelector('#btnEnregistrerDecompte')) {
+            // Créer un wrapper pour le bouton si nécessaire
+            let actionsWrapper = modalHeader.querySelector('.modal-header-actions');
+            if (!actionsWrapper) {
+                actionsWrapper = document.createElement('div');
+                actionsWrapper.className = 'modal-header-actions';
                 
-                // Créer le bouton avec les bonnes classes
-                const btnEnregistrer = document.createElement('button');
-                btnEnregistrer.id = 'btnEnregistrerDecompte';
-                btnEnregistrer.className = 'btn btn-primary btn-sm';
-                btnEnregistrer.disabled = true;
-                btnEnregistrer.innerHTML = '💾 Enregistrer et analyser';
-                
-                actionsWrapper.appendChild(btnEnregistrer);
-            }
-        }
-        
-        // Maintenant, mettre à jour le body
-        const modalBody = document.querySelector('#modalNouveauDecompte .modal-body');
-        if (modalBody) {
-            modalBody.innerHTML = `
-                <div class="nouveau-decompte-form">
-                    <div id="decompte-dropzone"></div>
-                </div>
-            `;
-        }
-        
-        // Créer la DropZone après que le HTML soit inséré
-        setTimeout(() => {
-            if (dropzoneDocuments) {
-                dropzoneDocuments.destroy();
+                // Insérer avant le bouton close
+                const closeBtn = modalHeader.querySelector('.modal-close');
+                modalHeader.insertBefore(actionsWrapper, closeBtn);
             }
             
-            dropzoneDocuments = config.createDecompteDropzone('#decompte-dropzone', {
-                messages: {
-                    drop: '📄 Glissez vos décomptes mutuelles ici',
-                    browse: 'ou cliquez pour parcourir',
-                    typeError: 'Seuls les PDF et images (JPG, PNG) sont acceptés',
-                    sizeError: 'Fichier trop volumineux (max 10MB)',
-                    maxFilesError: 'Maximum 10 fichiers autorisés'
-                },
-                previewSize: 'large',
-                onDrop: (files) => {
-                    console.log('📎 Fichiers déposés:', files);
-                    nouveauDecompte.documents = files;
-                    
-                    // Activer le bouton si au moins un fichier
-                    const btnEnregistrer = document.getElementById('btnEnregistrerDecompte');
-                    if (btnEnregistrer && files.length > 0) {
-                        btnEnregistrer.disabled = false;
-                    }
-                    
-                    // Message de confirmation
-                    config.notify.success(`${files.length} fichier(s) ajouté(s)`);
-                },
-                    
-                    // Afficher un message temporaire
-                    config.notify.success(`${files.length} fichier(s) ajouté(s)`);
-                },
-                onRemove: (file, index) => {
-                    console.log('🗑️ Fichier retiré:', file.name);
-                    
-                    // Désactiver le bouton si plus de fichiers
-                    if (nouveauDecompte.documents.length === 0) {
-                        const btnEnregistrer = document.getElementById('btnEnregistrerDecompte');
-                        if (btnEnregistrer) {
-                            btnEnregistrer.disabled = true;
-                        }
-                    }
-                },
-                onChange: (files) => {
-                    nouveauDecompte.documents = files;
-                    
-                    // Gérer l'état du bouton
+            // Créer le bouton avec les bonnes classes
+            const btnEnregistrer = document.createElement('button');
+            btnEnregistrer.id = 'btnEnregistrerDecompte';
+            btnEnregistrer.className = 'btn btn-primary btn-sm';
+            btnEnregistrer.disabled = true;
+            btnEnregistrer.innerHTML = '💾 Enregistrer et analyser';
+            
+            actionsWrapper.appendChild(btnEnregistrer);
+        }
+    }
+    
+    // Maintenant, mettre à jour le body
+    const modalBody = document.querySelector('#modalNouveauDecompte .modal-body');
+    if (modalBody) {
+        modalBody.innerHTML = `
+            <div class="nouveau-decompte-form">
+                <div id="decompte-dropzone"></div>
+            </div>
+        `;
+    }
+    
+    // Créer la DropZone après que le HTML soit inséré
+    setTimeout(() => {
+        if (dropzoneDocuments) {
+            dropzoneDocuments.destroy();
+        }
+        
+        dropzoneDocuments = config.createDecompteDropzone('#decompte-dropzone', {
+            messages: {
+                drop: '📄 Glissez vos décomptes mutuelles ici',
+                browse: 'ou cliquez pour parcourir',
+                typeError: 'Seuls les PDF et images (JPG, PNG) sont acceptés',
+                sizeError: 'Fichier trop volumineux (max 10MB)',
+                maxFilesError: 'Maximum 10 fichiers autorisés'
+            },
+            previewSize: 'large',
+            onDrop: (files) => {
+                console.log('📎 Fichiers déposés:', files);
+                nouveauDecompte.documents = files;
+                
+                // Activer le bouton si au moins un fichier
+                const btnEnregistrer = document.getElementById('btnEnregistrerDecompte');
+                if (btnEnregistrer && files.length > 0) {
+                    btnEnregistrer.disabled = false;
+                }
+                
+                // Message de confirmation
+                config.notify.success(`${files.length} fichier(s) ajouté(s)`);
+            },
+            onRemove: (file, index) => {
+                console.log('🗑️ Fichier retiré:', file.name);
+                
+                // Désactiver le bouton si plus de fichiers
+                if (nouveauDecompte.documents.length === 0) {
                     const btnEnregistrer = document.getElementById('btnEnregistrerDecompte');
                     if (btnEnregistrer) {
-                        btnEnregistrer.disabled = files.length === 0;
+                        btnEnregistrer.disabled = true;
                     }
                 }
-            });
-            
-            // Gérer le clic sur enregistrer
-            const btnEnregistrer = document.getElementById('btnEnregistrerDecompte');
-            if (btnEnregistrer) {
-                btnEnregistrer.onclick = enregistrerDecompte;
+            },
+            onChange: (files) => {
+                nouveauDecompte.documents = files;
+                
+                // Gérer l'état du bouton
+                const btnEnregistrer = document.getElementById('btnEnregistrerDecompte');
+                if (btnEnregistrer) {
+                    btnEnregistrer.disabled = files.length === 0;
+                }
             }
-        }, 100);
-    }
+        });
+        
+        // Gérer le clic sur enregistrer
+        const btnEnregistrer = document.getElementById('btnEnregistrerDecompte');
+        if (btnEnregistrer) {
+            btnEnregistrer.onclick = enregistrerDecompte;
+        }
+    }, 100);
 }
 
 // ========================================
