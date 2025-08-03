@@ -30,28 +30,55 @@ import firestoreService from './decompte-mutuelle.firestore.service.js';
 // Injecter les styles pour le header du modal
 const modalStyles = `
     <style>
+        /* Header avec bouton */
         #modalNouveauDecompte .modal-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             position: relative;
+            gap: 16px;
+        }
+        
+        #modalNouveauDecompte .modal-header h2 {
+            flex: 1;
+            margin: 0;
         }
         
         #modalNouveauDecompte .modal-header-actions {
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-left: auto;
-            margin-right: 8px;
         }
         
-        #modalNouveauDecompte .form-section {
-            padding: 20px 0;
+        /* Body ajusté pour la dropzone */
+        #modalNouveauDecompte .modal-body {
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 400px;
         }
         
-        #modalNouveauDecompte .form-section-info {
-            margin-top: 8px;
-            color: #6c757d;
+        #modalNouveauDecompte .nouveau-decompte-form {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+        
+        /* Dropzone pleine largeur */
+        #modalNouveauDecompte #decompte-dropzone {
+            flex: 1;
+            min-height: 350px;
+        }
+        
+        /* Cacher le footer */
+        #modalNouveauDecompte .modal-footer {
+            display: none !important;
+        }
+        
+        /* Bouton dans le header */
+        #modalNouveauDecompte .modal-header .btn {
+            white-space: nowrap;
         }
     </style>
 `;
@@ -104,48 +131,47 @@ export function ouvrirNouveauDecompte() {
 // AFFICHAGE PLACEHOLDER
 // ========================================
 
-function afficherPlaceholder() {
-    const modalBody = document.querySelector('#modalNouveauDecompte .modal-body');
-    if (modalBody) {
-        modalBody.innerHTML = `
-            <div class="nouveau-decompte-form">
-                <!-- Zone de dépôt des documents -->
-                <div class="form-section">
-                    <h4>📄 Documents du décompte</h4>
-                    <p class="form-section-help">Déposez ici les décomptes mutuelles (PDF, JPG, PNG)</p>
-                    <p class="form-section-info">
-                        <small>💡 L'IA extraira automatiquement toutes les informations du document (client, mutuelle, montants...)</small>
-                    </p>
-                    <div id="decompte-dropzone"></div>
-                </div>
-            </div>
-        `;
+    function afficherPlaceholder() {
+        // D'abord, nettoyer le footer s'il existe
+        const modalFooter = document.querySelector('#modalNouveauDecompte .modal-footer');
+        if (modalFooter) {
+            modalFooter.style.display = 'none';
+        }
         
-        // Ajouter le bouton dans le header du modal
+        // Ensuite, ajouter le bouton dans le header AVANT de toucher au body
         const modalHeader = document.querySelector('#modalNouveauDecompte .modal-header');
         if (modalHeader) {
-            // Chercher si le bouton existe déjà
-            let btnContainer = modalHeader.querySelector('.modal-header-actions');
-            if (!btnContainer) {
-                // Créer un container pour les boutons du header
-                btnContainer = document.createElement('div');
-                btnContainer.className = 'modal-header-actions';
-                btnContainer.style.cssText = 'display: flex; align-items: center; gap: 8px; margin-left: auto;';
-                
-                // Insérer avant le bouton close
-                const closeBtn = modalHeader.querySelector('.modal-close');
-                if (closeBtn) {
-                    modalHeader.insertBefore(btnContainer, closeBtn);
-                } else {
-                    modalHeader.appendChild(btnContainer);
+            // Vérifier si le bouton existe déjà
+            if (!modalHeader.querySelector('#btnEnregistrerDecompte')) {
+                // Créer un wrapper pour le bouton si nécessaire
+                let actionsWrapper = modalHeader.querySelector('.modal-header-actions');
+                if (!actionsWrapper) {
+                    actionsWrapper = document.createElement('div');
+                    actionsWrapper.className = 'modal-header-actions';
+                    
+                    // Insérer avant le bouton close
+                    const closeBtn = modalHeader.querySelector('.modal-close');
+                    modalHeader.insertBefore(actionsWrapper, closeBtn);
                 }
+                
+                // Créer le bouton avec les bonnes classes
+                const btnEnregistrer = document.createElement('button');
+                btnEnregistrer.id = 'btnEnregistrerDecompte';
+                btnEnregistrer.className = 'btn btn-primary btn-sm';
+                btnEnregistrer.disabled = true;
+                btnEnregistrer.innerHTML = '💾 Enregistrer et analyser';
+                
+                actionsWrapper.appendChild(btnEnregistrer);
             }
-            
-            // Ajouter le bouton enregistrer
-            btnContainer.innerHTML = `
-                <button id="btnEnregistrerDecompte" class="btn btn-primary btn-sm" disabled>
-                    💾 Enregistrer et analyser
-                </button>
+        }
+        
+        // Maintenant, mettre à jour le body
+        const modalBody = document.querySelector('#modalNouveauDecompte .modal-body');
+        if (modalBody) {
+            modalBody.innerHTML = `
+                <div class="nouveau-decompte-form">
+                    <div id="decompte-dropzone"></div>
+                </div>
             `;
         }
         
@@ -156,6 +182,14 @@ function afficherPlaceholder() {
             }
             
             dropzoneDocuments = config.createDecompteDropzone('#decompte-dropzone', {
+                messages: {
+                    drop: '📄 Glissez vos décomptes mutuelles ici',
+                    browse: 'ou cliquez pour parcourir',
+                    typeError: 'Seuls les PDF et images (JPG, PNG) sont acceptés',
+                    sizeError: 'Fichier trop volumineux (max 10MB)',
+                    maxFilesError: 'Maximum 10 fichiers autorisés'
+                },
+                previewSize: 'large',
                 onDrop: (files) => {
                     console.log('📎 Fichiers déposés:', files);
                     nouveauDecompte.documents = files;
@@ -165,6 +199,10 @@ function afficherPlaceholder() {
                     if (btnEnregistrer && files.length > 0) {
                         btnEnregistrer.disabled = false;
                     }
+                    
+                    // Message de confirmation
+                    config.notify.success(`${files.length} fichier(s) ajouté(s)`);
+                },
                     
                     // Afficher un message temporaire
                     config.notify.success(`${files.length} fichier(s) ajouté(s)`);
