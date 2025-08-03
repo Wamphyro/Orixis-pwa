@@ -28,7 +28,7 @@ export function createHomeHeader(userData) {
         // Ajouter les classes pour les boutons
         buttonClasses: {
             back: 'btn on-dark btn-pill',
-            logout: 'btn btn-danger btn-sm',  // ← Classes pour le bouton rouge
+            logout: 'btn btn-danger btn-sm text-white',
             userSection: 'header-user-section'
         },
         // Ajouter le callback onLogout

@@ -43,7 +43,7 @@ export function createCommandesHeader(userData) {
         // Ajouter les classes pour les boutons
         buttonClasses: {
             back: 'btn on-dark btn-pill',
-            logout: 'btn btn-danger btn-sm',  // ← Classes pour le bouton rouge
+            logout: 'btn btn-danger btn-sm text-white',
             userSection: 'header-user-section'
         },
         onLogout: async () => {
