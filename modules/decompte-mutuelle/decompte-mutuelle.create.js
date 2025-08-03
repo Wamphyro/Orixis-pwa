@@ -28,19 +28,11 @@ import firestoreService from './decompte-mutuelle.firestore.service.js';
 // ========================================
 
 let nouveauDecompte = {
-    client: null,
-    mutuelle: '',
-    prestataireTP: '',
-    montantRemboursementClient: 0,
-    typeDecompte: 'individuel',
-    nombreClients: 1
+    documents: []  // Seulement les documents uploadés
 };
 
-// Instances des composants
+// Instance du composant
 let dropzoneDocuments = null;
-let clientSearchDropdown = null;
-let dropdownMutuelle = null;
-let dropdownPrestataire = null;
 
 // ========================================
 // INITIALISATION DU MODULE
@@ -80,25 +72,10 @@ function afficherPlaceholder() {
                 <div class="form-section">
                     <h4>📄 Documents du décompte</h4>
                     <p class="form-section-help">Déposez ici les décomptes mutuelles (PDF, JPG, PNG)</p>
+                    <p class="form-section-info">
+                        <small>💡 L'IA extraira automatiquement toutes les informations du document (client, mutuelle, montants...)</small>
+                    </p>
                     <div id="decompte-dropzone"></div>
-                </div>
-                
-                <!-- Section client (à venir) -->
-                <div class="form-section disabled">
-                    <h4>👤 Sélection du client</h4>
-                    <p class="form-section-help">Recherche et sélection du client (bientôt disponible)</p>
-                    <div class="placeholder-box">
-                        <span>🔍 SearchDropdown à implémenter</span>
-                    </div>
-                </div>
-                
-                <!-- Section mutuelle et montants (à venir) -->
-                <div class="form-section disabled">
-                    <h4>🏥 Mutuelle et montants</h4>
-                    <p class="form-section-help">Sélection de la mutuelle et saisie des montants (bientôt disponible)</p>
-                    <div class="placeholder-box">
-                        <span>📝 Formulaire à implémenter</span>
-                    </div>
                 </div>
                 
                 <!-- Boutons d'action -->
@@ -107,7 +84,7 @@ function afficherPlaceholder() {
                         Annuler
                     </button>
                     <button id="btnEnregistrerDecompte" class="btn btn-primary btn-pill" disabled>
-                        💾 Enregistrer
+                        💾 Enregistrer et analyser
                     </button>
                 </div>
             </div>
@@ -156,31 +133,13 @@ function afficherPlaceholder() {
 
 function resetNouveauDecompte() {
     nouveauDecompte = {
-        client: null,
-        mutuelle: '',
-        prestataireTP: '',
-        montantRemboursementClient: 0,
-        typeDecompte: 'individuel',
-        nombreClients: 1,
-        documents: []  // Ajout pour stocker les fichiers
+        documents: []  // Seulement les fichiers
     };
     
-    // Détruire les composants s'ils existent
+    // Détruire le composant s'il existe
     if (dropzoneDocuments) {
         dropzoneDocuments.destroy();
         dropzoneDocuments = null;
-    }
-    if (clientSearchDropdown) {
-        clientSearchDropdown.destroy();
-        clientSearchDropdown = null;
-    }
-    if (dropdownMutuelle) {
-        dropdownMutuelle.destroy();
-        dropdownMutuelle = null;
-    }
-    if (dropdownPrestataire) {
-        dropdownPrestataire.destroy();
-        dropdownPrestataire = null;
     }
 }
 
@@ -271,100 +230,26 @@ async function enregistrerDecompte() {
 }
 
 // ========================================
-// FUTURES FONCTIONS DE CRÉATION
-// ========================================
-
-// Structure préparée pour la recherche client
-async function initClientSearch() {
-    // TODO: Implémenter avec SearchDropdown
-    /*
-    clientSearchDropdown = config.createSearchDropdown('.client-search', {
-        placeholder: 'Rechercher un client (nom, NSS...)',
-        onSearch: async (query) => {
-            // Recherche dans ClientsService
-        },
-        onSelect: (client) => {
-            selectionnerClient(client);
-        },
-        renderItem: (client) => {
-            return `
-                <strong>${client.prenom} ${client.nom}</strong>
-                <small>NSS: ${client.nss || 'Non renseigné'}</small>
-            `;
-        }
-    });
-    */
-}
-
-// Structure préparée pour la sélection mutuelle
-async function initMutuelleDropdown() {
-    // TODO: Implémenter avec DropdownList
-    /*
-    const mutuelles = getListeMutuelles();
-    
-    dropdownMutuelle = config.createDropdown('#mutuelleSelect', {
-        placeholder: '-- Sélectionner une mutuelle --',
-        searchable: true,
-        options: mutuelles.map(m => ({
-            value: m,
-            label: m
-        })),
-        onChange: (value) => {
-            nouveauDecompte.mutuelle = value;
-        }
-    });
-    */
-}
-
-// Structure préparée pour la validation
-async function validerNouveauDecompte() {
-    // TODO: Implémenter la validation et création
-    /*
-    try {
-        // Validation des données
-        if (!nouveauDecompte.client) {
-            throw new Error('Client requis');
-        }
-        
-        // Création via service
-        const decompteId = await DecomptesMutuellesService.creerDecompte(nouveauDecompte);
-        
-        // Fermer modal et rafraîchir
-        window.modalManager.close('modalNouveauDecompte');
-        await chargerDonnees();
-        
-        afficherSucces('Décompte créé avec succès');
-        
-    } catch (error) {
-        afficherErreur(error.message);
-    }
-    */
-}
-
-// ========================================
 // EXPORTS GLOBAUX POUR COMPATIBILITÉ
 // ========================================
 
-// Ces fonctions seront appelées depuis le HTML quand l'implémentation sera prête
-window.validerNouveauDecompte = () => {
-    console.log('Validation décompte - À implémenter');
-};
-
-window.changerTypeDecompte = (type) => {
-    console.log('Changement type décompte:', type, '- À implémenter');
+// Fonction exportée pour le refresh après création
+window.refreshDecomptesList = async () => {
+    if (window.chargerDonnees) {
+        await window.chargerDonnees();
+    }
 };
 
 /* ========================================
-   HISTORIQUE DES DIFFICULTÉS
+   HISTORIQUE DES MODIFICATIONS
    
    [02/02/2025] - Création initiale (structure vide)
-   - Structure préparée pour implémentation future
-   - Placeholder informatif pour l'utilisateur
-   - Architecture prête pour SearchDropdown et DropdownList
+   [03/02/2025] - Simplification du modal
+   - Suppression des champs client/mutuelle/montant
+   - Upload direct des documents uniquement
+   - L'IA extrait toutes les informations
    
-   NOTES POUR REPRISES FUTURES:
-   - Implémenter la recherche client avec NSS
-   - Ajouter la validation des montants
-   - Gérer les décomptes groupés
-   - Intégrer avec ClientsService
+   NOTES:
+   - Workflow simplifié : Upload → IA → Validation
+   - Plus besoin de saisie manuelle
    ======================================== */
