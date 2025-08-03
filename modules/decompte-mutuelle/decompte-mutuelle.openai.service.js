@@ -189,10 +189,11 @@ static async extractDecompteData(images, magasinsArray = []) {
     EXTRACTION DE LA MUTUELLE :
     - Chercher "AMC :", "Mutuelle :", "Assurance :", "Organisme complémentaire"
     - Si non trouvé, chercher dans l'en-tête du document
-    - NE PAS confondre avec le réseau de soins
+    - La mutuelle PEUT être la même entité que le réseau de soins
     - NE PAS prendre le destinataire (professionnel de santé)
-    - organisme_mutuelle NE PEUT PAS être égal à societe
+    - organisme_mutuelle NE PEUT PAS être égal à societe (le destinataire)
     - En MAJUSCULES
+    - Si aucune mutuelle distincte n'est mentionnée, la mutuelle est le réseau de soins
 
     EXTRACTION DU RÉSEAU DE SOINS :
     - Chercher dans l'EN-TÊTE du document (partie haute)
