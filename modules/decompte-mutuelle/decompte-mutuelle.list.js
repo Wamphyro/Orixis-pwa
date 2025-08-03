@@ -396,6 +396,9 @@ export async function chargerDonnees() {
         // Charger les décomptes
         state.decomptesData = await DecomptesMutuellesService.getDecomptes();
         
+        console.log('🔍 DEBUG - Décomptes chargés:', state.decomptesData.length);
+        console.log('🔍 DEBUG - Exemple décompte:', state.decomptesData[0]);
+        
         if (!state.decomptesData) {
             state.decomptesData = [];
         }
@@ -405,8 +408,26 @@ export async function chargerDonnees() {
             mettreAJourMutuelles(state.decomptesData);
             mettreAJourReseauxTP(state.decomptesData);
             
-            // Recréer les filtres avec les nouvelles options
-            await initFiltres();
+            // Mettre à jour les options des filtres SANS recréer le composant
+            if (filtresDecomptes) {
+                // Mettre à jour uniquement les options des dropdowns mutuelle et reseauTP
+                const mutuelleDropdown = filtresDecomptes.filterComponents.mutuelle;
+                const reseauTPDropdown = filtresDecomptes.filterComponents.reseauTP;
+                
+                if (mutuelleDropdown) {
+                    mutuelleDropdown.updateOptions([
+                        { value: '', label: 'Toutes les mutuelles' },
+                        ...getListeMutuelles().map(m => ({ value: m, label: m }))
+                    ]);
+                }
+                
+                if (reseauTPDropdown) {
+                    reseauTPDropdown.updateOptions([
+                        { value: '', label: 'Tous les réseaux' },
+                        ...getListePrestataires().map(r => ({ value: r, label: r }))
+                    ]);
+                }
+            }
         }
         
         // Charger les statistiques

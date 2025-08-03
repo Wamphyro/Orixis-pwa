@@ -145,11 +145,16 @@ let mutuellesDynamiques = new Set();
 export function mettreAJourMutuelles(decomptes) {
     mutuellesDynamiques.clear();
     
+    console.log('🔍 DEBUG - mettreAJourMutuelles appelé avec', decomptes.length, 'décomptes');
+    
     decomptes.forEach(decompte => {
         if (decompte.mutuelle && decompte.mutuelle !== '') {
+            console.log('🔍 DEBUG - Ajout mutuelle:', decompte.mutuelle);
             mutuellesDynamiques.add(decompte.mutuelle);
         }
     });
+    
+    console.log('🔍 DEBUG - Mutuelles finales:', Array.from(mutuellesDynamiques));
 }
 
 // Stockage des réseaux TP extraits des décomptes réels
