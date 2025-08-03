@@ -304,13 +304,18 @@ function afficherActionsDecompte(decompte) {
     const detailActions = document.getElementById('detailActions');
     let actions = [];
     
+    // Bouton IA toujours disponible sauf si supprimé ou rapproché
+    if (decompte.statut !== 'supprime' && decompte.statut !== 'rapprochement_bancaire') {
+        actions.push(`
+            <button class="btn btn-info btn-pill" onclick="transmettreIA('${decompte.id}')">
+                🤖 ${decompte.statut === 'nouveau' ? 'Transmettre à l\'IA' : 'Relancer l\'analyse IA'}
+            </button>
+        `);
+    }
+    
     switch (decompte.statut) {
         case 'nouveau':
-            actions.push(`
-                <button class="btn btn-info btn-pill" onclick="transmettreIA('${decompte.id}')">
-                    🤖 Transmettre à l'IA
-                </button>
-            `);
+            // Plus de boutons spécifiques ici car l'IA est déjà ajoutée au-dessus
             break;
             
         case 'traitement_ia':
