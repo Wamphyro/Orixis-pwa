@@ -51,25 +51,19 @@ export function initCreationDecompteSecu() {
 export function ouvrirNouveauDecompteSecu() {
     console.log('🔵 Ouverture nouveau décompte sécu...');
     
-    resetNouveauDecompteSecu();
-    
-    // Vérifier que le modal existe
-    const modalElement = document.getElementById('modalNouveauDecompteSecu');
-    if (!modalElement) {
-        console.error('❌ Modal modalNouveauDecompteSecu non trouvé !');
+    // Vérifier si le modal est déjà ouvert
+    const modal = window.modalManager.get('modalNouveauDecompteSecu');
+    if (modal && modal.isOpen) {
+        console.log('⚠️ Modal déjà ouvert');
         return;
     }
     
-    // Afficher le formulaire
+    // Reset et afficher
+    resetNouveauDecompteSecu();
     afficherPlaceholder();
     
     // Ouvrir la modal
-    try {
-        window.modalManager.open('modalNouveauDecompteSecu');
-        console.log('✅ Modal ouvert');
-    } catch (error) {
-        console.error('❌ Erreur ouverture modal:', error);
-    }
+    window.modalManager.open('modalNouveauDecompteSecu');
 }
 
 // ========================================
