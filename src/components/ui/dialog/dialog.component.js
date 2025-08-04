@@ -132,14 +132,7 @@ export class Dialog {
                     ` : ''}
                 </div>
                 <div class="dialog-footer">
-                    ${showCancel ? `
-                        <button class="dialog-btn secondary dialog-cancel">
-                            ${cancelText}
-                        </button>
-                    ` : ''}
-                    <button class="dialog-btn ${danger ? 'danger' : 'primary'} dialog-confirm">
-                        ${confirmText}
-                    </button>
+                    ${this.createButtons(options, showCancel, cancelText, confirmText, danger)}
                 </div>
             </div>
         `;
@@ -148,8 +141,8 @@ export class Dialog {
         this.container.classList.add('active');
         
         // Gérer les événements
-        const confirmBtn = this.container.querySelector('.dialog-confirm');
-        const cancelBtn = this.container.querySelector('.dialog-cancel');
+        const confirmBtn = this.container.querySelector('.dialog-confirm, .dialog-confirm-wrapper button');
+        const cancelBtn = this.container.querySelector('.dialog-cancel, .dialog-cancel-wrapper button');
         const overlay = this.container.querySelector('.dialog-overlay');
         const input = this.container.querySelector('.dialog-input');
         
@@ -202,6 +195,44 @@ export class Dialog {
         
         document.addEventListener('keydown', handleKeydown);
         this.currentDialog = { handleKeydown };
+    }
+
+    createButtons(options, showCancel, cancelText, confirmText, danger) {
+        // Si une factory est fournie, l'utiliser
+        if (options.buttonFactory) {
+            const buttonsHtml = [];
+            
+            if (showCancel) {
+                // Créer temporairement pour récupérer le HTML
+                const cancelBtn = options.buttonFactory({
+                    text: cancelText,
+                    variant: 'ghost',
+                    pill: true
+                });
+                buttonsHtml.push(`<span class="dialog-cancel-wrapper">${cancelBtn.element.outerHTML}</span>`);
+            }
+            
+            const confirmBtn = options.buttonFactory({
+                text: confirmText,
+                variant: danger ? 'danger' : 'primary',
+                pill: true
+            });
+            buttonsHtml.push(`<span class="dialog-confirm-wrapper">${confirmBtn.element.outerHTML}</span>`);
+            
+            return buttonsHtml.join('');
+        }
+        
+        // Sinon, comportement par défaut (HTML actuel)
+        return `
+            ${showCancel ? `
+                <button class="dialog-btn secondary dialog-cancel">
+                    ${cancelText}
+                </button>
+            ` : ''}
+            <button class="dialog-btn ${danger ? 'danger' : 'primary'} dialog-confirm">
+                ${confirmText}
+            </button>
+        `;
     }
     
     // ========================================
