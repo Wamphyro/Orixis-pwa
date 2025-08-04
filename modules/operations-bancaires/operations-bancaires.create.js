@@ -139,9 +139,7 @@ function afficherFormulaireImport() {
             onDrop: async (files) => {
                 await analyserFichiers(files);
             },
-            onChange: async (files) => {
-                await analyserFichiers(files);
-            },
+            // RETIRER onChange complètement !
             onRemove: (file, index) => {
                 // Retirer l'analyse correspondante
                 importState.analyses.splice(index, 1);
