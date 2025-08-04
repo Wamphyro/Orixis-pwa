@@ -296,13 +296,13 @@
     color: #333;
     background: rgba(0, 0, 0, 0.05);
     border-color: rgba(0, 0, 0, 0.1);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);  /* AJOUT : ombre très douce */
 }
 
 .on-light:hover {
     background: rgba(0, 0, 0, 0.1);
     border-color: rgba(0, 0, 0, 0.2);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);  /* AJOUT : ombre douce au hover */
 }
 
 /* ========================================
