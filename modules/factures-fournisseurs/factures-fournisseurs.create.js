@@ -472,7 +472,9 @@ async function analyserFactures() {
                     ...donneesExtraites,
                     // NOUVEAU : Stocker la réponse GPT brute pour inspection
                     iaData: {
-                        reponseGPT: donneesExtraites,  // <-- Stocke TOUT le JSON retourné par GPT
+                        reponseGPT: donneesExtraites.extractionIA?.donneesBrutes || donneesExtraites,
+                        cloudFunctionResponse: donneesExtraites._cloudFunctionResponse || null,
+                        extractionIA: donneesExtraites.extractionIA || null,
                         dateAnalyse: new Date(),
                         modeleIA: 'gpt-4o-mini',
                         erreurIA: null

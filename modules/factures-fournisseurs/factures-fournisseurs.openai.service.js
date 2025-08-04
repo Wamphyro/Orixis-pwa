@@ -49,8 +49,15 @@ export class FactureOpenAIService {
             console.log('🚀 Appel extractFactureData');
             const donneesExtraites = await FactureOpenAIService.extractFactureData(images);
             
+            // Sauvegarder la réponse Cloud Function avant formatage
+            const cloudFunctionResponse = donneesExtraites._cloudFunctionResponse;
+            delete donneesExtraites._cloudFunctionResponse; // Retirer avant formatage
+            
             // Formater pour notre structure Firestore
             const donneesFormatees = this.formaterPourFirestore(donneesExtraites);
+            
+            // NOUVEAU : Réattacher la réponse complète
+            donneesFormatees._cloudFunctionResponse = cloudFunctionResponse;
             
             console.log('✅ Analyse IA terminée avec succès');
             return donneesFormatees;
@@ -203,8 +210,17 @@ VALIDATION :
             
             console.log('✅ Réponse Cloud Function:', result);
             
-            // Retourner les données extraites
-            return result.data || {};
+            // NOUVEAU : Retourner les données AVEC la réponse complète
+            const donneesExtraites = result.data || {};
+            
+            // Ajouter la réponse complète de la Cloud Function
+            donneesExtraites._cloudFunctionResponse = {
+                fullResponse: result,
+                timestamp: new Date().toISOString(),
+                cloudFunctionVersion: result.version || 'unknown'
+            };
+            
+            return donneesExtraites;
             
         } catch (error) {
             console.error('❌ Erreur appel Cloud Function:', error);
@@ -460,9 +476,11 @@ VALIDATION :
             // Métadonnées
             extractionIA: {
                 timestamp: donneesBrutes.timestamp_analyse,
-                modele: 'gpt-4.1-mini',
+                modele: 'gpt-4o-mini',
                 fournisseurDetecte: donneesBrutes.fournisseur?.nom,
-                typeFacture: donneesBrutes.facture?.typeFacture
+                typeFacture: donneesBrutes.facture?.typeFacture,
+                // NOUVEAU : Inclure TOUTES les données brutes extraites
+                donneesBrutes: donneesBrutes
             }
         };
     }
