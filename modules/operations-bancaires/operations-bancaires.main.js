@@ -271,7 +271,7 @@ window.modalManager = config.modalManager;
 
 // Fonctions pour le HTML
 window.ouvrirModalImport = ouvrirModalImport;
-// window.voirDetailOperation = voirDetailOperation;  // TODO: À implémenter
+// window.voirDetailOperation = voirDetailOperation;  // TODO: À implémenter  ← LIGNE 267
 window.resetFiltres = resetFiltres;
 window.categoriserOperations = categoriserOperations;
 window.supprimerOperations = supprimerOperations;
