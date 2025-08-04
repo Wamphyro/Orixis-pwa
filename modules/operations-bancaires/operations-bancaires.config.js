@@ -87,7 +87,7 @@ export function createOperationsTable(container, options = {}) {
             sort: true,
             resize: true,
             export: true,
-            selection: true,  // Pour sélection multiple
+            selection: false,  // Désactivé car on gère manuellement
             pagination: true
         },
         pagination: {

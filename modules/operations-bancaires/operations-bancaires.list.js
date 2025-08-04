@@ -272,8 +272,8 @@ function initDataTable() {
         },
         
         onRowClick: (row, event) => {
-            // Si c'est un clic sur checkbox
-            if (event.target.type === 'checkbox') {
+            // Vérifier que l'event existe et que c'est un checkbox
+            if (event && event.target && event.target.type === 'checkbox') {
                 toggleSelection(row.id);
             }
         },

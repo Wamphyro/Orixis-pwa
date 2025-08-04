@@ -269,6 +269,21 @@ function initModales() {
 // Exposer modalManager
 window.modalManager = config.modalManager;
 
+// Fonction pour voir le détail d'une opération (DÉFINIR AVANT DE L'EXPOSER)
+async function voirDetailOperation(operationId) {
+    try {
+        const operation = await OperationsBancairesService.getOperation(operationId);
+        if (operation) {
+            // TODO: Afficher dans la modal
+            console.log('Détail opération:', operation);
+            config.notify.info('Fonctionnalité en cours de développement');
+        }
+    } catch (error) {
+        console.error('Erreur chargement détail:', error);
+        config.notify.error('Erreur lors du chargement du détail');
+    }
+}
+
 // Fonctions pour le HTML
 window.ouvrirModalImport = ouvrirModalImport;
 window.voirDetailOperation = voirDetailOperation;
@@ -280,9 +295,6 @@ window.supprimerOperations = supprimerOperations;
 window.fermerModal = function(modalId) {
     config.modalManager.close(modalId);
 };
-
-// Fonction pour voir le détail d'une opération
-window.voirDetailOperation = async function(operationId) {
     try {
         const operation = await OperationsBancairesService.getOperation(operationId);
         if (operation) {
