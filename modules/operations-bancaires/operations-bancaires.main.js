@@ -275,7 +275,6 @@ window.voirDetailOperation = voirDetailOperation;
 window.resetFiltres = resetFiltres;
 window.categoriserOperations = categoriserOperations;
 window.supprimerOperations = supprimerOperations;
-window.exporterOperations = exporterOperations;
 
 // Fonction fermer modal
 window.fermerModal = function(modalId) {
@@ -330,12 +329,6 @@ window.supprimerOperations = async function() {
         // TODO: Implémenter la suppression
         console.log('Supprimer', selection.length, 'opérations');
     }
-};
-
-// Fonction pour exporter
-window.exporterOperations = async function() {
-    // TODO: Implémenter l'export
-    console.log('Exporter les opérations filtrées');
 };
 
 // ========================================
