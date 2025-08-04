@@ -139,7 +139,7 @@ function afficherFormulaireImport() {
             onDrop: async (files) => {
                 await analyserFichiers(files);
             },
-            // RETIRER onChange complètement !
+            // PAS de onChange pour éviter le double appel !
             onRemove: (file, index) => {
                 // Retirer l'analyse correspondante
                 importState.analyses.splice(index, 1);
@@ -207,15 +207,6 @@ async function analyserFichiers(files) {
         
         // Recalculer TOUT avec tous les fichiers
         recalculerStatsGlobales();
-            const btnConfirmer = document.getElementById('btnConfirmerImport');
-            const btnCount = document.getElementById('btnImportCount');
-            if (btnConfirmer) {
-                btnConfirmer.disabled = false;
-                if (btnCount) {
-                    btnCount.textContent = `(${importState.allOperations.length} opérations)`;
-                }
-            }
-        }
         
     } catch (error) {
         console.error('❌ Erreur analyse multiple:', error);
@@ -437,6 +428,24 @@ function afficherResultatsMultiples() {
             </div>
         ` : ''}
     `;
+    
+    // IMPORTANT : Activer le bouton si des opérations sont disponibles
+    if (importState.allOperations.length > 0) {
+        const btnConfirmer = document.getElementById('btnConfirmerImport');
+        const btnCount = document.getElementById('btnImportCount');
+        if (btnConfirmer) {
+            btnConfirmer.disabled = false;
+            if (btnCount) {
+                btnCount.textContent = `(${importState.allOperations.length} opérations)`;
+            }
+        }
+    } else {
+        // Désactiver le bouton si aucune opération
+        const btnConfirmer = document.getElementById('btnConfirmerImport');
+        if (btnConfirmer) {
+            btnConfirmer.disabled = true;
+        }
+    }
 }
 
 // ========================================
