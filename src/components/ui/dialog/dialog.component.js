@@ -85,7 +85,7 @@ export class Dialog {
             const buttonLink = document.createElement('link');
             buttonLink.id = 'button-component-styles';
             buttonLink.rel = 'stylesheet';
-            buttonLink.href = '../../src/components/ui/button/button.css';
+            buttonLink.href = '../../src/components/ui/common/button.css';
             document.head.appendChild(buttonLink);
             console.log('📦 Button styles chargés pour Dialog');
         }
