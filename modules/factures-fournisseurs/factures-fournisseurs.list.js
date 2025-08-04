@@ -64,15 +64,7 @@ const FILTERS_CONFIG = {
         key: 'categorie',
         label: 'Catégorie',
         keepPlaceholder: true,
-        options: [
-            { value: '', label: 'Toutes' },
-            { value: 'telecom', label: 'Télécom', icon: '📱' },
-            { value: 'energie', label: 'Énergie', icon: '⚡' },
-            { value: 'services', label: 'Services', icon: '💼' },
-            { value: 'informatique', label: 'Informatique', icon: '💻' },
-            { value: 'fournitures', label: 'Fournitures', icon: '📦' },
-            { value: 'autre', label: 'Autre', icon: '📋' }
-        ]
+        options: [] // Sera généré depuis FACTURES_CONFIG.CATEGORIES_FOURNISSEURS
     },
     periode: {
         type: 'select',
@@ -643,7 +635,15 @@ function genererOptionsFiltres() {
         }))
     ];
     
-    // SUPPRIMÉ : Génération des options de statut
+    // Générer les options de catégorie depuis les données métier
+    config.categorie.options = [
+        { value: '', label: 'Toutes' },
+        ...Object.entries(FACTURES_CONFIG.CATEGORIES_FOURNISSEURS).map(([key, cat]) => ({
+            value: key,
+            label: cat.label,
+            icon: cat.icon
+        }))
+    ];
     
     return Object.values(config);
 }
@@ -677,16 +677,11 @@ function afficherStatut(statut) {
 function afficherCategorie(categorie) {
     if (!categorie) return '-';
     
-    const categoriesConfig = {
-        telecom: { label: 'Télécom', icon: '📱' },
-        energie: { label: 'Énergie', icon: '⚡' },
-        services: { label: 'Services', icon: '💼' },
-        informatique: { label: 'Informatique', icon: '💻' },
-        fournitures: { label: 'Fournitures', icon: '📦' },
-        autre: { label: 'Autre', icon: '📋' }
+    // Utiliser les données métier au lieu de redéfinir
+    const configData = FACTURES_CONFIG.CATEGORIES_FOURNISSEURS[categorie] || { 
+        label: categorie, 
+        icon: '📋' 
     };
-    
-    const configData = categoriesConfig[categorie] || { label: categorie, icon: '📋' };
     
     // Template avec tooltip comme pour les statuts
     return `
