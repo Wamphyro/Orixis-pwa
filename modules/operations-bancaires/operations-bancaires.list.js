@@ -459,34 +459,17 @@ function handleFilterChange(filters) {
 }
 
 function handleStatsCardClick(cardId) {
-    // Pour les opérations bancaires, on peut filtrer par type de carte cliquée
-    if (cardId === 'pointees') {
-        state.filtres.pointees = state.filtres.pointees === 'oui' ? 'all' : 'oui';
-    } else if (cardId === 'non_pointees') {
-        state.filtres.pointees = state.filtres.pointees === 'non' ? 'all' : 'non';
-    }
+    // Toggle le filtre par carte
+    const index = state.filtres.cartesActives.indexOf(cardId);
     
-    // Mettre à jour l'état visuel de la carte
-    if (statsCards && statsCards.elements.cards[cardId]) {
-        const isActive = statsCards.elements.cards[cardId].classList.contains('active');
-        
-        // Désactiver toutes les cartes du même groupe
-        if (cardId === 'credits' || cardId === 'debits') {
-            ['credits', 'debits'].forEach(id => {
-                if (statsCards.elements.cards[id]) {
-                    statsCards.elements.cards[id].classList.remove('active');
-                }
-            });
-        } else if (cardId === 'pointees' || cardId === 'non_pointees') {
-            ['pointees', 'non_pointees'].forEach(id => {
-                if (statsCards.elements.cards[id]) {
-                    statsCards.elements.cards[id].classList.remove('active');
-                }
-            });
+    if (index > -1) {
+        state.filtres.cartesActives.splice(index, 1);
+        if (statsCards.elements.cards[cardId]) {
+            statsCards.elements.cards[cardId].classList.remove('active');
         }
-        
-        // Toggle la carte cliquée
-        if (!isActive) {
+    } else {
+        state.filtres.cartesActives.push(cardId);
+        if (statsCards.elements.cards[cardId]) {
             statsCards.elements.cards[cardId].classList.add('active');
         }
     }
