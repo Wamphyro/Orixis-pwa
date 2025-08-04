@@ -211,57 +211,7 @@ async function analyserFichiers(files) {
         // Recalculer TOUT avec tous les fichiers
         recalculerStatsGlobales();
         
-        // Analyser tous les fichiers en parallèle
-        const promesses = files.map(file => importService.importFile(file));
-        const resultats = await Promise.allSettled(promesses);
-        
-        // Traiter les résultats
-        let successCount = 0;
-        let totalOperations = [];
-        
-        resultats.forEach((result, index) => {
-            if (result.status === 'fulfilled') {
-                successCount++;
-                const analyse = {
-                    ...result.value,
-                    fileIndex: index,
-                    fileName: files[index].name,
-                    status: 'success'
-                };
-                importState.analyses.push(analyse);
-                totalOperations = totalOperations.concat(result.value.operations);
-            } else {
-                importState.analyses.push({
-                    fileIndex: index,
-                    fileName: files[index].name,
-                    status: 'error',
-                    error: result.reason.message
-                });
-            }
-        });
-        
-        // Détecter les doublons entre fichiers
-        const { operations: operationsUniques, doublons } = detecterDoublons(totalOperations);
-        importState.allOperations = operationsUniques;
-        importState.doublons = doublons;
-        
-        // Calculer les stats globales
-        importState.globalStats = importService.calculateStats(operationsUniques);
-        
-        // Afficher les résultats
-        afficherResultatsMultiples();
-        
-        // Activer le bouton si au moins un fichier réussi
-        if (successCount > 0) {
-            const btnConfirmer = document.getElementById('btnConfirmerImport');
-            const btnCount = document.getElementById('btnImportCount');
-            if (btnConfirmer) {
-                btnConfirmer.disabled = false;
-                if (btnCount) {
-                    btnCount.textContent = `(${operationsUniques.length} opérations)`;
-                }
-            }
-        }
+        // *** FIN DE LA FONCTION - SUPPRIMER TOUT LE CODE APRÈS CETTE LIGNE ***
         
     } catch (error) {
         console.error('❌ Erreur analyse multiple:', error);
