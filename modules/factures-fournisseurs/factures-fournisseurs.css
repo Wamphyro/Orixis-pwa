@@ -693,6 +693,262 @@
     color: #374151;
 }
 
+/* Stats grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 12px;
+}
+
+/* Liste des fichiers analysés */
+.files-analysis-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.file-analysis-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    gap: 12px;
+}
+
+.file-analysis-item .file-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.file-analysis-item .file-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.file-analysis-item .file-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-analysis-item .file-size {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+/* Status radio buttons modernes */
+.file-analysis-item .status-options {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.status-radio {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.status-radio input[type="radio"] {
+    display: none;
+}
+
+.status-label {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+    cursor: pointer;
+}
+
+.status-label.a-payer {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-label.deja-payee {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-radio input[type="radio"]:checked + .status-label {
+    border-color: currentColor;
+    box-shadow: 0 0 0 1px currentColor;
+}
+
+/* Stat cards pour la sélection */
+.stat-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+}
+
+.stat-card .label {
+    display: block;
+    font-size: 11px;
+    color: #6b7280;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-card .value {
+    display: block;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.stat-card .count {
+    display: block;
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+.stat-card.a-payer {
+    background: #fffbeb;
+    border-color: #fcd34d;
+}
+
+.stat-card.a-payer .value {
+    color: #f59e0b;
+}
+
+.stat-card.deja-payee {
+    background: #f0fdf4;
+    border-color: #86efac;
+}
+
+.stat-card.deja-payee .value {
+    color: #16a34a;
+}
+
+/* Progress items */
+.analyse-progress {
+    padding: 20px;
+}
+
+.progress-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.progress-header .icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.progress-header h6 {
+    margin: 0;
+    font-size: 16px;
+    color: #374151;
+}
+
+.progress-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.progress-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    gap: 12px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.progress-item.success {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+}
+
+.progress-item.error {
+    background: #fef2f2;
+    border-color: #fecaca;
+}
+
+.progress-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.progress-info {
+    flex: 1;
+}
+
+.progress-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: #1f2937;
+}
+
+.progress-status {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+.progress-summary {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f3f4f6;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.summary-stats {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    font-size: 14px;
+}
+
+.summary-stats .success {
+    color: #16a34a;
+    font-weight: 600;
+}
+
+.summary-stats .error {
+    color: #dc2626;
+    font-weight: 600;
+}
+
+/* Scrollbar pour la liste des fichiers */
+.files-analysis-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.files-analysis-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.files-analysis-list::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+}
+
+.files-analysis-list::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
 /* Footer */
 #modalNouvelleFacture .modal-footer {
     background: white;
@@ -909,6 +1165,23 @@
     
     .montant-value {
         font-size: 14px;
+    }
+}
+
+/* Responsive pour les nouveaux éléments */
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .file-analysis-item {
+        flex-wrap: wrap;
+    }
+    
+    .file-analysis-item .status-options {
+        width: 100%;
+        margin-top: 10px;
+        justify-content: space-around;
     }
 }
 
