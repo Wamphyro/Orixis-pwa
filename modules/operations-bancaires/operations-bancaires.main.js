@@ -204,16 +204,13 @@ window.addEventListener('load', async () => {
         await initListeOperations();
         initImportOperations();
         
-        // 5. Afficher les opérations déjà chargées
-        afficherOperations();
-        
-        // 6. Recharger pour les stats
+        // 5. Charger les données (cela appellera afficherOperations automatiquement)
         await chargerDonnees();
         
-        // 7. Activer les animations
+        // 6. Activer les animations
         document.body.classList.add('page-loaded');
         
-        // 8. Container pour les dialogs
+        // 7. Container pour les dialogs
         if (!document.getElementById('dialog-container')) {
             const dialogContainer = document.createElement('div');
             dialogContainer.id = 'dialog-container';
