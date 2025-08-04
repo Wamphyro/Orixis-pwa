@@ -444,27 +444,41 @@ async function analyserFactures() {
                 
                 // 1. Upload du document
                 const uploadResult = await uploadService.uploadFactureDocument(file);
+                updateProgressItem(i, '📤', 'Upload terminé, analyse IA en cours...');
                 
-                // Mettre à jour le statut
-                updateProgressItem(i, '📤', 'Création de la facture...');
+                // 2. NOUVEAU : Analyser le document AVANT de créer la facture
+                let donneesExtraites = {};
+                try {
+                    console.log('🤖 Lancement analyse IA...');
+                    const OpenAIService = await import('./factures-fournisseurs.openai.service.js');
+                    donneesExtraites = await OpenAIService.default.analyserDocument(
+                        uploadResult.url,
+                        uploadResult.type
+                    );
+                    console.log('✅ Données extraites:', donneesExtraites);
+                    updateProgressItem(i, '🤖', 'Analyse terminée, création de la facture...');
+                } catch (errorIA) {
+                    console.error('⚠️ Erreur analyse IA:', errorIA);
+                    // Continuer même si l'IA échoue
+                    updateProgressItem(i, '⚠️', 'Analyse IA échouée, création sans données...');
+                }
                 
-                // 2. Créer la facture dans Firestore
+                // 3. Créer la facture avec les données extraites
                 const factureData = {
                     documents: [uploadResult],
                     aPayer: statut === 'a_payer',
-                    dejaPayee: statut === 'deja_payee'
+                    dejaPayee: statut === 'deja_payee',
+                    // NOUVEAU : Ajouter les données extraites
+                    ...donneesExtraites
                 };
                 
                 const factureId = await firestoreService.creerFacture(factureData);
                 
-                console.log(`✅ Facture créée: ${factureId} (${statut})`);
+                console.log(`✅ Facture créée: ${factureId} (${statut}) avec données IA`);
                 compteurCreees++;
                 
                 // Mettre à jour le statut de succès
                 updateProgressItem(i, '✅', 'Facture créée avec succès', true);
-                
-                // 3. Lancer l'analyse IA en arrière-plan
-                analyserAvecIA(factureId, uploadResult.url);
                 
             } catch (error) {
                 console.error(`❌ Erreur traitement ${file.name}:`, error);
