@@ -19,6 +19,9 @@ import {
     ajouterCompteBancaire
 } from './operations-bancaires.data.js';
 
+// Nom de la collection Firebase
+const COLLECTION_NAME = 'operationsBancaires';  // camelCase !
+
 /**
  * Service de gestion des opérations bancaires
  */
@@ -68,7 +71,7 @@ export class OperationsBancairesService {
                 constraints.push(limit(criteres.limite));
             }
             
-            const q = query(collection(db, 'operationsBancaires'), ...constraints);
+            const q = query(collection(db, COLLECTION_NAME), ...constraints);
             const snapshot = await getDocs(q);
             
             const operations = [];
@@ -93,7 +96,7 @@ export class OperationsBancairesService {
         try {
             const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
             
-            const operationDoc = await getDoc(doc(db, 'operationsBancaires', operationId));
+            const operationDoc = await getDoc(doc(db, COLLECTION_NAME, operationId));
             
             if (operationDoc.exists()) {
                 return { id: operationDoc.id, ...operationDoc.data() };
@@ -134,7 +137,7 @@ export class OperationsBancairesService {
                 createdBy: this.getUtilisateurActuel()
             };
             
-            const docRef = await addDoc(collection(db, 'operationsBancaires'), operationData);
+            const docRef = await addDoc(collection(db, COLLECTION_NAME), operationData);
             
             console.log('✅ Opération créée:', docRef.id);
             return docRef.id;
@@ -209,7 +212,7 @@ export class OperationsBancairesService {
                 await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
             
             const q = query(
-                collection(db, 'operationsBancaires'),
+                collection(db, COLLECTION_NAME),
                 where('date', '==', operation.date),
                 where('montant', '==', operation.montant),
                 where('libelle', '==', operation.libelle)
@@ -241,7 +244,7 @@ export class OperationsBancairesService {
                 updatedBy: this.getUtilisateurActuel()
             };
             
-            await updateDoc(doc(db, 'operationsBancaires', operationId), updatesAvecMeta);
+            await updateDoc(doc(db, COLLECTION_NAME, operationId), updatesAvecMeta);
             
             console.log('✅ Opération mise à jour');
             return true;
@@ -262,7 +265,7 @@ export class OperationsBancairesService {
             const { doc, deleteDoc } = 
                 await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
             
-            await deleteDoc(doc(db, 'operationsBancaires', operationId));
+            await deleteDoc(doc(db, COLLECTION_NAME, operationId));
             
             console.log('✅ Opération supprimée:', operationId);
             
