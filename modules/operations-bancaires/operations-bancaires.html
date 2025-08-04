@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAV Audio - Décomptes Mutuelles</title>
+    <title>SAV Audio - Opérations Bancaires</title>
     
     <!-- PWA Meta Tags -->
     <meta name="mobile-web-app-capable" content="yes">
@@ -29,8 +29,7 @@
     <link rel="stylesheet" href="../../src/components/ui/modal/modal.css">
     <link rel="stylesheet" href="../../src/components/ui/dialog/dialog.css">
     <link rel="stylesheet" href="../../src/components/ui/notification/notification.css">
-    <link rel="stylesheet" href="../../src/components/ui/timeline/timeline.css">
-    <link rel="stylesheet" href="../../src/components/ui/search-dropdown/search-dropdown.css">
+    <link rel="stylesheet" href="../../src/components/ui/dropzone/dropzone.css">
     <link rel="stylesheet" href="../../src/components/ui/datatable/datatable.css">
     <link rel="stylesheet" href="../../src/components/ui/datatable-filters/datatable-filters.css">
     <link rel="stylesheet" href="../../src/components/ui/dropdown-list/dropdown-list.css">
@@ -38,8 +37,8 @@
     <link rel="stylesheet" href="../../src/components/ui/app-header/app-header.css">
     <link rel="stylesheet" href="../../src/components/ui/badge/badge.css">
 
-    <!-- 4. CSS spécifique au module décomptes mutuelles -->
-    <link rel="stylesheet" href="./decompte-mutuelle.css">
+    <!-- 4. CSS spécifique au module opérations bancaires -->
+    <link rel="stylesheet" href="./operations-bancaires.css">
 </head>
 <body>
     <!-- Container pour le composant AppHeader -->
@@ -47,139 +46,102 @@
     
     <div class="container">
         <!-- Barre d'actions et statistiques -->
-        <div class="decomptes-header">
-            <div class="decomptes-stats">
+        <div class="operations-header">
+            <div class="operations-stats">
                 <!-- StatsCards va générer le contenu ici -->
             </div>
             
-            <div class="decomptes-actions">
-                <button class="btn btn-primary btn-with-icon btn-lg pill" onclick="ouvrirNouveauDecompte()">
-                    <span>➕</span> Nouveau décompte
+            <div class="operations-actions">
+                <button class="btn btn-secondary btn-with-icon btn-sm pill" onclick="exporterOperations()">
+                    <span>📤</span> Exporter
+                </button>
+                <button class="btn btn-primary btn-with-icon btn-lg pill" onclick="ouvrirModalImport()">
+                    <span>📥</span> Importer CSV
                 </button>
             </div>
         </div>
 
         <!-- Filtres -->
-        <div class="decomptes-filters section">
+        <div class="operations-filters section">
             <!-- DataTableFilters va générer le contenu ici -->
         </div>
 
+        <!-- Actions groupées (apparaît quand sélection) -->
+        <div class="operations-actions-groupees section" style="display: none;">
+            <!-- Généré dynamiquement -->
+        </div>
+
         <!-- Container pour DataTable -->
-        <div class="decomptes-table-container section">
+        <div class="operations-table-container section">
             <!-- DataTable sera généré ici -->
         </div>
     </div>
 
-    <!-- Modal Nouveau Décompte (vide pour l'instant) -->
-    <div id="modalNouveauDecompte" class="modal" style="display: none;">
+    <!-- Modal Import CSV -->
+    <div id="modalImportCSV" class="modal" style="display: none;">
         <div class="modal-content modal-large">
             <div class="modal-header">
-                <h2>Nouveau Décompte Mutuelle</h2>
+                <h2>Import de relevé bancaire</h2>
                 <button class="modal-close">&times;</button>
             </div>
             
             <div class="modal-body">
-                <!-- Le contenu sera généré par decompte-mutuelle.create.js -->
+                <!-- Le contenu sera généré par operations-bancaires.create.js -->
             </div>
             
             <div class="modal-footer">
-                <!-- Le bouton sera ajouté dynamiquement par JavaScript -->
+                <!-- Les boutons seront ajoutés dynamiquement -->
             </div>
         </div>
     </div>
 
-    <!-- Modal Détail Décompte -->
-    <div id="modalDetailDecompte" class="modal" style="display: none;">
-        <div class="modal-content modal-large">
+    <!-- Modal Détail Opération -->
+    <div id="modalDetailOperation" class="modal" style="display: none;">
+        <div class="modal-content modal-medium">
             <div class="modal-header">
-                <h2>Détail du décompte <span id="detailNumDecompte"></span></h2>
+                <h2>Détail de l'opération</h2>
                 <button class="modal-close">&times;</button>
             </div>
             
             <div class="modal-body">
-                <!-- Timeline du statut -->
-                <div class="timeline-container">
-                    <div class="timeline" id="timeline">
-                        <!-- Timeline générée dynamiquement -->
-                    </div>
-                </div>
-                
-                <!-- Sections détail -->
+                <!-- TODO: Implémenter le détail -->
                 <div class="detail-sections">
-                    <!-- Colonne de gauche : Client + Montants -->
-                    <div class="detail-column-left">
-                        <!-- Section Client -->
-                        <div class="detail-section">
-                            <h3>Informations client</h3>
-                            <div id="detailClient">
-                                <!-- Contenu généré dynamiquement -->
-                            </div>
-                        </div>
-                        
-                        <!-- Section Montants -->
-                        <div class="detail-section">
-                            <h3>Montants</h3>
-                            <div id="detailMontants">
-                                <!-- Contenu généré dynamiquement -->
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Colonne de droite : Mutuelle + Informations -->
-                    <div class="detail-column-right">
-                        <!-- Section Mutuelle -->
-                        <div class="detail-section">
-                            <h3>Mutuelle et prestataire</h3>
-                            <div id="detailMutuelle">
-                                <!-- Contenu généré dynamiquement -->
-                            </div>
-                        </div>
-                        
-                        <!-- Section Informations -->
-                        <div class="detail-section">
-                            <h3>Informations décompte</h3>
-                            <div id="detailInformations">
-                                <!-- Contenu généré dynamiquement -->
-                            </div>
+                    <div class="detail-section">
+                        <h3>Informations</h3>
+                        <div id="detailInfos">
+                            <!-- Contenu généré dynamiquement -->
                         </div>
                     </div>
                 </div>
-                
-                <!-- Nouvelle ligne pour Traçabilité et Documents -->
-                <div class="detail-sections" style="margin-top: 20px;">
-                    <!-- Colonne de gauche : Traçabilité -->
-                    <div class="detail-column-left">
-                        <div class="detail-section">
-                            <h3>📋 Traçabilité</h3>
-                            <div id="detailTracabilite">
-                                <!-- Contenu généré dynamiquement -->
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Colonne de droite : Documents -->
-                    <div class="detail-column-right">
-                        <div class="detail-section">
-                            <h3>📄 Documents</h3>
-                            <div id="detailDocuments">
-                                <!-- Contenu généré dynamiquement -->
-                            </div>
-                        </div>
-                    </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Catégoriser -->
+    <div id="modalCategoriser" class="modal" style="display: none;">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h2>Catégoriser les opérations</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <p id="categoriserInfo"><!-- Nombre d'opérations sélectionnées --></p>
+                <div class="form-group">
+                    <label>Nouvelle catégorie :</label>
+                    <select id="selectCategorie" class="form-select">
+                        <!-- Options générées dynamiquement -->
+                    </select>
                 </div>
-                
-                <!-- Section Historique en pleine largeur -->
-                <div class="detail-section" style="margin-top: 20px;">
-                    <h3>📜 Historique des actions</h3>
-                    <div id="detailHistorique" style="max-height: 300px; overflow-y: auto;">
-                        <!-- Contenu généré dynamiquement -->
-                    </div>
-                </div>
-                
-                <!-- Actions selon le statut -->
-                <div class="detail-actions" id="detailActions">
-                    <!-- Boutons d'action générés selon le statut -->
-                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn btn-ghost btn-pill" onclick="fermerModal('modalCategoriser')">
+                    Annuler
+                </button>
+                <button class="btn btn-success btn-pill" onclick="confirmerCategorisation()">
+                    ✅ Appliquer
+                </button>
             </div>
         </div>
     </div>
@@ -193,6 +155,6 @@
     </div>
 
     <!-- JavaScript local au module -->
-    <script type="module" src="./decompte-mutuelle.main.js"></script>
+    <script type="module" src="./operations-bancaires.main.js"></script>
 </body>
 </html>
