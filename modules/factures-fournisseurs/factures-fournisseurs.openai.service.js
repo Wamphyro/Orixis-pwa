@@ -210,15 +210,12 @@ VALIDATION :
             
             console.log('✅ Réponse Cloud Function:', result);
             
-            // NOUVEAU : Retourner les données AVEC la réponse complète
+            // NOUVEAU : Retourner les données AVEC la réponse brute
             const donneesExtraites = result.data || {};
             
-            // Ajouter la réponse complète de la Cloud Function
-            donneesExtraites._cloudFunctionResponse = {
-                fullResponse: result,
-                timestamp: new Date().toISOString(),
-                cloudFunctionVersion: result.version || 'unknown'
-            };
+            // Stocker la réponse GPT brute dans un champ spécial
+            donneesExtraites._gptRawJSON = result.data; // La vraie réponse JSON de GPT
+            donneesExtraites._cloudFunctionFullResponse = result; // Toute la réponse de la Cloud Function
             
             return donneesExtraites;
             
