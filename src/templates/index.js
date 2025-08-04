@@ -57,6 +57,13 @@ export {
     PARTICIPATIONS_SECU
 } from './firestore/decomptes-secu.firestore.template.js';
 
+// NOUVEAU : Template factures fournisseurs
+export { 
+    FACTURE_FOURNISSEUR_TEMPLATE,
+    FACTURE_FOURNISSEUR_RULES,
+    FACTURE_FOURNISSEUR_INDEXES
+} from './firestore/factures-fournisseurs.firestore.template.js';
+
 export { 
     PACK_TEMPLATE_TEMPLATE, 
     PACK_TEMPLATE_RULES 
@@ -118,6 +125,8 @@ export function getTemplatesByType(type) {
             // NOUVEAU : Ajout des templates sécu
             DECOMPTE_SECU_TEMPLATE,
             ACTE_MEDICAL_SECU_TEMPLATE,
+            // NOUVEAU : Template factures fournisseurs
+            FACTURE_FOURNISSEUR_TEMPLATE,
             PACK_TEMPLATE_TEMPLATE,
             REGLE_AUTOMATIQUE_TEMPLATE,
             PARAMETRES_COMMANDES_TEMPLATE

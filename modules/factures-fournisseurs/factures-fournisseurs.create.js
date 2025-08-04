@@ -469,7 +469,14 @@ async function analyserFactures() {
                     aPayer: statut === 'a_payer',
                     dejaPayee: statut === 'deja_payee',
                     // NOUVEAU : Ajouter les données extraites
-                    ...donneesExtraites
+                    ...donneesExtraites,
+                    // NOUVEAU : Stocker la réponse GPT brute pour inspection
+                    iaData: {
+                        reponseGPT: donneesExtraites,  // <-- Stocke TOUT le JSON retourné par GPT
+                        dateAnalyse: new Date(),
+                        modeleIA: 'gpt-4o-mini',
+                        erreurIA: null
+                    }
                 };
                 
                 const factureId = await firestoreService.creerFacture(factureData);

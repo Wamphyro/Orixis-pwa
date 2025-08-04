@@ -19,12 +19,13 @@
 // ========================================
 
 import { db } from '../../src/services/firebase.service.js';
+import { FACTURE_FOURNISSEUR_TEMPLATE } from '../../src/templates/index.js';
 
 // ========================================
 // CONFIGURATION
 // ========================================
 
-const COLLECTION_NAME = 'facturesFournisseurs'; // camelCase comme demandé
+const COLLECTION_NAME = 'facturesFournisseurs';
 const STATUTS = {
     NOUVELLE: 'nouvelle',
     A_PAYER: 'a_payer',
@@ -34,83 +35,6 @@ const STATUTS = {
     POINTEE: 'pointee',
     EN_RETARD: 'en_retard',
     ANNULEE: 'annulee'
-};
-
-// ========================================
-// TEMPLATE FIRESTORE LOCAL
-// ========================================
-
-// Template de la structure d'une facture fournisseur
-const TEMPLATE_FACTURE = {
-    // Identification
-    numeroFacture: null,           // String - Numéro du fournisseur
-    numeroInterne: null,           // String - Format: FF-AAAAMMJJ-XXXX
-    
-    // Fournisseur
-    fournisseur: {
-        nom: null,                 // String - Nom du fournisseur
-        categorie: null,           // String - telecom|energie|services|etc
-        numeroClient: null,        // String - Notre numéro chez eux
-        siren: null                // String - SIREN du fournisseur
-    },
-    
-    // Montants
-    montantHT: 0,                  // number - Montant HT
-    montantTVA: 0,                 // number - Montant TVA
-    montantTTC: 0,                 // number - Montant TTC
-    tauxTVA: 20,                   // number - Taux de TVA
-    
-    // Dates
-    dateFacture: null,             // Timestamp - Date de la facture
-    dateEcheance: null,            // Timestamp - Date d'échéance
-    dateReception: null,           // Timestamp - Date de réception/upload
-    
-    // Période facturée (pour abonnements)
-    periodeDebut: null,            // Timestamp ou null
-    periodeFin: null,              // Timestamp ou null
-    
-    // Paiement
-    aPayer: false,                 // boolean - Sélectionné à l'upload
-    statutPaiement: 'nouvelle',    // String - nouvelle|a_payer|payee|etc
-    datePaiement: null,            // Timestamp ou null
-    modePaiement: null,            // String ou null
-    referenceVirement: null,       // String ou null
-    
-    // Organisation
-    societe: null,                 // String - Notre société
-    codeMagasin: null,             // String - Magasin concerné
-    magasinUploadeur: null,        // String - Qui a uploadé
-    
-    // Documents
-    documents: [],                 // Array<Object> - PDFs uploadés
-    
-    // Workflow
-    statut: 'nouvelle',            // String - Statut global
-    
-    // Dates du workflow
-    dates: {
-        creation: null,            // Timestamp
-        analyse: null,             // Timestamp - Analyse IA
-        verification: null,        // Timestamp - Vérification
-        paiement: null,            // Timestamp - Paiement
-        pointage: null             // Timestamp - Rapprochement
-    },
-    
-    // Intervenants
-    intervenants: {
-        creePar: {
-            id: null,              // String
-            nom: null,             // String
-            prenom: null,          // String
-            role: null             // String
-        },
-        verifiePar: null,          // Object ou null
-        payePar: null,             // Object ou null
-        pointePar: null            // Object ou null
-    },
-    
-    // Historique
-    historique: []                 // Array<Object>
 };
 
 // ========================================
@@ -140,13 +64,16 @@ export async function creerFacture(data) {
         console.log('🔍 DEBUG aPayer:', data.aPayer);
         
         // Cloner le template pour garantir la structure
-        const factureData = JSON.parse(JSON.stringify(TEMPLATE_FACTURE));
+        const factureData = JSON.parse(JSON.stringify(FACTURE_FOURNISSEUR_TEMPLATE));
         
-        // Remplir les données du template
-        // Identification
+        // ========================================
+        // IDENTIFICATION
+        // ========================================
         factureData.numeroInterne = numeroInterne;
         
-        // Organisation
+        // ========================================
+        // ORGANISATION
+        // ========================================
         if (!auth.raisonSociale && auth.magasin) {
             try {
                 const { chargerMagasins } = await import('../../src/services/firebase.service.js');
@@ -162,13 +89,32 @@ export async function creerFacture(data) {
         factureData.codeMagasin = auth.magasin || 'XXX';
         factureData.magasinUploadeur = auth.magasin || 'XXX';
         
-        // Documents uploadés
+        // ========================================
+        // DOCUMENTS
+        // ========================================
         factureData.documents = data.documents || [];
         
-        // Flag à payer (IMPORTANT)
+        // ========================================
+        // FLAGS ET STATUTS
+        // ========================================
         factureData.aPayer = data.aPayer === true;
         
-        // NOUVEAU : Intégrer les données extraites par l'IA si présentes
+        // Statut initial selon sélection
+        if (data.dejaPayee === true) {
+            factureData.statut = STATUTS.DEJA_PAYEE;
+            factureData.statutPaiement = STATUTS.DEJA_PAYEE;
+            factureData.aPayer = false;
+        } else if (data.aPayer === true) {
+            factureData.statut = STATUTS.A_PAYER;
+            factureData.statutPaiement = STATUTS.A_PAYER;
+        } else {
+            factureData.statut = STATUTS.NOUVELLE;
+            factureData.statutPaiement = STATUTS.NOUVELLE;
+        }
+        
+        // ========================================
+        // DONNÉES EXTRAITES PAR L'IA
+        // ========================================
         if (data.fournisseur) {
             factureData.fournisseur = data.fournisseur;
         }
@@ -203,20 +149,36 @@ export async function creerFacture(data) {
             factureData.modePaiement = data.modePaiement;
         }
         
-        // Statut initial selon sélection
-        if (data.dejaPayee === true) {
-            factureData.statut = STATUTS.DEJA_PAYEE;
-            factureData.statutPaiement = STATUTS.DEJA_PAYEE;
-            factureData.aPayer = false;
-        } else if (data.aPayer === true) {
-            factureData.statut = STATUTS.A_PAYER;
-            factureData.statutPaiement = STATUTS.A_PAYER;
-        } else {
-            factureData.statut = STATUTS.NOUVELLE;
-            factureData.statutPaiement = STATUTS.NOUVELLE;
+        // ========================================
+        // DONNÉES BRUTES IA (pour debug)
+        // ========================================
+        if (data.iaData) {
+            factureData.iaData = data.iaData;
+        } else if (data.montantTTC || data.numeroFacture || data.fournisseur?.nom) {
+            // Si on a des données IA mais pas l'objet iaData, le créer
+            factureData.iaData = {
+                reponseGPT: {
+                    fournisseur: data.fournisseur,
+                    numeroFacture: data.numeroFacture,
+                    montantHT: data.montantHT,
+                    montantTVA: data.montantTVA,
+                    montantTTC: data.montantTTC,
+                    tauxTVA: data.tauxTVA,
+                    dateFacture: data.dateFacture,
+                    dateEcheance: data.dateEcheance,
+                    periodeDebut: data.periodeDebut,
+                    periodeFin: data.periodeFin,
+                    modePaiement: data.modePaiement
+                },
+                dateAnalyse: new Date(),
+                modeleIA: 'gpt-4.1-mini',
+                erreurIA: null
+            };
         }
         
-        // Dates - utiliser serverTimestamp pour la création
+        // ========================================
+        // DATES
+        // ========================================
         factureData.dates.creation = serverTimestamp();
         factureData.dateReception = serverTimestamp();
         
@@ -225,7 +187,9 @@ export async function creerFacture(data) {
             factureData.dates.analyse = serverTimestamp();
         }
         
-        // Intervenants
+        // ========================================
+        // INTERVENANTS
+        // ========================================
         factureData.intervenants.creePar = {
             id: auth.collaborateur?.id || 'unknown',
             nom: auth.collaborateur?.nom || 'Inconnu',
@@ -233,11 +197,13 @@ export async function creerFacture(data) {
             role: auth.collaborateur?.role || 'technicien'
         };
         
-        // Historique initial
+        // ========================================
+        // HISTORIQUE
+        // ========================================
         factureData.historique = [{
             date: new Date(),
             action: 'creation',
-            details: `${data.documents.length} document(s) uploadé(s)${factureData.aPayer ? ' - Marquée à payer' : ''}`,
+            details: `${data.documents.length} document(s) uploadé(s)${factureData.aPayer ? ' - Marquée à payer' : ''}${data.iaData ? ' - Analyse IA effectuée' : ''}`,
             timestamp: Date.now(),
             utilisateur: {
                 id: auth.collaborateur?.id || 'unknown',
@@ -247,7 +213,9 @@ export async function creerFacture(data) {
             }
         }];
         
-        // Créer dans Firestore
+        // ========================================
+        // CRÉATION DANS FIRESTORE
+        // ========================================
         const docRef = await addDoc(collection(db, COLLECTION_NAME), factureData);
         
         console.log('✅ Facture créée:', numeroInterne, 'ID:', docRef.id);
@@ -478,6 +446,14 @@ export async function ajouterDonneesExtraites(id, donnees) {
             // Mise à jour des dates
             'dates.analyse': serverTimestamp(),
             
+            // Stocker les données brutes IA
+            iaData: {
+                reponseGPT: donnees,
+                dateAnalyse: serverTimestamp(),
+                modeleIA: donnees.modeleIA || 'gpt-4.1-mini',
+                erreurIA: null
+            },
+            
             // Ajouter à l'historique
             historique: await ajouterHistorique(id, {
                 action: 'extraction_ia',
@@ -563,7 +539,9 @@ async function ajouterHistorique(id, nouvelleEntree) {
                 nom: auth.collaborateur?.nom || 'Inconnu',
                 prenom: auth.collaborateur?.prenom || '',
                 role: auth.collaborateur?.role || 'technicien'
-            }
+            },
+            // Ajouter les données si présentes
+            ...(nouvelleEntree.donnees && { donnees: nouvelleEntree.donnees })
         });
         
         return historique;
@@ -630,16 +608,16 @@ export default {
 };
 
 /* ========================================
-   HISTORIQUE DES DIFFICULTÉS
+   HISTORIQUE DES MODIFICATIONS
    
-   [03/02/2025] - Création initiale
-   - Adaptation depuis decompte-mutuelle
-   - Collection facturesFournisseurs (camelCase)
-   - Gestion du flag aPayer
-   - Statuts adaptés au workflow factures
+   [05/02/2025] - Refactorisation
+   - Import du template depuis le fichier centralisé
+   - Ajout du support iaData pour stocker les réponses GPT
+   - Amélioration de la lisibilité avec sections
+   - Gestion cohérente des données IA
    
    NOTES POUR REPRISES FUTURES:
-   - Le numéro est généré automatiquement (FF-AAAAMMJJ-XXXX)
-   - L'historique trace toutes les actions
-   - Les données IA sont ajoutées après analyse
+   - Le template est dans src/templates/firestore/
+   - iaData stocke la réponse GPT brute pour debug
+   - L'historique trace toutes les actions y compris l'IA
    ======================================== */
