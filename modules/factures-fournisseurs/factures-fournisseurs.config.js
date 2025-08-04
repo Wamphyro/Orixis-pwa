@@ -182,10 +182,11 @@ export function createFactureDropzone(container, options = {}) {
         acceptedTypes: ['application/pdf', 'image/jpeg', 'image/png'],
         maxFiles: 10,
         maxFileSize: 10 * 1024 * 1024, // 10MB
+        multiple: true,  // AJOUT pour permettre la sélection multiple
         showPreview: true,
         previewSize: 'medium',
         messages: {
-            drop: '📁 Glissez vos factures ici',
+            drop: '📁 Glissez vos factures ici (jusqu\'à 10 fichiers)',
             browse: 'ou cliquez pour parcourir',
             typeError: 'Seuls les PDF et images (JPG, PNG) sont acceptés',
             sizeError: 'Fichier trop volumineux (max 10MB)',

@@ -169,7 +169,7 @@ function afficherSelectionStatuts(files) {
     const modalFooter = document.querySelector('#modalNouvelleFacture .modal-footer');
     
     // Initialiser les sélections (par défaut : à payer)
-    nouvelleFacture.selections = files.map(() => 'a_payer');
+    nouvelleFacture.selections = files.map(() => 'deja_payee');
     
     // Mettre à jour le compteur
     const filesCount = document.getElementById('files-count');
@@ -198,7 +198,6 @@ function afficherSelectionStatuts(files) {
                                     <input type="radio" 
                                            name="status-${index}" 
                                            value="a_payer" 
-                                           checked
                                            onchange="updateStatutFacture(${index}, 'a_payer')">
                                     <span class="status-label a-payer">💳 À payer</span>
                                 </label>
@@ -206,6 +205,7 @@ function afficherSelectionStatuts(files) {
                                     <input type="radio" 
                                            name="status-${index}" 
                                            value="deja_payee"
+                                           checked
                                            onchange="updateStatutFacture(${index}, 'deja_payee')">
                                     <span class="status-label deja-payee">✅ Déjà payée</span>
                                 </label>
@@ -221,12 +221,12 @@ function afficherSelectionStatuts(files) {
                 <div class="stats-grid">
                     <div class="stat-card a-payer">
                         <span class="label">À payer</span>
-                        <span class="value" id="count-a-payer">${files.length}</span>
+                        <span class="value" id="count-a-payer">0</span>
                         <span class="count">facture(s)</span>
                     </div>
                     <div class="stat-card deja-payee">
                         <span class="label">Déjà payées</span>
-                        <span class="value" id="count-deja-payee">0</span>
+                        <span class="value" id="count-deja-payee">${files.length}</span>
                         <span class="count">facture(s)</span>
                     </div>
                 </div>
