@@ -363,19 +363,19 @@ async function analyserFactures() {
             cancelText: 'Annuler',
             // Factory pour créer des boutons avec le bon style
             buttonFactory: (options) => {
-                // Pour le bouton confirmer, utiliser primary (déjà violet)
+                // Pour le bouton confirmer (violet)
                 if (options.class?.includes('confirm')) {
                     return new config.Button({
                         ...options,
                         variant: 'primary',
-                        textColor: 'white',
+                        // RETIRER textColor: 'white',
                         pill: true
                     });
                 } else {
-                    // Pour le bouton annuler
+                    // Pour le bouton annuler (rouge)
                     return new config.Button({
                         ...options,
-                        variant: 'secondary', 
+                        variant: 'danger',  // CHANGER de 'secondary' à 'danger'
                         pill: true
                     });
                 }
