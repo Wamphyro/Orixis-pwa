@@ -437,12 +437,25 @@ export async function chargerDonnees() {
         // Charger les statistiques
         const stats = await FacturesFournisseursService.getStatistiques();
         
-        // DEBUG : Afficher les stats pour comprendre
-        console.log('📊 DEBUG - Statistiques complètes:', {
-            parStatut: stats.parStatut,
-            nombreEnRetard: stats.nombreEnRetard,
-            montantAPayer: stats.montantAPayer
-        });
+        // DEBUG COMPLET : Afficher TOUTES les clés de parStatut
+        console.log('📊 DEBUG - Statistiques complètes:');
+        console.log('- Total factures:', stats.total);
+        console.log('- Par statut:', stats.parStatut);
+        if (stats.parStatut) {
+            Object.entries(stats.parStatut).forEach(([statut, count]) => {
+                console.log(`  * ${statut}: ${count}`);
+            });
+        }
+        console.log('- Nombre en retard:', stats.nombreEnRetard);
+        console.log('- Montant à payer:', stats.montantAPayer);
+        
+        // Vérifier aussi un échantillon de factures
+        if (state.facturesData.length > 0) {
+            console.log('📋 Échantillon de statuts dans les factures:');
+            state.facturesData.slice(0, 5).forEach((f, i) => {
+                console.log(`  Facture ${i}: statut="${f.statut}", enRetard=${f.enRetard}`);
+            });
+        }
         
         afficherStatistiques(stats);
         
