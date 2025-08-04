@@ -22,6 +22,7 @@ import { CommandesService } from './commandes.service.js';
 import { 
     COMMANDES_CONFIG
 } from './commandes.data.js';
+import './commandes.print.js'; // Import du module d'impression
 import config from './commandes.config.js';
 import { createOrderTimeline } from '../../src/components/ui/timeline/timeline.component.js';
 import { chargerDonnees } from './commandes.list.js';
@@ -570,6 +571,13 @@ export async function changerStatutCommande(commandeId) {
 function afficherActionsCommande(commande) {
     const detailActions = document.getElementById('detailActions');
     let actions = [];
+    
+    // Bouton imprimer toujours disponible
+    actions.push(`
+        <button class="btn btn-secondary" onclick="imprimerCommande('${commande.id}')">
+            🖨️ Imprimer
+        </button>
+    `);
     
     switch (commande.statut) {
         case 'nouvelle':
