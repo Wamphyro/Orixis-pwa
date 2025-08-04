@@ -486,9 +486,19 @@ async function analyserFactures() {
                     dejaPayee: statut === 'deja_payee',
                     // Ajouter seulement les données nettoyées
                     ...donneesNettoyees,
-                    // Stocker la réponse GPT en JSON stringifié pour éviter les références circulaires
+                    // Stocker la réponse GPT en retirant les champs problématiques
                     iaData: {
-                        reponseGPT: JSON.parse(JSON.stringify(donneesExtraites)), // Clone profond
+                        reponseGPT: {
+                            fournisseur: donneesExtraites.fournisseur,
+                            numeroFacture: donneesExtraites.numeroFacture,
+                            montantHT: donneesExtraites.montantHT,
+                            montantTVA: donneesExtraites.montantTVA,
+                            montantTTC: donneesExtraites.montantTTC,
+                            tauxTVA: donneesExtraites.tauxTVA,
+                            dateFacture: donneesExtraites.dateFacture,
+                            dateEcheance: donneesExtraites.dateEcheance,
+                            extractionIA: donneesExtraites.extractionIA
+                        },
                         dateAnalyse: new Date(),
                         modeleIA: 'gpt-4o-mini',
                         erreurIA: null
