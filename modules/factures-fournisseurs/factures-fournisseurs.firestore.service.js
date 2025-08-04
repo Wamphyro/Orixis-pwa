@@ -168,6 +168,41 @@ export async function creerFacture(data) {
         // Flag à payer (IMPORTANT)
         factureData.aPayer = data.aPayer === true;
         
+        // NOUVEAU : Intégrer les données extraites par l'IA si présentes
+        if (data.fournisseur) {
+            factureData.fournisseur = data.fournisseur;
+        }
+        if (data.numeroFacture) {
+            factureData.numeroFacture = data.numeroFacture;
+        }
+        if (data.montantHT !== undefined) {
+            factureData.montantHT = data.montantHT;
+        }
+        if (data.montantTVA !== undefined) {
+            factureData.montantTVA = data.montantTVA;
+        }
+        if (data.montantTTC !== undefined) {
+            factureData.montantTTC = data.montantTTC;
+        }
+        if (data.tauxTVA !== undefined) {
+            factureData.tauxTVA = data.tauxTVA;
+        }
+        if (data.dateFacture) {
+            factureData.dateFacture = data.dateFacture;
+        }
+        if (data.dateEcheance) {
+            factureData.dateEcheance = data.dateEcheance;
+        }
+        if (data.periodeDebut) {
+            factureData.periodeDebut = data.periodeDebut;
+        }
+        if (data.periodeFin) {
+            factureData.periodeFin = data.periodeFin;
+        }
+        if (data.modePaiement) {
+            factureData.modePaiement = data.modePaiement;
+        }
+        
         // Statut initial selon sélection
         if (data.dejaPayee === true) {
             factureData.statut = STATUTS.DEJA_PAYEE;
@@ -184,6 +219,11 @@ export async function creerFacture(data) {
         // Dates - utiliser serverTimestamp pour la création
         factureData.dates.creation = serverTimestamp();
         factureData.dateReception = serverTimestamp();
+        
+        // Si on a des données IA, marquer la date d'analyse
+        if (data.montantTTC || data.numeroFacture || data.fournisseur?.nom) {
+            factureData.dates.analyse = serverTimestamp();
+        }
         
         // Intervenants
         factureData.intervenants.creePar = {
