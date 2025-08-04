@@ -688,11 +688,11 @@ function afficherCategorie(categorie) {
     
     const configData = categoriesConfig[categorie] || { label: categorie, icon: '📋' };
     
-    // Utiliser le même template que pour les statuts
+    // Template avec tooltip comme pour les statuts
     return `
         <span class="categorie-icon-wrapper" data-categorie="${categorie}">
             <span class="categorie-icon">${configData.icon}</span>
-            <span class="categorie-label">${configData.label}</span>
+            <span class="categorie-tooltip">${configData.label}</span>
         </span>
     `;
 }
