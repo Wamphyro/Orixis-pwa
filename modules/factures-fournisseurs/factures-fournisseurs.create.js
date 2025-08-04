@@ -137,22 +137,39 @@ function afficherFormulaireUpload() {
             showPreview: false,
             onDrop: (files) => {
                 console.log('📎 Fichiers déposés:', files);
-                nouvelleFacture.documents = files;
-                // Afficher l'interface de sélection
-                afficherSelectionStatuts(files);
+                // AJOUTER les nouveaux fichiers aux existants
+                const fichiersExistants = nouvelleFacture.documents || [];
+                const nouveauxFichiers = Array.from(files);
+                
+                // Vérifier la limite
+                if (fichiersExistants.length + nouveauxFichiers.length > 10) {
+                    afficherErreur(`Maximum 10 fichiers. Vous avez déjà ${fichiersExistants.length} fichier(s).`);
+                    return;
+                }
+                
+                // Fusionner les fichiers
+                nouvelleFacture.documents = [...fichiersExistants, ...nouveauxFichiers];
+                
+                // Afficher l'interface de sélection avec TOUS les fichiers
+                afficherSelectionStatuts(nouvelleFacture.documents);
             },
             onRemove: (file, index) => {
                 console.log('🗑️ Fichier retiré:', file.name);
+                // Retirer le fichier et sa sélection
+                nouvelleFacture.documents.splice(index, 1);
+                nouvelleFacture.selections.splice(index, 1);
+                
                 // Retour à l'upload si plus de fichiers
                 if (nouvelleFacture.documents.length === 0) {
                     afficherFormulaireUpload();
+                } else {
+                    // Réafficher avec les fichiers restants
+                    afficherSelectionStatuts(nouvelleFacture.documents);
                 }
             },
             onChange: (files) => {
-                nouvelleFacture.documents = files;
-                if (files.length === 0) {
-                    afficherFormulaireUpload();
-                }
+                // Ne rien faire ici pour éviter les conflits
+                // Tout est géré dans onDrop et onRemove
             }
         });
     }, 100);
