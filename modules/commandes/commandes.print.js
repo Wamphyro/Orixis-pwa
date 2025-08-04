@@ -3,7 +3,7 @@
 // Chemin: modules/commandes/commandes.print.js
 //
 // DESCRIPTION:
-// Génère et imprime une fiche de commande au format HTML
+// Génère et affiche une fiche de commande au format HTML
 // Design moderne optimisé pour l'impression A4
 //
 // API PUBLIQUE:
@@ -35,8 +35,8 @@ export async function imprimerCommande(commandeId) {
         // Générer le HTML
         const printHTML = generatePrintHTML(commande);
         
-        // Ouvrir la fenêtre d'impression
-        openPrintWindow(printHTML);
+        // Ouvrir la fenêtre d'aperçu
+        openPrintPreview(printHTML);
         
     } catch (error) {
         console.error('Erreur impression:', error);
@@ -52,7 +52,6 @@ export function generatePrintHTML(commande) {
     const logoSVG = createModernLogo();
     const dateImpression = new Date().toLocaleString('fr-FR');
     const dateLivraison = formatDate(commande.dates.livraisonPrevue);
-    const statutConfig = COMMANDES_CONFIG.STATUTS[commande.statut];
     const urgenceConfig = COMMANDES_CONFIG.NIVEAUX_URGENCE[commande.niveauUrgence];
     const typeConfig = COMMANDES_CONFIG.TYPES_PREPARATION[commande.typePreparation];
     
@@ -77,16 +76,43 @@ export function generatePrintHTML(commande) {
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             color: #2c3e50;
-            background: white;
+            background: #f5f5f5;
             font-size: 14px;
             line-height: 1.6;
         }
         
         .print-container {
             max-width: 210mm;
-            margin: 0 auto;
+            margin: 20px auto;
             padding: 20mm;
+            background: white;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
             min-height: 297mm;
+        }
+        
+        /* Bouton imprimer flottant */
+        .print-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .print-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
         }
         
         /* En-tête moderne */
@@ -210,49 +236,79 @@ export function generatePrintHTML(commande) {
             color: #2c3e50;
         }
         
-        /* Liste des produits */
-        .products-table {
-            width: 100%;
-            border-collapse: collapse;
+        /* Cards produits */
+        .products-grid {
+            display: grid;
+            gap: 15px;
             margin-top: 15px;
         }
         
-        .products-table th {
-            background: #e9ecef;
-            padding: 12px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 13px;
-            color: #495057;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .product-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
         }
         
-        .products-table td {
-            padding: 15px 12px;
-            border-bottom: 1px solid #e9ecef;
+        .product-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        
+        .product-info {
+            flex: 1;
         }
         
         .product-name {
-            font-weight: 500;
+            font-weight: 600;
             color: #2c3e50;
-            font-size: 15px;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        
+        .product-details {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        
+        .product-detail {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        .product-detail-icon {
+            font-size: 16px;
         }
         
         .product-ref {
+            background: #e9ecef;
+            padding: 4px 10px;
+            border-radius: 5px;
             font-size: 12px;
-            color: #6c757d;
-            margin-top: 3px;
+            color: #495057;
+            font-weight: 500;
+            display: inline-block;
         }
         
-        .serial-number {
+        .serial-badge {
             background: #e8f5e9;
             color: #2e7d32;
-            padding: 3px 8px;
-            border-radius: 4px;
+            padding: 6px 12px;
+            border-radius: 6px;
             font-family: 'Courier New', monospace;
-            font-size: 12px;
-            display: inline-block;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
         
         .serial-missing {
@@ -260,63 +316,18 @@ export function generatePrintHTML(commande) {
             color: #f57c00;
         }
         
-        /* Timeline statut */
-        .status-timeline {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 20px 0;
-            position: relative;
-        }
-        
-        .status-timeline::before {
-            content: '';
-            position: absolute;
-            top: 20px;
-            left: 30px;
-            right: 30px;
-            height: 2px;
-            background: #e9ecef;
-            z-index: 0;
-        }
-        
-        .status-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            position: relative;
-            z-index: 1;
-            background: white;
-            padding: 0 10px;
-        }
-        
-        .status-icon {
+        .product-quantity {
+            background: #667eea;
+            color: white;
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: #e9ecef;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-weight: 600;
             font-size: 18px;
-            border: 3px solid white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .status-item.active .status-icon {
-            background: #667eea;
-        }
-        
-        .status-item.completed .status-icon {
-            background: #28a745;
-        }
-        
-        .status-label {
-            font-size: 11px;
-            color: #6c757d;
-            text-align: center;
-            max-width: 80px;
+            flex-shrink: 0;
         }
         
         /* Footer */
@@ -345,6 +356,11 @@ export function generatePrintHTML(commande) {
             color: #856404;
         }
         
+        .badge-tres_urgent {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
         .badge-normal {
             background: #d4edda;
             color: #155724;
@@ -355,13 +371,16 @@ export function generatePrintHTML(commande) {
             body {
                 print-color-adjust: exact;
                 -webkit-print-color-adjust: exact;
+                background: white;
             }
             
             .print-container {
                 padding: 15mm;
+                margin: 0;
+                box-shadow: none;
             }
             
-            .no-print {
+            .print-button {
                 display: none !important;
             }
             
@@ -370,7 +389,7 @@ export function generatePrintHTML(commande) {
                 page-break-inside: avoid;
             }
             
-            .status-timeline {
+            .product-card {
                 break-inside: avoid;
                 page-break-inside: avoid;
             }
@@ -378,6 +397,10 @@ export function generatePrintHTML(commande) {
     </style>
 </head>
 <body>
+    <button class="print-button no-print" onclick="window.print()">
+        🖨️ Imprimer cette page
+    </button>
+    
     <div class="print-container">
         <!-- En-tête avec logo -->
         <header class="print-header">
@@ -428,37 +451,36 @@ export function generatePrintHTML(commande) {
             </div>
         </div>
         
-        <!-- Produits commandés -->
+        <!-- Produits commandés en cards -->
         <div class="info-card">
             <h2 class="card-title">Produits Commandés</h2>
-            <table class="products-table">
-                <thead>
-                    <tr>
-                        <th>Produit</th>
-                        <th>Côté</th>
-                        <th>Quantité</th>
-                        <th>Numéro de série</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${commande.produits.map(produit => `
-                        <tr>
-                            <td>
-                                <div class="product-name">${produit.designation}</div>
-                                <div class="product-ref">Réf: ${produit.reference}</div>
-                            </td>
-                            <td>${produit.cote ? capitalize(produit.cote) : '-'}</td>
-                            <td>${produit.quantite}</td>
-                            <td>
+            <div class="products-grid">
+                ${commande.produits.map(produit => `
+                    <div class="product-card">
+                        <div class="product-info">
+                            <div class="product-name">
+                                ${produit.designation}
+                                ${produit.cote ? `<span style="font-weight: normal; color: #6c757d;"> - ${capitalize(produit.cote)}</span>` : ''}
+                            </div>
+                            <span class="product-ref">Réf: ${produit.reference}</span>
+                            <div class="product-details">
                                 ${produit.numeroSerie 
-                                    ? `<span class="serial-number">${produit.numeroSerie}</span>`
-                                    : '<span class="serial-number serial-missing">Non saisi</span>'
+                                    ? `<span class="serial-badge">
+                                        <span>✓</span>
+                                        N° ${produit.numeroSerie}
+                                       </span>`
+                                    : produit.type === 'appareil_auditif' || produit.necessiteCote
+                                        ? '<span class="serial-badge serial-missing">⚠️ N° série à saisir</span>'
+                                        : ''
                                 }
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
+                            </div>
+                        </div>
+                        <div class="product-quantity">
+                            ${produit.quantite}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
         </div>
         
         <!-- Informations de livraison -->
@@ -508,20 +530,6 @@ export function generatePrintHTML(commande) {
             ` : ''}
         </div>
         
-        <!-- Timeline du statut -->
-        <div class="info-card">
-            <h2 class="card-title">Statut de la Commande</h2>
-            <div class="status-timeline">
-                ${generateStatusTimeline(commande)}
-            </div>
-            <div style="text-align: center; margin-top: 20px;">
-                <span class="info-label">Statut actuel</span>
-                <div style="font-size: 18px; font-weight: 600; color: #667eea; margin-top: 5px;">
-                    ${statutConfig.icon} ${statutConfig.label}
-                </div>
-            </div>
-        </div>
-        
         <!-- Informations d'expédition si applicable -->
         ${commande.expedition?.envoi?.numeroSuivi ? `
             <div class="info-card">
@@ -539,7 +547,7 @@ export function generatePrintHTML(commande) {
                         <div class="info-content">
                             <div class="info-label">Numéro de suivi</div>
                             <div class="info-value">
-                                <span class="serial-number">${commande.expedition.envoi.numeroSuivi}</span>
+                                <span class="serial-badge">${commande.expedition.envoi.numeroSuivi}</span>
                             </div>
                         </div>
                     </div>
@@ -556,42 +564,9 @@ export function generatePrintHTML(commande) {
             </p>
         </footer>
     </div>
-    
-    <script>
-        // Auto-print après chargement
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                window.print();
-            }, 500);
-        });
-    </script>
 </body>
 </html>
     `;
-}
-
-// ========================================
-// GÉNÉRATION DES ÉLÉMENTS
-// ========================================
-
-function generateStatusTimeline(commande) {
-    const statuts = ['nouvelle', 'preparation', 'terminee', 'expediee', 'receptionnee', 'livree'];
-    const currentIndex = statuts.indexOf(commande.statut);
-    
-    return statuts.map((statut, index) => {
-        const config = COMMANDES_CONFIG.STATUTS[statut];
-        let className = 'status-item';
-        
-        if (index < currentIndex) className += ' completed';
-        else if (index === currentIndex) className += ' active';
-        
-        return `
-            <div class="${className}">
-                <div class="status-icon">${config.icon}</div>
-                <div class="status-label">${config.label}</div>
-            </div>
-        `;
-    }).join('');
 }
 
 // ========================================
@@ -634,24 +609,19 @@ function createModernLogo() {
 }
 
 // ========================================
-// OUVERTURE FENÊTRE D'IMPRESSION
+// OUVERTURE FENÊTRE D'APERÇU
 // ========================================
 
-function openPrintWindow(html) {
-    const printWindow = window.open('', '_blank', 'width=800,height=900');
+function openPrintPreview(html) {
+    const printWindow = window.open('', '_blank', 'width=900,height=1000');
     
     if (!printWindow) {
-        config.notify.error('Impossible d\'ouvrir la fenêtre d\'impression. Vérifiez les bloqueurs de popup.');
+        config.notify.error('Impossible d\'ouvrir la fenêtre d\'aperçu. Vérifiez les bloqueurs de popup.');
         return;
     }
     
     printWindow.document.write(html);
     printWindow.document.close();
-    
-    // Fermer la fenêtre après impression ou annulation
-    printWindow.onafterprint = () => {
-        printWindow.close();
-    };
 }
 
 // ========================================
@@ -683,11 +653,11 @@ window.imprimerCommande = imprimerCommande;
    
    [04/02/2025] - Création du module d'impression
    Solution: Module autonome avec génération HTML complète
-   Impact: Impression moderne et professionnelle
+   Impact: Aperçu avant impression avec design moderne
    
    NOTES POUR REPRISES FUTURES:
-   - Logo SVG intégré pour éviter les dépendances
-   - Styles inline pour impression immédiate
-   - Timeline visuelle du statut
-   - Format A4 avec marges appropriées
+   - Pas d'impression automatique
+   - Cards modernes pour les produits
+   - Bouton imprimer flottant
+   - Timeline supprimée
    ======================================== */
