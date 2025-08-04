@@ -211,7 +211,18 @@ async function analyserFichiers(files) {
         // Recalculer TOUT avec tous les fichiers
         recalculerStatsGlobales();
         
-        // *** FIN DE LA FONCTION - SUPPRIMER TOUT LE CODE APRÈS CETTE LIGNE ***
+        // Activer le bouton si au moins un fichier réussi
+        const successCount = importState.analyses.filter(a => a.status === 'success').length;
+        if (successCount > 0 && importState.allOperations.length > 0) {
+            const btnConfirmer = document.getElementById('btnConfirmerImport');
+            const btnCount = document.getElementById('btnImportCount');
+            if (btnConfirmer) {
+                btnConfirmer.disabled = false;
+                if (btnCount) {
+                    btnCount.textContent = `(${importState.allOperations.length} opérations)`;
+                }
+            }
+        }
         
     } catch (error) {
         console.error('❌ Erreur analyse multiple:', error);
