@@ -196,6 +196,13 @@ function initDataTable() {
                 formatter: (fournisseur) => config.HTML_TEMPLATES.fournisseur(fournisseur || {})
             },
             {
+                key: 'categorie',
+                label: 'Catégorie',
+                sortable: true,
+                width: 120,
+                formatter: (_, row) => afficherCategorie(row.fournisseur?.categorie)
+            },
+            {
                 key: 'numeroFacture',
                 label: 'N° Facture',
                 sortable: true,
@@ -534,14 +541,45 @@ function afficherFactures() {
 
 function filtrerFacturesLocalement() {
     return state.facturesData.filter(facture => {
-        // ... autres filtres ...
+        // Filtre recherche (amélioré avec plus de champs)
+        if (state.filtres.recherche) {
+            const recherche = state.filtres.recherche.toLowerCase();
+            const fournisseurNom = facture.fournisseur?.nom?.toLowerCase() || '';
+            const numeroFacture = facture.numeroFacture?.toLowerCase() || '';
+            const numeroInterne = facture.numeroInterne?.toLowerCase() || '';
+            const referenceVirement = facture.referenceVirement?.toLowerCase() || '';
+            const numeroClient = facture.fournisseur?.numeroClient?.toLowerCase() || '';
+            const siren = facture.fournisseur?.siren || '';
+            const montantTTC = facture.montantTTC?.toString() || '';
+            const categorie = facture.fournisseur?.categorie?.toLowerCase() || '';
+            
+            const found = fournisseurNom.includes(recherche) || 
+                         numeroFacture.includes(recherche) || 
+                         numeroInterne.includes(recherche) ||
+                         referenceVirement.includes(recherche) ||
+                         numeroClient.includes(recherche) ||
+                         siren.includes(recherche) ||
+                         montantTTC.includes(recherche) ||
+                         categorie.includes(recherche);
+            
+            if (!found) {
+                return false;
+            }
+        }
         
-        // SUPPRIMÉ : Filtre statut depuis select
+        // Filtre magasin
+        if (state.filtres.magasin && facture.codeMagasin !== state.filtres.magasin) {
+            return false;
+        }
         
-        // Filtre statuts multiples (depuis cartes)
-        if (state.filtres.statutsActifs.length > 0) {
-            // Vérifier le statut de la facture
-            if (!state.filtres.statutsActifs.includes(facture.statut)) {
+        // Filtre fournisseur
+        if (state.filtres.fournisseur && facture.fournisseur?.nom !== state.filtres.fournisseur) {
+            return false;
+        }
+        
+        // Filtre catégorie - CORRECTION : le filtre était déjà là mais il manquait la gestion de la valeur vide
+        if (state.filtres.categorie && state.filtres.categorie !== '') {
+            if (!facture.fournisseur?.categorie || facture.fournisseur.categorie !== state.filtres.categorie) {
                 return false;
             }
         }
@@ -626,6 +664,29 @@ function afficherStatut(statut) {
     if (!configData) return statut;
     
     return config.HTML_TEMPLATES.statut(configData);
+}
+
+function afficherCategorie(categorie) {
+    if (!categorie) return '-';
+    
+    const categoriesConfig = {
+        telecom: { label: 'Télécom', icon: '📱' },
+        energie: { label: 'Énergie', icon: '⚡' },
+        services: { label: 'Services', icon: '💼' },
+        informatique: { label: 'Informatique', icon: '💻' },
+        fournitures: { label: 'Fournitures', icon: '📦' },
+        autre: { label: 'Autre', icon: '📋' }
+    };
+    
+    const configData = categoriesConfig[categorie] || { label: categorie, icon: '📋' };
+    
+    // Utiliser le même template que pour les statuts
+    return `
+        <span class="categorie-icon-wrapper">
+            <span class="categorie-icon">${configData.icon}</span>
+            <span class="categorie-label">${configData.label}</span>
+        </span>
+    `;
 }
 
 function prepareExportData(data) {
