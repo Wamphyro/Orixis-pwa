@@ -356,7 +356,7 @@ async function analyserFactures() {
             title: 'Confirmer l\'analyse',
             message: recapContent,
             showCancel: true,
-            confirmText: 'Lancer l\'analyse',
+            confirmText: '🤖 Lancer l\'analyse',
             cancelText: 'Annuler',
             // Factory pour créer des boutons avec le bon style
             buttonFactory: (options) => {
@@ -364,7 +364,9 @@ async function analyserFactures() {
                 const btnConfig = {
                     ...options,
                     context: 'light',  // Pour fond clair
-                    textColor: options.variant === 'primary' ? 'white' : 'dark'
+                    textColor: options.variant === 'primary' ? 'white' : 'dark',
+                    // Style custom pour le bouton confirmer (violet)
+                    className: options.class?.includes('confirm') ? 'btn-ia-violet' : ''
                 };
                 return new config.Button(btnConfig);
             }
