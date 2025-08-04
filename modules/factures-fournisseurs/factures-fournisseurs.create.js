@@ -500,7 +500,7 @@ async function analyserFactures() {
                             extractionIA: donneesExtraites.extractionIA
                         },
                         dateAnalyse: new Date(),
-                        modeleIA: 'gpt-4o-mini',
+                        modeleIA: 'gpt-4.1-mini',
                         erreurIA: null
                     }
                 };
