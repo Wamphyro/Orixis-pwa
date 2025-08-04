@@ -42,15 +42,15 @@ export const OPERATIONS_CONFIG = {
     // ========================================
     STATUTS_OPERATION: {
         active: {
-            label: 'Active',
+            label: 'En attente',
             couleur: '#4caf50',
-            icon: '🟢',
+            icon: '🖊️',
             description: 'Opération standard non traitée'
         },
         pointee: {
             label: 'Pointée',
             couleur: '#2196f3',
-            icon: '✓',
+            icon: '✔',
             description: 'Opération vérifiée et pointée'
         },
         rapprochee: {
