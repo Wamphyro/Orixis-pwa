@@ -464,17 +464,31 @@ async function analyserFactures() {
                 }
                 
                 // 3. Créer la facture avec les données extraites
+                
+                // IMPORTANT : Nettoyer les données pour éviter les références circulaires
+                const donneesNettoyees = {
+                    fournisseur: donneesExtraites.fournisseur,
+                    numeroFacture: donneesExtraites.numeroFacture,
+                    montantHT: donneesExtraites.montantHT,
+                    montantTVA: donneesExtraites.montantTVA,
+                    montantTTC: donneesExtraites.montantTTC,
+                    tauxTVA: donneesExtraites.tauxTVA,
+                    dateFacture: donneesExtraites.dateFacture,
+                    dateEcheance: donneesExtraites.dateEcheance,
+                    periodeDebut: donneesExtraites.periodeDebut,
+                    periodeFin: donneesExtraites.periodeFin,
+                    modePaiement: donneesExtraites.modePaiement
+                };
+                
                 const factureData = {
                     documents: [uploadResult],
                     aPayer: statut === 'a_payer',
                     dejaPayee: statut === 'deja_payee',
-                    // NOUVEAU : Ajouter les données extraites
-                    ...donneesExtraites,
-                    // NOUVEAU : Stocker la réponse GPT brute pour inspection
+                    // Ajouter seulement les données nettoyées
+                    ...donneesNettoyees,
+                    // Stocker la réponse GPT en JSON stringifié pour éviter les références circulaires
                     iaData: {
-                        reponseGPT: donneesExtraites._gptRawJSON || donneesExtraites, // La vraie réponse JSON de GPT
-                        cloudFunctionFullResponse: donneesExtraites._cloudFunctionFullResponse || null, // Toute la réponse
-                        donneesTransformees: donneesExtraites, // Les données après transformation
+                        reponseGPT: JSON.parse(JSON.stringify(donneesExtraites)), // Clone profond
                         dateAnalyse: new Date(),
                         modeleIA: 'gpt-4o-mini',
                         erreurIA: null
