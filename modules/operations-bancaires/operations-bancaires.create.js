@@ -159,20 +159,57 @@ async function analyserFichiers(files) {
     if (!files || files.length === 0) return;
     
     try {
-        // Réinitialiser l'état
-        importState.files = files;
-        importState.analyses = [];
-        importState.allOperations = [];
-        importState.doublons = [];
+        // NE PAS réinitialiser, mais AJOUTER aux fichiers existants
+        const nouveauxFichiers = Array.from(files);
+        const fichiersExistants = importState.files || [];
+        
+        // Vérifier qu'on ne dépasse pas la limite
+        if (fichiersExistants.length + nouveauxFichiers.length > 10) {
+            afficherErreur(`Maximum 10 fichiers. Vous avez déjà ${fichiersExistants.length} fichier(s).`);
+            return;
+        }
         
         // Afficher un loader
         const resultatsContent = document.getElementById('resultats-content');
         resultatsContent.innerHTML = `
             <div class="empty-state">
                 <div class="icon">⏳</div>
-                <p>Analyse de ${files.length} fichier(s) en cours...</p>
+                <p>Analyse de ${nouveauxFichiers.length} nouveau(x) fichier(s)...</p>
             </div>
         `;
+        
+        // Analyser SEULEMENT les nouveaux fichiers
+        const promesses = nouveauxFichiers.map(file => importService.importFile(file));
+        const resultats = await Promise.allSettled(promesses);
+        
+        // Ajouter les résultats aux analyses existantes
+        let successCount = 0;
+        
+        resultats.forEach((result, index) => {
+            if (result.status === 'fulfilled') {
+                successCount++;
+                const analyse = {
+                    ...result.value,
+                    fileIndex: fichiersExistants.length + index,
+                    fileName: nouveauxFichiers[index].name,
+                    status: 'success'
+                };
+                importState.analyses.push(analyse);
+            } else {
+                importState.analyses.push({
+                    fileIndex: fichiersExistants.length + index,
+                    fileName: nouveauxFichiers[index].name,
+                    status: 'error',
+                    error: result.reason.message
+                });
+            }
+        });
+        
+        // Ajouter les nouveaux fichiers à la liste
+        importState.files = [...fichiersExistants, ...nouveauxFichiers];
+        
+        // Recalculer TOUT avec tous les fichiers
+        recalculerStatsGlobales();
         
         // Analyser tous les fichiers en parallèle
         const promesses = files.map(file => importService.importFile(file));
