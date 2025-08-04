@@ -351,6 +351,9 @@ async function analyserFactures() {
         `;
         
         // Afficher la boîte de dialogue de confirmation avec factory de boutons
+        // DEBUG : Vérifier que Button est disponible
+        console.log('🔍 DEBUG - config.Button:', config.Button);
+        console.log('🔍 DEBUG - typeof config.Button:', typeof config.Button);
         const confirme = await config.Dialog.custom({
             type: 'confirm',
             title: 'Confirmer l\'analyse',
