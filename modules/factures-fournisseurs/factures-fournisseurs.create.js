@@ -393,7 +393,7 @@ async function analyserFactures() {
         const btnAnalyser = document.getElementById('btnAnalyserFactures');
         const texteOriginal = btnAnalyser.innerHTML;
         btnAnalyser.disabled = true;
-        btnAnalyser.innerHTML = '⏳ Upload et analyse en cours...';
+        btnAnalyser.innerHTML = '⏳ Analyse et création en cours...';
         
         // Afficher la zone de progression
         const resultatsContent = document.getElementById('resultats-content');
@@ -546,31 +546,6 @@ function updateProgressSummary(success, errors) {
     if (summary) summary.style.display = 'block';
     if (countSuccess) countSuccess.textContent = success;
     if (countError) countError.textContent = errors;
-}
-
-// ========================================
-// ANALYSE IA EN ARRIÈRE-PLAN
-// ========================================
-
-async function analyserAvecIA(factureId, documentUrl) {
-    try {
-        console.log('🤖 Lancement analyse IA pour facture:', factureId);
-        
-        // Import dynamique du service OpenAI
-        const { default: OpenAIService } = await import('./factures-fournisseurs.openai.service.js');
-        
-        // Analyser le document
-        const resultIA = await OpenAIService.analyserDocumentExistant(factureId);
-        
-        console.log('✅ Analyse IA terminée:', resultIA);
-        
-        // Notification discrète
-        config.notify.info('Analyse IA terminée pour une facture');
-        
-    } catch (error) {
-        console.error('❌ Erreur analyse IA:', error);
-        // Pas de notification d'erreur pour ne pas polluer
-    }
 }
 
 // ========================================
