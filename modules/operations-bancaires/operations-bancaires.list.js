@@ -395,6 +395,8 @@ function connectComponents() {
 // ========================================
 
 function handleFilterChange(filters) {
+    console.log('🔍 DEBUG handleFilterChange - Filtres reçus:', filters);
+    
     // Détecter si c'est un reset
     const isReset = !filters.recherche && 
                     !filters.compte && 
@@ -424,7 +426,7 @@ function handleFilterChange(filters) {
             recherche: filters.recherche || '',
             compte: filters.compte || '',
             categorie: filters.categorie || '',
-            periode: filters.periode || 'month'
+            periode: filters.periode || 'all'  // Changer 'month' en 'all'
         };
     }
     
@@ -585,7 +587,10 @@ function filtrerOperationsLocalement() {
         return [];
     }
     
-    return state.operationsData.filter(operation => {
+    console.log('🔍 DEBUG Filtrage - État des filtres:', state.filtres);
+    console.log('🔍 DEBUG Filtrage - Nombre d\'opérations avant filtre:', state.operationsData.length);
+    
+    const resultat = state.operationsData.filter(operation => {
         // Filtre recherche
         if (state.filtres.recherche) {
             const recherche = state.filtres.recherche.toLowerCase();
@@ -670,6 +675,9 @@ function filtrerOperationsLocalement() {
         
         return true;
     });
+    
+    console.log('🔍 DEBUG Filtrage - Nombre d\'opérations après filtre:', resultat.length);
+    return resultat;
 }
 
 // ========================================

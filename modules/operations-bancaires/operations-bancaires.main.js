@@ -47,7 +47,7 @@ export const state = {
         recherche: '',
         compte: '',
         categorie: '',
-        periode: 'all', // Changé pour afficher TOUTES les opérations par défaut
+        periode: 'all', // Par défaut on affiche TOUT
         dateDebut: null,
         dateFin: null,
         cartesActives: [] // Pour le filtrage par cartes de stats
