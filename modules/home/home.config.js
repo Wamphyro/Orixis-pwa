@@ -104,6 +104,14 @@ export const MENU_ITEMS = [
         permissions: ['factures.view'],
         disabled: false
     },
+        {
+        href: '#',
+        icon: '🗃️',
+        title: 'Dossiers de subvention',
+        description: 'Gérer les dossiers de subvention client',
+        permissions: ['clients.view'],
+        disabled: true
+    },
     {
         href: '#',
         icon: '👥',
