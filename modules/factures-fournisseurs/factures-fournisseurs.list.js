@@ -97,9 +97,12 @@ const FILTERS_CONFIG = {
         options: [] // Généré depuis les constantes
     },
     special: {
-        type: 'checkbox-group',
+        type: 'select',
         key: 'special',
+        label: 'Filtres spéciaux',
+        keepPlaceholder: true,
         options: [
+            { value: '', label: 'Aucun filtre' },
             { value: 'aPayer', label: 'À payer uniquement', icon: '💳' },
             { value: 'enRetard', label: 'En retard uniquement', icon: '⚠️' }
         ]
@@ -359,8 +362,7 @@ function handleFilterChange(filters) {
                     !filters.categorie &&
                     filters.periode === 'all' && 
                     !filters.statut &&
-                    !filters.special?.includes('aPayer') &&
-                    !filters.special?.includes('enRetard');
+                    (!filters.special || filters.special === '');
     
     if (isReset) {
         // Reset complet
@@ -392,8 +394,8 @@ function handleFilterChange(filters) {
             categorie: filters.categorie || '',
             periode: filters.periode || 'all',
             statut: filters.statut || '',
-            aPayer: filters.special?.includes('aPayer') || false,
-            enRetard: filters.special?.includes('enRetard') || false
+            aPayer: filters.special === 'aPayer',
+            enRetard: filters.special === 'enRetard'
         };
     }
     
