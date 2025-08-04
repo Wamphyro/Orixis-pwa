@@ -94,19 +94,60 @@
 
     <!-- Modal Détail Opération -->
     <div id="modalDetailOperation" class="modal" style="display: none;">
-        <div class="modal-content modal-medium">
+        <div class="modal-content modal-large">
             <div class="modal-header">
                 <h2>Détail de l'opération</h2>
+                <h3 id="detailTitreOperation" style="margin: 5px 0 0 0; font-size: 16px; color: #666;"></h3>
                 <button class="modal-close">&times;</button>
             </div>
             
             <div class="modal-body">
-                <!-- TODO: Implémenter le détail -->
                 <div class="detail-sections">
+                    <!-- Section Opération -->
                     <div class="detail-section">
-                        <h3>Informations</h3>
-                        <div id="detailInfos">
+                        <h3>📝 Informations de l'opération</h3>
+                        <div id="detailOperation">
                             <!-- Contenu généré dynamiquement -->
+                        </div>
+                    </div>
+                    
+                    <!-- Section Compte -->
+                    <div class="detail-section">
+                        <h3>🏦 Compte bancaire</h3>
+                        <div id="detailCompte">
+                            <!-- Contenu généré dynamiquement -->
+                        </div>
+                    </div>
+                    
+                    <!-- Section Montants -->
+                    <div class="detail-section">
+                        <h3>💰 Montants</h3>
+                        <div id="detailMontants">
+                            <!-- Contenu généré dynamiquement -->
+                        </div>
+                    </div>
+                    
+                    <!-- Section Catégorisation -->
+                    <div class="detail-section">
+                        <h3>🏷️ Catégorisation</h3>
+                        <div id="detailCategorisation">
+                            <!-- Contenu généré dynamiquement -->
+                        </div>
+                    </div>
+                    
+                    <!-- Section Traçabilité -->
+                    <div class="detail-section">
+                        <h3>📋 Traçabilité</h3>
+                        <div id="detailTracabilite">
+                            <!-- Contenu généré dynamiquement -->
+                        </div>
+                    </div>
+                    
+                    <!-- Section Actions -->
+                    <div class="detail-section">
+                        <h3>⚡ Actions disponibles</h3>
+                        <div id="detailActions" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <!-- Boutons générés dynamiquement -->
                         </div>
                     </div>
                 </div>

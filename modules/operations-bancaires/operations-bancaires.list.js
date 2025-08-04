@@ -246,6 +246,32 @@ function initDataTable() {
                 formatter: (value) => value ? '✓' : ''
             },
             {
+                key: 'statut',
+                label: 'Statut',
+                sortable: true,
+                width: 120,
+                formatter: (value, row) => {
+                    // Déterminer le statut basé sur les propriétés
+                    let statut = 'active';
+                    let label = 'Active';
+                    let couleur = '#4caf50';
+                    
+                    if (row.pointee) {
+                        statut = 'pointee';
+                        label = 'Pointée';
+                        couleur = '#2196f3';
+                    }
+                    
+                    if (row.rapprochee) {
+                        statut = 'rapprochee';
+                        label = 'Rapprochée';
+                        couleur = '#9c27b0';
+                    }
+                    
+                    return `<span class="badge badge-${statut}" style="background-color: ${couleur}; color: white;">${label}</span>`;
+                }
+            },
+            {
                 key: 'actions',
                 label: 'Actions',
                 sortable: false,
@@ -256,11 +282,6 @@ function initDataTable() {
                             onclick="voirDetailOperation('${row.id}')"
                             title="Voir le détail">
                         👁️
-                    </button>
-                    <button class="${config.BUTTON_CLASSES.action}" 
-                            onclick="pointerOperation('${row.id}', ${!row.pointee})"
-                            title="${row.pointee ? 'Dépointer' : 'Pointer'}">
-                        ${row.pointee ? '✗' : '✓'}
                     </button>
                 `
             }

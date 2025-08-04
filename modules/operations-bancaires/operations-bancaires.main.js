@@ -31,6 +31,7 @@ import {
     initImportOperations,
     ouvrirModalImport
 } from './operations-bancaires.create.js';
+import { voirDetailOperation } from './operations-bancaires.detail.js';
 import config from './operations-bancaires.config.js';
 import { modalManager } from '../../src/components/index.js';
 
@@ -269,20 +270,7 @@ function initModales() {
 // Exposer modalManager
 window.modalManager = config.modalManager;
 
-// Fonction pour voir le détail d'une opération (DÉFINIR AVANT DE L'EXPOSER)
-async function voirDetailOperation(operationId) {
-    try {
-        const operation = await OperationsBancairesService.getOperation(operationId);
-        if (operation) {
-            // TODO: Afficher dans la modal
-            console.log('Détail opération:', operation);
-            config.notify.info('Fonctionnalité en cours de développement');
-        }
-    } catch (error) {
-        console.error('Erreur chargement détail:', error);
-        config.notify.error('Erreur lors du chargement du détail');
-    }
-}
+// La fonction voirDetailOperation est maintenant importée depuis operations-bancaires.detail.js
 
 // Fonctions pour le HTML
 window.ouvrirModalImport = ouvrirModalImport;
