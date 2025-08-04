@@ -196,13 +196,6 @@ function initDataTable() {
                 formatter: (fournisseur) => config.HTML_TEMPLATES.fournisseur(fournisseur || {})
             },
             {
-                key: 'categorie',
-                label: 'Catégorie',
-                sortable: true,
-                width: 120,
-                formatter: (_, row) => afficherCategorie(row.fournisseur?.categorie)
-            },
-            {
                 key: 'numeroFacture',
                 label: 'N° Facture',
                 sortable: true,
@@ -219,6 +212,13 @@ function initDataTable() {
                 label: 'Échéance',
                 sortable: true,
                 formatter: (value, row) => config.HTML_TEMPLATES.echeance(value, row.statut)
+            },
+            {
+                key: 'categorie',
+                label: 'Catégorie',
+                sortable: true,
+                width: 120,
+                formatter: (_, row) => afficherCategorie(row.fournisseur?.categorie)
             },
             {
                 key: 'statut',
