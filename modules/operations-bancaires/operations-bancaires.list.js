@@ -227,13 +227,13 @@ function initDataTable() {
                 key: 'statut',
                 label: 'Statut',
                 sortable: true,
-                width: 120,
+                width: 60,
                 formatter: (value, row) => {
                     const statutKey = determinerStatutOperation(row);
                     const statut = OPERATIONS_CONFIG.STATUTS_OPERATION[statutKey];
                     
-                    return `<span style="color: ${statut.couleur}; font-weight: 500;">
-                        ${statut.icon} ${statut.label}
+                    return `<span class="categorie-icon" data-tooltip="${statut.label}" style="font-size: 20px; cursor: help; color: ${statut.couleur};">
+                        ${statut.icon}
                     </span>`;
                 }
             },
