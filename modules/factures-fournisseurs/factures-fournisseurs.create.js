@@ -350,7 +350,7 @@ async function analyserFactures() {
             </div>
         `;
         
-        // Afficher la boîte de dialogue de confirmation
+        // Afficher la boîte de dialogue de confirmation avec factory de boutons
         const confirme = await config.Dialog.custom({
             type: 'confirm',
             title: 'Confirmer l\'analyse',
@@ -358,7 +358,8 @@ async function analyserFactures() {
             showCancel: true,
             confirmText: 'Lancer l\'analyse',
             cancelText: 'Annuler',
-            confirmClass: 'primary'
+            // Passer la factory Button pour que Dialog puisse créer des boutons stylisés
+            buttonFactory: (options) => new config.Button(options)
         });
         
         // Si annulation, ne rien faire
