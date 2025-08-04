@@ -358,8 +358,16 @@ async function analyserFactures() {
             showCancel: true,
             confirmText: 'Lancer l\'analyse',
             cancelText: 'Annuler',
-            // Passer la factory Button pour que Dialog puisse créer des boutons stylisés
-            buttonFactory: (options) => new config.Button(options)
+            // Factory pour créer des boutons avec le bon style
+            buttonFactory: (options) => {
+                // Configuration spécifique pour les boutons du dialog
+                const btnConfig = {
+                    ...options,
+                    context: 'light',  // Pour fond clair
+                    textColor: options.variant === 'primary' ? 'white' : 'dark'
+                };
+                return new config.Button(btnConfig);
+            }
         });
         
         // Si annulation, ne rien faire
