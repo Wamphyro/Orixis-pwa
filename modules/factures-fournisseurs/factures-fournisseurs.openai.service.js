@@ -49,15 +49,8 @@ export class FactureOpenAIService {
             console.log('🚀 Appel extractFactureData');
             const donneesExtraites = await FactureOpenAIService.extractFactureData(images);
             
-            // Sauvegarder la réponse Cloud Function avant formatage
-            const cloudFunctionResponse = donneesExtraites._cloudFunctionResponse;
-            delete donneesExtraites._cloudFunctionResponse; // Retirer avant formatage
-            
             // Formater pour notre structure Firestore
             const donneesFormatees = this.formaterPourFirestore(donneesExtraites);
-            
-            // NOUVEAU : Réattacher la réponse complète
-            donneesFormatees._cloudFunctionResponse = cloudFunctionResponse;
             
             console.log('✅ Analyse IA terminée avec succès');
             return donneesFormatees;
@@ -210,14 +203,8 @@ VALIDATION :
             
             console.log('✅ Réponse Cloud Function:', result);
             
-            // NOUVEAU : Retourner les données AVEC la réponse brute
-            const donneesExtraites = result.data || {};
-            
-            // Stocker la réponse GPT brute dans un champ spécial
-            donneesExtraites._gptRawJSON = result.data; // La vraie réponse JSON de GPT
-            donneesExtraites._cloudFunctionFullResponse = result; // Toute la réponse de la Cloud Function
-            
-            return donneesExtraites;
+            // Retourner simplement les données sans ajouter de champs supplémentaires
+            return result.data || {};
             
         } catch (error) {
             console.error('❌ Erreur appel Cloud Function:', error);
