@@ -565,6 +565,8 @@ function afficherOperations() {
     }
     
     operationsFiltrees = filtrerOperationsLocalement();
+    console.log('🔍 DEBUG - Opérations filtrées:', operationsFiltrees.length, 'sur', state.operationsData.length);
+    
     tableOperations.setData(operationsFiltrees);
     
     // Réinitialiser les tooltips après le rendu
@@ -578,6 +580,11 @@ export { afficherOperations };
 // ========================================
 
 function filtrerOperationsLocalement() {
+    if (!state.operationsData || state.operationsData.length === 0) {
+        console.log('⚠️ Aucune donnée à filtrer');
+        return [];
+    }
+    
     return state.operationsData.filter(operation => {
         // Filtre recherche
         if (state.filtres.recherche) {
@@ -605,9 +612,7 @@ function filtrerOperationsLocalement() {
             return false;
         }
         
-        // Filtre type retiré
-        
-        // Filtre cartes actives
+        // Filtre cartes actives (crédits/débits/pointées/non pointées)
         if (state.filtres.cartesActives && state.filtres.cartesActives.length > 0) {
             let passeFiltreCartes = false;
             
