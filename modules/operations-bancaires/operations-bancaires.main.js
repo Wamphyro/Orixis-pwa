@@ -26,6 +26,7 @@ import {
     resetFiltres,
     afficherOperations
 } from './operations-bancaires.list.js';
+import { OperationsBancairesService } from './operations-bancaires.service.js';
 import { 
     initImportOperations,
     ouvrirModalImport
@@ -281,10 +282,19 @@ window.fermerModal = function(modalId) {
     config.modalManager.close(modalId);
 };
 
-// Fonction pour voir le détail d'une opération (à implémenter)
+// Fonction pour voir le détail d'une opération
 window.voirDetailOperation = async function(operationId) {
-    // TODO: Implémenter l'affichage du détail
-    console.log('Voir détail opération:', operationId);
+    try {
+        const operation = await OperationsBancairesService.getOperation(operationId);
+        if (operation) {
+            // TODO: Afficher dans la modal
+            console.log('Détail opération:', operation);
+            config.notify.info('Fonctionnalité en cours de développement');
+        }
+    } catch (error) {
+        console.error('Erreur chargement détail:', error);
+        config.notify.error('Erreur lors du chargement du détail');
+    }
 };
 
 // Fonction pour catégoriser des opérations

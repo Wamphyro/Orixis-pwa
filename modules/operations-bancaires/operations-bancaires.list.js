@@ -112,17 +112,14 @@ const STATS_CARDS_CONFIG = {
 // Configuration de l'export
 const EXPORT_CONFIG = {
     colonnes: [
-        { key: 'dateVirement', label: 'Date virement', formatter: 'date' },
-        { key: 'numeroDecompte', label: 'N° Décompte' },
-        { key: 'codeMagasin', label: 'Code magasin' },
-        { key: 'client', label: 'Client', formatter: 'client' },
-        { key: 'nss', label: 'NSS', formatter: 'nss' },
-        { key: 'mutuelle', label: 'Mutuelle' },
-        { key: 'prestataireTP', label: 'Réseau TP' },
-        { key: 'montantRemboursementClient', label: 'Remboursement', formatter: 'montant' },
-        { key: 'montantVirement', label: 'Virement', formatter: 'montant' },
-        { key: 'typeDecompte', label: 'Type' },
-        { key: 'statut', label: 'Statut', formatter: 'statut' }
+        { key: 'date', label: 'Date', formatter: 'date' },
+        { key: 'dateValeur', label: 'Date valeur', formatter: 'date' },
+        { key: 'libelle', label: 'Libellé' },
+        { key: 'categorie', label: 'Catégorie', formatter: 'categorie' },
+        { key: 'type', label: 'Type', formatter: 'type' },
+        { key: 'montant', label: 'Montant', formatter: 'montant' },
+        { key: 'accountNumber', label: 'Compte', formatter: 'compte' },
+        { key: 'pointee', label: 'Pointée', formatter: 'boolean' }
     ]
 };
 
@@ -166,24 +163,24 @@ export async function initListeOperations() {
 // Nouvelle fonction pour charger juste les données sans afficher
 async function chargerDonneesInitiales() {
     try {
-        // Charger les décomptes
-        state.decomptesData = await DecomptesMutuellesService.getDecomptes();
+        // Charger les opérations
+        state.operationsData = await OperationsBancairesService.getOperations();
         
-        if (!state.decomptesData) {
-            state.decomptesData = [];
+        if (!state.operationsData) {
+            state.operationsData = [];
         }
         
-        // Mettre à jour les mutuelles et réseaux TP dynamiques
-        if (state.decomptesData.length > 0) {
-            mettreAJourMutuelles(state.decomptesData);
-            mettreAJourReseauxTP(state.decomptesData);
+        // Mettre à jour les comptes et catégories dynamiques
+        if (state.operationsData.length > 0) {
+            mettreAJourComptes(state.operationsData);
+            mettreAJourCategories(state.operationsData);
         }
         
         console.log('✅ Données initiales chargées');
         
     } catch (error) {
         console.error('❌ Erreur chargement initial:', error);
-        state.decomptesData = [];
+        state.operationsData = [];
     }
 }
 
@@ -312,53 +309,81 @@ function initDataTable() {
 }
 
 // ========================================
+// FONCTIONS DE MISE À JOUR DYNAMIQUE
+// ========================================
+
+function mettreAJourComptes(operations) {
+    const comptes = new Set();
+    operations.forEach(op => {
+        if (op.accountNumber) {
+            comptes.add(op.accountNumber);
+        }
+    });
+    
+    // Mettre à jour les options du filtre compte
+    if (FILTERS_CONFIG.compte) {
+        FILTERS_CONFIG.compte.options = [
+            { value: '', label: 'Tous les comptes' },
+            ...Array.from(comptes).map(compte => ({
+                value: compte,
+                label: compte.slice(-4) ? `•••${compte.slice(-4)}` : compte
+            }))
+        ];
+    }
+}
+
+function mettreAJourCategories(operations) {
+    const categories = new Set();
+    operations.forEach(op => {
+        if (op.categorie) {
+            categories.add(op.categorie);
+        }
+    });
+    
+    // Mettre à jour les options du filtre catégorie
+    if (FILTERS_CONFIG.categorie) {
+        const optionsCategories = [{ value: '', label: 'Toutes les catégories' }];
+        
+        // Ajouter les catégories trouvées
+        categories.forEach(cat => {
+            const catConfig = OPERATIONS_CONFIG.CATEGORIES[cat];
+            if (catConfig) {
+                optionsCategories.push({
+                    value: cat,
+                    label: catConfig.label,
+                    icon: catConfig.icon
+                });
+            }
+        });
+        
+        FILTERS_CONFIG.categorie.options = optionsCategories;
+    }
+}
+
+// ========================================
 // INITIALISATION FILTRES
 // ========================================
 
 async function initFiltres() {
-    let filtresConfig = genererOptionsFiltres();
-    
-    // Charger dynamiquement les magasins
-    try {
-        const magasinsData = await chargerMagasins();
-        
-        if (magasinsData) {
-            const magasins = Object.entries(magasinsData)
-                .filter(([id, data]) => data.actif !== false)
-                .map(([id, data]) => ({
-                    value: data.code || id,
-                    label: data.nom || data.code || id
-                }))
-                .sort((a, b) => a.label.localeCompare(b.label));
-            
-            const magasinFilter = filtresConfig.find(f => f.key === 'magasin');
-            if (magasinFilter) {
-                magasinFilter.options = [
-                    { value: '', label: 'Tous les magasins' },
-                    ...magasins
-                ];
-            }
-        }
-    } catch (error) {
-        console.error('Erreur chargement magasins:', error);
-    }
+    // Utiliser directement FILTERS_CONFIG
+    const filtresConfig = Object.values(FILTERS_CONFIG);
     
     // Créer l'instance DataTableFilters
-    filtresDecomptes = config.createDecomptesFilters(
-        '.decomptes-filters',
+    filtresOperations = config.createOperationsFilters(
+        '.operations-filters',
         filtresConfig,
         (filters) => handleFilterChange(filters)
     );
     
     // Remplacer le bouton reset par un composant Button stylisé
-    const resetBtnElement = filtresDecomptes.getResetButtonElement();
+    const resetBtnElement = filtresOperations.getResetButtonElement();
     if (resetBtnElement) {
         const styledResetBtn = new Button({
             text: '🔄 Réinitialiser',
             variant: 'secondary',  // Gris neutre
             size: 'sm',
             textColor: 'dark',     // Texte noir
-            onClick: () => filtresDecomptes.reset()
+            onClick: () => filtresOperations.reset()
         });
         
         // Remplacer l'élément
@@ -373,10 +398,10 @@ async function initFiltres() {
 // ========================================
 
 function initStatsCards() {
-    const cardsConfig = genererConfigStatsCards();
+    const cardsConfig = STATS_CARDS_CONFIG.cartes;
     
-    statsCards = config.createDecomptesStatsCards(
-        '.decomptes-stats',
+    statsCards = config.createOperationsStatsCards(
+        '.operations-stats',
         cardsConfig,
         (cardId) => handleStatsCardClick(cardId)
     );
@@ -400,22 +425,21 @@ function connectComponents() {
 function handleFilterChange(filters) {
     // Détecter si c'est un reset
     const isReset = !filters.recherche && 
-                    !filters.magasin && 
-                    !filters.mutuelle &&
-                    !filters.reseauTP &&
-                    filters.periode === 'all' && 
-                    !filters.statut;
+                    !filters.compte && 
+                    !filters.categorie &&
+                    !filters.type &&
+                    filters.periode === 'month' && 
+                    filters.pointees === 'all';
     
     if (isReset) {
         // Reset complet
         state.filtres = {
             recherche: '',
-            magasin: '',
-            mutuelle: '',
-            reseauTP: '',
-            periode: 'all',
-            statut: '',
-            statutsActifs: []
+            compte: '',
+            categorie: '',
+            type: '',
+            periode: 'month',
+            pointees: 'all'
         };
         
         // Désélectionner toutes les cartes
@@ -429,36 +453,57 @@ function handleFilterChange(filters) {
         state.filtres = {
             ...state.filtres,
             recherche: filters.recherche || '',
-            magasin: filters.magasin || '',
-            mutuelle: filters.mutuelle || '',
-            reseauTP: filters.reseauTP || '',
-            periode: filters.periode || 'all',
-            statut: filters.statut || ''
+            compte: filters.compte || '',
+            categorie: filters.categorie || '',
+            type: filters.type || '',
+            periode: filters.periode || 'month',
+            pointees: filters.pointees || 'all'
         };
     }
     
-    if (tableDecomptes) {
-        afficherDecomptes();
-    }
+        if (tableOperations) {
+            afficherOperations();
+        }
 }
 
 function handleStatsCardClick(cardId) {
-    // Toggle le filtre par statut
-    const index = state.filtres.statutsActifs.indexOf(cardId);
+    // Pour les opérations bancaires, on peut filtrer par type de carte cliquée
+    if (cardId === 'credits') {
+        state.filtres.type = state.filtres.type === 'credit' ? '' : 'credit';
+    } else if (cardId === 'debits') {
+        state.filtres.type = state.filtres.type === 'debit' ? '' : 'debit';
+    } else if (cardId === 'pointees') {
+        state.filtres.pointees = state.filtres.pointees === 'oui' ? 'all' : 'oui';
+    } else if (cardId === 'non_pointees') {
+        state.filtres.pointees = state.filtres.pointees === 'non' ? 'all' : 'non';
+    }
     
-    if (index > -1) {
-        state.filtres.statutsActifs.splice(index, 1);
-        if (statsCards.elements.cards[cardId]) {
-            statsCards.elements.cards[cardId].classList.remove('active');
+    // Mettre à jour l'état visuel de la carte
+    if (statsCards && statsCards.elements.cards[cardId]) {
+        const isActive = statsCards.elements.cards[cardId].classList.contains('active');
+        
+        // Désactiver toutes les cartes du même groupe
+        if (cardId === 'credits' || cardId === 'debits') {
+            ['credits', 'debits'].forEach(id => {
+                if (statsCards.elements.cards[id]) {
+                    statsCards.elements.cards[id].classList.remove('active');
+                }
+            });
+        } else if (cardId === 'pointees' || cardId === 'non_pointees') {
+            ['pointees', 'non_pointees'].forEach(id => {
+                if (statsCards.elements.cards[id]) {
+                    statsCards.elements.cards[id].classList.remove('active');
+                }
+            });
         }
-    } else {
-        state.filtres.statutsActifs.push(cardId);
-        if (statsCards.elements.cards[cardId]) {
+        
+        // Toggle la carte cliquée
+        if (!isActive) {
             statsCards.elements.cards[cardId].classList.add('active');
         }
     }
     
-    afficherDecomptes();
+    afficherOperations();
 }
 
 // ========================================
@@ -538,12 +583,12 @@ function afficherStatistiques(stats) {
             pointees: {
                 value: stats.pointees,
                 label: 'Pointées',
-                sublabel: `${Math.round((stats.pointees / stats.total) * 100)}%`
+                sublabel: stats.total > 0 ? `${Math.round((stats.pointees / stats.total) * 100)}%` : '0%'
             },
             non_pointees: {
                 value: stats.nonPointees,
                 label: 'Non pointées',
-                sublabel: `${Math.round((stats.nonPointees / stats.total) * 100)}%`
+                sublabel: stats.total > 0 ? `${Math.round((stats.nonPointees / stats.total) * 100)}%` : '0%'
             }
         };
         
@@ -646,111 +691,21 @@ function filtrerOperationsLocalement() {
 }
 
 // ========================================
-// FONCTIONS DE GÉNÉRATION CONFIG
-// ========================================
-
-function genererOptionsFiltres() {
-    const config = { ...FILTERS_CONFIG };
-    
-    // Générer les options de mutuelle
-    config.mutuelle.options = [
-        { value: '', label: 'Toutes les mutuelles' },
-        ...getListeMutuelles().map(mutuelle => ({
-            value: mutuelle,
-            label: mutuelle
-        }))
-    ];
-    
-    // Générer les options de réseau TP
-    config.reseauTP.options = [
-        { value: '', label: 'Tous les réseaux' },
-        ...getListePrestataires().map(reseau => ({
-            value: reseau,
-            label: reseau
-        }))
-    ];
-    
-    // Générer les options de statut
-    config.statut.options = [
-        { value: '', label: 'Tous les statuts' },
-        ...Object.entries(DECOMPTES_CONFIG.STATUTS)
-            .filter(([key]) => key !== 'supprime')
-            .map(([key, statut]) => ({
-                value: key,
-                label: statut.label,
-                icon: statut.icon
-            }))
-    ];
-    
-    return Object.values(config);
-}
-
-function genererConfigStatsCards() {
-    const cards = STATS_CARDS_CONFIG.cartes.map(carte => {
-        const statut = DECOMPTES_CONFIG.STATUTS[carte.statut];
-        return {
-            id: carte.statut,
-            label: statut.label,
-            value: 0,
-            icon: statut.icon,
-            color: carte.color
-        };
-    });
-    
-    // Ajouter la carte montant total
-    cards.push({
-        id: 'montantTotal',
-        label: 'Total virements',
-        value: '0 €',
-        icon: '💰',
-        color: 'success'
-    });
-    
-    return cards;
-}
-
-// ========================================
 // FORMATTERS ET UTILITAIRES
 // ========================================
 
-function formatDate(timestamp, format) {
-    return formaterDate(timestamp, format);
-}
-
-function afficherStatut(statut) {
-    const configData = DECOMPTES_CONFIG.STATUTS[statut];
-    if (!configData) return statut;
-    
-    return config.HTML_TEMPLATES.statut(configData);
-}
-
 function prepareExportData(data) {
     return data.map(row => {
-        const result = {};
-        
-        EXPORT_CONFIG.colonnes.forEach(col => {
-            switch (col.formatter) {
-                case 'date':
-                    result[col.label] = formatDate(row.dateVirement, 'jour');
-                    break;
-                case 'client':
-                    result[col.label] = `${row.client.prenom} ${row.client.nom}`;
-                    break;
-                case 'nss':
-                    result[col.label] = formaterNSS(row.client.numeroSecuriteSociale);
-                    break;
-                case 'montant':
-                    result[col.label] = formaterMontant(row[col.key]);
-                    break;
-                case 'statut':
-                    result[col.label] = DECOMPTES_CONFIG.STATUTS[row.statut]?.label || row.statut;
-                    break;
-                default:
-                    result[col.label] = row[col.key] || '-';
-            }
-        });
-        
-        return result;
+        return {
+            'Date': formatDate(row.date, 'jour'),
+            'Date valeur': formatDate(row.dateValeur, 'jour'),
+            'Libellé': row.libelle || '-',
+            'Catégorie': OPERATIONS_CONFIG.CATEGORIES[row.categorie]?.label || row.categorie,
+            'Type': row.montant >= 0 ? 'Crédit' : 'Débit',
+            'Montant': formaterMontant(row.montant),
+            'Compte': row.accountNumber ? `•••${row.accountNumber.slice(-4)}` : '-',
+            'Pointée': row.pointee ? 'Oui' : 'Non'
+        };
     });
 }
 
@@ -762,11 +717,9 @@ function prepareExportData(data) {
 // export { afficherOperations }; // Déjà exportée plus haut
 
 export function resetFiltres() {
-    if (filtresDecomptes) {
-        filtresDecomptes.reset();
+    if (filtresOperations) {
+        filtresOperations.reset();
     }
-    
-    state.filtres.statutsActifs = [];
     
     if (statsCards && statsCards.elements.cards) {
         Object.values(statsCards.elements.cards).forEach(card => {
@@ -774,7 +727,7 @@ export function resetFiltres() {
         });
     }
     
-    afficherDecomptes();
+    afficherOperations();
 }
 
 // ========================================
