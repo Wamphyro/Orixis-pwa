@@ -73,18 +73,6 @@ const FILTERS_CONFIG = {
             { value: 'quarter', label: '3 derniers mois' },
             { value: 'year', label: 'Cette année' }
         ]
-    },
-    pointees: {
-        type: 'select',
-        key: 'pointees',
-        label: 'Pointage',
-        defaultValue: 'all',
-        keepPlaceholder: true,
-        options: [
-            { value: 'all', label: 'Toutes' },
-            { value: 'oui', label: '✓ Pointées' },
-            { value: 'non', label: '✗ Non pointées' }
-        ]
     }
 };
 
@@ -244,8 +232,8 @@ function initDataTable() {
                     const statutKey = determinerStatutOperation(row);
                     const statut = OPERATIONS_CONFIG.STATUTS_OPERATION[statutKey];
                     
-                    return `<span class="badge badge-${statutKey}" style="background-color: ${statut.couleur}; color: white;">
-                        ${statut.icon} ${statut.label}
+                    return `<span style="color: ${statut.couleur}; font-weight: 500;">
+                        ${statut.label}
                     </span>`;
                 }
             },
@@ -411,8 +399,7 @@ function handleFilterChange(filters) {
     const isReset = !filters.recherche && 
                     !filters.compte && 
                     !filters.categorie &&
-                    filters.periode === 'all' && 
-                    filters.pointees === 'all';
+                    filters.periode === 'all';
     
     if (isReset) {
         // Reset complet
@@ -421,7 +408,6 @@ function handleFilterChange(filters) {
             compte: '',
             categorie: '',
             periode: 'all',
-            pointees: 'all',
             cartesActives: []
         };
         
@@ -438,8 +424,7 @@ function handleFilterChange(filters) {
             recherche: filters.recherche || '',
             compte: filters.compte || '',
             categorie: filters.categorie || '',
-            periode: filters.periode || 'month',
-            pointees: filters.pointees || 'all'
+            periode: filters.periode || 'month'
         };
     }
     
@@ -548,22 +533,22 @@ function afficherStatistiques(stats) {
     if (statsCards) {
         const statsToUpdate = {
             credits: {
-                value: formaterMontant(stats.montantCredits),
-                label: `${stats.credits} crédits`,
+                value: stats.credits.toString(),
+                label: 'Crédits',
                 sublabel: formaterMontant(stats.montantCredits)
             },
             debits: {
-                value: formaterMontant(stats.montantDebits),
-                label: `${stats.debits} débits`,
-                sublabel: formaterMontant(-stats.montantDebits)
+                value: stats.debits.toString(),
+                label: 'Débits',
+                sublabel: formaterMontant(stats.montantDebits)
             },
             pointees: {
-                value: stats.pointees,
+                value: stats.pointees.toString(),
                 label: 'Pointées',
                 sublabel: stats.total > 0 ? `${Math.round((stats.pointees / stats.total) * 100)}%` : '0%'
             },
             non_pointees: {
-                value: stats.nonPointees,
+                value: stats.nonPointees.toString(),
                 label: 'Non pointées',
                 sublabel: stats.total > 0 ? `${Math.round((stats.nonPointees / stats.total) * 100)}%` : '0%'
             }
@@ -622,14 +607,7 @@ function filtrerOperationsLocalement() {
         
         // Filtre type retiré
         
-        // Filtre pointées
-        if (state.filtres.pointees !== 'all') {
-            const estPointee = operation.pointee === true;
-            if (state.filtres.pointees === 'oui' && !estPointee) return false;
-            if (state.filtres.pointees === 'non' && estPointee) return false;
-        }
-        
-        // AJOUTER CE BLOC - Filtre cartes actives
+        // Filtre cartes actives
         if (state.filtres.cartesActives && state.filtres.cartesActives.length > 0) {
             let passeFiltreCartes = false;
             

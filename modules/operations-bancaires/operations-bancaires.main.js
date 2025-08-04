@@ -50,7 +50,6 @@ export const state = {
         periode: 'all', // Changé pour afficher TOUTES les opérations par défaut
         dateDebut: null,
         dateFin: null,
-        pointees: 'all', // all, oui, non
         cartesActives: [] // Pour le filtrage par cartes de stats
     },
     selection: [] // IDs des opérations sélectionnées
