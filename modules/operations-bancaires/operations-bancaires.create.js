@@ -82,21 +82,20 @@ function afficherFormulaireImport() {
         `;
     }
     
-    // Créer la structure
+    // Créer la structure moderne avec les 3 zones
     const modalBody = document.querySelector('#modalImportCSV .modal-body');
     if (modalBody) {
         modalBody.innerHTML = `
-            <div class="import-wrapper">
-                <!-- Zone 1 : Instructions -->
-                <div class="zone-instructions">
+            <div class="import-csv-wrapper">
+                <!-- Zone 1 : Description -->
+                <div class="zone-description">
                     <div class="content">
                         <div class="icon-wrapper">
                             <span class="icon">📊</span>
                         </div>
                         <div class="text">
-                            <h4>Import de relevés bancaires</h4>
-                            <p>Formats supportés : CSV et Excel des principales banques françaises (Crédit Mutuel, BNP, Société Générale...)</p>
-                            <p class="small text-muted">Le format est détecté automatiquement. Les doublons sont ignorés.</p>
+                            <h4>Analyse automatique des relevés</h4>
+                            <p>Import intelligent de vos relevés bancaires. Format détecté automatiquement, catégories assignées, doublons ignorés. Compatible avec toutes les banques françaises.</p>
                         </div>
                     </div>
                 </div>
@@ -106,28 +105,21 @@ function afficherFormulaireImport() {
                     <div id="import-dropzone"></div>
                 </div>
                 
-                <!-- Zone 3 : Résultat analyse -->
-                <div id="zoneResultat" class="zone-resultat" style="display: none;">
-                    <h5>📋 Analyse du fichier</h5>
-                    <div id="resultatsAnalyse"></div>
-                </div>
-                
-                <!-- Zone 4 : Preview des opérations -->
-                <div id="zonePreview" class="zone-preview" style="display: none;">
-                    <h5>👁️ Aperçu des opérations</h5>
-                    <div class="preview-stats" id="previewStats"></div>
-                    <div class="preview-table-wrapper">
-                        <table class="preview-table" id="previewTable">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Libellé</th>
-                                    <th>Catégorie</th>
-                                    <th>Montant</th>
-                                </tr>
-                            </thead>
-                            <tbody id="previewTableBody"></tbody>
-                        </table>
+                <!-- Zone 3 : Résultats analyse -->
+                <div class="zone-resultats">
+                    <div class="zone-resultats-header">
+                        <h5>
+                            📈 Analyse du fichier
+                            <span class="count" id="operations-count" style="display: none;">0</span>
+                        </h5>
+                    </div>
+                    <div class="zone-resultats-content">
+                        <div id="resultats-content">
+                            <div class="empty-state">
+                                <div class="icon">📄</div>
+                                <p>Aucun fichier analysé</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -141,6 +133,15 @@ function afficherFormulaireImport() {
         }
         
         dropzoneImport = config.createImportDropzone('#import-dropzone', {
+            messages: {
+                drop: '📤 Glissez votre relevé bancaire ici',
+                browse: 'ou cliquez pour parcourir',
+                typeError: 'Seuls les fichiers CSV et Excel sont acceptés',
+                sizeError: 'Fichier trop volumineux (max 5MB)',
+                maxFilesError: 'Un seul fichier à la fois'
+            },
+            previewSize: 'none',
+            showPreview: false,
             onDrop: async (files) => {
                 if (files.length > 0) {
                     await analyserFichier(files[0]);
@@ -162,11 +163,14 @@ function afficherFormulaireImport() {
 async function analyserFichier(file) {
     try {
         // Afficher un loader
-        const resultatsDiv = document.getElementById('resultatsAnalyse');
-        const zoneResultat = document.getElementById('zoneResultat');
+        const resultatsContent = document.getElementById('resultats-content');
         
-        zoneResultat.style.display = 'block';
-        resultatsDiv.innerHTML = '<div class="text-center">⏳ Analyse en cours...</div>';
+        resultatsContent.innerHTML = `
+            <div class="empty-state">
+                <div class="icon">⏳</div>
+                <p>Analyse en cours...</p>
+            </div>
+        `;
         
         // Analyser le fichier
         const resultat = await importService.importFile(file);
@@ -180,27 +184,20 @@ async function analyserFichier(file) {
             accountInfo: resultat.accountInfo
         };
         
-        // Afficher les résultats
+        // Afficher les résultats avec le nouveau design
         afficherResultatsAnalyse(resultat);
-        
-        // Afficher le preview
-        afficherPreview(resultat.operations.slice(0, 10)); // 10 premières
-        
-        // Activer le bouton d'import
-        const btnConfirmer = document.getElementById('btnConfirmerImport');
-        if (btnConfirmer) {
-            btnConfirmer.disabled = false;
-        }
         
     } catch (error) {
         console.error('❌ Erreur analyse:', error);
         afficherErreur(`Erreur lors de l'analyse: ${error.message}`);
         
-        const resultatsDiv = document.getElementById('resultatsAnalyse');
-        if (resultatsDiv) {
-            resultatsDiv.innerHTML = `
-                <div class="alert alert-danger">
-                    ❌ ${error.message}
+        const resultatsContent = document.getElementById('resultats-content');
+        if (resultatsContent) {
+            resultatsContent.innerHTML = `
+                <div class="result-section">
+                    <div class="alert alert-danger">
+                        ❌ ${error.message}
+                    </div>
                 </div>
             `;
         }
@@ -212,87 +209,106 @@ async function analyserFichier(file) {
 // ========================================
 
 function afficherResultatsAnalyse(resultat) {
-    const resultatsDiv = document.getElementById('resultatsAnalyse');
+    const resultatsContent = document.getElementById('resultats-content');
+    const operationsCount = document.getElementById('operations-count');
     
-    const accountHtml = resultat.accountInfo ? `
-        <div class="info-item">
-            <strong>Compte détecté :</strong> 
-            ${resultat.accountInfo.bank} - ${resultat.accountInfo.maskedNumber}
+    // Mettre à jour le compteur
+    if (operationsCount) {
+        operationsCount.style.display = 'inline-block';
+        operationsCount.textContent = resultat.stats.total;
+    }
+    
+    // Créer le contenu modernisé
+    resultatsContent.innerHTML = `
+        <!-- Section informations générales -->
+        <div class="result-section">
+            <h6>📋 Informations générales</h6>
+            <div class="analyse-info">
+                <div class="info-item">
+                    <strong>Format détecté :</strong> ${resultat.format}
+                </div>
+                ${resultat.accountInfo ? `
+                    <div class="info-item">
+                        <strong>Compte :</strong> 
+                        ${resultat.accountInfo.bank} - ${resultat.accountInfo.maskedNumber}
+                    </div>
+                ` : ''}
+                <div class="info-item">
+                    <strong>Période :</strong> 
+                    ${formatDateComplete(resultat.stats.periodes.debut)} → ${formatDateComplete(resultat.stats.periodes.fin)}
+                </div>
+                <div class="info-item">
+                    <strong>Durée :</strong> ${resultat.stats.periodes.jours} jours
+                </div>
+            </div>
         </div>
-    ` : '';
-    
-    resultatsDiv.innerHTML = `
-        <div class="analyse-info">
-            <div class="info-item">
-                <strong>Format :</strong> ${resultat.format}
-            </div>
-            ${accountHtml}
-            <div class="info-item">
-                <strong>Période :</strong> 
-                ${resultat.stats.periodes.debut} → ${resultat.stats.periodes.fin}
-                (${resultat.stats.periodes.jours} jours)
-            </div>
-            <div class="info-item">
-                <strong>Opérations :</strong> ${resultat.stats.total}
-            </div>
-            <div class="info-grid">
-                <div class="stat-item credit">
+        
+        <!-- Section statistiques -->
+        <div class="result-section">
+            <h6>📊 Statistiques</h6>
+            <div class="stats-grid">
+                <div class="stat-card credit">
                     <span class="label">Crédits</span>
                     <span class="value">+${formatMontant(resultat.stats.montantCredits)}</span>
-                    <span class="count">${resultat.stats.credits} op.</span>
+                    <span class="count">${resultat.stats.credits} opérations</span>
                 </div>
-                <div class="stat-item debit">
+                <div class="stat-card debit">
                     <span class="label">Débits</span>
                     <span class="value">-${formatMontant(resultat.stats.montantDebits)}</span>
-                    <span class="count">${resultat.stats.debits} op.</span>
+                    <span class="count">${resultat.stats.debits} opérations</span>
                 </div>
-                <div class="stat-item balance ${resultat.stats.balance >= 0 ? 'positive' : 'negative'}">
+                <div class="stat-card balance ${resultat.stats.balance >= 0 ? 'positive' : 'negative'}">
                     <span class="label">Balance</span>
-                    <span class="value">${formatMontant(resultat.stats.balance)}</span>
+                    <span class="value">${resultat.stats.balance >= 0 ? '+' : ''}${formatMontant(resultat.stats.balance)}</span>
+                    <span class="count">Total période</span>
                 </div>
             </div>
         </div>
+        
+        <!-- Section aperçu -->
+        <div class="result-section">
+            <h6>👁️ Aperçu des opérations</h6>
+            <div class="preview-wrapper">
+                <table class="preview-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Libellé</th>
+                            <th>Catégorie</th>
+                            <th>Montant</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${resultat.operations.slice(0, 5).map(op => `
+                            <tr>
+                                <td>${formatDate(op.date)}</td>
+                                <td class="text-truncate" style="max-width: 200px;" title="${escapeHtml(op.libelle)}">
+                                    ${escapeHtml(op.libelle)}
+                                </td>
+                                <td>
+                                    <span class="badge badge-${op.categorie}">
+                                        ${getCategorieLabel(op.categorie)}
+                                    </span>
+                                </td>
+                                <td class="text-end ${op.montant >= 0 ? 'text-success' : 'text-danger'}">
+                                    ${op.montant >= 0 ? '+' : ''}${formatMontant(op.montant)}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-muted text-center" style="margin-top: 8px; font-size: 12px;">
+                Affichage des 5 premières opérations sur ${resultat.stats.total}
+            </p>
+        </div>
     `;
-}
-
-// ========================================
-// AFFICHAGE PREVIEW
-// ========================================
-
-function afficherPreview(operations) {
-    const zonePreview = document.getElementById('zonePreview');
-    const tbody = document.getElementById('previewTableBody');
-    const stats = document.getElementById('previewStats');
     
-    if (!zonePreview || !tbody) return;
-    
-    // Afficher la zone
-    zonePreview.style.display = 'block';
-    
-    // Stats du preview
-    stats.innerHTML = `
-        <span class="text-muted">
-            Aperçu des ${operations.length} premières opérations sur ${importState.stats.total}
-        </span>
-    `;
-    
-    // Remplir le tableau
-    tbody.innerHTML = operations.map(op => `
-        <tr>
-            <td>${formatDate(op.date)}</td>
-            <td class="text-truncate" style="max-width: 300px;" title="${escapeHtml(op.libelle)}">
-                ${escapeHtml(op.libelle)}
-            </td>
-            <td>
-                <span class="badge badge-${op.categorie}">
-                    ${getCategorieLabel(op.categorie)}
-                </span>
-            </td>
-            <td class="text-end ${op.montant >= 0 ? 'text-success' : 'text-danger'}">
-                ${op.montant >= 0 ? '+' : ''}${formatMontant(op.montant)}
-            </td>
-        </tr>
-    `).join('');
+    // Activer le bouton d'import
+    const btnConfirmer = document.getElementById('btnConfirmerImport');
+    if (btnConfirmer) {
+        btnConfirmer.disabled = false;
+    }
 }
 
 // ========================================
@@ -380,6 +396,18 @@ function formatDate(dateStr) {
     if (!dateStr) return '-';
     const date = new Date(dateStr);
     return date.toLocaleDateString('fr-FR');
+}
+
+function formatDateComplete(dateStr) {
+    if (!dateStr) return '-';
+    const date = new Date(dateStr);
+    const options = { 
+        weekday: 'short', 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+    };
+    return date.toLocaleDateString('fr-FR', options);
 }
 
 function escapeHtml(text) {
