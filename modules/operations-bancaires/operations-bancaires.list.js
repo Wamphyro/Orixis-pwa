@@ -58,17 +58,6 @@ const FILTERS_CONFIG = {
         showIcons: true,
         options: [] // Généré depuis les constantes
     },
-    type: {
-        type: 'select',
-        key: 'type',
-        label: 'Type',
-        keepPlaceholder: true,
-        options: [
-            { value: '', label: 'Tous' },
-            { value: 'credit', label: '➕ Crédits', icon: '➕' },
-            { value: 'debit', label: '➖ Débits', icon: '➖' }
-        ]
-    },
     periode: {
         type: 'select',
         key: 'periode',
@@ -103,7 +92,6 @@ const STATS_CARDS_CONFIG = {
     cartes: [
         { id: 'credits', label: 'Crédits', icon: '➕', color: 'success' },
         { id: 'debits', label: 'Débits', icon: '➖', color: 'danger' },
-        { id: 'balance', label: 'Balance', icon: '💰', color: 'primary' },
         { id: 'pointees', label: 'Pointées', icon: '✓', color: 'info' },
         { id: 'non_pointees', label: 'Non pointées', icon: '✗', color: 'warning' }
     ]
@@ -396,21 +384,6 @@ async function initFiltres() {
         (filters) => handleFilterChange(filters)
     );
     
-    // Remplacer le bouton reset par un composant Button stylisé
-    const resetBtnElement = filtresOperations.getResetButtonElement();
-    if (resetBtnElement) {
-        const styledResetBtn = new Button({
-            text: '🔄 Réinitialiser',
-            variant: 'secondary',  // Gris neutre
-            size: 'sm',
-            textColor: 'dark',     // Texte noir
-            onClick: () => filtresOperations.reset()
-        });
-        
-        // Remplacer l'élément
-        resetBtnElement.replaceWith(styledResetBtn.getElement());
-    }
-    
     console.log('🔍 Filtres créés avec config locale');
 }
 
@@ -448,7 +421,6 @@ function handleFilterChange(filters) {
     const isReset = !filters.recherche && 
                     !filters.compte && 
                     !filters.categorie &&
-                    !filters.type &&
                     filters.periode === 'all' && 
                     filters.pointees === 'all';
     
@@ -458,7 +430,6 @@ function handleFilterChange(filters) {
             recherche: '',
             compte: '',
             categorie: '',
-            type: '',
             periode: 'all',
             pointees: 'all'
         };
@@ -476,7 +447,6 @@ function handleFilterChange(filters) {
             recherche: filters.recherche || '',
             compte: filters.compte || '',
             categorie: filters.categorie || '',
-            type: filters.type || '',
             periode: filters.periode || 'month',
             pointees: filters.pointees || 'all'
         };
@@ -489,11 +459,7 @@ function handleFilterChange(filters) {
 
 function handleStatsCardClick(cardId) {
     // Pour les opérations bancaires, on peut filtrer par type de carte cliquée
-    if (cardId === 'credits') {
-        state.filtres.type = state.filtres.type === 'credit' ? '' : 'credit';
-    } else if (cardId === 'debits') {
-        state.filtres.type = state.filtres.type === 'debit' ? '' : 'debit';
-    } else if (cardId === 'pointees') {
+    if (cardId === 'pointees') {
         state.filtres.pointees = state.filtres.pointees === 'oui' ? 'all' : 'oui';
     } else if (cardId === 'non_pointees') {
         state.filtres.pointees = state.filtres.pointees === 'non' ? 'all' : 'non';
@@ -595,12 +561,6 @@ function afficherStatistiques(stats) {
                 label: `${stats.debits} débits`,
                 sublabel: formaterMontant(-stats.montantDebits)
             },
-            balance: {
-                value: formaterMontant(stats.balance),
-                label: 'Balance',
-                sublabel: stats.balance >= 0 ? 'Positive' : 'Négative',
-                color: stats.balance >= 0 ? 'success' : 'danger'
-            },
             pointees: {
                 value: stats.pointees,
                 label: 'Pointées',
@@ -661,13 +621,7 @@ function filtrerOperationsLocalement() {
             return false;
         }
         
-        // Filtre type
-        if (state.filtres.type) {
-            const type = operation.montant >= 0 ? 'credit' : 'debit';
-            if (type !== state.filtres.type) {
-                return false;
-            }
-        }
+        // Filtre type retiré
         
         // Filtre pointées
         if (state.filtres.pointees !== 'all') {

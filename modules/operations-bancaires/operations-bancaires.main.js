@@ -47,7 +47,6 @@ export const state = {
         recherche: '',
         compte: '',
         categorie: '',
-        type: '',
         periode: 'all', // Changé pour afficher TOUTES les opérations par défaut
         dateDebut: null,
         dateFin: null,
