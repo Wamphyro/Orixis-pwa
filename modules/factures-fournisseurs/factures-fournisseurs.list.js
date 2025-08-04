@@ -94,12 +94,12 @@ const FILTERS_CONFIG = {
 // Configuration des stats cards
 const STATS_CARDS_CONFIG = {
     cartes: [
-        { id: 'nouvelles', statut: 'nouvelle', color: 'secondary' },
-        { id: 'a_payer', statut: 'a_payer', color: 'warning' },
-        { id: 'en_retard', statut: 'en_retard', color: 'danger' },
-        { id: 'a_pointer', statut: 'a_pointer', color: 'purple' },
-        { id: 'pointees_mois', special: true, color: 'success' },
-        { id: 'total_a_payer', special: true, color: 'info' }
+        { id: 'nouvelle', label: 'Nouvelle', icon: '📄', color: 'secondary' },
+        { id: 'a_payer', label: 'À payer', icon: '💳', color: 'warning' },
+        { id: 'en_retard', label: 'En retard', icon: '⚠️', color: 'danger' },
+        { id: 'a_pointer', label: 'À pointer', icon: '🔍', color: 'purple' },
+        { id: 'pointees_mois', label: 'Pointées ce mois', icon: '✓✓', color: 'success', special: true },
+        { id: 'total_a_payer', label: 'Total à payer', icon: '💰', color: 'info', special: true }
     ]
 };
 
@@ -382,25 +382,29 @@ function handleFilterChange(filters) {
 function handleStatsCardClick(cardId) {
     console.log('🎯 DEBUG - Clic sur carte:', cardId);
     
-    // Toggle le filtre par statut (sauf cartes spéciales)
-    if (!['pointees_mois', 'total_a_payer'].includes(cardId)) {
-        const index = state.filtres.statutsActifs.indexOf(cardId);
-        
-        if (index > -1) {
-            state.filtres.statutsActifs.splice(index, 1);
-            if (statsCards.elements.cards[cardId]) {
-                statsCards.elements.cards[cardId].classList.remove('active');
-            }
-        } else {
-            state.filtres.statutsActifs.push(cardId);
-            if (statsCards.elements.cards[cardId]) {
-                statsCards.elements.cards[cardId].classList.add('active');
-            }
-        }
-        
-        console.log('🎯 DEBUG - Statuts actifs après clic:', state.filtres.statutsActifs);
-        afficherFactures();
+    // Les cartes spéciales ne filtrent pas
+    const cartesSpeciales = ['pointees_mois', 'total_a_payer'];
+    if (cartesSpeciales.includes(cardId)) {
+        return;
     }
+    
+    // Toggle le filtre par statut
+    const index = state.filtres.statutsActifs.indexOf(cardId);
+    
+    if (index > -1) {
+        state.filtres.statutsActifs.splice(index, 1);
+        if (statsCards.elements.cards[cardId]) {
+            statsCards.elements.cards[cardId].classList.remove('active');
+        }
+    } else {
+        state.filtres.statutsActifs.push(cardId);
+        if (statsCards.elements.cards[cardId]) {
+            statsCards.elements.cards[cardId].classList.add('active');
+        }
+    }
+    
+    console.log('🎯 DEBUG - Statuts actifs après clic:', state.filtres.statutsActifs);
+    afficherFactures();
 }
 
 // ========================================
@@ -432,6 +436,14 @@ export async function chargerDonnees() {
         
         // Charger les statistiques
         const stats = await FacturesFournisseursService.getStatistiques();
+        
+        // DEBUG : Afficher les stats pour comprendre
+        console.log('📊 DEBUG - Statistiques complètes:', {
+            parStatut: stats.parStatut,
+            nombreEnRetard: stats.nombreEnRetard,
+            montantAPayer: stats.montantAPayer
+        });
+        
         afficherStatistiques(stats);
         
         // Afficher les factures
@@ -463,41 +475,32 @@ function afficherStatistiques(stats) {
         
         const statsToUpdate = {};
         
-        // Cartes par statut
-        STATS_CARDS_CONFIG.cartes.forEach(carte => {
-            if (!carte.special) {
-                const valeur = stats.parStatut[carte.statut] || 0;
-                statsToUpdate[carte.id] = valeur;
-                console.log(`📊 DEBUG - Carte ${carte.id} (${carte.statut}):`, valeur);
-            }
-        });
+        // Mapping direct des statuts depuis stats.parStatut
+        statsToUpdate.nouvelle = stats.parStatut?.nouvelle || 0;
+        statsToUpdate.a_payer = stats.parStatut?.a_payer || 0;
+        statsToUpdate.a_pointer = stats.parStatut?.a_pointer || 0;
         
-        // Cartes spéciales
+        // En retard : utiliser le compteur spécifique
         statsToUpdate.en_retard = stats.nombreEnRetard || 0;
-        console.log('📊 DEBUG - En retard:', stats.nombreEnRetard);
         
-        // Pointées ce mois
+        // Pointées ce mois - calcul direct sur les données
+        const maintenant = new Date();
         const pointeesMois = state.facturesData.filter(f => {
             if (f.statut !== 'pointee') return false;
             const datePointage = f.dates?.pointage;
             if (!datePointage) return false;
             
             const date = datePointage.toDate ? datePointage.toDate() : new Date(datePointage);
-            const now = new Date();
-            return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+            return date.getMonth() === maintenant.getMonth() && 
+                   date.getFullYear() === maintenant.getFullYear();
         }).length;
         
-        console.log('📊 DEBUG - Pointées ce mois:', pointeesMois);
-        
-        // IMPORTANT : Pour les cartes spéciales, il faut passer juste la valeur, pas un objet
         statsToUpdate.pointees_mois = pointeesMois;
         
-        // Total à payer
-        const montantFormate = formaterMontant(stats.montantAPayer || 0);
-        console.log('📊 DEBUG - Total à payer:', montantFormate);
+        // Total à payer - formater le montant
+        statsToUpdate.total_a_payer = formaterMontant(stats.montantAPayer || 0);
         
-        // IMPORTANT : Pour cette carte, on veut juste afficher le montant formaté
-        statsToUpdate.total_a_payer = montantFormate;
+        console.log('📊 DEBUG - Stats à mettre à jour:', statsToUpdate);
         
         statsCards.updateAll(statsToUpdate);
     }
@@ -593,42 +596,14 @@ function genererOptionsFiltres() {
 }
 
 function genererConfigStatsCards() {
-    const cards = STATS_CARDS_CONFIG.cartes.map(carte => {
-        if (carte.special) {
-            // Cartes spéciales
-            if (carte.id === 'pointees_mois') {
-                return {
-                    id: carte.id,
-                    label: 'Pointées ce mois',
-                    value: 0,
-                    icon: '✓✓',
-                    color: carte.color,
-                    format: 'number' // Indiquer que c'est un nombre
-                };
-            } else if (carte.id === 'total_a_payer') {
-                return {
-                    id: carte.id,
-                    label: 'Total à payer',
-                    value: '0 €',
-                    icon: '💰',
-                    color: carte.color,
-                    format: 'currency' // Indiquer que c'est déjà formaté
-                };
-            }
-        } else {
-            // Cartes standard
-            const statut = FACTURES_CONFIG.STATUTS[carte.statut];
-            return {
-                id: carte.id,
-                label: statut.label,
-                value: 0,
-                icon: statut.icon,
-                color: carte.color
-            };
-        }
-    });
-    
-    return cards;
+    // Utiliser directement la configuration avec labels et icônes
+    return STATS_CARDS_CONFIG.cartes.map(carte => ({
+        id: carte.id,
+        label: carte.label,
+        value: carte.special && carte.id === 'total_a_payer' ? '0 €' : 0,
+        icon: carte.icon,
+        color: carte.color
+    }));
 }
 
 // ========================================
