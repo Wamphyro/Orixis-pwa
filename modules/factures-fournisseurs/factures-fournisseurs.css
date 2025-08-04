@@ -1186,6 +1186,170 @@
 }
 
 /* ========================================
+   STYLES BOÎTE DE DIALOGUE RÉCAPITULATIVE
+   ======================================== */
+   
+.dialog-recap-factures {
+    padding: 10px 0;
+}
+
+.recap-section {
+    margin-bottom: 20px;
+}
+
+.recap-section h4 {
+    margin: 0 0 15px 0;
+    font-size: 16px;
+    color: #374151;
+}
+
+.recap-section h5 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: #6b7280;
+    font-weight: 600;
+}
+
+/* Stats récapitulatives */
+.recap-stats {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px 25px;
+    border-radius: 10px;
+    min-width: 100px;
+}
+
+.stat-item.a-payer {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.stat-item.deja-payee {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.stat-item .stat-icon {
+    font-size: 24px;
+    margin-bottom: 5px;
+}
+
+.stat-item .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.stat-item .stat-label {
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+/* Liste des fichiers dans le récap */
+.recap-files-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 10px;
+    background: #f9fafb;
+}
+
+.recap-file-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    background: white;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.recap-file-item:last-child {
+    margin-bottom: 0;
+}
+
+.recap-file-item .file-icon {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.recap-file-item .file-name {
+    flex: 1;
+    color: #374151;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.recap-file-item .file-status {
+    margin-left: 10px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.recap-file-item .file-status.a-payer {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.recap-file-item .file-status.deja-payee {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+/* Warning */
+.recap-warning {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 8px;
+    margin-top: 15px;
+}
+
+.recap-warning .warning-icon {
+    font-size: 20px;
+}
+
+.recap-warning .warning-text {
+    font-size: 13px;
+    color: #0369a1;
+    line-height: 1.4;
+}
+
+/* Scrollbar personnalisée pour la liste */
+.recap-files-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.recap-files-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.recap-files-list::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+}
+
+.recap-files-list::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+/* ========================================
    HISTORIQUE DES DIFFICULTÉS
    
    [03/02/2025] - Création initiale

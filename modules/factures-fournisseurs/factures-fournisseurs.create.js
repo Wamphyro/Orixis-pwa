@@ -301,6 +301,72 @@ window.updateStatutFacture = function(index, statut) {
 
 async function analyserFactures() {
     try {
+        // Préparer le récapitulatif
+        const countAPayer = nouvelleFacture.selections.filter(s => s === 'a_payer').length;
+        const countDejaPayee = nouvelleFacture.selections.filter(s => s === 'deja_payee').length;
+        
+        // Créer le contenu HTML du récapitulatif
+        const recapContent = `
+            <div class="dialog-recap-factures">
+                <div class="recap-section">
+                    <h4>📋 Récapitulatif des factures à traiter</h4>
+                    <div class="recap-stats">
+                        <div class="stat-item a-payer">
+                            <span class="stat-icon">💳</span>
+                            <span class="stat-value">${countAPayer}</span>
+                            <span class="stat-label">à payer</span>
+                        </div>
+                        <div class="stat-item deja-payee">
+                            <span class="stat-icon">✅</span>
+                            <span class="stat-value">${countDejaPayee}</span>
+                            <span class="stat-label">déjà payée${countDejaPayee > 1 ? 's' : ''}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="recap-section">
+                    <h5>Détail des fichiers :</h5>
+                    <div class="recap-files-list">
+                        ${nouvelleFacture.documents.map((file, index) => {
+                            const statut = nouvelleFacture.selections[index];
+                            const statusLabel = statut === 'a_payer' ? '💳 À payer' : '✅ Déjà payée';
+                            const statusClass = statut === 'a_payer' ? 'a-payer' : 'deja-payee';
+                            
+                            return `
+                                <div class="recap-file-item">
+                                    <span class="file-icon">📄</span>
+                                    <span class="file-name">${escapeHtml(file.name)}</span>
+                                    <span class="file-status ${statusClass}">${statusLabel}</span>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+                
+                <div class="recap-warning">
+                    <span class="warning-icon">🤖</span>
+                    <span class="warning-text">L'analyse IA va extraire automatiquement les informations des factures.</span>
+                </div>
+            </div>
+        `;
+        
+        // Afficher la boîte de dialogue de confirmation
+        const confirme = await config.Dialog.custom({
+            type: 'confirm',
+            title: 'Confirmer l\'analyse',
+            message: recapContent,
+            showCancel: true,
+            confirmText: 'Lancer l\'analyse',
+            cancelText: 'Annuler',
+            confirmClass: 'primary'
+        });
+        
+        // Si annulation, ne rien faire
+        if (!confirme) {
+            return;
+        }
+        
+        // Si confirmation, continuer avec l'analyse
         const btnAnalyser = document.getElementById('btnAnalyserFactures');
         const texteOriginal = btnAnalyser.innerHTML;
         btnAnalyser.disabled = true;
