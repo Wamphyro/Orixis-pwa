@@ -432,7 +432,8 @@ function handleFilterChange(filters) {
             compte: '',
             categorie: '',
             periode: 'all',
-            pointees: 'all'
+            pointees: 'all',
+            cartesActives: []
         };
         
         // Désélectionner toutes les cartes
@@ -639,6 +640,31 @@ function filtrerOperationsLocalement() {
             if (state.filtres.pointees === 'non' && estPointee) return false;
         }
         
+        // AJOUTER CE BLOC - Filtre cartes actives
+        if (state.filtres.cartesActives && state.filtres.cartesActives.length > 0) {
+            let passeFiltreCartes = false;
+            
+            // Vérifier chaque carte active
+            for (const carte of state.filtres.cartesActives) {
+                switch (carte) {
+                    case 'credits':
+                        if (operation.montant > 0) passeFiltreCartes = true;
+                        break;
+                    case 'debits':
+                        if (operation.montant < 0) passeFiltreCartes = true;
+                        break;
+                    case 'pointees':
+                        if (operation.pointee === true) passeFiltreCartes = true;
+                        break;
+                    case 'non_pointees':
+                        if (operation.pointee !== true) passeFiltreCartes = true;
+                        break;
+                }
+            }
+            
+            if (!passeFiltreCartes) return false;
+        }
+        
         // Filtre période
         if (state.filtres.periode !== 'all') {
             const dateOperation = new Date(operation.date);
@@ -704,6 +730,8 @@ export function resetFiltres() {
     if (filtresOperations) {
         filtresOperations.reset();
     }
+    
+    state.filtres.cartesActives = [];
     
     if (statsCards && statsCards.elements.cards) {
         Object.values(statsCards.elements.cards).forEach(card => {
