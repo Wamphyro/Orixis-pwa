@@ -295,18 +295,6 @@ window.supprimerOperations = supprimerOperations;
 window.fermerModal = function(modalId) {
     config.modalManager.close(modalId);
 };
-    try {
-        const operation = await OperationsBancairesService.getOperation(operationId);
-        if (operation) {
-            // TODO: Afficher dans la modal
-            console.log('Détail opération:', operation);
-            config.notify.info('Fonctionnalité en cours de développement');
-        }
-    } catch (error) {
-        console.error('Erreur chargement détail:', error);
-        config.notify.error('Erreur lors du chargement du détail');
-    }
-};
 
 // Fonction pour catégoriser des opérations
 async function categoriserOperations() {
