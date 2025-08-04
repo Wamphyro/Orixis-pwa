@@ -28,7 +28,7 @@ import {
     calculerBalance,
     getComptesBancaires
 } from './operations-bancaires.data.js';
-import { Button } from '../../src/components/index.js';
+import { Button, Tooltip } from '../../src/components/index.js';
 import config from './operations-bancaires.config.js';
 import { state } from './operations-bancaires.main.js';
 
@@ -119,6 +119,7 @@ let tableOperations = null;
 let filtresOperations = null;
 let statsCards = null;
 let operationsFiltrees = []; // Cache des opérations filtrées
+let tooltipsInstances = []; // Instances des tooltips
 
 // ========================================
 // INITIALISATION DU MODULE
@@ -207,12 +208,7 @@ function initDataTable() {
                 width: 80,
                 formatter: (value) => {
                     const cat = OPERATIONS_CONFIG.CATEGORIES[value] || OPERATIONS_CONFIG.CATEGORIES.autre;
-                    return `
-                        <span class="categorie-icon-wrapper">
-                            <span class="categorie-icon">${cat.icon}</span>
-                            <span class="categorie-tooltip">${cat.label}</span>
-                        </span>
-                    `;
+                    return `<span class="categorie-icon" data-tooltip="${cat.label}" style="font-size: 20px; cursor: help;">${cat.icon}</span>`;
                 }
             },
             {
@@ -550,6 +546,28 @@ export async function chargerDonnees() {
 }
 
 // ========================================
+// GESTION DES TOOLTIPS
+// ========================================
+
+function initTooltips() {
+    // Détruire les anciens tooltips
+    if (tooltipsInstances && tooltipsInstances.length > 0) {
+        tooltipsInstances.forEach(tooltip => tooltip.destroy());
+        tooltipsInstances = [];
+    }
+    
+    // Créer les nouveaux tooltips
+    setTimeout(() => {
+        tooltipsInstances = Tooltip.attach('[data-tooltip]', {
+            theme: 'dark',
+            position: 'top',
+            delay: 0, // Instantané
+            arrow: true
+        });
+    }, 100);
+}
+
+// ========================================
 // AFFICHAGE DES DONNÉES
 // ========================================
 
@@ -590,6 +608,9 @@ function afficherOperations() {
     
     operationsFiltrees = filtrerOperationsLocalement();
     tableOperations.setData(operationsFiltrees);
+    
+    // Réinitialiser les tooltips après le rendu
+    initTooltips();
 }
 
 export { afficherOperations };
@@ -791,6 +812,17 @@ window.pointerOperation = async function(operationId, pointer) {
         config.notify.error('Erreur lors du pointage');
     }
 };
+
+// ========================================
+// NETTOYAGE
+// ========================================
+
+window.addEventListener('beforeunload', () => {
+    // Nettoyer les tooltips
+    if (tooltipsInstances && tooltipsInstances.length > 0) {
+        tooltipsInstances.forEach(tooltip => tooltip.destroy());
+    }
+});
 
 /* ========================================
    HISTORIQUE DES MODIFICATIONS

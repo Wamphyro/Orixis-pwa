@@ -1,0 +1,237 @@
+/* ========================================
+   TOOLTIP.CSS - Styles du composant Tooltip
+   Chemin: src/components/ui/tooltip/tooltip.css
+   
+   DESCRIPTION:
+   Styles pour les infobulles personnalisables
+   Support de multiples thèmes et positions
+   ======================================== */
+
+/* ========================================
+   BASE TOOLTIP
+   ======================================== */
+
+.tooltip {
+    position: absolute;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    white-space: nowrap;
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Contenu du tooltip */
+.tooltip-content {
+    position: relative;
+    z-index: 1;
+}
+
+/* ========================================
+   THÈMES
+   ======================================== */
+
+/* Thème sombre (par défaut) */
+.tooltip-dark {
+    background-color: #212121;
+    color: #ffffff;
+}
+
+/* Thème clair */
+.tooltip-light {
+    background-color: #ffffff;
+    color: #212121;
+    border: 1px solid #e0e0e0;
+}
+
+/* Thème primary */
+.tooltip-primary {
+    background-color: #1976d2;
+    color: #ffffff;
+}
+
+/* Thème success */
+.tooltip-success {
+    background-color: #2e7d32;
+    color: #ffffff;
+}
+
+/* Thème warning */
+.tooltip-warning {
+    background-color: #f57c00;
+    color: #ffffff;
+}
+
+/* Thème error */
+.tooltip-error {
+    background-color: #c62828;
+    color: #ffffff;
+}
+
+/* ========================================
+   FLÈCHE
+   ======================================== */
+
+.tooltip-arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border: 6px solid transparent;
+}
+
+/* Position: Top */
+.tooltip-top .tooltip-arrow {
+    bottom: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-top-color: inherit;
+}
+
+/* Position: Bottom */
+.tooltip-bottom .tooltip-arrow {
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-bottom-color: inherit;
+}
+
+/* Position: Left */
+.tooltip-left .tooltip-arrow {
+    right: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-left-color: inherit;
+}
+
+/* Position: Right */
+.tooltip-right .tooltip-arrow {
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-right-color: inherit;
+}
+
+/* Couleurs des flèches selon le thème */
+.tooltip-dark .tooltip-arrow {
+    border-top-color: #212121;
+    border-bottom-color: #212121;
+    border-left-color: #212121;
+    border-right-color: #212121;
+}
+
+.tooltip-light .tooltip-arrow {
+    border-top-color: #ffffff;
+    border-bottom-color: #ffffff;
+    border-left-color: #ffffff;
+    border-right-color: #ffffff;
+}
+
+.tooltip-primary .tooltip-arrow {
+    border-top-color: #1976d2;
+    border-bottom-color: #1976d2;
+    border-left-color: #1976d2;
+    border-right-color: #1976d2;
+}
+
+.tooltip-success .tooltip-arrow {
+    border-top-color: #2e7d32;
+    border-bottom-color: #2e7d32;
+    border-left-color: #2e7d32;
+    border-right-color: #2e7d32;
+}
+
+.tooltip-warning .tooltip-arrow {
+    border-top-color: #f57c00;
+    border-bottom-color: #f57c00;
+    border-left-color: #f57c00;
+    border-right-color: #f57c00;
+}
+
+.tooltip-error .tooltip-arrow {
+    border-top-color: #c62828;
+    border-bottom-color: #c62828;
+    border-left-color: #c62828;
+    border-right-color: #c62828;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+/* Animation scale */
+.tooltip[style*="scale"] {
+    transform-origin: center bottom;
+}
+
+.tooltip-top[style*="scale"] {
+    transform-origin: center bottom;
+}
+
+.tooltip-bottom[style*="scale"] {
+    transform-origin: center top;
+}
+
+.tooltip-left[style*="scale"] {
+    transform-origin: right center;
+}
+
+.tooltip-right[style*="scale"] {
+    transform-origin: left center;
+}
+
+/* ========================================
+   CONTENU RICHE
+   ======================================== */
+
+/* Support du contenu multi-lignes */
+.tooltip-content.multiline {
+    white-space: normal;
+    max-width: 100%;
+}
+
+/* Support des listes */
+.tooltip-content ul,
+.tooltip-content ol {
+    margin: 4px 0;
+    padding-left: 20px;
+}
+
+/* Support des images */
+.tooltip-content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 4px 0;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+    .tooltip {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+    
+    .tooltip-arrow {
+        border-width: 5px;
+    }
+}
+
+/* ========================================
+   UTILITAIRES
+   ======================================== */
+
+/* Désactiver les tooltips natifs sur les éléments avec notre tooltip */
+[data-tooltip] {
+    position: relative;
+}
+
+/* Style pour les éléments déclencheurs */
+.has-tooltip {
+    cursor: help;
+    border-bottom: 1px dashed currentColor;
+}

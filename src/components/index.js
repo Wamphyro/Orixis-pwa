@@ -46,6 +46,9 @@ export { LoadingOverlay, loader } from './ui/loading-overlay/loading-overlay.com
 // DropZone
 export { DropZone } from './ui/dropzone/dropzone.component.js';
 
+// Tooltip
+export { Tooltip } from './ui/tooltip/tooltip.component.js';
+
 // ========================================
 // FONCTIONS UTILITAIRES
 // ========================================
