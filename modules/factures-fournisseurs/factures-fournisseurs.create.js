@@ -64,20 +64,130 @@ export function ouvrirNouvelleFacture() {
 // AFFICHAGE FORMULAIRE UPLOAD
 // ========================================
 
+function afficherFormulaireUpload() {
+    // Mettre à jour le footer avec le bouton désactivé
+    const modalFooter = document.querySelector('#modalNouvelleFacture .modal-footer');
+    if (modalFooter) {
+        modalFooter.innerHTML = `
+            <button class="btn btn-ghost btn-pill" onclick="fermerModal('modalNouvelleFacture')">
+                Annuler
+            </button>
+        `;
+    }
+    
+    // Créer la structure moderne avec les 3 zones
+    const modalBody = document.querySelector('#modalNouvelleFacture .modal-body');
+    if (modalBody) {
+        modalBody.innerHTML = `
+            <div class="nouvelle-facture-wrapper">
+                <!-- Zone 1 : Description -->
+                <div class="zone-description">
+                    <div class="content">
+                        <div class="icon-wrapper">
+                            <span class="icon">📑</span>
+                        </div>
+                        <div class="text">
+                            <h4>Upload de factures fournisseurs</h4>
+                            <p>Déposez vos factures (Free, EDF, etc.). Vous pourrez ensuite indiquer lesquelles sont à payer ou déjà payées avant l'analyse automatique.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Zone 2 : Dropzone -->
+                <div class="zone-dropzone">
+                    <div id="facture-dropzone"></div>
+                </div>
+                
+                <!-- Zone 3 : Résultats (vide au départ) -->
+                <div class="zone-resultats">
+                    <div class="zone-resultats-header">
+                        <h5>
+                            📋 Fichiers uploadés
+                            <span class="count" id="files-count" style="display: none;">0</span>
+                        </h5>
+                    </div>
+                    <div class="zone-resultats-content">
+                        <div id="resultats-content">
+                            <div class="empty-state">
+                                <div class="icon">📄</div>
+                                <p>Aucun fichier uploadé</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Créer la DropZone après que le HTML soit inséré
+    setTimeout(() => {
+        if (dropzoneDocuments) {
+            dropzoneDocuments.destroy();
+        }
+        
+        dropzoneDocuments = config.createFactureDropzone('#facture-dropzone', {
+            messages: {
+                drop: '📁 Glissez vos factures ici',
+                browse: 'ou cliquez pour parcourir',
+                typeError: 'Seuls les PDF et images (JPG, PNG) sont acceptés',
+                sizeError: 'Fichier trop volumineux (max 10MB)',
+                maxFilesError: 'Maximum 10 fichiers autorisés'
+            },
+            previewSize: 'none',
+            showPreview: false,
+            onDrop: (files) => {
+                console.log('📎 Fichiers déposés:', files);
+                nouvelleFacture.documents = files;
+                // Afficher l'interface de sélection
+                afficherSelectionStatuts(files);
+            },
+            onRemove: (file, index) => {
+                console.log('🗑️ Fichier retiré:', file.name);
+                // Retour à l'upload si plus de fichiers
+                if (nouvelleFacture.documents.length === 0) {
+                    afficherFormulaireUpload();
+                }
+            },
+            onChange: (files) => {
+                nouvelleFacture.documents = files;
+                if (files.length === 0) {
+                    afficherFormulaireUpload();
+                }
+            }
+        });
+    }, 100);
+}
+
+// Exposer globalement
+window.afficherFormulaireUpload = afficherFormulaireUpload;
+
+// ========================================
+// INTERFACE DE SÉLECTION DES STATUTS
+// ========================================
+
 function afficherSelectionStatuts(files) {
     const modalFooter = document.querySelector('#modalNouvelleFacture .modal-footer');
     
     // Initialiser les sélections (par défaut : à payer)
     nouvelleFacture.selections = files.map(() => 'a_payer');
     
+    // Mettre à jour le compteur
+    const filesCount = document.getElementById('files-count');
+    if (filesCount) {
+        filesCount.style.display = 'inline-block';
+        filesCount.textContent = files.length;
+    }
+    
     // Mettre à jour la zone de résultats
-    const resultatsContent = document.querySelector('.zone-resultats-content');
+    const resultatsContent = document.getElementById('resultats-content');
     if (resultatsContent) {
         resultatsContent.innerHTML = `
-            <div class="factures-selection-moderne">
-                <div class="factures-list">
+            <!-- Section fichiers sélectionnés -->
+            <div class="result-section">
+                <h6>📁 Fichiers sélectionnés</h6>
+                <div class="files-analysis-list">
                     ${files.map((file, index) => `
-                        <div class="facture-item">
+                        <div class="file-analysis-item">
                             <div class="file-icon">📄</div>
                             <div class="file-info">
                                 <div class="file-name">${escapeHtml(file.name)}</div>
@@ -103,20 +213,21 @@ function afficherSelectionStatuts(files) {
                         </div>
                     `).join('')}
                 </div>
-                
-                <!-- Résumé de la sélection -->
-                <div class="selection-summary">
-                    <div class="summary-item">
-                        <span class="summary-icon">💳</span>
-                        <span class="summary-text">
-                            <span id="count-a-payer">${files.length}</span> facture(s) à payer
-                        </span>
+            </div>
+            
+            <!-- Résumé de la sélection -->
+            <div class="result-section">
+                <h6>📊 Résumé de la sélection</h6>
+                <div class="stats-grid">
+                    <div class="stat-card a-payer">
+                        <span class="label">À payer</span>
+                        <span class="value" id="count-a-payer">${files.length}</span>
+                        <span class="count">facture(s)</span>
                     </div>
-                    <div class="summary-item">
-                        <span class="summary-icon">✅</span>
-                        <span class="summary-text">
-                            <span id="count-deja-payee">0</span> facture(s) déjà payée(s)
-                        </span>
+                    <div class="stat-card deja-payee">
+                        <span class="label">Déjà payées</span>
+                        <span class="value" id="count-deja-payee">0</span>
+                        <span class="count">facture(s)</span>
                     </div>
                 </div>
             </div>
@@ -167,7 +278,6 @@ window.updateStatutFacture = function(index, statut) {
     if (countDejaPayeeEl) countDejaPayeeEl.textContent = countDejaPayee;
 };
 
-
 // ========================================
 // ANALYSE ET CRÉATION DES FACTURES
 // ========================================
@@ -180,7 +290,7 @@ async function analyserFactures() {
         btnAnalyser.innerHTML = '⏳ Upload et analyse en cours...';
         
         // Afficher la zone de progression
-        const resultatsContent = document.querySelector('.zone-resultats-content');
+        const resultatsContent = document.getElementById('resultats-content');
         if (resultatsContent) {
             resultatsContent.innerHTML = `
                 <div class="analyse-progress">
@@ -389,9 +499,6 @@ window.refreshFacturesList = async () => {
     }
 };
 
-// Reset global
-window.afficherFormulaireUpload = afficherFormulaireUpload;
-
 /* ========================================
    HISTORIQUE DES MODIFICATIONS
    
@@ -400,6 +507,11 @@ window.afficherFormulaireUpload = afficherFormulaireUpload;
    - Choix : à payer / déjà payée
    - Analyse IA en arrière-plan
    - Création avec le bon statut initial
+   
+   [03/02/2025] - Refonte style moderne
+   - Adaptation du style operations-bancaires
+   - Structure en 3 zones
+   - Affichage progression moderne
    
    NOTES:
    - Workflow : Upload → Sélection → Création → IA
