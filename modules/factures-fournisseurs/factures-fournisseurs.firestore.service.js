@@ -19,7 +19,6 @@
 // ========================================
 
 import { db } from '../../src/services/firebase.service.js';
-import { FACTURE_FOURNISSEUR_TEMPLATE } from '../../src/templates/index.js';
 
 // ========================================
 // CONFIGURATION
