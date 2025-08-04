@@ -460,7 +460,7 @@ VALIDATION :
             // Métadonnées
             extractionIA: {
                 timestamp: donneesBrutes.timestamp_analyse,
-                modele: 'gpt-4o-mini',
+                modele: 'gpt-4.1-mini',
                 fournisseurDetecte: donneesBrutes.fournisseur?.nom,
                 typeFacture: donneesBrutes.facture?.typeFacture,
                 // NOUVEAU : Inclure TOUTES les données brutes extraites
