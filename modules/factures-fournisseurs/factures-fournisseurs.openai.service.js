@@ -17,6 +17,7 @@
 // ========================================
 
 import { determinerCategorieFournisseur, calculerDateEcheance } from './factures-fournisseurs.data.js';
+import { ProgressBar } from '../../src/components/ui/progress-bar/progress-bar.component.js';
 
 // ========================================
 // CONFIGURATION
@@ -71,7 +72,9 @@ export class FactureOpenAIService {
             
             // PROMPT SPÉCIFIQUE POUR FACTURES FOURNISSEURS
             const prompt = `Tu es un expert en traitement de factures fournisseurs.
-Tu analyses ${images.length} image(s) d'une facture et tu dois retourner UNIQUEMENT un objet JSON valide, sans aucun texte ni balise.
+Tu analyses ${images.length} ${images.length > 1 ? 'pages' : 'image'} d'une facture et tu dois retourner UNIQUEMENT un objet JSON valide, sans aucun texte ni balise.
+
+${images.length > 1 ? 'IMPORTANT : Ces images représentent les pages successives du MÊME document. Tu dois combiner les informations de toutes les pages pour extraire les données complètes de la facture.' : ''}
 
 FORMAT JSON OBLIGATOIRE :
 {
@@ -262,27 +265,150 @@ VALIDATION :
         console.log('📄 Type de document:', documentType);
         
         try {
-            // On récupère le fichier comme blob peu importe le type
-            const response = await fetch(documentUrl);
-            const blob = await response.blob();
+            // Si c'est une image, traitement normal
+            if (documentType.startsWith('image/')) {
+                const response = await fetch(documentUrl);
+                const blob = await response.blob();
+                
+                const base64 = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        const base64 = reader.result.split(',')[1];
+                        resolve(base64);
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+                
+                console.log('✅ Image convertie en base64');
+                return [base64];
+            }
             
-            // Convertir en base64
-            const base64 = await new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    const base64 = reader.result.split(',')[1];
-                    resolve(base64);
-                };
-                reader.onerror = reject;
-                reader.readAsDataURL(blob);
-            });
+            // Si c'est un PDF, utiliser PDF.js
+            if (documentType === 'application/pdf') {
+                console.log('📑 Conversion PDF vers images avec PDF.js...');
+                
+                // Afficher un message d'attente
+                if (window.config && window.config.notify) {
+                    window.config.notify.info('Conversion du PDF en cours...');
+                }
+                
+                // Charger le PDF
+                const loadingTask = pdfjsLib.getDocument(documentUrl);
+                const pdf = await loadingTask.promise;
+                
+                console.log(`📄 PDF chargé : ${pdf.numPages} pages`);
+                
+                const images = [];
+                const maxPages = Math.min(pdf.numPages, 5); // Limiter à 5 pages max pour GPT-4
+                
+                // Créer une progress bar si possible
+                let progressBar = null;
+                const progressContainer = document.getElementById('pdf-conversion-progress');
+                
+                if (progressContainer) {
+                    progressContainer.style.display = 'block';
+                    progressBar = new ProgressBar({
+                        container: progressContainer,
+                        label: 'Conversion du PDF en images...',
+                        sublabel: `0 page sur ${maxPages}`,
+                        showPercent: true,
+                        animated: true,
+                        variant: 'primary'
+                    });
+                }
+                
+                // Convertir chaque page
+                for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
+                    console.log(`🔄 Conversion page ${pageNum}/${maxPages}...`);
+                    
+                    // Mettre à jour la progress bar
+                    if (progressBar) {
+                        progressBar.setProgress(((pageNum - 1) / maxPages) * 100);
+                        progressBar.setSublabel(`Page ${pageNum} sur ${maxPages}`);
+                    }
+                    
+                    const page = await pdf.getPage(pageNum);
+                    
+                    // Définir l'échelle (2 = 200% pour une meilleure qualité)
+                    const scale = 2;
+                    const viewport = page.getViewport({ scale });
+                    
+                    // Créer un canvas
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+                    
+                    // Render la page PDF dans le canvas
+                    const renderContext = {
+                        canvasContext: context,
+                        viewport: viewport
+                    };
+                    
+                    await page.render(renderContext).promise;
+                    
+                    // Convertir le canvas en base64 (JPEG pour réduire la taille)
+                    const base64 = await new Promise((resolve) => {
+                        canvas.toBlob((blob) => {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                                const base64 = reader.result.split(',')[1];
+                                resolve(base64);
+                            };
+                            reader.readAsDataURL(blob);
+                        }, 'image/jpeg', 0.85); // Qualité 85%
+                    });
+                    
+                    images.push(base64);
+                    
+                    // Nettoyer le canvas
+                    canvas.remove();
+                    
+                    // Mettre à jour la progress bar
+                    if (progressBar) {
+                        progressBar.setProgress((pageNum / maxPages) * 100);
+                    }
+                }
+                
+                // Finaliser la progress bar
+                if (progressBar) {
+                    progressBar.complete();
+                    progressBar.setLabel('Conversion terminée !');
+                    
+                    // Masquer après 1 seconde
+                    setTimeout(() => {
+                        progressBar.destroy();
+                        if (progressContainer) {
+                            progressContainer.style.display = 'none';
+                        }
+                    }, 1000);
+                }
+                
+                console.log(`✅ PDF converti : ${images.length} images générées`);
+                
+                if (pdf.numPages > maxPages) {
+                    console.warn(`⚠️ PDF tronqué : seulement ${maxPages} pages sur ${pdf.numPages} converties`);
+                    if (window.config && window.config.notify) {
+                        window.config.notify.warning(`PDF tronqué : ${maxPages} pages analysées sur ${pdf.numPages}`);
+                    }
+                }
+                
+                return images;
+            }
             
-            console.log('✅ Document converti en base64, taille:', base64.length);
-            return [base64];
+            throw new Error(`Type de document non supporté : ${documentType}`);
             
         } catch (error) {
-            console.error('❌ Erreur conversion:', error);
-            throw new Error('Impossible de lire le document');
+            console.error('❌ Erreur conversion document:', error);
+            
+            // Fallback : essayer de traiter comme une image
+            if (documentType === 'application/pdf') {
+                console.warn('⚠️ Échec PDF.js, tentative de fallback...');
+                throw new Error('Impossible de convertir le PDF. Vérifiez qu\'il n\'est pas protégé.');
+            }
+            
+            throw error;
         }
     }
     

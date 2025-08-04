@@ -193,6 +193,13 @@
         <p>Orixis - © 2025</p>
     </div>
 
+    <!-- PDF.js pour conversion PDF → Images -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        // Configuration PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+
     <!-- JavaScript local au module -->
     <script type="module" src="./factures-fournisseurs.main.js"></script>
 </body>

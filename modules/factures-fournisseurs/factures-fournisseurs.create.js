@@ -199,6 +199,9 @@ function afficherSelectionStatuts(files) {
     const resultatsContent = document.getElementById('resultats-content');
     if (resultatsContent) {
         resultatsContent.innerHTML = `
+            <!-- Container pour la progress bar de conversion PDF -->
+            <div id="pdf-conversion-progress" style="display: none; margin-bottom: 20px;"></div>
+            
             <!-- Section fichiers sélectionnés -->
             <div class="result-section">
                 <h6>📁 Fichiers sélectionnés</h6>
