@@ -47,7 +47,7 @@ export const state = {
         compte: '',
         categorie: '',
         type: '',
-        periode: 'month', // Par défaut le mois en cours
+        periode: 'all', // Changé pour afficher TOUTES les opérations par défaut
         dateDebut: null,
         dateFin: null,
         pointees: 'all' // all, oui, non
@@ -271,7 +271,7 @@ window.modalManager = config.modalManager;
 
 // Fonctions pour le HTML
 window.ouvrirModalImport = ouvrirModalImport;
-// window.voirDetailOperation = voirDetailOperation;  // TODO: À implémenter  ← LIGNE 267
+window.voirDetailOperation = voirDetailOperation;
 window.resetFiltres = resetFiltres;
 window.categoriserOperations = categoriserOperations;
 window.supprimerOperations = supprimerOperations;
@@ -297,7 +297,7 @@ window.voirDetailOperation = async function(operationId) {
 };
 
 // Fonction pour catégoriser des opérations
-window.categoriserOperations = async function() {
+async function categoriserOperations() {
     const selection = state.selection;
     if (selection.length === 0) {
         config.notify.warning('Veuillez sélectionner au moins une opération');
@@ -306,6 +306,13 @@ window.categoriserOperations = async function() {
     
     // TODO: Ouvrir modal de catégorisation
     console.log('Catégoriser', selection.length, 'opérations');
+}
+
+// Fonction pour confirmer la catégorisation
+window.confirmerCategorisation = async function() {
+    // TODO: Implémenter la catégorisation
+    console.log('Confirmer catégorisation');
+    config.modalManager.close('modalCategoriser');
 };
 
 // Fonction pour supprimer des opérations

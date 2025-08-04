@@ -73,7 +73,7 @@ const FILTERS_CONFIG = {
         type: 'select',
         key: 'periode',
         label: 'Période',
-        defaultValue: 'month',
+        defaultValue: 'all',
         keepPlaceholder: true,
         options: [
             { value: 'all', label: 'Toutes' },
@@ -428,7 +428,7 @@ function handleFilterChange(filters) {
                     !filters.compte && 
                     !filters.categorie &&
                     !filters.type &&
-                    filters.periode === 'month' && 
+                    filters.periode === 'all' && 
                     filters.pointees === 'all';
     
     if (isReset) {
@@ -438,7 +438,7 @@ function handleFilterChange(filters) {
             compte: '',
             categorie: '',
             type: '',
-            periode: 'month',
+            periode: 'all',
             pointees: 'all'
         };
         
