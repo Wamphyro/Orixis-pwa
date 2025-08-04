@@ -277,7 +277,6 @@ window.ouvrirModalImport = ouvrirModalImport;
 window.voirDetailOperation = voirDetailOperation;
 window.resetFiltres = resetFiltres;
 window.categoriserOperations = categoriserOperations;
-window.supprimerOperations = supprimerOperations;
 
 // Fonction fermer modal
 window.fermerModal = function(modalId) {
