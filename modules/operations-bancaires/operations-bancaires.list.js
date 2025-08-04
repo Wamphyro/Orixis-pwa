@@ -292,7 +292,7 @@ function initDataTable() {
             csv: true,
             excel: true,
             filename: `operations_${new Date().toISOString().split('T')[0]}`,
-            onBeforeExport: (data) => prepareExportData(data)
+            onBeforeExport: () => prepareExportData(operationsFiltrees)
         }
     });
     
@@ -705,7 +705,20 @@ function filtrerOperationsLocalement() {
 // ========================================
 
 function prepareExportData(data) {
-    return data.map(row => {
+    let dataToExport;
+    
+    // Si des lignes sont sélectionnées, n'exporter que celles-ci
+    if (state.selection && state.selection.length > 0) {
+        // Filtrer uniquement les opérations sélectionnées parmi les opérations filtrées
+        dataToExport = operationsFiltrees.filter(op => state.selection.includes(op.id));
+        console.log(`📤 Export de ${dataToExport.length} opération(s) sélectionnée(s)`);
+    } else {
+        // Sinon, exporter toutes les opérations filtrées
+        dataToExport = operationsFiltrees;
+        console.log(`📤 Export de ${dataToExport.length} opération(s) filtrée(s)`);
+    }
+    
+    return dataToExport.map(row => {
         return {
             'Date': formaterDate(row.date, 'jour'),
             'Date valeur': formaterDate(row.dateValeur, 'jour'),
