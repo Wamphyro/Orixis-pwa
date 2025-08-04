@@ -677,19 +677,14 @@ function afficherStatut(statut) {
 function afficherCategorie(categorie) {
     if (!categorie) return '-';
     
-    // Utiliser les données métier au lieu de redéfinir
+    // Utiliser les données métier
     const configData = FACTURES_CONFIG.CATEGORIES_FOURNISSEURS[categorie] || { 
         label: categorie, 
         icon: '📋' 
     };
     
-    // Template avec tooltip comme pour les statuts
-    return `
-        <span class="categorie-icon-wrapper" data-categorie="${categorie}">
-            <span class="categorie-icon">${configData.icon}</span>
-            <span class="categorie-tooltip">${configData.label}</span>
-        </span>
-    `;
+    // Utiliser le MÊME template que les statuts pour l'harmonisation
+    return config.HTML_TEMPLATES.statut(configData);
 }
 
 function prepareExportData(data) {

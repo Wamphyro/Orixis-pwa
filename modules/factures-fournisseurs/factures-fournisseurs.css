@@ -231,67 +231,6 @@
     display: block;
 }
 
-/* Catégories */
-.categorie-icon-wrapper {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    position: relative;  /* AJOUT pour le positionnement du tooltip */
-    padding: 4px 8px;
-    background: #f8f9fa;
-    border-radius: 6px;
-    font-size: 14px;
-}
-
-.categorie-icon {
-    font-size: 16px;
-}
-
-.categorie-tooltip {
-    display: none;
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #333;
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    white-space: nowrap;
-    margin-bottom: 5px;
-}
-
-.categorie-icon-wrapper:hover .categorie-tooltip {
-    display: block;
-}
-
-/* Couleurs spécifiques par catégorie */
-.categorie-icon-wrapper[data-categorie="telecom"] {
-    background: #e3f2fd;
-    color: #1976d2;
-}
-
-.categorie-icon-wrapper[data-categorie="energie"] {
-    background: #fff3e0;
-    color: #f57c00;
-}
-
-.categorie-icon-wrapper[data-categorie="services"] {
-    background: #f3e5f5;
-    color: #7b1fa2;
-}
-
-.categorie-icon-wrapper[data-categorie="informatique"] {
-    background: #e8f5e9;
-    color: #388e3c;
-}
-
-.categorie-icon-wrapper[data-categorie="fournitures"] {
-    background: #fce4ec;
-    color: #c2185b;
-}
-
 /* ========================================
    MODAL DÉTAIL FACTURE
    ======================================== */
