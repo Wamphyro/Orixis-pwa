@@ -313,6 +313,13 @@ export const HTML_TEMPLATES = {
         </span>
     `,
     
+    // Template pour icône catégorie seule
+    categorieIcon: (categorie, icon = '📌') => `
+        <span class="categorie-icon" title="${categorie}" style="font-size: 20px; cursor: help;">
+            ${icon}
+        </span>
+    `,
+    
     // Template pour compte bancaire
     compteBancaire: (compte) => {
         if (!compte) return '-';

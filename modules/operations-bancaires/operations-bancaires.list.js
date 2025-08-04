@@ -204,10 +204,10 @@ function initDataTable() {
                 key: 'categorie',
                 label: 'Catégorie',
                 sortable: true,
-                width: 150,
+                width: 80,
                 formatter: (value) => {
                     const cat = OPERATIONS_CONFIG.CATEGORIES[value] || OPERATIONS_CONFIG.CATEGORIES.autre;
-                    return config.HTML_TEMPLATES.categorie(cat.label, cat.icon);
+                    return `<span class="categorie-icon" title="${cat.label}" style="font-size: 20px; cursor: help;">${cat.icon}</span>`;
                 }
             },
             {

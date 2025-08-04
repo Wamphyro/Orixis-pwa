@@ -734,6 +734,21 @@
     }
 }
 
+/* Icône de catégorie avec tooltip */
+.categorie-icon {
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.categorie-icon:hover {
+    transform: scale(1.2);
+}
+
+/* Style amélioré du tooltip natif (certains navigateurs) */
+.categorie-icon[title] {
+    position: relative;
+}
+
 /* ========================================
    HISTORIQUE DES DIFFICULTÉS
    
