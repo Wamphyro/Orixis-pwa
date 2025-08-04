@@ -233,7 +233,7 @@ function initDataTable() {
                     const statut = OPERATIONS_CONFIG.STATUTS_OPERATION[statutKey];
                     
                     return `<span style="color: ${statut.couleur}; font-weight: 500;">
-                        ${statut.label}
+                        ${statut.icon} ${statut.label}
                     </span>`;
                 }
             },
@@ -534,26 +534,10 @@ function initTooltips() {
 function afficherStatistiques(stats) {
     if (statsCards) {
         const statsToUpdate = {
-            credits: {
-                value: stats.credits.toString(),
-                label: 'Crédits',
-                sublabel: formaterMontant(stats.montantCredits)
-            },
-            debits: {
-                value: stats.debits.toString(),
-                label: 'Débits',
-                sublabel: formaterMontant(stats.montantDebits)
-            },
-            pointees: {
-                value: stats.pointees.toString(),
-                label: 'Pointées',
-                sublabel: stats.total > 0 ? `${Math.round((stats.pointees / stats.total) * 100)}%` : '0%'
-            },
-            non_pointees: {
-                value: stats.nonPointees.toString(),
-                label: 'Non pointées',
-                sublabel: stats.total > 0 ? `${Math.round((stats.nonPointees / stats.total) * 100)}%` : '0%'
-            }
+            credits: stats.credits || 0,
+            debits: stats.debits || 0,
+            pointees: stats.pointees || 0,
+            non_pointees: stats.nonPointees || 0
         };
         
         statsCards.updateAll(statsToUpdate);
