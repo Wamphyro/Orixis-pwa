@@ -81,6 +81,7 @@ function afficherDetailOperation(operation) {
     afficherSectionMontants(operation);
     afficherSectionCategorisation(operation);
     afficherSectionTracabilite(operation);
+    afficherSectionRapprochement(operation);
     
     // Actions disponibles
     afficherActionsOperation(operation);
@@ -250,6 +251,42 @@ function afficherSectionTracabilite(operation) {
             </div>
         ` : ''}
     `;
+}
+
+function afficherSectionRapprochement(operation) {
+    const detailRapprochement = document.getElementById('detailRapprochement');
+    
+    if (operation.rapprochee) {
+        detailRapprochement.innerHTML = `
+            <div class="detail-info-grid">
+                <div class="detail-info-item">
+                    <span class="detail-label">Statut</span>
+                    <span class="detail-value" style="color: #28a745; font-weight: 600;">
+                        ✅ Rapprochée
+                    </span>
+                </div>
+                <div class="detail-info-item">
+                    <span class="detail-label">Date rapprochement</span>
+                    <span class="detail-value">${formaterDate(operation.dateRapprochement, 'complet')}</span>
+                </div>
+                ${operation.referenceRapprochement ? `
+                    <div class="detail-info-item">
+                        <span class="detail-label">Référence</span>
+                        <span class="detail-value">${operation.referenceRapprochement}</span>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    } else {
+        detailRapprochement.innerHTML = `
+            <div style="text-align: center; padding: 20px; color: #6c757d;">
+                <p style="margin: 0 0 10px 0;">Cette opération n'est pas encore rapprochée</p>
+                <button class="btn btn-primary btn-sm" onclick="rapprochementManuel('${operation.id}')">
+                    🔗 Rapprocher manuellement
+                </button>
+            </div>
+        `;
+    }
 }
 
 // ========================================

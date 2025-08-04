@@ -92,7 +92,7 @@
         </div>
     </div>
 
-    <!-- Modal Détail Opération -->
+<!-- Modal Détail Opération -->
     <div id="modalDetailOperation" class="modal" style="display: none;">
         <div class="modal-content modal-large">
             <div class="modal-header">
@@ -102,54 +102,73 @@
             </div>
             
             <div class="modal-body">
+                <!-- Sections principales en 2 colonnes -->
                 <div class="detail-sections">
-                    <!-- Section Opération -->
-                    <div class="detail-section">
-                        <h3>📝 Informations de l'opération</h3>
-                        <div id="detailOperation">
-                            <!-- Contenu généré dynamiquement -->
+                    <!-- Colonne de gauche : Opération + Montants -->
+                    <div class="detail-column-left">
+                        <!-- Section Opération -->
+                        <div class="detail-section">
+                            <h3>📝 Informations de l'opération</h3>
+                            <div id="detailOperation">
+                                <!-- Contenu généré dynamiquement -->
+                            </div>
+                        </div>
+                        
+                        <!-- Section Montants -->
+                        <div class="detail-section">
+                            <h3>💰 Montants</h3>
+                            <div id="detailMontants">
+                                <!-- Contenu généré dynamiquement -->
+                            </div>
                         </div>
                     </div>
                     
-                    <!-- Section Compte -->
-                    <div class="detail-section">
-                        <h3>🏦 Compte bancaire</h3>
-                        <div id="detailCompte">
-                            <!-- Contenu généré dynamiquement -->
+                    <!-- Colonne de droite : Compte + Catégorisation -->
+                    <div class="detail-column-right">
+                        <!-- Section Compte -->
+                        <div class="detail-section">
+                            <h3>🏦 Compte bancaire</h3>
+                            <div id="detailCompte">
+                                <!-- Contenu généré dynamiquement -->
+                            </div>
+                        </div>
+                        
+                        <!-- Section Catégorisation -->
+                        <div class="detail-section">
+                            <h3>🏷️ Catégorisation</h3>
+                            <div id="detailCategorisation">
+                                <!-- Contenu généré dynamiquement -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Nouvelle ligne pour Traçabilité et Rapprochement -->
+                <div class="detail-sections" style="margin-top: 20px;">
+                    <!-- Colonne de gauche : Traçabilité -->
+                    <div class="detail-column-left">
+                        <div class="detail-section">
+                            <h3>📋 Traçabilité</h3>
+                            <div id="detailTracabilite">
+                                <!-- Contenu généré dynamiquement -->
+                            </div>
                         </div>
                     </div>
                     
-                    <!-- Section Montants -->
-                    <div class="detail-section">
-                        <h3>💰 Montants</h3>
-                        <div id="detailMontants">
-                            <!-- Contenu généré dynamiquement -->
+                    <!-- Colonne de droite : Rapprochement -->
+                    <div class="detail-column-right">
+                        <div class="detail-section">
+                            <h3>🔗 Rapprochement</h3>
+                            <div id="detailRapprochement">
+                                <!-- Contenu généré dynamiquement -->
+                            </div>
                         </div>
                     </div>
-                    
-                    <!-- Section Catégorisation -->
-                    <div class="detail-section">
-                        <h3>🏷️ Catégorisation</h3>
-                        <div id="detailCategorisation">
-                            <!-- Contenu généré dynamiquement -->
-                        </div>
-                    </div>
-                    
-                    <!-- Section Traçabilité -->
-                    <div class="detail-section">
-                        <h3>📋 Traçabilité</h3>
-                        <div id="detailTracabilite">
-                            <!-- Contenu généré dynamiquement -->
-                        </div>
-                    </div>
-                    
-                    <!-- Section Actions -->
-                    <div class="detail-section">
-                        <h3>⚡ Actions disponibles</h3>
-                        <div id="detailActions" style="display: flex; gap: 10px; flex-wrap: wrap;">
-                            <!-- Boutons générés dynamiquement -->
-                        </div>
-                    </div>
+                </div>
+                
+                <!-- Actions en bas -->
+                <div class="detail-actions" id="detailActions">
+                    <!-- Boutons d'action générés selon le statut -->
                 </div>
             </div>
         </div>
