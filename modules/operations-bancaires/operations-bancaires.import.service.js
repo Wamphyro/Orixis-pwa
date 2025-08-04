@@ -1,166 +1,85 @@
-// operations-bancaires.import.service.js
-// Service d'import CSV/Excel ultra-flexible pour opérations bancaires
+// ========================================
+// OPERATIONS-BANCAIRES.IMPORT.SERVICE.JS
+// Service d'import CSV/Excel pour opérations bancaires
+// 
+// ARCHITECTURE:
+// - Détection automatique du format bancaire
+// - Support multi-banques françaises
+// - Gestion robuste des erreurs
+// - Normalisation des données
+// ========================================
 
 const OperationsBancairesImportService = {
   
-  // Configuration des formats bancaires connus
+  // ========================================
+  // CONFIGURATION DES FORMATS BANCAIRES
+  // ========================================
+  
   BANK_FORMATS: {
     'CREDIT_MUTUEL': {
       name: 'Crédit Mutuel',
       separator: ';',
       encoding: 'windows-1252',
       dateFormat: 'DD/MM/YYYY',
-      headers: {
-        date: ['Date'],
-        dateValeur: ['Date de valeur'],
-        debit: ['Débit'],
-        credit: ['Crédit'],
-        libelle: ['Libellé'],
-        solde: ['Solde']
+      columns: {
+        0: 'date',
+        1: 'dateValeur', 
+        2: 'debit',
+        3: 'credit',
+        4: 'libelle',
+        5: 'solde'
       },
       skipLines: 0,
-      hasQuotes: false,
-      // Pattern pour extraire le numéro de compte du nom de fichier
-      accountPattern: /^(\d{11})\.csv$/i
-    },
-    'CREDIT_AGRICOLE': {
-      name: 'Crédit Agricole',
-      separator: ';',
-      encoding: 'windows-1252',
-      dateFormat: 'DD/MM/YYYY',
-      headers: {
-        date: ['Date'],
-        dateValeur: ['Date de valeur'],
-        debit: ['Débit'],
-        credit: ['Crédit'],
-        libelle: ['Libellé'],
-        solde: ['Solde']
-      },
-      skipLines: 0,
-      hasQuotes: false
+      hasHeader: true
     },
     'BNP_PARIBAS': {
       name: 'BNP Paribas',
       separator: ';',
       encoding: 'utf-8',
       dateFormat: 'DD/MM/YYYY',
-      headers: {
-        date: ['Date opération', 'Date'],
-        dateValeur: ['Date valeur'],
-        libelle: ['Libellé', 'Description'],
-        montant: ['Montant'],
-        devise: ['Devise']
+      columns: {
+        0: 'date',
+        1: 'libelle',
+        2: 'montant',
+        3: 'devise'
       },
-      skipLines: 0,
-      hasQuotes: true
+      skipLines: 1,
+      hasHeader: true
     },
     'SOCIETE_GENERALE': {
       name: 'Société Générale',
       separator: '\t',
       encoding: 'utf-8',
       dateFormat: 'DD/MM/YYYY',
-      headers: {
-        date: ['Date'],
-        libelle: ['Description'],
-        debit: ['Débit euros'],
-        credit: ['Crédit euros']
+      columns: {
+        0: 'date',
+        1: 'libelle',
+        2: 'debit',
+        3: 'credit'
       },
       skipLines: 1,
-      hasQuotes: false
-    },
-    'CIC': {
-      name: 'CIC',
-      separator: ';',
-      encoding: 'windows-1252',
-      dateFormat: 'DD/MM/YYYY',
-      headers: {
-        date: ['Date'],
-        dateValeur: ['Date de valeur'],
-        libelle: ['Libellé'],
-        debit: ['Débit EUR'],
-        credit: ['Crédit EUR']
-      },
-      skipLines: 0,
-      hasQuotes: true
-    },
-    'CAISSE_EPARGNE': {
-      name: 'Caisse d\'Épargne',
-      separator: ';',
-      encoding: 'utf-8',
-      dateFormat: 'DD/MM/YYYY',
-      headers: {
-        date: ['Date'],
-        libelle: ['Libellé opération'],
-        reference: ['Numéro opération'],
-        debit: ['Montant débit'],
-        credit: ['Montant crédit']
-      },
-      skipLines: 0,
-      hasQuotes: true
+      hasHeader: true
     }
   },
 
-  // Mapping universel des colonnes (tous les noms possibles)
-  COLUMN_MAPPING: {
-    date: [
-      'Date', 'Date opération', 'Date operation', 'Date d\'opération',
-      'Date comptable', 'Date de comptabilisation', 'Date compta',
-      'Transaction Date', 'Booking Date', 'Date transaction'
-    ],
-    dateValeur: [
-      'Date de valeur', 'Date valeur', 'Date val', 'Value Date',
-      'Date d\'effet', 'Date effective'
-    ],
-    libelle: [
-      'Libellé', 'Libelle', 'Description', 'Intitulé', 'Motif',
-      'Objet', 'Communication', 'Label', 'Transaction Description',
-      'Détails', 'Details', 'Narrative'
-    ],
-    montant: [
-      'Montant', 'Amount', 'Somme', 'Total', 'Valeur'
-    ],
-    debit: [
-      'Débit', 'Debit', 'Débit EUR', 'Débit €', 'Montant débit',
-      'Withdrawal', 'Retrait', 'Sortie', 'Dépense'
-    ],
-    credit: [
-      'Crédit', 'Credit', 'Crédit EUR', 'Crédit €', 'Montant crédit',
-      'Deposit', 'Dépôt', 'Entrée', 'Recette'
-    ],
-    solde: [
-      'Solde', 'Balance', 'Solde final', 'Nouveau solde',
-      'Solde après opération', 'Running Balance'
-    ],
-    reference: [
-      'Référence', 'Reference', 'Réf', 'Ref', 'N° opération',
-      'Numéro', 'Transaction ID', 'ID', 'Code'
-    ],
-    devise: [
-      'Devise', 'Currency', 'Monnaie', 'EUR', 'USD'
-    ],
-    type: [
-      'Type', 'Type opération', 'Category', 'Catégorie',
-      'Nature', 'Transaction Type'
-    ]
-  },
-
-  /**
-   * Point d'entrée principal pour importer un fichier
-   */
+  // ========================================
+  // POINT D'ENTRÉE PRINCIPAL
+  // ========================================
+  
   async importFile(file) {
     try {
       console.log(`📁 Import du fichier: ${file.name}`);
       
-      // Détecter le numéro de compte depuis le nom du fichier
+      // 1. Détecter les infos du compte
       const accountInfo = this.detectAccountFromFilename(file.name);
       if (accountInfo) {
-        console.log(`💳 Compte détecté: ${accountInfo.accountNumber} (${accountInfo.maskedNumber})`);
+        console.log(`💳 Compte détecté: ${accountInfo.accountNumber}`);
       }
       
-      // Déterminer le type de fichier
+      // 2. Importer selon le type de fichier
       const extension = file.name.split('.').pop().toLowerCase();
-      
       let result;
+      
       if (extension === 'csv' || extension === 'txt') {
         result = await this.importCSV(file);
       } else if (extension === 'xlsx' || extension === 'xls') {
@@ -169,203 +88,278 @@ const OperationsBancairesImportService = {
         throw new Error(`Format non supporté: ${extension}`);
       }
       
-      // Ajouter les infos du compte au résultat
+      // 3. Enrichir avec les infos du compte
       if (accountInfo) {
         result.accountInfo = accountInfo;
-        // Ajouter le numéro de compte à chaque opération
         result.operations = result.operations.map(op => ({
           ...op,
           accountNumber: accountInfo.accountNumber,
-          accountName: accountInfo.accountName
+          accountName: accountInfo.accountName,
+          bank: accountInfo.bank
         }));
       }
       
       return result;
+      
     } catch (error) {
       console.error('❌ Erreur import:', error);
       throw error;
     }
   },
-  
-  /**
-   * Détecter le numéro de compte depuis le nom du fichier
-   */
-  detectAccountFromFilename(filename) {
-    // Enlever l'extension
-    const nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
-    
-    // Pattern pour détecter un numéro de compte (11 chiffres typiquement)
-    const accountPattern = /^(\d{11})$/;
-    const match = nameWithoutExt.match(accountPattern);
-    
-    if (match) {
-      const accountNumber = match[1];
-      return {
-        accountNumber: accountNumber,
-        // Masquer le numéro pour l'affichage (garder les 4 derniers chiffres)
-        maskedNumber: '•••••••' + accountNumber.slice(-4),
-        // Nom du compte (peut être personnalisé plus tard)
-        accountName: `Compte ${accountNumber.slice(-4)}`,
-        // Banque détectée (peut être affiné avec d'autres indices)
-        bank: 'Crédit Mutuel'
-      };
-    }
-    
-    // Autres patterns possibles (RIB, IBAN partiel, etc.)
-    const ribPattern = /(\d{5})\s*(\d{5})\s*(\d{11})\s*(\d{2})/;
-    const ribMatch = nameWithoutExt.match(ribPattern);
-    
-    if (ribMatch) {
-      const [, banque, guichet, compte, cle] = ribMatch;
-      return {
-        accountNumber: compte,
-        maskedNumber: '•••••••' + compte.slice(-4),
-        accountName: `Compte ${compte.slice(-4)}`,
-        bank: this.detectBankFromCode(banque),
-        rib: { banque, guichet, compte, cle }
-      };
-    }
-    
-    return null;
-  },
-  
-  /**
-   * Détecter la banque depuis le code banque
-   */
-  detectBankFromCode(codeBanque) {
-    // Codes banques français courants
-    const bankCodes = {
-      '10278': 'Crédit Mutuel',
-      '30002': 'Crédit Lyonnais (LCL)',
-      '30003': 'Société Générale',
-      '30004': 'BNP Paribas',
-      '20041': 'La Banque Postale',
-      '11306': 'Caisse d\'Épargne',
-      '10107': 'CIC',
-      '18306': 'Crédit Agricole',
-      // Ajouter d'autres codes au besoin
-    };
-    
-    return bankCodes[codeBanque] || 'Banque inconnue';
-  },
 
-  /**
-   * Import d'un fichier CSV avec détection automatique du format
-   */
+  // ========================================
+  // IMPORT CSV
+  // ========================================
+  
   async importCSV(file) {
-    // Lire le contenu du fichier
+    // 1. Lire le fichier avec le bon encoding
     const text = await this.readFileWithEncoding(file);
     
-    // Détecter le format automatiquement
-    const format = this.detectCSVFormat(text);
-    console.log(`🏦 Format détecté: ${format?.name || 'Format personnalisé'}`);
+    // 2. Détecter le format bancaire
+    const format = this.detectBankFormat(text);
+    console.log(`🏦 Format détecté: ${format.name}`);
     
-    // Parser le CSV
-    const rows = this.parseCSV(text, format);
+    // 3. Parser les lignes
+    const lines = text.split(/\r?\n/).filter(line => line.trim());
     
-    // Normaliser les données
-    const operations = this.normalizeOperations(rows, format);
+    // 4. Traiter les opérations
+    const operations = [];
+    const startLine = format.hasHeader ? 1 : 0;
     
-    // Analyser les statistiques
-    const stats = this.analyzeOperations(operations);
+    for (let i = startLine + format.skipLines; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+      
+      try {
+        const operation = this.parseOperation(line, format);
+        if (operation && operation.montant !== 0) {
+          operations.push(operation);
+        }
+      } catch (error) {
+        console.warn(`Ligne ${i + 1} ignorée:`, error.message);
+      }
+    }
+    
+    // 5. Trier par date
+    operations.sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    // 6. Calculer les statistiques
+    const stats = this.calculateStats(operations);
     
     return {
       operations,
       stats,
-      format: format?.name || 'Inconnu',
+      format: format.name,
       filename: file.name
     };
   },
 
-  /**
-   * Lecture du fichier avec gestion de l'encoding
-   */
-  async readFileWithEncoding(file, encodings = ['utf-8', 'windows-1252', 'iso-8859-1']) {
-    for (const encoding of encodings) {
-      try {
-        const reader = new FileReader();
-        const text = await new Promise((resolve, reject) => {
-          reader.onload = (e) => resolve(e.target.result);
-          reader.onerror = reject;
-          reader.readAsText(file, encoding);
-        });
-        
-        // Vérifier si le texte semble correct (pas de caractères bizarres)
-        if (!text.includes('�') && !text.includes('???')) {
-          console.log(`✅ Encoding détecté: ${encoding}`);
-          return text;
-        }
-      } catch (error) {
-        continue;
-      }
-    }
-    
-    // Fallback: lire en UTF-8 par défaut
-    return await file.text();
-  },
-
-  /**
-   * Détection automatique du format bancaire
-   */
-  detectCSVFormat(text) {
+  // ========================================
+  // DÉTECTION DU FORMAT BANCAIRE
+  // ========================================
+  
+  detectBankFormat(text) {
     const lines = text.split(/\r?\n/).filter(line => line.trim());
-    if (lines.length === 0) return null;
-    
-    // Analyser les premières lignes pour trouver les headers
-    let headerLine = '';
-    let headerLineIndex = 0;
-    
-    for (let i = 0; i < Math.min(5, lines.length); i++) {
-      const line = lines[i].toLowerCase();
-      if (line.includes('date') || line.includes('libellé') || line.includes('montant')) {
-        headerLine = lines[i];
-        headerLineIndex = i;
-        break;
-      }
+    if (lines.length === 0) {
+      throw new Error('Fichier vide');
     }
     
-    if (!headerLine) {
-      headerLine = lines[0];
-    }
+    // Analyser la première ligne
+    const firstLine = lines[0];
     
     // Détecter le séparateur
-    const separator = this.detectSeparator(headerLine);
+    const separator = this.detectSeparator(firstLine);
     
-    // Comparer avec les formats connus
-    for (const [key, format] of Object.entries(this.BANK_FORMATS)) {
-      let score = 0;
-      
-      // Vérifier le séparateur
-      if (format.separator === separator) score += 2;
-      
-      // Vérifier les headers
-      const headers = headerLine.toLowerCase().split(separator);
-      for (const [field, possibleNames] of Object.entries(format.headers)) {
-        if (possibleNames.some(name => headers.includes(name.toLowerCase()))) {
-          score += 1;
+    // Compter les colonnes
+    const columnCount = firstLine.split(separator).length;
+    
+    // Identifier le format par le nombre de colonnes et le contenu
+    if (columnCount === 6 && separator === ';') {
+      // Probablement Crédit Mutuel
+      return this.BANK_FORMATS.CREDIT_MUTUEL;
+    } else if (columnCount === 4 && separator === ';') {
+      // Probablement BNP
+      return this.BANK_FORMATS.BNP_PARIBAS;
+    } else if (separator === '\t') {
+      // Probablement Société Générale
+      return this.BANK_FORMATS.SOCIETE_GENERALE;
+    }
+    
+    // Format par défaut basé sur l'analyse
+    return this.createCustomFormat(firstLine, separator);
+  },
+
+  // ========================================
+  // CRÉATION D'UN FORMAT PERSONNALISÉ
+  // ========================================
+  
+  createCustomFormat(headerLine, separator) {
+    const headers = headerLine.split(separator).map(h => h.trim().toLowerCase());
+    const columns = {};
+    
+    // Mapper les colonnes par leur position
+    headers.forEach((header, index) => {
+      if (header.includes('date') && !header.includes('valeur')) {
+        columns[index] = 'date';
+      } else if (header.includes('valeur')) {
+        columns[index] = 'dateValeur';
+      } else if (header.includes('débit') || header.includes('debit')) {
+        columns[index] = 'debit';
+      } else if (header.includes('crédit') || header.includes('credit')) {
+        columns[index] = 'credit';
+      } else if (header.includes('libellé') || header.includes('libelle') || header.includes('description')) {
+        columns[index] = 'libelle';
+      } else if (header.includes('solde') || header.includes('balance')) {
+        columns[index] = 'solde';
+      } else if (header.includes('montant') || header.includes('amount')) {
+        columns[index] = 'montant';
+      }
+    });
+    
+    return {
+      name: 'Format personnalisé',
+      separator: separator,
+      encoding: 'utf-8',
+      dateFormat: 'DD/MM/YYYY',
+      columns: columns,
+      skipLines: 0,
+      hasHeader: true
+    };
+  },
+
+  // ========================================
+  // PARSING D'UNE OPÉRATION
+  // ========================================
+  
+  parseOperation(line, format) {
+    const values = line.split(format.separator).map(v => v.trim());
+    
+    // Extraire les valeurs selon le mapping des colonnes
+    const getValue = (fieldName) => {
+      for (const [index, field] of Object.entries(format.columns)) {
+        if (field === fieldName) {
+          return values[parseInt(index)] || '';
         }
       }
+      return '';
+    };
+    
+    // Parser les montants
+    let montant = 0;
+    const debitStr = getValue('debit');
+    const creditStr = getValue('credit');
+    const montantStr = getValue('montant');
+    
+    if (debitStr) {
+      montant = -Math.abs(this.parseMontant(debitStr));
+    } else if (creditStr) {
+      montant = Math.abs(this.parseMontant(creditStr));
+    } else if (montantStr) {
+      montant = this.parseMontant(montantStr);
+    }
+    
+    // Parser les dates
+    const dateStr = getValue('date');
+    const dateValeurStr = getValue('dateValeur');
+    
+    const date = this.parseDate(dateStr, format.dateFormat);
+    if (!date) {
+      throw new Error(`Date invalide: ${dateStr}`);
+    }
+    
+    // Créer l'opération
+    return {
+      date: date,
+      dateValeur: this.parseDate(dateValeurStr, format.dateFormat) || date,
+      libelle: this.cleanLibelle(getValue('libelle')),
+      montant: montant,
+      type: montant >= 0 ? 'credit' : 'debit',
+      solde: this.parseMontant(getValue('solde')),
+      devise: 'EUR',
+      categorie: this.detectCategorie(getValue('libelle')),
+      raw: line
+    };
+  },
+
+  // ========================================
+  // PARSING DES MONTANTS
+  // ========================================
+  
+  parseMontant(value) {
+    if (!value || value === '') return 0;
+    
+    // Nettoyer la valeur
+    let cleaned = value.toString()
+      .replace(/\s/g, '')           // Espaces
+      .replace(/[€$£]/g, '')        // Symboles monétaires
+      .replace(/EUR|USD|GBP/gi, '') // Codes devises
+      .trim();
+    
+    // Si vide après nettoyage
+    if (!cleaned) return 0;
+    
+    // Gérer le format français (virgule comme séparateur décimal)
+    if (cleaned.includes(',')) {
+      // Compter les séparateurs
+      const commaCount = (cleaned.match(/,/g) || []).length;
+      const dotCount = (cleaned.match(/\./g) || []).length;
       
-      // Si score suffisant, on a trouvé le format
-      if (score >= 3) {
-        return { ...format, detectedHeaderLine: headerLineIndex };
+      if (commaCount === 1 && dotCount === 0) {
+        // Format simple: 1234,56
+        cleaned = cleaned.replace(',', '.');
+      } else if (dotCount > 0) {
+        // Format avec milliers: 1.234,56
+        cleaned = cleaned.replace(/\./g, '').replace(',', '.');
+      } else if (commaCount > 1) {
+        // Plusieurs virgules = erreur
+        cleaned = cleaned.replace(/,/g, '');
       }
     }
     
-    // Format non reconnu, créer un format générique
-    return this.createGenericFormat(headerLine, separator, headerLineIndex);
+    const parsed = parseFloat(cleaned);
+    return isNaN(parsed) ? 0 : parsed;
   },
 
-  /**
-   * Détection du séparateur CSV
-   */
+  // ========================================
+  // PARSING DES DATES
+  // ========================================
+  
+  parseDate(value, format = 'DD/MM/YYYY') {
+    if (!value || value === '') return null;
+    
+    const cleaned = value.trim();
+    
+    // Pattern pour DD/MM/YYYY
+    const match = cleaned.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+    if (match) {
+      let [, day, month, year] = match;
+      
+      // Gérer les années sur 2 chiffres
+      if (year.length === 2) {
+        year = (parseInt(year) > 50 ? '19' : '20') + year;
+      }
+      
+      // Vérifier la validité
+      const date = new Date(year, month - 1, day);
+      if (date.getDate() == day && date.getMonth() == month - 1) {
+        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+      }
+    }
+    
+    return null;
+  },
+
+  // ========================================
+  // UTILITAIRES
+  // ========================================
+  
   detectSeparator(line) {
     const separators = [';', ',', '\t', '|'];
     let maxCount = 0;
     let bestSeparator = ';';
     
     for (const sep of separators) {
-      const count = (line.match(new RegExp(sep, 'g')) || []).length;
+      const count = (line.match(new RegExp('\\' + sep, 'g')) || []).length;
       if (count > maxCount) {
         maxCount = count;
         bestSeparator = sep;
@@ -375,324 +369,42 @@ const OperationsBancairesImportService = {
     return bestSeparator;
   },
 
-  /**
-   * Créer un format générique basé sur l'analyse
-   */
-  createGenericFormat(headerLine, separator, headerLineIndex) {
-    const headers = headerLine.split(separator).map(h => h.trim().replace(/"/g, ''));
-    const format = {
-      name: 'Format personnalisé',
-      separator: separator,
-      encoding: 'utf-8',
-      dateFormat: 'DD/MM/YYYY',
-      headers: {},
-      skipLines: headerLineIndex,
-      hasQuotes: headerLine.includes('"')
-    };
-    
-    // Mapper automatiquement les colonnes
-    headers.forEach((header, index) => {
-      const headerLower = header.toLowerCase();
-      
-      for (const [field, possibleNames] of Object.entries(this.COLUMN_MAPPING)) {
-        if (possibleNames.some(name => headerLower.includes(name.toLowerCase()))) {
-          if (!format.headers[field]) {
-            format.headers[field] = [];
-          }
-          format.headers[field].push(header);
-          break;
-        }
-      }
-    });
-    
-    return format;
-  },
-
-  /**
-   * Parser le CSV en lignes
-   */
-  parseCSV(text, format) {
-    const lines = text.split(/\r?\n/).filter(line => line.trim());
-    const separator = format?.separator || ';';
-    const skipLines = format?.skipLines || format?.detectedHeaderLine || 0;
-    
-    // Extraire les headers
-    const headerLine = lines[skipLines];
-    const headers = this.parseCSVLine(headerLine, separator, format?.hasQuotes);
-    
-    // Parser les données
-    const rows = [];
-    for (let i = skipLines + 1; i < lines.length; i++) {
-      const line = lines[i].trim();
-      if (!line) continue;
-      
-      const values = this.parseCSVLine(line, separator, format?.hasQuotes);
-      
-      // Créer un objet avec les headers comme clés
-      const row = {};
-      headers.forEach((header, index) => {
-        row[header] = values[index] || '';
-      });
-      
-      rows.push(row);
-    }
-    
-    return rows;
-  },
-
-  /**
-   * Parser une ligne CSV en gérant les guillemets
-   */
-  parseCSVLine(line, separator = ';', hasQuotes = true) {
-    if (!hasQuotes) {
-      return line.split(separator).map(v => v.trim());
-    }
-    
-    // Gestion des guillemets (peut contenir des séparateurs)
-    const values = [];
-    let current = '';
-    let inQuotes = false;
-    
-    for (let i = 0; i < line.length; i++) {
-      const char = line[i];
-      
-      if (char === '"') {
-        if (inQuotes && line[i + 1] === '"') {
-          current += '"';
-          i++;
-        } else {
-          inQuotes = !inQuotes;
-        }
-      } else if (char === separator && !inQuotes) {
-        values.push(current.trim());
-        current = '';
-      } else {
-        current += char;
-      }
-    }
-    
-    values.push(current.trim());
-    return values;
-  },
-
-  /**
-   * Normaliser les opérations bancaires
-   */
-  normalizeOperations(rows, format) {
-    return rows.map((row, index) => {
-      try {
-        // Extraire les valeurs selon le mapping
-        const getValue = (field) => {
-          if (!format?.headers?.[field]) return null;
-          
-          for (const headerName of format.headers[field]) {
-            if (row[headerName]) {
-              return row[headerName];
-            }
-          }
-          
-          // Fallback: chercher dans tous les mappings possibles
-          for (const possibleName of this.COLUMN_MAPPING[field] || []) {
-            const key = Object.keys(row).find(k => 
-              k.toLowerCase() === possibleName.toLowerCase()
-            );
-            if (key && row[key]) {
-              return row[key];
-            }
-          }
-          
-          return null;
-        };
-        
-        // Récupérer les montants
-        let montant = 0;
-        let type = 'inconnu';
-        
-        const montantValue = getValue('montant');
-        const debitValue = getValue('debit');
-        const creditValue = getValue('credit');
-        
-        if (debitValue) {
-          montant = -Math.abs(this.parseMontant(debitValue));
-          type = 'debit';
-        } else if (creditValue) {
-          montant = Math.abs(this.parseMontant(creditValue));
-          type = 'credit';
-        } else if (montantValue) {
-          montant = this.parseMontant(montantValue);
-          type = montant >= 0 ? 'credit' : 'debit';
-        }
-        
-        // Créer l'opération normalisée
-        return {
-          date: this.parseDate(getValue('date'), format?.dateFormat),
-          dateValeur: this.parseDate(getValue('dateValeur'), format?.dateFormat) || 
-                      this.parseDate(getValue('date'), format?.dateFormat),
-          libelle: this.cleanLibelle(getValue('libelle')),
-          montant: montant,
-          type: type,
-          reference: getValue('reference'),
-          solde: this.parseMontant(getValue('solde')),
-          devise: getValue('devise') || 'EUR',
-          categorie: this.autoDetectCategorie(getValue('libelle')),
-          raw: row // Garder les données brutes
-        };
-      } catch (error) {
-        console.error(`Erreur ligne ${index + 1}:`, error);
-        return null;
-      }
-    }).filter(op => op !== null);
-  },
-
-  /**
-   * Parser un montant avec gestion des formats
-   */
-  parseMontant(value) {
-    if (!value) return 0;
-    
-    // Nettoyer la valeur
-    let cleaned = value.toString()
-      .replace(/\s/g, '')      // Enlever espaces
-      .replace(/[€$£]/g, '')   // Enlever symboles monétaires
-      .replace(/EUR|USD|GBP/gi, '') // Enlever codes devises
-      .trim();
-    
-    // Gérer les formats internationaux
-    // Format français: 1.234,56 → 1234.56
-    // Format anglais: 1,234.56 → 1234.56
-    
-    // Compter les virgules et points
-    const commaCount = (cleaned.match(/,/g) || []).length;
-    const dotCount = (cleaned.match(/\./g) || []).length;
-    
-    if (commaCount === 1 && dotCount === 0) {
-      // Format français simple: 1234,56
-      cleaned = cleaned.replace(',', '.');
-    } else if (commaCount === 0 && dotCount === 1) {
-      // Format anglais simple: 1234.56 (déjà bon)
-    } else if (commaCount > 0 && dotCount > 0) {
-      // Format avec séparateurs de milliers
-      const lastComma = cleaned.lastIndexOf(',');
-      const lastDot = cleaned.lastIndexOf('.');
-      
-      if (lastComma > lastDot) {
-        // Format français: 1.234,56
-        cleaned = cleaned.replace(/\./g, '').replace(',', '.');
-      } else {
-        // Format anglais: 1,234.56
-        cleaned = cleaned.replace(/,/g, '');
-      }
-    } else if (commaCount > 1) {
-      // Plusieurs virgules = format anglais avec milliers
-      cleaned = cleaned.replace(/,/g, '');
-    } else if (dotCount > 1) {
-      // Plusieurs points = format français avec milliers  
-      cleaned = cleaned.replace(/\./g, '').replace(',', '.');
-    }
-    
-    // Parser le nombre final
-    const parsed = parseFloat(cleaned);
-    return isNaN(parsed) ? 0 : parsed;
-  },
-
-  /**
-   * Parser une date avec formats multiples
-   */
-  parseDate(value, format = 'DD/MM/YYYY') {
-    if (!value) return null;
-    
-    const cleaned = value.toString().trim();
-    
-    // Formats supportés
-    const patterns = [
-      // Format français
-      { regex: /^(\d{2})\/(\d{2})\/(\d{4})$/, format: 'DD/MM/YYYY' },
-      { regex: /^(\d{2})-(\d{2})-(\d{4})$/, format: 'DD-MM-YYYY' },
-      { regex: /^(\d{2})\.(\d{2})\.(\d{4})$/, format: 'DD.MM.YYYY' },
-      // Format ISO
-      { regex: /^(\d{4})-(\d{2})-(\d{2})$/, format: 'YYYY-MM-DD' },
-      // Format américain
-      { regex: /^(\d{2})\/(\d{2})\/(\d{4})$/, format: 'MM/DD/YYYY' },
-      // Format court
-      { regex: /^(\d{2})\/(\d{2})\/(\d{2})$/, format: 'DD/MM/YY' }
-    ];
-    
-    for (const pattern of patterns) {
-      const match = cleaned.match(pattern.regex);
-      if (match) {
-        let day, month, year;
-        
-        if (pattern.format.startsWith('DD')) {
-          [, day, month, year] = match;
-        } else if (pattern.format.startsWith('MM')) {
-          [, month, day, year] = match;
-        } else if (pattern.format.startsWith('YYYY')) {
-          [, year, month, day] = match;
-        }
-        
-        // Gérer les années sur 2 chiffres
-        if (year && year.length === 2) {
-          year = parseInt(year) > 50 ? '19' + year : '20' + year;
-        }
-        
-        // Créer la date au format ISO
-        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-      }
-    }
-    
-    // Essayer de parser avec Date native
-    const date = new Date(cleaned);
-    if (!isNaN(date.getTime())) {
-      return date.toISOString().split('T')[0];
-    }
-    
-    console.warn(`Date non reconnue: ${value}`);
-    return null;
-  },
-
-  /**
-   * Nettoyer le libellé
-   */
   cleanLibelle(value) {
     if (!value) return '';
     
     return value
-      .replace(/\s+/g, ' ')        // Normaliser espaces
-      .replace(/\*+/g, '')         // Enlever les *
-      .replace(/\s*-\s*$/, '')     // Enlever tiret final
+      .replace(/\s+/g, ' ')
+      .replace(/\*+/g, '')
       .trim();
   },
 
-  /**
-   * Auto-détection de la catégorie
-   */
-  autoDetectCategorie(libelle) {
-    if (!libelle) return 'Autre';
+  detectCategorie(libelle) {
+    if (!libelle) return 'autre';
     
     const libelleUpper = libelle.toUpperCase();
     
-    // Règles de catégorisation
     const rules = [
-      { pattern: /SALAIRE|PAIE|VIREMENT\s+EMPLOYEUR/, categorie: 'Salaires' },
-      { pattern: /CPAM|SECU|SECURITE\s+SOCIALE|REMBT\s+SS/, categorie: 'Remboursement Sécu' },
-      { pattern: /MUTUELLE|MMA|ALMERYS|VIAMEDIS|HARMONIE|OCIANE|MATMUT|MGEN|CETIP/, categorie: 'Remboursement Mutuelle' },
-      { pattern: /IMPOT|IMPOTS|DGFIP|TRESOR\s+PUBLIC|TAXES/, categorie: 'Impôts' },
-      { pattern: /EDF|GDF|ENGIE|GAZ|ELECTRICITE/, categorie: 'Énergie' },
-      { pattern: /ORANGE|SFR|BOUYGUES|FREE|TELEPHONE|MOBILE/, categorie: 'Télécom' },
-      { pattern: /ASSURANCE|MAIF|MACIF|AXA|ALLIANZ/, categorie: 'Assurances' },
-      { pattern: /CARREFOUR|LECLERC|AUCHAN|LIDL|INTERMARCHE|COURSES/, categorie: 'Alimentation' },
-      { pattern: /ESSENCE|CARBURANT|TOTAL|SHELL|ESSO/, categorie: 'Carburant' },
-      { pattern: /RESTAURANT|RESTO|BRASSERIE|CAFE/, categorie: 'Restaurant' },
-      { pattern: /AMAZON|FNAC|CDISCOUNT|EBAY/, categorie: 'E-commerce' },
-      { pattern: /CREDIT\s+IMMOBILIER|PRET\s+HABITAT|EMPRUNT/, categorie: 'Crédit immobilier' },
-      { pattern: /LOYER|LOCATION|BAIL/, categorie: 'Loyer' },
-      { pattern: /PHARMACIE|DOCTEUR|MEDECIN|SANTE/, categorie: 'Santé' },
-      { pattern: /RETRAIT|DAB|DISTRIBUTEUR/, categorie: 'Retrait espèces' },
-      { pattern: /CB\s+\d{4}|CARTE\s+BANCAIRE/, categorie: 'Carte bancaire' },
-      { pattern: /VIREMENT|VIR\s+/, categorie: 'Virement' },
-      { pattern: /CHEQUE|CHQ/, categorie: 'Chèque' },
-      { pattern: /FRAIS|COMMISSION|AGIOS/, categorie: 'Frais bancaires' },
-      { pattern: /NETFLIX|SPOTIFY|DEEZER|CANAL|DISNEY/, categorie: 'Abonnements' }
+      { pattern: /SALAIRE|PAIE|VIREMENT\s+EMPLOYEUR/, categorie: 'salaires' },
+      { pattern: /CPAM|SECU|SECURITE\s+SOCIALE|REMBT\s+SS/, categorie: 'remboursement_secu' },
+      { pattern: /MUTUELLE|MMA|ALMERYS|HARMONIE/, categorie: 'remboursement_mutuelle' },
+      { pattern: /IMPOT|IMPOTS|DGFIP|TRESOR\s+PUBLIC/, categorie: 'impots' },
+      { pattern: /EDF|ENGIE|GAZ|ELECTRICITE/, categorie: 'energie' },
+      { pattern: /ORANGE|SFR|BOUYGUES|FREE/, categorie: 'telecom' },
+      { pattern: /ASSURANCE|MAIF|MACIF|AXA/, categorie: 'assurances' },
+      { pattern: /CARREFOUR|LECLERC|AUCHAN|LIDL/, categorie: 'alimentation' },
+      { pattern: /ESSENCE|CARBURANT|TOTAL|SHELL/, categorie: 'carburant' },
+      { pattern: /RESTAURANT|RESTO|BRASSERIE/, categorie: 'restaurant' },
+      { pattern: /AMAZON|FNAC|CDISCOUNT/, categorie: 'ecommerce' },
+      { pattern: /CREDIT\s+IMMOBILIER|PRET\s+HABITAT/, categorie: 'credit_immobilier' },
+      { pattern: /LOYER|LOCATION/, categorie: 'loyer' },
+      { pattern: /PHARMACIE|DOCTEUR|MEDECIN/, categorie: 'sante' },
+      { pattern: /RETRAIT|DAB|DISTRIBUTEUR/, categorie: 'retrait_especes' },
+      { pattern: /VIREMENT|VIR\s+/, categorie: 'virement' },
+      { pattern: /CHEQUE|CHQ/, categorie: 'cheque' },
+      { pattern: /FRAIS|COMMISSION|AGIOS/, categorie: 'frais_bancaires' },
+      { pattern: /NETFLIX|SPOTIFY|CANAL/, categorie: 'abonnements' },
+      { pattern: /CB\s+\d{4}/, categorie: 'carte_bancaire' },
+      { pattern: /C A T\s+\d+|INTERETS/, categorie: 'epargne' }
     ];
     
     for (const rule of rules) {
@@ -701,13 +413,54 @@ const OperationsBancairesImportService = {
       }
     }
     
-    return 'Autre';
+    return 'autre';
   },
 
-  /**
-   * Analyser les opérations pour générer des statistiques
-   */
-  analyzeOperations(operations) {
+  detectAccountFromFilename(filename) {
+    const nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
+    
+    // Pattern pour numéro de compte (11 chiffres)
+    const match = nameWithoutExt.match(/^(\d{11})$/);
+    if (match) {
+      return {
+        accountNumber: match[1],
+        maskedNumber: '•••' + match[1].slice(-4),
+        accountName: `Compte ${match[1].slice(-4)}`,
+        bank: 'Crédit Mutuel'
+      };
+    }
+    
+    return null;
+  },
+
+  async readFileWithEncoding(file) {
+    // Essayer plusieurs encodings
+    const encodings = ['windows-1252', 'utf-8', 'iso-8859-1'];
+    
+    for (const encoding of encodings) {
+      try {
+        const text = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = e => resolve(e.target.result);
+          reader.onerror = reject;
+          reader.readAsText(file, encoding);
+        });
+        
+        // Vérifier si le texte est lisible
+        if (!text.includes('�')) {
+          console.log(`✅ Encoding: ${encoding}`);
+          return text;
+        }
+      } catch (error) {
+        continue;
+      }
+    }
+    
+    // Fallback
+    return await file.text();
+  },
+
+  calculateStats(operations) {
     const stats = {
       total: operations.length,
       credits: 0,
@@ -724,20 +477,18 @@ const OperationsBancairesImportService = {
     };
     
     operations.forEach(op => {
-      // Compter par type
       if (op.type === 'credit') {
         stats.credits++;
         stats.montantCredits += op.montant;
-      } else if (op.type === 'debit') {
+      } else {
         stats.debits++;
         stats.montantDebits += Math.abs(op.montant);
       }
       
-      // Balance
       stats.balance += op.montant;
       
       // Catégories
-      const cat = op.categorie || 'Autre';
+      const cat = op.categorie || 'autre';
       if (!stats.categories[cat]) {
         stats.categories[cat] = { nombre: 0, montant: 0 };
       }
@@ -755,102 +506,22 @@ const OperationsBancairesImportService = {
       }
     });
     
-    // Calculer le nombre de jours
+    // Calculer les jours
     if (stats.periodes.debut && stats.periodes.fin) {
       const debut = new Date(stats.periodes.debut);
       const fin = new Date(stats.periodes.fin);
-      stats.periodes.jours = Math.ceil((fin - debut) / (1000 * 60 * 60 * 24));
+      stats.periodes.jours = Math.ceil((fin - debut) / (1000 * 60 * 60 * 24)) + 1;
     }
     
     return stats;
   },
 
-  /**
-   * Import Excel (nécessite SheetJS)
-   */
+  // ========================================
+  // IMPORT EXCEL (OPTIONNEL)
+  // ========================================
+  
   async importExcel(file) {
-    // Vérifier que SheetJS est chargé
-    if (typeof XLSX === 'undefined') {
-      throw new Error('SheetJS non chargé. Ajoutez <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>');
-    }
-    
-    // Lire le fichier
-    const data = await file.arrayBuffer();
-    const workbook = XLSX.read(data, { type: 'array' });
-    
-    // Prendre la première feuille
-    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-    
-    if (jsonData.length === 0) {
-      throw new Error('Fichier Excel vide');
-    }
-    
-    // Convertir en format CSV-like
-    const headers = jsonData[0];
-    const rows = [];
-    
-    for (let i = 1; i < jsonData.length; i++) {
-      const row = {};
-      headers.forEach((header, index) => {
-        row[header] = jsonData[i][index] || '';
-      });
-      rows.push(row);
-    }
-    
-    // Détecter le format
-    const headerLine = headers.join(';');
-    const format = this.createGenericFormat(headerLine, ';', 0);
-    
-    // Normaliser les opérations
-    const operations = this.normalizeOperations(rows, format);
-    
-    // Analyser les statistiques
-    const stats = this.analyzeOperations(operations);
-    
-    return {
-      operations,
-      stats,
-      format: 'Excel',
-      filename: file.name
-    };
-  },
-
-  /**
-   * Exporter les opérations en CSV
-   */
-  exportToCSV(operations, filename = 'operations_export.csv') {
-    const headers = [
-      'Date', 'Date valeur', 'Libellé', 'Montant', 'Type',
-      'Catégorie', 'Référence', 'Solde'
-    ];
-    
-    const rows = [headers];
-    
-    operations.forEach(op => {
-      rows.push([
-        op.date || '',
-        op.dateValeur || '',
-        op.libelle || '',
-        op.montant.toFixed(2).replace('.', ','),
-        op.type || '',
-        op.categorie || '',
-        op.reference || '',
-        op.solde ? op.solde.toFixed(2).replace('.', ',') : ''
-      ]);
-    });
-    
-    // Créer le CSV
-    const csv = rows.map(row => 
-      row.map(cell => `"${cell}"`).join(';')
-    ).join('\n');
-    
-    // Télécharger
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
+    throw new Error('Import Excel non implémenté. Utilisez le format CSV.');
   }
 };
 
