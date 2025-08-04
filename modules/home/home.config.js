@@ -99,7 +99,7 @@ export const MENU_ITEMS = [
     {
         href: '../factures-fournisseurs/factures-fournisseurs.html',
         icon: '📄',
-        title: 'Factures Fournisseur',
+        title: 'Factures Fournisseurs',
         description: 'Gérer les factures fournisseurs',
         permissions: ['factures.view'],
         disabled: false
