@@ -64,81 +64,108 @@ export function ouvrirNouvelleFacture() {
 // AFFICHAGE FORMULAIRE UPLOAD
 // ========================================
 
-function afficherFormulaireUpload() {
-    // Mettre à jour le footer avec le bouton désactivé
+function afficherSelectionStatuts(files) {
     const modalFooter = document.querySelector('#modalNouvelleFacture .modal-footer');
-    if (modalFooter) {
-        modalFooter.innerHTML = `
-            <button class="btn btn-ghost btn-pill" onclick="fermerModal('modalNouvelleFacture')">
-                Annuler
-            </button>
-        `;
-    }
     
-    // Créer la structure avec la dropzone
-    const modalBody = document.querySelector('#modalNouvelleFacture .modal-body');
-    if (modalBody) {
-        modalBody.innerHTML = `
-            <div class="nouvelle-facture-wrapper">
-                <!-- Zone 1 : Description -->
-                <div class="zone-description-ia">
-                    <div class="content">
-                        <div class="icon-wrapper">
-                            <span class="icon">📑</span>
+    // Initialiser les sélections (par défaut : à payer)
+    nouvelleFacture.selections = files.map(() => 'a_payer');
+    
+    // Mettre à jour la zone de résultats
+    const resultatsContent = document.querySelector('.zone-resultats-content');
+    if (resultatsContent) {
+        resultatsContent.innerHTML = `
+            <div class="factures-selection-moderne">
+                <div class="factures-list">
+                    ${files.map((file, index) => `
+                        <div class="facture-item">
+                            <div class="file-icon">📄</div>
+                            <div class="file-info">
+                                <div class="file-name">${escapeHtml(file.name)}</div>
+                                <div class="file-size">${formatFileSize(file.size)}</div>
+                            </div>
+                            <div class="status-options">
+                                <label class="status-radio">
+                                    <input type="radio" 
+                                           name="status-${index}" 
+                                           value="a_payer" 
+                                           checked
+                                           onchange="updateStatutFacture(${index}, 'a_payer')">
+                                    <span class="status-label a-payer">💳 À payer</span>
+                                </label>
+                                <label class="status-radio">
+                                    <input type="radio" 
+                                           name="status-${index}" 
+                                           value="deja_payee"
+                                           onchange="updateStatutFacture(${index}, 'deja_payee')">
+                                    <span class="status-label deja-payee">✅ Déjà payée</span>
+                                </label>
+                            </div>
                         </div>
-                        <div class="text">
-                            <h4>Upload de factures fournisseurs</h4>
-                            <p>Déposez vos factures (Free, EDF, etc.). Vous pourrez ensuite indiquer lesquelles sont à payer ou déjà payées.</p>
-                        </div>
-                    </div>
+                    `).join('')}
                 </div>
                 
-                <!-- Zone 2 : Dropzone -->
-                <div class="zone-dropzone">
-                    <div id="facture-dropzone"></div>
+                <!-- Résumé de la sélection -->
+                <div class="selection-summary">
+                    <div class="summary-item">
+                        <span class="summary-icon">💳</span>
+                        <span class="summary-text">
+                            <span id="count-a-payer">${files.length}</span> facture(s) à payer
+                        </span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-icon">✅</span>
+                        <span class="summary-text">
+                            <span id="count-deja-payee">0</span> facture(s) déjà payée(s)
+                        </span>
+                    </div>
                 </div>
             </div>
         `;
     }
     
-    // Créer la DropZone après que le HTML soit inséré
-    setTimeout(() => {
-        if (dropzoneDocuments) {
-            dropzoneDocuments.destroy();
-        }
-        
-        dropzoneDocuments = config.createFactureDropzone('#facture-dropzone', {
-            messages: {
-                drop: '📁 Glissez vos factures ici',
-                browse: 'ou cliquez pour parcourir',
-                typeError: 'Seuls les PDF et images (JPG, PNG) sont acceptés',
-                sizeError: 'Fichier trop volumineux (max 10MB)',
-                maxFilesError: 'Maximum 10 fichiers autorisés'
-            },
-            previewSize: 'none',
-            showPreview: false,
-            onDrop: (files) => {
-                console.log('📎 Fichiers déposés:', files);
-                nouvelleFacture.documents = files;
-                // Afficher l'interface de sélection
-                afficherSelectionStatuts(files);
-            },
-            onRemove: (file, index) => {
-                console.log('🗑️ Fichier retiré:', file.name);
-                // Retour à l'upload si plus de fichiers
-                if (nouvelleFacture.documents.length === 0) {
-                    afficherFormulaireUpload();
-                }
-            },
-            onChange: (files) => {
-                nouvelleFacture.documents = files;
-                if (files.length === 0) {
-                    afficherFormulaireUpload();
-                }
-            }
-        });
-    }, 100);
+    // Mettre à jour le header
+    const resultatsHeader = document.querySelector('.zone-resultats-header h5');
+    if (resultatsHeader) {
+        resultatsHeader.innerHTML = `
+            📋 Sélection du statut des factures
+            <span class="count">${files.length}</span>
+        `;
+    }
+    
+    // Boutons d'action
+    if (modalFooter) {
+        modalFooter.innerHTML = `
+            <button class="btn btn-ghost btn-pill" onclick="afficherFormulaireUpload()">
+                ← Retour
+            </button>
+            <button id="btnAnalyserFactures" class="btn btn-primary btn-pill">
+                🤖 Analyser les factures
+            </button>
+        `;
+    }
+    
+    // Gérer le clic sur analyser
+    const btnAnalyser = document.getElementById('btnAnalyserFactures');
+    if (btnAnalyser) {
+        btnAnalyser.onclick = analyserFactures;
+    }
 }
+
+// Fonction globale pour mettre à jour le statut
+window.updateStatutFacture = function(index, statut) {
+    nouvelleFacture.selections[index] = statut;
+    console.log(`Facture ${index} : ${statut}`);
+    
+    // Mettre à jour les compteurs
+    const countAPayer = nouvelleFacture.selections.filter(s => s === 'a_payer').length;
+    const countDejaPayee = nouvelleFacture.selections.filter(s => s === 'deja_payee').length;
+    
+    const countAPayerEl = document.getElementById('count-a-payer');
+    const countDejaPayeeEl = document.getElementById('count-deja-payee');
+    
+    if (countAPayerEl) countAPayerEl.textContent = countAPayer;
+    if (countDejaPayeeEl) countDejaPayeeEl.textContent = countDejaPayee;
+};
 
 // ========================================
 // INTERFACE DE SÉLECTION DES STATUTS
@@ -221,19 +248,58 @@ async function analyserFactures() {
         btnAnalyser.disabled = true;
         btnAnalyser.innerHTML = '⏳ Upload et analyse en cours...';
         
+        // Afficher la zone de progression
+        const resultatsContent = document.querySelector('.zone-resultats-content');
+        if (resultatsContent) {
+            resultatsContent.innerHTML = `
+                <div class="analyse-progress">
+                    <div class="progress-header">
+                        <div class="icon">🤖</div>
+                        <h6>Analyse en cours...</h6>
+                    </div>
+                    <div class="progress-list" id="progress-list">
+                        <!-- Items de progression ajoutés dynamiquement -->
+                    </div>
+                    <div class="progress-summary" id="progress-summary" style="display: none;">
+                        <div class="summary-stats">
+                            <span class="success">✅ <span id="count-success">0</span> réussie(s)</span>
+                            <span class="error">❌ <span id="count-error">0</span> erreur(s)</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
         let compteurCreees = 0;
         let compteurErreurs = 0;
+        const progressList = document.getElementById('progress-list');
         
         // Traiter chaque facture
         for (let i = 0; i < nouvelleFacture.documents.length; i++) {
             const file = nouvelleFacture.documents[i];
             const statut = nouvelleFacture.selections[i];
             
+            // Ajouter l'item de progression
+            if (progressList) {
+                progressList.innerHTML += `
+                    <div class="progress-item" id="progress-${i}">
+                        <div class="progress-icon">⏳</div>
+                        <div class="progress-info">
+                            <div class="progress-name">${escapeHtml(file.name)}</div>
+                            <div class="progress-status">Upload en cours...</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
             try {
                 console.log(`📤 Traitement facture ${i + 1}/${nouvelleFacture.documents.length}`);
                 
                 // 1. Upload du document
                 const uploadResult = await uploadService.uploadFactureDocument(file);
+                
+                // Mettre à jour le statut
+                updateProgressItem(i, '📤', 'Création de la facture...');
                 
                 // 2. Créer la facture dans Firestore
                 const factureData = {
@@ -247,13 +313,20 @@ async function analyserFactures() {
                 console.log(`✅ Facture créée: ${factureId} (${statut})`);
                 compteurCreees++;
                 
+                // Mettre à jour le statut de succès
+                updateProgressItem(i, '✅', 'Facture créée avec succès', true);
+                
                 // 3. Lancer l'analyse IA en arrière-plan
                 analyserAvecIA(factureId, uploadResult.url);
                 
             } catch (error) {
                 console.error(`❌ Erreur traitement ${file.name}:`, error);
                 compteurErreurs++;
+                updateProgressItem(i, '❌', 'Erreur lors du traitement', false);
             }
+            
+            // Mettre à jour le résumé
+            updateProgressSummary(compteurCreees, compteurErreurs);
         }
         
         // Afficher le résultat
@@ -286,6 +359,32 @@ async function analyserFactures() {
         console.error('❌ Erreur générale:', error);
         afficherErreur('Une erreur est survenue');
     }
+}
+
+// Fonctions helper pour la progression
+function updateProgressItem(index, icon, status, success = null) {
+    const item = document.getElementById(`progress-${index}`);
+    if (item) {
+        const iconEl = item.querySelector('.progress-icon');
+        const statusEl = item.querySelector('.progress-status');
+        
+        if (iconEl) iconEl.textContent = icon;
+        if (statusEl) statusEl.textContent = status;
+        
+        if (success !== null) {
+            item.classList.add(success ? 'success' : 'error');
+        }
+    }
+}
+
+function updateProgressSummary(success, errors) {
+    const summary = document.getElementById('progress-summary');
+    const countSuccess = document.getElementById('count-success');
+    const countError = document.getElementById('count-error');
+    
+    if (summary) summary.style.display = 'block';
+    if (countSuccess) countSuccess.textContent = success;
+    if (countError) countError.textContent = errors;
 }
 
 // ========================================
@@ -340,6 +439,12 @@ function formatFileSize(bytes) {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 // ========================================

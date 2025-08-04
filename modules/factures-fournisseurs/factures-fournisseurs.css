@@ -454,20 +454,377 @@
 }
 
 /* ========================================
-   ZONE UPLOAD MODERNE
+   MODAL NOUVELLE FACTURE - DESIGN MODERNE
    ======================================== */
+
+/* Configuration du modal */
+#modalNouvelleFacture .modal-content {
+    width: 800px;
+    max-width: 95%;
+    height: 85vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Body principal */
 #modalNouvelleFacture .modal-body {
     padding: 0;
+    flex: 1;
     overflow: hidden;
     background: #f8f9fa;
 }
 
+/* Container avec les 3 zones */
 .nouvelle-facture-wrapper {
     height: 100%;
     display: flex;
     flex-direction: column;
     padding: 24px;
     gap: 20px;
+}
+
+/* Zone 1 : Description */
+.zone-description {
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #ffe4e4 0%, #ffd4d4 100%);
+    border: 1px solid #ffb4b4;
+    border-radius: 12px;
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.zone-description::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(255, 107, 107, 0.1) 0%, transparent 70%);
+    border-radius: 50%;
+}
+
+.zone-description .content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.zone-description .icon-wrapper {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    background: white;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.15);
+}
+
+.zone-description .icon-wrapper .icon {
+    font-size: 24px;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.zone-description .text {
+    flex: 1;
+}
+
+.zone-description h4 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #c53030;
+}
+
+.zone-description p {
+    margin: 0;
+    font-size: 14px;
+    color: #e53e3e;
+    line-height: 1.5;
+}
+
+/* Zone 2 : Dropzone */
+.zone-dropzone {
+    flex-shrink: 0;
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.zone-dropzone .dropzone-area {
+    background: #fafbfc;
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    min-height: 140px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.zone-dropzone .dropzone-area:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.zone-dropzone .dropzone-area.dragover {
+    background: #fee;
+    border-color: #ff6b6b;
+    border-style: solid;
+}
+
+.zone-dropzone .dropzone-content {
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.zone-dropzone .dropzone-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    opacity: 0.4;
+}
+
+.zone-dropzone .dropzone-text {
+    text-align: center;
+}
+
+.zone-dropzone .dropzone-text p:first-child {
+    font-size: 16px;
+    font-weight: 500;
+    color: #1f2937;
+    margin: 0 0 4px 0;
+}
+
+.zone-dropzone .dropzone-text p:last-child {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0;
+}
+
+/* Zone 3 : Résultats / Formulaire */
+.zone-resultats {
+    flex: 1;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.zone-resultats-header {
+    flex-shrink: 0;
+    padding: 16px 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.zone-resultats-header h5 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.zone-resultats-header .count {
+    background: #f3f4f6;
+    color: #6b7280;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.zone-resultats-content {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+/* Message quand pas de fichier */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.empty-state .icon {
+    font-size: 48px;
+    opacity: 0.2;
+    margin-bottom: 12px;
+}
+
+.empty-state p {
+    color: #9ca3af;
+    font-size: 14px;
+    margin: 0;
+}
+
+/* Sections résultats */
+.result-section {
+    margin-bottom: 20px;
+    padding: 16px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+}
+
+.result-section:last-child {
+    margin-bottom: 0;
+}
+
+.result-section h6 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+}
+
+/* Footer */
+#modalNouvelleFacture .modal-footer {
+    background: white;
+    border-top: 1px solid #e5e7eb;
+    padding: 16px 24px;
+    justify-content: space-between;
+}
+
+/* Formulaire facture */
+.form-facture {
+    display: grid;
+    gap: 20px;
+}
+
+.form-section {
+    display: grid;
+    gap: 16px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.form-row.full {
+    grid-template-columns: 1fr;
+}
+
+/* Preview fichiers */
+.fichiers-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.fichier-preview-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    gap: 12px;
+}
+
+.fichier-preview-item .file-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.fichier-preview-item .file-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.fichier-preview-item .file-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.fichier-preview-item .file-size {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+.fichier-preview-item .remove-file {
+    flex-shrink: 0;
+    color: #dc2626;
+    cursor: pointer;
+    font-size: 18px;
+    transition: transform 0.2s;
+}
+
+.fichier-preview-item .remove-file:hover {
+    transform: scale(1.2);
+}
+
+/* Scrollbar personnalisée */
+.zone-resultats-content::-webkit-scrollbar,
+.fichiers-preview::-webkit-scrollbar {
+    width: 6px;
+}
+
+.zone-resultats-content::-webkit-scrollbar-track,
+.fichiers-preview::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.zone-resultats-content::-webkit-scrollbar-thumb,
+.fichiers-preview::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+}
+
+.zone-resultats-content::-webkit-scrollbar-thumb:hover,
+.fichiers-preview::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #modalNouvelleFacture .modal-content {
+        width: 100%;
+        height: 100vh;
+        border-radius: 0;
+    }
+    
+    .nouvelle-facture-wrapper {
+        padding: 16px;
+        gap: 16px;
+    }
+    
+    .zone-description {
+        padding: 16px;
+    }
+    
+    .zone-description .content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* ========================================
