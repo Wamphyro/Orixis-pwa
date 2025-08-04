@@ -750,65 +750,6 @@
 }
 
 /* ========================================
-   TOOLTIP CATÉGORIE NOIR INSTANTANÉ
-   ======================================== */
-
-/* Wrapper pour l'icône et le tooltip */
-.categorie-icon-wrapper {
-    position: relative;
-    display: inline-block;
-}
-
-/* Icône de catégorie */
-.categorie-icon {
-    font-size: 20px;
-    cursor: help;
-    display: inline-block;
-    transition: transform 0.2s ease;
-}
-
-/* Tooltip noir */
-.categorie-tooltip {
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%) translateY(-5px);
-    background-color: #000;
-    color: #fff;
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 12px;
-    white-space: nowrap;
-    pointer-events: none;
-    opacity: 0;
-    visibility: hidden;
-    z-index: 1000;
-    font-weight: 500;
-}
-
-/* Flèche du tooltip */
-.categorie-tooltip::after {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 5px solid transparent;
-    border-top-color: #000;
-}
-
-/* Affichage instantané au survol */
-.categorie-icon-wrapper:hover .categorie-tooltip {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Effet de grossissement de l'icône au survol */
-.categorie-icon-wrapper:hover .categorie-icon {
-    transform: scale(1.2);
-}
-
-/* ========================================
    HISTORIQUE DES DIFFICULTÉS
    
    [03/02/2025] - Création basée sur decompte-mutuelle

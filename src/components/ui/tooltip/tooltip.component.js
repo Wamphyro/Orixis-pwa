@@ -82,18 +82,52 @@ export class Tooltip {
         this.attachEvents();
     }
     
-    loadStyles() {
+loadStyles() {
         // Vérifier si les styles sont déjà chargés
         if (document.getElementById('tooltip-styles')) {
             return;
         }
         
-        // Créer le lien vers le fichier CSS
-        const link = document.createElement('link');
-        link.id = 'tooltip-styles';
-        link.rel = 'stylesheet';
-        link.href = '/src/components/ui/tooltip/tooltip.css';
-        document.head.appendChild(link);
+        // Créer le style inline pour éviter les problèmes de chemin
+        const style = document.createElement('style');
+        style.id = 'tooltip-styles';
+        style.textContent = `
+            /* Tooltip de base */
+            .tooltip {
+                position: absolute;
+                padding: 8px 12px;
+                border-radius: 6px;
+                font-size: 13px;
+                font-weight: 500;
+                line-height: 1.4;
+                white-space: nowrap;
+                transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            }
+            
+            /* Thème dark (noir) */
+            .tooltip-dark {
+                background-color: #000000;
+                color: #ffffff;
+            }
+            
+            /* Flèche */
+            .tooltip-arrow {
+                position: absolute;
+                width: 0;
+                height: 0;
+                border: 6px solid transparent;
+            }
+            
+            /* Flèche position top */
+            .tooltip-top .tooltip-arrow {
+                bottom: -12px;
+                left: 50%;
+                transform: translateX(-50%);
+                border-top-color: #000000;
+            }
+        `;
+        document.head.appendChild(style);
         
         console.log('📦 Tooltip styles chargés');
     }

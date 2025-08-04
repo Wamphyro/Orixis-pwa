@@ -35,7 +35,7 @@
 
 /* Thème sombre (par défaut) */
 .tooltip-dark {
-    background-color: #212121;
+    background-color: #000000;
     color: #ffffff;
 }
 
@@ -115,10 +115,10 @@
 
 /* Couleurs des flèches selon le thème */
 .tooltip-dark .tooltip-arrow {
-    border-top-color: #212121;
-    border-bottom-color: #212121;
-    border-left-color: #212121;
-    border-right-color: #212121;
+    border-top-color: #000000;
+    border-bottom-color: #000000;
+    border-left-color: #000000;
+    border-right-color: #000000;
 }
 
 .tooltip-light .tooltip-arrow {
