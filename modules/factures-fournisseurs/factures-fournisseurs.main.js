@@ -50,10 +50,8 @@ export const state = {
         fournisseur: '',
         categorie: '',
         periode: 'all',
-        statut: '',
-        statutsActifs: [], // Array pour filtrage multi-statuts depuis cards
-        aPayer: false,
-        enRetard: false
+        statutsActifs: [] // Array pour filtrage multi-statuts depuis cards UNIQUEMENT
+        // SUPPRIMÉ : statut, aPayer, enRetard
     }
 };
 

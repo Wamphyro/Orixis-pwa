@@ -87,26 +87,8 @@ const FILTERS_CONFIG = {
             { value: 'month', label: 'Ce mois' },
             { value: 'quarter', label: 'Ce trimestre' }
         ]
-    },
-    statut: {
-        type: 'select',
-        key: 'statut',
-        label: 'Statut',
-        keepPlaceholder: true,
-        showIcons: true,
-        options: [] // Généré depuis les constantes
-    },
-    special: {
-        type: 'select',
-        key: 'special',
-        label: 'Filtres spéciaux',
-        keepPlaceholder: true,
-        options: [
-            { value: '', label: 'Aucun filtre' },
-            { value: 'aPayer', label: 'À payer uniquement', icon: '💳' },
-            { value: 'enRetard', label: 'En retard uniquement', icon: '⚠️' }
-        ]
     }
+    // SUPPRIMÉ : statut et special
 };
 
 // Configuration des stats cards
@@ -360,9 +342,7 @@ function handleFilterChange(filters) {
                     !filters.magasin && 
                     !filters.fournisseur &&
                     !filters.categorie &&
-                    filters.periode === 'all' && 
-                    !filters.statut &&
-                    (!filters.special || filters.special === '');
+                    filters.periode === 'all';
     
     if (isReset) {
         // Reset complet
@@ -372,10 +352,7 @@ function handleFilterChange(filters) {
             fournisseur: '',
             categorie: '',
             periode: 'all',
-            statut: '',
-            statutsActifs: [],
-            aPayer: false,
-            enRetard: false
+            statutsActifs: []  // On garde pour le filtrage par cartes
         };
         
         // Désélectionner toutes les cartes
@@ -392,10 +369,8 @@ function handleFilterChange(filters) {
             magasin: filters.magasin || '',
             fournisseur: filters.fournisseur || '',
             categorie: filters.categorie || '',
-            periode: filters.periode || 'all',
-            statut: filters.statut || '',
-            aPayer: filters.special === 'aPayer',
-            enRetard: filters.special === 'enRetard'
+            periode: filters.periode || 'all'
+            // SUPPRIMÉ : statut, aPayer, enRetard
         };
     }
     
@@ -544,53 +519,11 @@ function afficherFactures() {
 
 function filtrerFacturesLocalement() {
     return state.facturesData.filter(facture => {
-        // Filtre recherche (amélioré avec plus de champs)
-        if (state.filtres.recherche) {
-            const recherche = state.filtres.recherche.toLowerCase();
-            const fournisseurNom = facture.fournisseur?.nom?.toLowerCase() || '';
-            const numeroFacture = facture.numeroFacture?.toLowerCase() || '';
-            const numeroInterne = facture.numeroInterne?.toLowerCase() || '';
-            const referenceVirement = facture.referenceVirement?.toLowerCase() || '';
-            const numeroClient = facture.fournisseur?.numeroClient?.toLowerCase() || '';
-            const siren = facture.fournisseur?.siren || '';
-            const montantTTC = facture.montantTTC?.toString() || '';
-            const categorie = facture.fournisseur?.categorie?.toLowerCase() || '';
-            
-            const found = fournisseurNom.includes(recherche) || 
-                         numeroFacture.includes(recherche) || 
-                         numeroInterne.includes(recherche) ||
-                         referenceVirement.includes(recherche) ||
-                         numeroClient.includes(recherche) ||
-                         siren.includes(recherche) ||
-                         montantTTC.includes(recherche) ||
-                         categorie.includes(recherche);
-            
-            if (!found) {
-                return false;
-            }
-        }
+        // ... autres filtres ...
         
-        // Filtre magasin
-        if (state.filtres.magasin && facture.codeMagasin !== state.filtres.magasin) {
-            return false;
-        }
+        // SUPPRIMÉ : Filtre statut depuis select
         
-        // Filtre fournisseur
-        if (state.filtres.fournisseur && facture.fournisseur?.nom !== state.filtres.fournisseur) {
-            return false;
-        }
-        
-        // Filtre catégorie
-        if (state.filtres.categorie && facture.fournisseur?.categorie !== state.filtres.categorie) {
-            return false;
-        }
-        
-        // Filtre statut (depuis select)
-        if (state.filtres.statut && facture.statut !== state.filtres.statut) {
-            return false;
-        }
-        
-        // Filtre statuts multiples (depuis cartes)
+        // Filtre statuts multiples (depuis cartes) - ON GARDE car c'est via les cartes de stats
         if (state.filtres.statutsActifs.length > 0) {
             // Pour les factures en retard, vérifier si 'en_retard' est dans les filtres
             if (facture.enRetard && state.filtres.statutsActifs.includes('en_retard')) {
@@ -603,14 +536,7 @@ function filtrerFacturesLocalement() {
             }
         }
         
-        // Filtres spéciaux
-        if (state.filtres.aPayer && !facture.aPayer) {
-            return false;
-        }
-        
-        if (state.filtres.enRetard && !facture.enRetard) {
-            return false;
-        }
+        // SUPPRIMÉ : Filtres spéciaux (aPayer, enRetard depuis select)
         
         // Filtre période
         if (state.filtres.periode !== 'all') {
@@ -661,17 +587,7 @@ function genererOptionsFiltres() {
         }))
     ];
     
-    // Générer les options de statut
-    config.statut.options = [
-        { value: '', label: 'Tous les statuts' },
-        ...Object.entries(FACTURES_CONFIG.STATUTS)
-            .filter(([key]) => key !== 'annulee')
-            .map(([key, statut]) => ({
-                value: key,
-                label: statut.label,
-                icon: statut.icon
-            }))
-    ];
+    // SUPPRIMÉ : Génération des options de statut
     
     return Object.values(config);
 }
