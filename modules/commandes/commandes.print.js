@@ -4,7 +4,7 @@
 //
 // DESCRIPTION:
 // Génère et affiche une fiche de commande au format HTML
-// Design moderne optimisé pour l'impression A4
+// Design moderne optimisé pour tenir sur une page A4
 //
 // API PUBLIQUE:
 // - imprimerCommande(commandeId)
@@ -62,11 +62,8 @@ export function generatePrintHTML(commande) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Commande ${commande.numeroCommande}</title>
-    <link rel="stylesheet" href="./commandes.print.css">
     <style>
-        /* Styles inline pour l'impression immédiate */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        
+        /* Reset et base */
         * {
             margin: 0;
             padding: 0;
@@ -74,23 +71,25 @@ export function generatePrintHTML(commande) {
         }
         
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             color: #2c3e50;
             background: #f5f5f5;
-            font-size: 14px;
-            line-height: 1.6;
+            font-size: 12px;
+            line-height: 1.4;
         }
         
+        /* Container optimisé pour A4 */
         .print-container {
-            max-width: 210mm;
-            margin: 20px auto;
-            padding: 20mm;
+            width: 210mm;
+            height: 297mm;
+            margin: 0 auto;
+            padding: 10mm 15mm;
             background: white;
             box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            min-height: 297mm;
+            position: relative;
         }
         
-        /* Bouton imprimer flottant */
+        /* Bouton imprimer */
         .print-button {
             position: fixed;
             bottom: 30px;
@@ -98,16 +97,17 @@ export function generatePrintHTML(commande) {
             background: #667eea;
             color: white;
             border: none;
-            padding: 15px 30px;
-            border-radius: 50px;
-            font-size: 16px;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             transition: all 0.3s ease;
+            z-index: 1000;
         }
         
         .print-button:hover {
@@ -115,240 +115,195 @@ export function generatePrintHTML(commande) {
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
         }
         
-        /* En-tête moderne */
+        /* En-tête compact */
         .print-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-bottom: 20px;
-            border-bottom: 3px solid #667eea;
-            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+            margin-bottom: 15px;
         }
         
         .logo-section {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 10px;
         }
         
         .logo-section svg {
-            width: 50px;
-            height: 50px;
+            width: 40px;
+            height: 40px;
         }
         
         .company-name {
-            font-size: 24px;
+            font-size: 18px;
             font-weight: 700;
             color: #667eea;
-            letter-spacing: -0.5px;
         }
         
-        .order-number {
+        .order-info {
             text-align: right;
         }
         
-        .order-number .label {
-            font-size: 12px;
-            color: #6c757d;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .order-number .value {
-            font-size: 20px;
+        .order-number {
+            font-size: 16px;
             font-weight: 600;
             color: #2c3e50;
-            margin-top: 5px;
         }
         
-        /* Titre principal */
+        .order-date {
+            font-size: 11px;
+            color: #6c757d;
+            margin-top: 2px;
+        }
+        
+        /* Titre compact */
         .print-title {
             text-align: center;
-            font-size: 28px;
-            font-weight: 300;
+            font-size: 20px;
+            font-weight: 600;
             color: #495057;
-            margin: 40px 0;
-            letter-spacing: 2px;
+            margin: 15px 0;
             text-transform: uppercase;
+            letter-spacing: 1px;
         }
         
-        /* Cards modernes */
+        /* Layout 2 colonnes pour client et livraison */
+        .info-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        /* Cards compactes */
         .info-card {
             background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 25px;
-            position: relative;
-            overflow: hidden;
+            border-left: 3px solid #667eea;
+            border-radius: 8px;
+            padding: 12px 15px;
         }
         
-        .info-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: #667eea;
+        .info-card.full-width {
+            grid-column: 1 / -1;
         }
         
         .card-title {
-            font-size: 16px;
+            font-size: 13px;
             font-weight: 600;
             color: #667eea;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
         
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-        }
-        
+        /* Infos compactes */
         .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 11px;
+        }
+        
+        .info-label {
+            color: #6c757d;
+            font-weight: 500;
+        }
+        
+        .info-value {
+            color: #2c3e50;
+            font-weight: 600;
+            text-align: right;
+        }
+        
+        /* Section produits compacte */
+        .products-section {
+            margin: 15px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px 15px;
+            border-left: 3px solid #667eea;
+        }
+        
+        .products-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        
+        /* Liste produits super compacte */
+        .product-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .product-main {
+            flex: 1;
             display: flex;
             align-items: center;
             gap: 10px;
         }
         
-        .info-icon {
-            font-size: 18px;
-            color: #6c757d;
-        }
-        
-        .info-content {
-            flex: 1;
-        }
-        
-        .info-label {
-            font-size: 11px;
-            color: #6c757d;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-        
-        .info-value {
-            font-size: 15px;
-            font-weight: 500;
-            color: #2c3e50;
-        }
-        
-        /* Cards produits */
-        .products-grid {
-            display: grid;
-            gap: 15px;
-            margin-top: 15px;
-        }
-        
-        .product-card {
-            background: white;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            padding: 20px;
+        .product-qty {
+            background: #667eea;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            transition: all 0.2s ease;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 11px;
+            flex-shrink: 0;
         }
         
-        .product-card:hover {
-            border-color: #667eea;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
-        
-        .product-info {
+        .product-details {
             flex: 1;
         }
         
         .product-name {
             font-weight: 600;
             color: #2c3e50;
-            font-size: 16px;
-            margin-bottom: 8px;
-        }
-        
-        .product-details {
-            display: flex;
-            gap: 20px;
-            margin-top: 10px;
-        }
-        
-        .product-detail {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 14px;
-            color: #6c757d;
-        }
-        
-        .product-detail-icon {
-            font-size: 16px;
+            font-size: 12px;
         }
         
         .product-ref {
-            background: #e9ecef;
-            padding: 4px 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            color: #495057;
-            font-weight: 500;
-            display: inline-block;
-        }
-        
-        .serial-badge {
-            background: #e8f5e9;
-            color: #2e7d32;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .serial-missing {
-            background: #fff3e0;
-            color: #f57c00;
-        }
-        
-        .product-quantity {
-            background: #667eea;
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 18px;
-            flex-shrink: 0;
-        }
-        
-        /* Footer */
-        .print-footer {
-            margin-top: 50px;
-            padding-top: 20px;
-            border-top: 1px solid #e9ecef;
-            text-align: center;
-            font-size: 12px;
+            font-size: 10px;
             color: #6c757d;
         }
         
-        /* Badges modernes */
+        .product-serial {
+            font-size: 10px;
+            color: #28a745;
+            font-family: monospace;
+        }
+        
+        .serial-missing {
+            color: #dc3545;
+            font-style: italic;
+        }
+        
+        /* Badges compacts */
         .badge {
             display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
             font-weight: 500;
-            background: #e9ecef;
-            color: #495057;
         }
         
         .badge-urgent {
@@ -366,17 +321,63 @@ export function generatePrintHTML(commande) {
             color: #155724;
         }
         
+        /* Section expédition si présente */
+        .shipping-info {
+            margin-top: 15px;
+            padding: 10px;
+            background: #e3f2fd;
+            border-radius: 6px;
+            border-left: 3px solid #2196f3;
+        }
+        
+        .shipping-info h4 {
+            font-size: 12px;
+            color: #1976d2;
+            margin-bottom: 5px;
+        }
+        
+        .shipping-details {
+            display: flex;
+            gap: 20px;
+            font-size: 11px;
+        }
+        
+        /* Footer compact */
+        .print-footer {
+            position: absolute;
+            bottom: 10mm;
+            left: 15mm;
+            right: 15mm;
+            text-align: center;
+            font-size: 10px;
+            color: #6c757d;
+            padding-top: 10px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        /* Commentaires */
+        .comments-box {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 8px;
+            margin-top: 8px;
+            font-size: 11px;
+            font-style: italic;
+            color: #495057;
+        }
+        
         /* Print specific */
         @media print {
             body {
-                print-color-adjust: exact;
-                -webkit-print-color-adjust: exact;
                 background: white;
             }
             
             .print-container {
-                padding: 15mm;
+                width: 100%;
+                height: 100%;
                 margin: 0;
+                padding: 10mm 15mm;
                 box-shadow: none;
             }
             
@@ -384,184 +385,140 @@ export function generatePrintHTML(commande) {
                 display: none !important;
             }
             
-            .info-card {
+            .info-card,
+            .product-item,
+            .products-section {
                 break-inside: avoid;
-                page-break-inside: avoid;
             }
-            
-            .product-card {
-                break-inside: avoid;
-                page-break-inside: avoid;
+        }
+        
+        @media screen {
+            body {
+                padding: 20px 0;
             }
         }
     </style>
 </head>
 <body>
-    <button class="print-button no-print" onclick="window.print()">
-        🖨️ Imprimer cette page
+    <button class="print-button" onclick="window.print()">
+        🖨️ Imprimer
     </button>
     
     <div class="print-container">
-        <!-- En-tête avec logo -->
+        <!-- En-tête -->
         <header class="print-header">
             <div class="logo-section">
                 ${logoSVG}
                 <div class="company-name">Orixis Audio</div>
             </div>
-            <div class="order-number">
-                <div class="label">Commande</div>
-                <div class="value">${commande.numeroCommande}</div>
+            <div class="order-info">
+                <div class="order-number">${commande.numeroCommande}</div>
+                <div class="order-date">Créée le ${formatDate(commande.dates.commande)}</div>
             </div>
         </header>
         
         <h1 class="print-title">Fiche de Commande</h1>
         
-        <!-- Informations client -->
-        <div class="info-card">
-            <h2 class="card-title">Informations Client</h2>
-            <div class="info-grid">
+        <!-- Client et Livraison côte à côte -->
+        <div class="info-row">
+            <!-- Client -->
+            <div class="info-card">
+                <h3 class="card-title">Client</h3>
                 <div class="info-item">
-                    <span class="info-icon">👤</span>
-                    <div class="info-content">
-                        <div class="info-label">Nom complet</div>
-                        <div class="info-value">${commande.client.prenom} ${commande.client.nom}</div>
-                    </div>
+                    <span class="info-label">Nom :</span>
+                    <span class="info-value">${commande.client.prenom} ${commande.client.nom}</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-icon">📱</span>
-                    <div class="info-content">
-                        <div class="info-label">Téléphone</div>
-                        <div class="info-value">${commande.client.telephone || '-'}</div>
-                    </div>
+                    <span class="info-label">Tél :</span>
+                    <span class="info-value">${commande.client.telephone || '-'}</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-icon">✉️</span>
-                    <div class="info-content">
-                        <div class="info-label">Email</div>
-                        <div class="info-value">${commande.client.email || '-'}</div>
-                    </div>
+                    <span class="info-label">Email :</span>
+                    <span class="info-value">${commande.client.email || '-'}</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-icon">🏪</span>
-                    <div class="info-content">
-                        <div class="info-label">Magasin référence</div>
-                        <div class="info-value">${commande.magasinReference}</div>
-                    </div>
+                    <span class="info-label">Magasin :</span>
+                    <span class="info-value">${commande.magasinReference}</span>
+                </div>
+            </div>
+            
+            <!-- Livraison -->
+            <div class="info-card">
+                <h3 class="card-title">Livraison</h3>
+                <div class="info-item">
+                    <span class="info-label">Date prévue :</span>
+                    <span class="info-value">${dateLivraison}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Magasin :</span>
+                    <span class="info-value">${commande.magasinLivraison}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Type :</span>
+                    <span class="info-value">${typeConfig.label}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Urgence :</span>
+                    <span class="info-value">
+                        <span class="badge badge-${commande.niveauUrgence}">
+                            ${urgenceConfig.icon} ${urgenceConfig.label}
+                        </span>
+                    </span>
                 </div>
             </div>
         </div>
         
-        <!-- Produits commandés en cards -->
-        <div class="info-card">
-            <h2 class="card-title">Produits Commandés</h2>
-            <div class="products-grid">
+        <!-- Produits -->
+        <div class="products-section">
+            <h3 class="products-title">Produits commandés (${commande.produits.length})</h3>
+            <div class="product-list">
                 ${commande.produits.map(produit => `
-                    <div class="product-card">
-                        <div class="product-info">
-                            <div class="product-name">
-                                ${produit.designation}
-                                ${produit.cote ? `<span style="font-weight: normal; color: #6c757d;"> - ${capitalize(produit.cote)}</span>` : ''}
-                            </div>
-                            <span class="product-ref">Réf: ${produit.reference}</span>
+                    <div class="product-item">
+                        <div class="product-main">
+                            <div class="product-qty">${produit.quantite}</div>
                             <div class="product-details">
+                                <div class="product-name">
+                                    ${produit.designation}
+                                    ${produit.cote ? `- ${capitalize(produit.cote)}` : ''}
+                                </div>
+                                <div class="product-ref">Réf: ${produit.reference}</div>
                                 ${produit.numeroSerie 
-                                    ? `<span class="serial-badge">
-                                        <span>✓</span>
-                                        N° ${produit.numeroSerie}
-                                       </span>`
+                                    ? `<div class="product-serial">N° série: ${produit.numeroSerie}</div>`
                                     : produit.type === 'appareil_auditif' || produit.necessiteCote
-                                        ? '<span class="serial-badge serial-missing">⚠️ N° série à saisir</span>'
+                                        ? '<div class="product-serial serial-missing">N° série à saisir</div>'
                                         : ''
                                 }
                             </div>
-                        </div>
-                        <div class="product-quantity">
-                            ${produit.quantite}
                         </div>
                     </div>
                 `).join('')}
             </div>
         </div>
         
-        <!-- Informations de livraison -->
-        <div class="info-card">
-            <h2 class="card-title">Informations de Livraison</h2>
-            <div class="info-grid">
-                <div class="info-item">
-                    <span class="info-icon">📅</span>
-                    <div class="info-content">
-                        <div class="info-label">Date prévue</div>
-                        <div class="info-value">${dateLivraison}</div>
-                    </div>
-                </div>
-                <div class="info-item">
-                    <span class="info-icon">📍</span>
-                    <div class="info-content">
-                        <div class="info-label">Magasin de livraison</div>
-                        <div class="info-value">${commande.magasinLivraison}</div>
-                    </div>
-                </div>
-                <div class="info-item">
-                    <span class="info-icon">⚡</span>
-                    <div class="info-content">
-                        <div class="info-label">Niveau d'urgence</div>
-                        <div class="info-value">
-                            <span class="badge badge-${commande.niveauUrgence}">
-                                ${urgenceConfig.icon} ${urgenceConfig.label}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="info-item">
-                    <span class="info-icon">📦</span>
-                    <div class="info-content">
-                        <div class="info-label">Type de préparation</div>
-                        <div class="info-value">${typeConfig.label}</div>
-                    </div>
+        <!-- Commentaires si présents -->
+        ${commande.commentaires ? `
+            <div class="info-card full-width" style="margin-top: 15px;">
+                <h3 class="card-title">Commentaires</h3>
+                <div class="comments-box">
+                    ${commande.commentaires}
                 </div>
             </div>
-            ${commande.commentaires ? `
-                <div style="margin-top: 20px;">
-                    <div class="info-label">Commentaires</div>
-                    <div style="margin-top: 5px; padding: 10px; background: white; border-radius: 6px;">
-                        ${commande.commentaires}
-                    </div>
-                </div>
-            ` : ''}
-        </div>
+        ` : ''}
         
-        <!-- Informations d'expédition si applicable -->
+        <!-- Expédition si présente -->
         ${commande.expedition?.envoi?.numeroSuivi ? `
-            <div class="info-card">
-                <h2 class="card-title">Informations d'Expédition</h2>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <span class="info-icon">🚚</span>
-                        <div class="info-content">
-                            <div class="info-label">Transporteur</div>
-                            <div class="info-value">${commande.expedition.envoi.transporteur}</div>
-                        </div>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-icon">📮</span>
-                        <div class="info-content">
-                            <div class="info-label">Numéro de suivi</div>
-                            <div class="info-value">
-                                <span class="serial-badge">${commande.expedition.envoi.numeroSuivi}</span>
-                            </div>
-                        </div>
-                    </div>
+            <div class="shipping-info">
+                <h4>Informations d'expédition</h4>
+                <div class="shipping-details">
+                    <span><strong>Transporteur :</strong> ${commande.expedition.envoi.transporteur}</span>
+                    <span><strong>N° suivi :</strong> ${commande.expedition.envoi.numeroSuivi}</span>
                 </div>
             </div>
         ` : ''}
         
         <!-- Footer -->
         <footer class="print-footer">
-            <p>Document généré le ${dateImpression}</p>
-            <p>Orixis Audio - Solution de gestion SAV</p>
-            <p class="no-print" style="margin-top: 10px;">
-                <em>Ce document est généré automatiquement et reflète l'état actuel de la commande.</em>
-            </p>
+            <p>Document généré le ${dateImpression} - Orixis Audio</p>
         </footer>
     </div>
 </body>
@@ -582,22 +539,15 @@ function createModernLogo() {
                     <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
                 </linearGradient>
             </defs>
-            <!-- Cercle de fond -->
             <circle cx="50" cy="50" r="45" fill="url(#logoGradient)" opacity="0.1"/>
-            
-            <!-- Onde sonore stylisée -->
             <path d="M 20 50 Q 30 30, 40 50 T 60 50 T 80 50" 
                   stroke="url(#logoGradient)" 
                   stroke-width="4" 
                   fill="none" 
                   stroke-linecap="round"/>
-            
-            <!-- Points d'amplitude -->
             <circle cx="30" cy="35" r="3" fill="url(#logoGradient)"/>
             <circle cx="50" cy="50" r="4" fill="url(#logoGradient)"/>
             <circle cx="70" cy="35" r="3" fill="url(#logoGradient)"/>
-            
-            <!-- Icône oreille simplifiée -->
             <path d="M 45 45 C 45 35, 55 35, 55 45 C 55 55, 45 55, 45 45 
                      M 55 45 C 58 45, 58 50, 55 50" 
                   stroke="url(#logoGradient)" 
@@ -631,11 +581,7 @@ function openPrintPreview(html) {
 function formatDate(timestamp) {
     if (!timestamp) return '-';
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return date.toLocaleDateString('fr-FR', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric'
-    });
+    return date.toLocaleDateString('fr-FR');
 }
 
 function capitalize(str) {
@@ -647,17 +593,3 @@ function capitalize(str) {
 // ========================================
 
 window.imprimerCommande = imprimerCommande;
-
-/* ========================================
-   HISTORIQUE DES DIFFICULTÉS
-   
-   [04/02/2025] - Création du module d'impression
-   Solution: Module autonome avec génération HTML complète
-   Impact: Aperçu avant impression avec design moderne
-   
-   NOTES POUR REPRISES FUTURES:
-   - Pas d'impression automatique
-   - Cards modernes pour les produits
-   - Bouton imprimer flottant
-   - Timeline supprimée
-   ======================================== */
