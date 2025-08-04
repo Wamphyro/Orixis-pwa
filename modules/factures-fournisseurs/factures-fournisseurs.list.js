@@ -405,6 +405,8 @@ function handleFilterChange(filters) {
 }
 
 function handleStatsCardClick(cardId) {
+    console.log('🎯 DEBUG - Clic sur carte:', cardId);
+    
     // Toggle le filtre par statut (sauf cartes spéciales)
     if (!['pointees_mois', 'total_a_payer'].includes(cardId)) {
         const index = state.filtres.statutsActifs.indexOf(cardId);
@@ -421,6 +423,7 @@ function handleStatsCardClick(cardId) {
             }
         }
         
+        console.log('🎯 DEBUG - Statuts actifs après clic:', state.filtres.statutsActifs);
         afficherFactures();
     }
 }
@@ -440,6 +443,7 @@ export async function chargerDonnees() {
         state.facturesData = await FacturesFournisseursService.getFactures();
         
         console.log('🔍 DEBUG - Factures chargées:', state.facturesData.length);
+        console.log('🔍 DEBUG - Échantillon de factures:', state.facturesData.slice(0, 3));
         
         if (!state.facturesData) {
             state.facturesData = [];
@@ -480,17 +484,22 @@ export async function chargerDonnees() {
 
 function afficherStatistiques(stats) {
     if (statsCards) {
+        console.log('📊 DEBUG - Stats reçues:', stats);
+        
         const statsToUpdate = {};
         
         // Cartes par statut
         STATS_CARDS_CONFIG.cartes.forEach(carte => {
             if (!carte.special) {
-                statsToUpdate[carte.id] = stats.parStatut[carte.statut] || 0;
+                const valeur = stats.parStatut[carte.statut] || 0;
+                statsToUpdate[carte.id] = valeur;
+                console.log(`📊 DEBUG - Carte ${carte.id} (${carte.statut}):`, valeur);
             }
         });
         
         // Cartes spéciales
         statsToUpdate.en_retard = stats.nombreEnRetard || 0;
+        console.log('📊 DEBUG - En retard:', stats.nombreEnRetard);
         
         // Pointées ce mois
         const pointeesMois = state.facturesData.filter(f => {
@@ -503,20 +512,17 @@ function afficherStatistiques(stats) {
             return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
         }).length;
         
-        statsToUpdate.pointees_mois = {
-            value: pointeesMois,
-            label: 'Pointées ce mois',
-            icon: '✓✓',
-            color: 'success'
-        };
+        console.log('📊 DEBUG - Pointées ce mois:', pointeesMois);
+        
+        // IMPORTANT : Pour les cartes spéciales, il faut passer juste la valeur, pas un objet
+        statsToUpdate.pointees_mois = pointeesMois;
         
         // Total à payer
-        statsToUpdate.total_a_payer = {
-            value: formaterMontant(stats.montantAPayer),
-            label: 'Total à payer',
-            icon: '💰',
-            color: 'info'
-        };
+        const montantFormate = formaterMontant(stats.montantAPayer || 0);
+        console.log('📊 DEBUG - Total à payer:', montantFormate);
+        
+        // IMPORTANT : Pour cette carte, on veut juste afficher le montant formaté
+        statsToUpdate.total_a_payer = montantFormate;
         
         statsCards.updateAll(statsToUpdate);
     }
@@ -538,18 +544,28 @@ function afficherFactures() {
 
 function filtrerFacturesLocalement() {
     return state.facturesData.filter(facture => {
-        // Filtre recherche
+        // Filtre recherche (amélioré avec plus de champs)
         if (state.filtres.recherche) {
             const recherche = state.filtres.recherche.toLowerCase();
             const fournisseurNom = facture.fournisseur?.nom?.toLowerCase() || '';
             const numeroFacture = facture.numeroFacture?.toLowerCase() || '';
             const numeroInterne = facture.numeroInterne?.toLowerCase() || '';
             const referenceVirement = facture.referenceVirement?.toLowerCase() || '';
+            const numeroClient = facture.fournisseur?.numeroClient?.toLowerCase() || '';
+            const siren = facture.fournisseur?.siren || '';
+            const montantTTC = facture.montantTTC?.toString() || '';
+            const categorie = facture.fournisseur?.categorie?.toLowerCase() || '';
             
-            if (!fournisseurNom.includes(recherche) && 
-                !numeroFacture.includes(recherche) && 
-                !numeroInterne.includes(recherche) &&
-                !referenceVirement.includes(recherche)) {
+            const found = fournisseurNom.includes(recherche) || 
+                         numeroFacture.includes(recherche) || 
+                         numeroInterne.includes(recherche) ||
+                         referenceVirement.includes(recherche) ||
+                         numeroClient.includes(recherche) ||
+                         siren.includes(recherche) ||
+                         montantTTC.includes(recherche) ||
+                         categorie.includes(recherche);
+            
+            if (!found) {
                 return false;
             }
         }
@@ -576,8 +592,13 @@ function filtrerFacturesLocalement() {
         
         // Filtre statuts multiples (depuis cartes)
         if (state.filtres.statutsActifs.length > 0) {
-            const statutCarte = facture.enRetard ? 'en_retard' : facture.statut;
-            if (!state.filtres.statutsActifs.includes(statutCarte)) {
+            // Pour les factures en retard, vérifier si 'en_retard' est dans les filtres
+            if (facture.enRetard && state.filtres.statutsActifs.includes('en_retard')) {
+                return true;
+            }
+            
+            // Sinon vérifier le statut normal
+            if (!state.filtres.statutsActifs.includes(facture.statut)) {
                 return false;
             }
         }
@@ -665,7 +686,8 @@ function genererConfigStatsCards() {
                     label: 'Pointées ce mois',
                     value: 0,
                     icon: '✓✓',
-                    color: carte.color
+                    color: carte.color,
+                    format: 'number' // Indiquer que c'est un nombre
                 };
             } else if (carte.id === 'total_a_payer') {
                 return {
@@ -673,7 +695,8 @@ function genererConfigStatsCards() {
                     label: 'Total à payer',
                     value: '0 €',
                     icon: '💰',
-                    color: carte.color
+                    color: carte.color,
+                    format: 'currency' // Indiquer que c'est déjà formaté
                 };
             }
         } else {
