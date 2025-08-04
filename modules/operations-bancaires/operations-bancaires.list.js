@@ -758,7 +758,8 @@ function prepareExportData(data) {
 // EXPORTS POUR COMPATIBILITÉ
 // ========================================
 
-export { afficherDecomptes };
+// La fonction a été renommée, pas d'export supplémentaire nécessaire
+// export { afficherOperations }; // Déjà exportée plus haut
 
 export function resetFiltres() {
     if (filtresDecomptes) {
