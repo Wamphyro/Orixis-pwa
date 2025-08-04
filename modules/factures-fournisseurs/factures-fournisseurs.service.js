@@ -233,8 +233,8 @@ export class FacturesFournisseursService {
                     stats.montantPaye += montantTTC;
                 }
                 
-                // En retard
-                if (facture.enRetard) {
+                // En retard - compter aussi celles avec statut 'en_retard'
+                if (facture.enRetard || facture.statut === 'en_retard') {
                     stats.nombreEnRetard++;
                 }
             });

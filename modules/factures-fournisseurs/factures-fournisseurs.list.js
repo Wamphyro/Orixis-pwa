@@ -88,7 +88,6 @@ const FILTERS_CONFIG = {
             { value: 'quarter', label: 'Ce trimestre' }
         ]
     }
-    // SUPPRIMÉ : statut et special
 };
 
 // Configuration des stats cards
@@ -97,8 +96,8 @@ const STATS_CARDS_CONFIG = {
         { id: 'nouvelle', label: 'Nouvelle', icon: '📄', color: 'secondary' },
         { id: 'a_payer', label: 'À payer', icon: '💳', color: 'warning' },
         { id: 'en_retard', label: 'En retard', icon: '⚠️', color: 'danger' },
+        { id: 'deja_payee', label: 'Déjà payée', icon: '✅', color: 'success' },
         { id: 'a_pointer', label: 'À pointer', icon: '🔍', color: 'purple' },
-        { id: 'pointees_mois', label: 'Pointées ce mois', icon: '✓✓', color: 'success', special: true },
         { id: 'total_a_payer', label: 'Total à payer', icon: '💰', color: 'info', special: true }
     ]
 };
@@ -383,7 +382,7 @@ function handleStatsCardClick(cardId) {
     console.log('🎯 DEBUG - Clic sur carte:', cardId);
     
     // Les cartes spéciales ne filtrent pas
-    const cartesSpeciales = ['pointees_mois', 'total_a_payer'];
+    const cartesSpeciales = ['total_a_payer'];
     if (cartesSpeciales.includes(cardId)) {
         return;
     }
@@ -485,35 +484,35 @@ export async function chargerDonnees() {
 function afficherStatistiques(stats) {
     if (statsCards) {
         console.log('📊 DEBUG - Stats reçues:', stats);
+        console.log('📊 DEBUG - Détail parStatut:', stats.parStatut);
         
         const statsToUpdate = {};
         
-        // Mapping direct des statuts depuis stats.parStatut
+        // Mapping des statuts depuis stats.parStatut
+        // On utilise les statuts qui existent vraiment dans les données
         statsToUpdate.nouvelle = stats.parStatut?.nouvelle || 0;
         statsToUpdate.a_payer = stats.parStatut?.a_payer || 0;
-        statsToUpdate.a_pointer = stats.parStatut?.a_pointer || 0;
+        statsToUpdate.en_retard = stats.parStatut?.en_retard || 0;
+        statsToUpdate.deja_payee = stats.parStatut?.deja_payee || 0;
         
-        // En retard : utiliser le compteur spécifique
-        statsToUpdate.en_retard = stats.nombreEnRetard || 0;
+        // À pointer : inclure aussi payee et deja_payee qui doivent être pointées
+        let aPointer = stats.parStatut?.a_pointer || 0;
+        if (stats.parStatut?.payee) {
+            aPointer += stats.parStatut.payee;
+        }
+        statsToUpdate.a_pointer = aPointer;
         
-        // Pointées ce mois - calcul direct sur les données
-        const maintenant = new Date();
-        const pointeesMois = state.facturesData.filter(f => {
-            if (f.statut !== 'pointee') return false;
-            const datePointage = f.dates?.pointage;
-            if (!datePointage) return false;
-            
-            const date = datePointage.toDate ? datePointage.toDate() : new Date(datePointage);
-            return date.getMonth() === maintenant.getMonth() && 
-                   date.getFullYear() === maintenant.getFullYear();
-        }).length;
+        // Total à payer - calculer depuis les statuts qui doivent être payés
+        let totalAPayer = 0;
+        state.facturesData.forEach(facture => {
+            if (facture.statut === 'a_payer' || facture.statut === 'en_retard') {
+                totalAPayer += facture.montantTTC || 0;
+            }
+        });
         
-        statsToUpdate.pointees_mois = pointeesMois;
+        statsToUpdate.total_a_payer = formaterMontant(totalAPayer);
         
-        // Total à payer - formater le montant
-        statsToUpdate.total_a_payer = formaterMontant(stats.montantAPayer || 0);
-        
-        console.log('📊 DEBUG - Stats à mettre à jour:', statsToUpdate);
+        console.log('📊 DEBUG - Stats finales à mettre à jour:', statsToUpdate);
         
         statsCards.updateAll(statsToUpdate);
     }
@@ -539,14 +538,9 @@ function filtrerFacturesLocalement() {
         
         // SUPPRIMÉ : Filtre statut depuis select
         
-        // Filtre statuts multiples (depuis cartes) - ON GARDE car c'est via les cartes de stats
+        // Filtre statuts multiples (depuis cartes)
         if (state.filtres.statutsActifs.length > 0) {
-            // Pour les factures en retard, vérifier si 'en_retard' est dans les filtres
-            if (facture.enRetard && state.filtres.statutsActifs.includes('en_retard')) {
-                return true;
-            }
-            
-            // Sinon vérifier le statut normal
+            // Vérifier le statut de la facture
             if (!state.filtres.statutsActifs.includes(facture.statut)) {
                 return false;
             }
