@@ -360,15 +360,22 @@ async function analyserFactures() {
             cancelText: 'Annuler',
             // Factory pour créer des boutons avec le bon style
             buttonFactory: (options) => {
-                // Configuration spécifique pour les boutons du dialog
-                const btnConfig = {
-                    ...options,
-                    context: 'light',  // Pour fond clair
-                    textColor: options.variant === 'primary' ? 'white' : 'dark',
-                    // Style custom pour le bouton confirmer (violet)
-                    className: options.class?.includes('confirm') ? 'btn-ia-violet' : ''
-                };
-                return new config.Button(btnConfig);
+                // Pour le bouton confirmer, utiliser primary (déjà violet)
+                if (options.class?.includes('confirm')) {
+                    return new config.Button({
+                        ...options,
+                        variant: 'primary',
+                        textColor: 'white',
+                        pill: true
+                    });
+                } else {
+                    // Pour le bouton annuler
+                    return new config.Button({
+                        ...options,
+                        variant: 'secondary', 
+                        pill: true
+                    });
+                }
             }
         });
         
