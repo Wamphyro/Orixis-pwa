@@ -38,6 +38,30 @@ export const OPERATIONS_CONFIG = {
     },
 
     // ========================================
+    // STATUTS D'OPÉRATION (données métier)
+    // ========================================
+    STATUTS_OPERATION: {
+        active: {
+            label: 'Active',
+            couleur: '#4caf50',
+            icon: '🟢',
+            description: 'Opération standard non traitée'
+        },
+        pointee: {
+            label: 'Pointée',
+            couleur: '#2196f3',
+            icon: '✓',
+            description: 'Opération vérifiée et pointée'
+        },
+        rapprochee: {
+            label: 'Rapprochée',
+            couleur: '#9c27b0',
+            icon: '🔗',
+            description: 'Opération rapprochée avec un document'
+        }
+    },
+
+    // ========================================
     // CATÉGORIES D'OPÉRATION (données métier)
     // ========================================
     CATEGORIES: {
@@ -298,6 +322,17 @@ export function getStatistiquesParCategorie(operations) {
     });
     
     return stats;
+}
+
+// Fonction helper pour déterminer le statut d'une opération
+export function determinerStatutOperation(operation) {
+    if (operation.rapprochee) {
+        return 'rapprochee';
+    }
+    if (operation.pointee) {
+        return 'pointee';
+    }
+    return 'active';
 }
 
 // Fonction helper pour détecter la catégorie depuis le libellé

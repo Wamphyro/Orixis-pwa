@@ -26,7 +26,8 @@ import {
     formaterMontant,
     detecterCategorie,
     calculerBalance,
-    getComptesBancaires
+    getComptesBancaires,
+    determinerStatutOperation
 } from './operations-bancaires.data.js';
 import { Button, Tooltip } from '../../src/components/index.js';
 import config from './operations-bancaires.config.js';
@@ -240,24 +241,12 @@ function initDataTable() {
                 sortable: true,
                 width: 120,
                 formatter: (value, row) => {
-                    // Déterminer le statut basé sur les propriétés
-                    let statut = 'active';
-                    let label = 'Active';
-                    let couleur = '#4caf50';
+                    const statutKey = determinerStatutOperation(row);
+                    const statut = OPERATIONS_CONFIG.STATUTS_OPERATION[statutKey];
                     
-                    if (row.pointee) {
-                        statut = 'pointee';
-                        label = 'Pointée';
-                        couleur = '#2196f3';
-                    }
-                    
-                    if (row.rapprochee) {
-                        statut = 'rapprochee';
-                        label = 'Rapprochée';
-                        couleur = '#9c27b0';
-                    }
-                    
-                    return `<span class="badge badge-${statut}" style="background-color: ${couleur}; color: white;">${label}</span>`;
+                    return `<span class="badge badge-${statutKey}" style="background-color: ${statut.couleur}; color: white;">
+                        ${statut.icon} ${statut.label}
+                    </span>`;
                 }
             },
             {

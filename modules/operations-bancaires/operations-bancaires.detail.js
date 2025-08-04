@@ -21,7 +21,8 @@ import { OperationsBancairesService } from './operations-bancaires.service.js';
 import { 
     OPERATIONS_CONFIG,
     formaterDate,
-    formaterMontant
+    formaterMontant,
+    determinerStatutOperation
 } from './operations-bancaires.data.js';
 import config from './operations-bancaires.config.js';
 import { chargerDonnees } from './operations-bancaires.list.js';
@@ -183,6 +184,8 @@ function afficherSectionMontants(operation) {
 function afficherSectionCategorisation(operation) {
     const detailCategorisation = document.getElementById('detailCategorisation');
     const categorie = OPERATIONS_CONFIG.CATEGORIES[operation.categorie] || OPERATIONS_CONFIG.CATEGORIES.autre;
+    const statutKey = determinerStatutOperation(operation);
+    const statut = OPERATIONS_CONFIG.STATUTS_OPERATION[statutKey];
     
     detailCategorisation.innerHTML = `
         <div class="detail-info-grid">
@@ -191,6 +194,14 @@ function afficherSectionCategorisation(operation) {
                 <span class="detail-value">
                     <span class="categorie-badge">
                         ${categorie.icon} ${categorie.label}
+                    </span>
+                </span>
+            </div>
+            <div class="detail-info-item">
+                <span class="detail-label">Statut actuel</span>
+                <span class="detail-value">
+                    <span class="badge badge-${statutKey}" style="background-color: ${statut.couleur}; color: white; padding: 4px 12px; border-radius: 12px;">
+                        ${statut.icon} ${statut.label}
                     </span>
                 </span>
             </div>

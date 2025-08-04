@@ -153,6 +153,19 @@
     border-radius: 4px;
 }
 
+/* Badges de statut */
+.badge-active {
+    background-color: #4caf50 !important;
+}
+
+.badge-pointee {
+    background-color: #2196f3 !important;
+}
+
+.badge-rapprochee {
+    background-color: #9c27b0 !important;
+}
+
 /* Montants avec couleur */
 .montant-value {
     font-weight: 600;
