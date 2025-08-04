@@ -276,7 +276,7 @@ window.modalManager = config.modalManager;
 window.ouvrirModalImport = ouvrirModalImport;
 window.voirDetailOperation = voirDetailOperation;
 window.resetFiltres = resetFiltres;
-window.categoriserOperations = categoriserOperations;
+// categoriserOperations sera ajouté après sa définition
 
 // Fonction fermer modal
 window.fermerModal = function(modalId) {
@@ -294,6 +294,9 @@ async function categoriserOperations() {
     // TODO: Ouvrir modal de catégorisation
     console.log('Catégoriser', selection.length, 'opérations');
 }
+
+// Exposer la fonction après sa définition
+window.categoriserOperations = categoriserOperations;
 
 // Fonction pour confirmer la catégorisation
 window.confirmerCategorisation = async function() {
