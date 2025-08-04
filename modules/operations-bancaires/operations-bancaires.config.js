@@ -237,6 +237,12 @@ export function createButton(type, options = {}) {
             text: 'Exporter',
             variant: 'secondary',
             icon: '📤'
+        },
+        reset: {
+            text: 'Réinitialiser',
+            variant: 'secondary',
+            size: 'sm',
+            icon: '🔄'
         }
     };
     
