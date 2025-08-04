@@ -183,11 +183,8 @@ async function analyserFichiers(files) {
         const resultats = await Promise.allSettled(promesses);
         
         // Ajouter les résultats aux analyses existantes
-        let successCount = 0;
-        
         resultats.forEach((result, index) => {
             if (result.status === 'fulfilled') {
-                successCount++;
                 const analyse = {
                     ...result.value,
                     fileIndex: fichiersExistants.length + index,
@@ -210,10 +207,6 @@ async function analyserFichiers(files) {
         
         // Recalculer TOUT avec tous les fichiers
         recalculerStatsGlobales();
-        
-        // Activer le bouton si au moins un fichier réussi
-        const successCount = importState.analyses.filter(a => a.status === 'success').length;
-        if (successCount > 0 && importState.allOperations.length > 0) {
             const btnConfirmer = document.getElementById('btnConfirmerImport');
             const btnCount = document.getElementById('btnImportCount');
             if (btnConfirmer) {
