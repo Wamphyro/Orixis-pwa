@@ -586,6 +586,14 @@ function filtrerFacturesLocalement() {
         
         // SUPPRIMÉ : Filtres spéciaux (aPayer, enRetard depuis select)
         
+        // Filtre statuts multiples (depuis cartes)
+        if (state.filtres.statutsActifs.length > 0) {
+            // Vérifier le statut de la facture
+            if (!state.filtres.statutsActifs.includes(facture.statut)) {
+                return false;
+            }
+        }
+
         // Filtre période
         if (state.filtres.periode !== 'all') {
             const dateFacture = facture.dateFacture?.toDate ? 
@@ -682,7 +690,7 @@ function afficherCategorie(categorie) {
     
     // Utiliser le même template que pour les statuts
     return `
-        <span class="categorie-icon-wrapper">
+        <span class="categorie-icon-wrapper" data-categorie="${categorie}">
             <span class="categorie-icon">${configData.icon}</span>
             <span class="categorie-label">${configData.label}</span>
         </span>
