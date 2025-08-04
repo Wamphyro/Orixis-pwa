@@ -28,7 +28,7 @@ import {
     calculerBalance,
     getComptesBancaires
 } from './operations-bancaires.data.js';
-import { formatDate as formatDateUtil, Button } from '../../src/components/index.js';
+import { Button } from '../../src/components/index.js';
 import config from './operations-bancaires.config.js';
 import { state } from './operations-bancaires.main.js';
 
@@ -204,7 +204,7 @@ function initDataTable() {
                 label: 'Date',
                 sortable: true,
                 width: 100,
-                formatter: (value) => formatDate(value, 'jour')
+                formatter: (value) => formaterDate(value, 'jour')  // Utiliser formaterDate de data.js
             },
             {
                 key: 'libelle',
@@ -281,7 +281,7 @@ function initDataTable() {
         export: {
             csv: true,
             excel: true,
-            filename: `operations_${formatDateUtil(new Date(), 'YYYY-MM-DD')}`,
+            filename: `operations_${new Date().toISOString().split('T')[0]}`,
             onBeforeExport: (data) => prepareExportData(data)
         }
     });
@@ -697,8 +697,8 @@ function filtrerOperationsLocalement() {
 function prepareExportData(data) {
     return data.map(row => {
         return {
-            'Date': formatDate(row.date, 'jour'),
-            'Date valeur': formatDate(row.dateValeur, 'jour'),
+            'Date': formaterDate(row.date, 'jour'),
+            'Date valeur': formaterDate(row.dateValeur, 'jour'),
             'Libellé': row.libelle || '-',
             'Catégorie': OPERATIONS_CONFIG.CATEGORIES[row.categorie]?.label || row.categorie,
             'Type': row.montant >= 0 ? 'Crédit' : 'Débit',
