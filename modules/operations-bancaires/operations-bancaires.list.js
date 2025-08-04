@@ -207,7 +207,12 @@ function initDataTable() {
                 width: 80,
                 formatter: (value) => {
                     const cat = OPERATIONS_CONFIG.CATEGORIES[value] || OPERATIONS_CONFIG.CATEGORIES.autre;
-                    return `<span class="categorie-icon" title="${cat.label}" style="font-size: 20px; cursor: help;">${cat.icon}</span>`;
+                    return `
+                        <span class="categorie-icon-wrapper">
+                            <span class="categorie-icon">${cat.icon}</span>
+                            <span class="categorie-tooltip">${cat.label}</span>
+                        </span>
+                    `;
                 }
             },
             {
