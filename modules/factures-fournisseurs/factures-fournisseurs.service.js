@@ -37,120 +37,92 @@ export class FacturesFournisseursService {
      * @param {Object} criteres - Critères de recherche
      * @returns {Promise<Array>} Liste des factures
      */
-// Script complet pour créer 2 factures factices
-async function creerFacturesFactices() {
-    console.log('🚀 Début création des factures factices...');
-    
-    try {
-        // Import du service Firestore
-        const { default: firestoreService } = await import('./factures-fournisseurs.firestore.service.js');
-        
-        // Facture 1 : FREE (à payer)
-        console.log('📄 Création facture FREE...');
-        const facture1Id = await firestoreService.creerFacture({
-            documents: [{
-                nom: 'Facture_Free_Janvier_2025.pdf',
-                nomOriginal: 'Facture_Free_Janvier_2025.pdf',
-                url: 'https://firebasestorage.googleapis.com/v0/b/orixis-pwa.appspot.com/o/test%2Ffacture-test.pdf?alt=media',
-                chemin: 'factures-fournisseurs/test/facture-free.pdf',
-                taille: 245789,
-                type: 'application/pdf',
-                hash: 'hash-free-123456',
-                dateUpload: new Date()
-            }],
-            aPayer: true,
-            dejaPayee: false
-        });
-        
-        console.log('✅ Facture FREE créée avec ID:', facture1Id);
-        
-        // Ajouter les données extraites pour FREE
-        await firestoreService.ajouterDonneesExtraites(facture1Id, {
-            fournisseur: {
-                nom: 'FREE',
-                categorie: 'telecom',
-                numeroClient: 'CLI-789456123',
-                siren: '421938861'
-            },
-            numeroFacture: 'FCT-FREE-2025-01-15487',
-            montantHT: 33.25,
-            montantTVA: 6.65,
-            montantTTC: 39.90,
-            tauxTVA: 20,
-            dateFacture: new Date('2025-01-15'),
-            dateEcheance: new Date('2025-02-15'),
-            periodeDebut: new Date('2025-01-01'),
-            periodeFin: new Date('2025-01-31'),
-            modePaiement: 'prelevement'
-        });
-        
-        console.log('📊 Données FREE ajoutées');
-        
-        // Attendre un peu
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Facture 2 : EDF (déjà payée)
-        console.log('📄 Création facture EDF...');
-        const facture2Id = await firestoreService.creerFacture({
-            documents: [{
-                nom: 'Facture_EDF_Decembre_2024.pdf',
-                nomOriginal: 'Facture_EDF_Decembre_2024.pdf',
-                url: 'https://firebasestorage.googleapis.com/v0/b/orixis-pwa.appspot.com/o/test%2Ffacture-test2.pdf?alt=media',
-                chemin: 'factures-fournisseurs/test/facture-edf.pdf',
-                taille: 325698,
-                type: 'application/pdf',
-                hash: 'hash-edf-789456',
-                dateUpload: new Date()
-            }],
-            aPayer: false,
-            dejaPayee: true
-        });
-        
-        console.log('✅ Facture EDF créée avec ID:', facture2Id);
-        
-        // Ajouter les données extraites pour EDF
-        await firestoreService.ajouterDonneesExtraites(facture2Id, {
-            fournisseur: {
-                nom: 'EDF',
-                categorie: 'energie',
-                numeroClient: 'PDL-987654321',
-                siren: '552081317'
-            },
-            numeroFacture: 'EDF-2024-12-789654',
-            montantHT: 120.83,
-            montantTVA: 24.17,
-            montantTTC: 145.00,
-            tauxTVA: 20,
-            dateFacture: new Date('2024-12-20'),
-            dateEcheance: new Date('2025-01-20'),
-            periodeDebut: new Date('2024-11-01'),
-            periodeFin: new Date('2024-11-30'),
-            modePaiement: 'virement',
-            referenceVirement: 'VIR-EDF-2024-12-001'
-        });
-        
-        console.log('📊 Données EDF ajoutées');
-        
-        // Rafraîchir l'affichage
-        console.log('🔄 Rafraîchissement de la liste...');
-        if (window.chargerDonnees) {
-            await window.chargerDonnees();
-            console.log('✅ Liste rafraîchie');
+    static async getFactures(criteres = {}) {
+        try {
+            const { collection, getDocs, query, where, orderBy, limit } = 
+                await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+            
+            let constraints = [];
+            
+            // TEMPORAIRE : Désactivé en attendant l'index
+            // Exclure les factures annulées par défaut
+            // if (!criteres.inclureAnnulees) {
+            //     constraints.push(where('statut', '!=', 'annulee'));
+            // }
+            
+            // Filtrer par statut
+            if (criteres.statut) {
+                constraints.push(where('statut', '==', criteres.statut));
+            }
+            
+            // Filtrer par fournisseur
+            if (criteres.fournisseur) {
+                constraints.push(where('fournisseur.nom', '==', criteres.fournisseur));
+            }
+            
+            // Filtrer par magasin
+            if (criteres.magasin) {
+                constraints.push(where('codeMagasin', '==', criteres.magasin));
+            }
+            
+            // Filtrer par à payer
+            if (criteres.aPayer === true) {
+                constraints.push(where('aPayer', '==', true));
+            }
+            
+            // Filtrer par catégorie
+            if (criteres.categorie) {
+                constraints.push(where('fournisseur.categorie', '==', criteres.categorie));
+            }
+            
+            // TEMPORAIRE : Tri désactivé pour éviter l'erreur d'index
+            // Tri par date de facture décroissant
+            // constraints.push(orderBy('dateFacture', 'desc'));
+            
+            // Limite si spécifiée
+            if (criteres.limite) {
+                constraints.push(limit(criteres.limite));
+            }
+            
+            // Créer la requête
+            const q = constraints.length > 0 
+                ? query(collection(db, 'facturesFournisseurs'), ...constraints)
+                : query(collection(db, 'facturesFournisseurs'));
+                
+            const snapshot = await getDocs(q);
+            
+            const factures = [];
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                // Exclure manuellement les factures annulées
+                if (!criteres.inclureAnnulees && data.statut === 'annulee') {
+                    return;
+                }
+                factures.push({ id: doc.id, ...data });
+            });
+            
+            // TEMPORAIRE : Tri manuel en JavaScript
+            factures.sort((a, b) => {
+                const dateA = a.dateFacture?.toDate ? a.dateFacture.toDate() : new Date(a.dateFacture || 0);
+                const dateB = b.dateFacture?.toDate ? b.dateFacture.toDate() : new Date(b.dateFacture || 0);
+                return dateB - dateA; // Tri décroissant
+            });
+            
+            // Post-traitement : vérifier les retards
+            const facturesAvecRetard = factures.map(facture => {
+                if (estEnRetard(facture.dateEcheance, facture.statut)) {
+                    facture.enRetard = true;
+                }
+                return facture;
+            });
+            
+            return facturesAvecRetard;
+            
+        } catch (error) {
+            console.error('❌ Erreur récupération factures:', error);
+            return [];
         }
-        
-        console.log('');
-        console.log('🎉 SUCCÈS ! 2 factures factices créées :');
-        console.log('1️⃣ FREE - 39,90€ - À payer');
-        console.log('2️⃣ EDF - 145,00€ - Déjà payée');
-        
-    } catch (error) {
-        console.error('❌ Erreur lors de la création:', error);
-        console.error('Détails:', error.message);
     }
-}
-
-// Lancer la création
-creerFacturesFactices();
     
     /**
      * Récupérer une facture par son ID
