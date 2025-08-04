@@ -153,27 +153,18 @@ export async function creerFacture(data) {
         // DONNÉES BRUTES IA (pour debug)
         // ========================================
         if (data.iaData) {
-            factureData.iaData = data.iaData;
-        } else if (data.montantTTC || data.numeroFacture || data.fournisseur?.nom) {
-            // Si on a des données IA mais pas l'objet iaData, le créer
-            factureData.iaData = {
-                reponseGPT: {
-                    fournisseur: data.fournisseur,
-                    numeroFacture: data.numeroFacture,
-                    montantHT: data.montantHT,
-                    montantTVA: data.montantTVA,
-                    montantTTC: data.montantTTC,
-                    tauxTVA: data.tauxTVA,
-                    dateFacture: data.dateFacture,
-                    dateEcheance: data.dateEcheance,
-                    periodeDebut: data.periodeDebut,
-                    periodeFin: data.periodeFin,
-                    modePaiement: data.modePaiement
-                },
-                dateAnalyse: new Date(),
-                modeleIA: 'gpt-4.1-mini',
-                erreurIA: null
-            };
+            // Nettoyer iaData pour éviter les références circulaires
+            try {
+                factureData.iaData = JSON.parse(JSON.stringify(data.iaData));
+            } catch (e) {
+                console.warn('⚠️ Impossible de sérialiser iaData, stockage partiel');
+                factureData.iaData = {
+                    dateAnalyse: data.iaData.dateAnalyse,
+                    modeleIA: data.iaData.modeleIA,
+                    erreurIA: data.iaData.erreurIA,
+                    reponseGPT: 'Erreur de sérialisation'
+                };
+            }
         }
         
         // ========================================
