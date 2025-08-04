@@ -89,12 +89,12 @@ export const MENU_ITEMS = [
         disabled: false
     },
     {
-        href: '#',
+        href: '../operations-bancaires/operations-bancaires.html',
         icon: '🏦',
-        title: 'Compte en Banque',
-        description: 'Consulter les comptes bancaires',
+        title: 'Opérations Bancaires',
+        description: 'Importer et gérer les opérations bancaires',
         permissions: ['banque.view'],
-        disabled: true
+        disabled: false
     },
     {
         href: '#',
