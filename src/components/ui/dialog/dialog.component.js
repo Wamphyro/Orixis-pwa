@@ -79,6 +79,16 @@ export class Dialog {
         document.head.appendChild(link);
         
         console.log('📦 Dialog styles chargés');
+        
+        // Charger aussi les styles Button si on utilise des buttonFactory
+        if (!document.getElementById('button-component-styles')) {
+            const buttonLink = document.createElement('link');
+            buttonLink.id = 'button-component-styles';
+            buttonLink.rel = 'stylesheet';
+            buttonLink.href = '../../src/components/ui/button/button.css';
+            document.head.appendChild(buttonLink);
+            console.log('📦 Button styles chargés pour Dialog');
+        }
     }
     
     // ========================================
