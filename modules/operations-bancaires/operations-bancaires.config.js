@@ -161,15 +161,16 @@ export function createImportDropzone(container, options = {}) {
     return new DropZone({
         container,
         acceptedTypes: ['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
-        maxFiles: 1,  // Un seul fichier à la fois
-        maxFileSize: 5 * 1024 * 1024, // 5MB
+        maxFiles: 10,  // Multi-import jusqu'à 10 fichiers
+        maxFileSize: 5 * 1024 * 1024, // 5MB par fichier
+        multiple: true,  // Activer la sélection multiple
         showPreview: false,
         messages: {
-            drop: '📊 Glissez votre relevé bancaire CSV/Excel ici',
+            drop: '📊 Glissez vos relevés bancaires ici (jusqu\'à 10 fichiers)',
             browse: 'ou cliquez pour parcourir',
             typeError: 'Seuls les fichiers CSV et Excel sont acceptés',
             sizeError: 'Fichier trop volumineux (max 5MB)',
-            maxFilesError: 'Un seul fichier à la fois'
+            maxFilesError: 'Maximum 10 fichiers à la fois'
         },
         ...options
     });

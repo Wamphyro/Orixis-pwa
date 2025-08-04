@@ -593,6 +593,148 @@
 }
 
 /* ========================================
+   MULTI-IMPORT STYLES
+   ======================================== */
+
+/* Liste des fichiers analysés */
+.files-analysis-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.file-analysis-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    gap: 12px;
+}
+
+.file-analysis-item.success {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+}
+
+.file-analysis-item.error {
+    background: #fef2f2;
+    border-color: #fecaca;
+}
+
+.file-analysis-item .file-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.file-analysis-item .file-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.file-analysis-item .file-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-analysis-item .file-stats {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+.file-analysis-item .file-error {
+    font-size: 12px;
+    color: #dc2626;
+    margin-top: 2px;
+}
+
+.file-analysis-item .file-amounts {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.file-analysis-item .file-amounts .credit {
+    color: #059669;
+}
+
+.file-analysis-item .file-amounts .debit {
+    color: #dc2626;
+}
+
+/* Alert doublons */
+.doublons-alert {
+    margin-top: 15px;
+    padding: 10px 15px;
+    background: #fef3c7;
+    border: 1px solid #fcd34d;
+    border-radius: 6px;
+    color: #92400e;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* Info période */
+.periode-info {
+    margin-top: 15px;
+    padding: 10px 15px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #1e40af;
+}
+
+/* Scrollbar pour la liste des fichiers */
+.files-analysis-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.files-analysis-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.files-analysis-list::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+}
+
+.files-analysis-list::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+/* Badge épargne manquant */
+.badge-epargne {
+    background-color: #e0f2fe;
+    color: #075985;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .file-analysis-item {
+        flex-wrap: wrap;
+    }
+    
+    .file-analysis-item .file-amounts {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+        margin-top: 8px;
+    }
+}
+
+/* ========================================
    HISTORIQUE DES DIFFICULTÉS
    
    [03/02/2025] - Création basée sur decompte-mutuelle

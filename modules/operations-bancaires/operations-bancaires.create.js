@@ -5,11 +5,13 @@
 // DESCRIPTION:
 // Module d'import des opérations bancaires
 // Import CSV/Excel avec détection automatique du format
+// Support multi-fichiers (jusqu'à 10 simultanément)
 //
 // ARCHITECTURE:
-// - Upload via DropZone
-// - Analyse du format bancaire
-// - Preview des opérations
+// - Upload via DropZone (multi-fichiers)
+// - Analyse parallèle des formats bancaires
+// - Détection des doublons inter-fichiers
+// - Preview des opérations globales
 // - Import en masse
 //
 // DÉPENDANCES:
@@ -29,10 +31,11 @@ import { chargerDonnees } from './operations-bancaires.list.js';
 // ========================================
 
 let importState = {
-    file: null,
-    operations: [],
-    stats: null,
-    format: null
+    files: [],              // Array de fichiers
+    analyses: [],           // Array des analyses par fichier
+    globalStats: null,      // Stats globales
+    allOperations: [],      // Toutes les opérations fusionnées
+    doublons: []            // Doublons détectés entre fichiers
 };
 
 // Instance du composant
@@ -77,7 +80,7 @@ function afficherFormulaireImport() {
                 Annuler
             </button>
             <button id="btnConfirmerImport" class="btn btn-primary btn-pill" onclick="confirmerImport()" disabled>
-                📥 Importer les opérations
+                📥 Importer <span id="btnImportCount"></span>
             </button>
         `;
     }
@@ -91,11 +94,11 @@ function afficherFormulaireImport() {
                 <div class="zone-description">
                     <div class="content">
                         <div class="icon-wrapper">
-                            <span class="icon">📊</span>
+                            <span class="icon">🚀</span>
                         </div>
                         <div class="text">
-                            <h4>Analyse automatique des relevés</h4>
-                            <p>Import intelligent de vos relevés bancaires. Format détecté automatiquement, catégories assignées, doublons ignorés. Compatible avec toutes les banques françaises.</p>
+                            <h4>Import multiple intelligent</h4>
+                            <p>Importez jusqu'à 10 fichiers simultanément ! Analyse parallèle, détection automatique des doublons entre fichiers, fusion intelligente des opérations.</p>
                         </div>
                     </div>
                 </div>
@@ -109,8 +112,8 @@ function afficherFormulaireImport() {
                 <div class="zone-resultats">
                     <div class="zone-resultats-header">
                         <h5>
-                            📈 Analyse du fichier
-                            <span class="count" id="operations-count" style="display: none;">0</span>
+                            📈 Analyse des fichiers
+                            <span class="count" id="files-analyzed-count" style="display: none;">0</span>
                         </h5>
                     </div>
                     <div class="zone-resultats-content">
@@ -133,182 +136,318 @@ function afficherFormulaireImport() {
         }
         
         dropzoneImport = config.createImportDropzone('#import-dropzone', {
-            messages: {
-                drop: '📤 Glissez votre relevé bancaire ici',
-                browse: 'ou cliquez pour parcourir',
-                typeError: 'Seuls les fichiers CSV et Excel sont acceptés',
-                sizeError: 'Fichier trop volumineux (max 5MB)',
-                maxFilesError: 'Un seul fichier à la fois'
-            },
-            previewSize: 'none',
-            showPreview: false,
             onDrop: async (files) => {
-                if (files.length > 0) {
-                    await analyserFichier(files[0]);
-                }
+                await analyserFichiers(files);
             },
             onChange: async (files) => {
-                if (files.length > 0) {
-                    await analyserFichier(files[0]);
-                }
+                await analyserFichiers(files);
+            },
+            onRemove: (file, index) => {
+                // Retirer l'analyse correspondante
+                importState.analyses.splice(index, 1);
+                importState.files.splice(index, 1);
+                // Recalculer les stats globales
+                recalculerStatsGlobales();
             }
         });
     }, 100);
 }
 
 // ========================================
-// ANALYSE DU FICHIER
+// ANALYSE MULTIPLE DES FICHIERS
 // ========================================
 
-async function analyserFichier(file) {
+async function analyserFichiers(files) {
+    if (!files || files.length === 0) return;
+    
     try {
+        // Réinitialiser l'état
+        importState.files = files;
+        importState.analyses = [];
+        importState.allOperations = [];
+        importState.doublons = [];
+        
         // Afficher un loader
         const resultatsContent = document.getElementById('resultats-content');
-        
         resultatsContent.innerHTML = `
             <div class="empty-state">
                 <div class="icon">⏳</div>
-                <p>Analyse en cours...</p>
+                <p>Analyse de ${files.length} fichier(s) en cours...</p>
             </div>
         `;
         
-        // Analyser le fichier
-        const resultat = await importService.importFile(file);
+        // Analyser tous les fichiers en parallèle
+        const promesses = files.map(file => importService.importFile(file));
+        const resultats = await Promise.allSettled(promesses);
         
-        // Stocker le résultat
-        importState = {
-            file: file,
-            operations: resultat.operations,
-            stats: resultat.stats,
-            format: resultat.format,
-            accountInfo: resultat.accountInfo
-        };
+        // Traiter les résultats
+        let successCount = 0;
+        let totalOperations = [];
         
-        // Afficher les résultats avec le nouveau design
-        afficherResultatsAnalyse(resultat);
+        resultats.forEach((result, index) => {
+            if (result.status === 'fulfilled') {
+                successCount++;
+                const analyse = {
+                    ...result.value,
+                    fileIndex: index,
+                    fileName: files[index].name,
+                    status: 'success'
+                };
+                importState.analyses.push(analyse);
+                totalOperations = totalOperations.concat(result.value.operations);
+            } else {
+                importState.analyses.push({
+                    fileIndex: index,
+                    fileName: files[index].name,
+                    status: 'error',
+                    error: result.reason.message
+                });
+            }
+        });
+        
+        // Détecter les doublons entre fichiers
+        const { operations: operationsUniques, doublons } = detecterDoublons(totalOperations);
+        importState.allOperations = operationsUniques;
+        importState.doublons = doublons;
+        
+        // Calculer les stats globales
+        importState.globalStats = importService.calculateStats(operationsUniques);
+        
+        // Afficher les résultats
+        afficherResultatsMultiples();
+        
+        // Activer le bouton si au moins un fichier réussi
+        if (successCount > 0) {
+            const btnConfirmer = document.getElementById('btnConfirmerImport');
+            const btnCount = document.getElementById('btnImportCount');
+            if (btnConfirmer) {
+                btnConfirmer.disabled = false;
+                if (btnCount) {
+                    btnCount.textContent = `(${operationsUniques.length} opérations)`;
+                }
+            }
+        }
         
     } catch (error) {
-        console.error('❌ Erreur analyse:', error);
+        console.error('❌ Erreur analyse multiple:', error);
         afficherErreur(`Erreur lors de l'analyse: ${error.message}`);
-        
-        const resultatsContent = document.getElementById('resultats-content');
-        if (resultatsContent) {
-            resultatsContent.innerHTML = `
-                <div class="result-section">
-                    <div class="alert alert-danger">
-                        ❌ ${error.message}
-                    </div>
-                </div>
-            `;
-        }
     }
 }
 
 // ========================================
-// AFFICHAGE DES RÉSULTATS
+// DÉTECTION DES DOUBLONS
 // ========================================
 
-function afficherResultatsAnalyse(resultat) {
-    const resultatsContent = document.getElementById('resultats-content');
-    const operationsCount = document.getElementById('operations-count');
+function detecterDoublons(operations) {
+    const operationsMap = new Map();
+    const doublons = [];
+    const operationsUniques = [];
     
-    // Mettre à jour le compteur
-    if (operationsCount) {
-        operationsCount.style.display = 'inline-block';
-        operationsCount.textContent = resultat.stats.total;
+    operations.forEach((op, index) => {
+        // Créer une clé unique basée sur : date + montant + libellé (sans espaces)
+        const key = `${op.date}_${op.montant}_${op.libelle.replace(/\s+/g, '')}`;
+        
+        if (operationsMap.has(key)) {
+            // Doublon détecté
+            doublons.push({
+                operation: op,
+                originalIndex: operationsMap.get(key),
+                duplicateIndex: index
+            });
+        } else {
+            operationsMap.set(key, index);
+            operationsUniques.push(op);
+        }
+    });
+    
+    console.log(`✅ ${operationsUniques.length} opérations uniques, ${doublons.length} doublons détectés`);
+    
+    return { operations: operationsUniques, doublons };
+}
+
+// ========================================
+// RECALCUL DES STATS GLOBALES
+// ========================================
+
+function recalculerStatsGlobales() {
+    if (importState.analyses.length === 0) {
+        const resultatsContent = document.getElementById('resultats-content');
+        resultatsContent.innerHTML = `
+            <div class="empty-state">
+                <div class="icon">📄</div>
+                <p>Aucun fichier analysé</p>
+            </div>
+        `;
+        
+        // Désactiver le bouton
+        const btnConfirmer = document.getElementById('btnConfirmerImport');
+        if (btnConfirmer) {
+            btnConfirmer.disabled = true;
+        }
+        return;
     }
     
-    // Créer le contenu modernisé
-    resultatsContent.innerHTML = `
-        <!-- Section informations générales -->
-        <div class="result-section">
-            <h6>📋 Informations générales</h6>
-            <div class="analyse-info">
-                <div class="info-item">
-                    <strong>Format détecté :</strong> ${resultat.format}
+    // Refaire l'analyse globale
+    let totalOperations = [];
+    importState.analyses.forEach(analyse => {
+        if (analyse.status === 'success' && analyse.operations) {
+            totalOperations = totalOperations.concat(analyse.operations);
+        }
+    });
+    
+    // Recalculer les doublons
+    const { operations: operationsUniques, doublons } = detecterDoublons(totalOperations);
+    importState.allOperations = operationsUniques;
+    importState.doublons = doublons;
+    importState.globalStats = importService.calculateStats(operationsUniques);
+    
+    // Réafficher
+    afficherResultatsMultiples();
+}
+
+// ========================================
+// AFFICHAGE DES RÉSULTATS MULTIPLES
+// ========================================
+
+function afficherResultatsMultiples() {
+    const resultatsContent = document.getElementById('resultats-content');
+    const filesCount = document.getElementById('files-analyzed-count');
+    
+    // Mettre à jour le compteur de fichiers
+    if (filesCount) {
+        const successCount = importState.analyses.filter(a => a.status === 'success').length;
+        filesCount.style.display = 'inline-block';
+        filesCount.textContent = `${successCount}/${importState.files.length}`;
+    }
+    
+    // Section 1 : Liste des fichiers analysés
+    const filesListHtml = importState.analyses.map(analyse => {
+        if (analyse.status === 'success') {
+            return `
+                <div class="file-analysis-item success">
+                    <div class="file-icon">✅</div>
+                    <div class="file-info">
+                        <div class="file-name">${escapeHtml(analyse.fileName)}</div>
+                        <div class="file-stats">
+                            ${analyse.stats.total} opérations • 
+                            ${formatDate(analyse.stats.periodes.debut)} → ${formatDate(analyse.stats.periodes.fin)}
+                        </div>
+                    </div>
+                    <div class="file-amounts">
+                        <span class="credit">+${formatMontant(analyse.stats.montantCredits)}</span>
+                        <span class="debit">-${formatMontant(analyse.stats.montantDebits)}</span>
+                    </div>
                 </div>
-                ${resultat.accountInfo ? `
-                    <div class="info-item">
-                        <strong>Compte :</strong> 
-                        ${resultat.accountInfo.bank} - ${resultat.accountInfo.maskedNumber}
+            `;
+        } else {
+            return `
+                <div class="file-analysis-item error">
+                    <div class="file-icon">❌</div>
+                    <div class="file-info">
+                        <div class="file-name">${escapeHtml(analyse.fileName)}</div>
+                        <div class="file-error">${escapeHtml(analyse.error)}</div>
+                    </div>
+                </div>
+            `;
+        }
+    }).join('');
+    
+    // Section 2 : Statistiques globales
+    let globalStatsHtml = '';
+    if (importState.globalStats) {
+        globalStatsHtml = `
+            <div class="result-section">
+                <h6>📊 Statistiques globales</h6>
+                <div class="stats-grid">
+                    <div class="stat-card credit">
+                        <span class="label">Total Crédits</span>
+                        <span class="value">+${formatMontant(importState.globalStats.montantCredits)}</span>
+                        <span class="count">${importState.globalStats.credits} opérations</span>
+                    </div>
+                    <div class="stat-card debit">
+                        <span class="label">Total Débits</span>
+                        <span class="value">-${formatMontant(importState.globalStats.montantDebits)}</span>
+                        <span class="count">${importState.globalStats.debits} opérations</span>
+                    </div>
+                    <div class="stat-card balance ${importState.globalStats.balance >= 0 ? 'positive' : 'negative'}">
+                        <span class="label">Balance globale</span>
+                        <span class="value">${importState.globalStats.balance >= 0 ? '+' : ''}${formatMontant(importState.globalStats.balance)}</span>
+                        <span class="count">Sur toute la période</span>
+                    </div>
+                </div>
+                
+                ${importState.doublons.length > 0 ? `
+                    <div class="doublons-alert">
+                        ⚠️ ${importState.doublons.length} doublon(s) détecté(s) entre les fichiers et seront ignorés
                     </div>
                 ` : ''}
-                <div class="info-item">
-                    <strong>Période :</strong> 
-                    ${formatDateComplete(resultat.stats.periodes.debut)} → ${formatDateComplete(resultat.stats.periodes.fin)}
-                </div>
-                <div class="info-item">
-                    <strong>Durée :</strong> ${resultat.stats.periodes.jours} jours
-                </div>
-            </div>
-        </div>
-        
-        <!-- Section statistiques -->
-        <div class="result-section">
-            <h6>📊 Statistiques</h6>
-            <div class="stats-grid">
-                <div class="stat-card credit">
-                    <span class="label">Crédits</span>
-                    <span class="value">+${formatMontant(resultat.stats.montantCredits)}</span>
-                    <span class="count">${resultat.stats.credits} opérations</span>
-                </div>
-                <div class="stat-card debit">
-                    <span class="label">Débits</span>
-                    <span class="value">-${formatMontant(resultat.stats.montantDebits)}</span>
-                    <span class="count">${resultat.stats.debits} opérations</span>
-                </div>
-                <div class="stat-card balance ${resultat.stats.balance >= 0 ? 'positive' : 'negative'}">
-                    <span class="label">Balance</span>
-                    <span class="value">${resultat.stats.balance >= 0 ? '+' : ''}${formatMontant(resultat.stats.balance)}</span>
-                    <span class="count">Total période</span>
+                
+                <div class="periode-info">
+                    <strong>Période totale :</strong> 
+                    ${formatDateComplete(importState.globalStats.periodes.debut)} → 
+                    ${formatDateComplete(importState.globalStats.periodes.fin)}
+                    (${importState.globalStats.periodes.jours} jours)
                 </div>
             </div>
-        </div>
-        
-        <!-- Section aperçu -->
-        <div class="result-section">
-            <h6>👁️ Aperçu des opérations</h6>
-            <div class="preview-wrapper">
-                <table class="preview-table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Libellé</th>
-                            <th>Catégorie</th>
-                            <th>Montant</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${resultat.operations.slice(0, 5).map(op => `
-                            <tr>
-                                <td>${formatDate(op.date)}</td>
-                                <td class="text-truncate" style="max-width: 200px;" title="${escapeHtml(op.libelle)}">
-                                    ${escapeHtml(op.libelle)}
-                                </td>
-                                <td>
-                                    <span class="badge badge-${op.categorie}">
-                                        ${getCategorieLabel(op.categorie)}
-                                    </span>
-                                </td>
-                                <td class="text-end ${op.montant >= 0 ? 'text-success' : 'text-danger'}">
-                                    ${op.montant >= 0 ? '+' : ''}${formatMontant(op.montant)}
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            </div>
-            <p class="text-muted text-center" style="margin-top: 8px; font-size: 12px;">
-                Affichage des 5 premières opérations sur ${resultat.stats.total}
-            </p>
-        </div>
-    `;
-    
-    // Activer le bouton d'import
-    const btnConfirmer = document.getElementById('btnConfirmerImport');
-    if (btnConfirmer) {
-        btnConfirmer.disabled = false;
+        `;
     }
+    
+    // Composer le HTML final
+    resultatsContent.innerHTML = `
+        <!-- Section fichiers analysés -->
+        <div class="result-section">
+            <h6>📁 Fichiers analysés</h6>
+            <div class="files-analysis-list">
+                ${filesListHtml}
+            </div>
+        </div>
+        
+        ${globalStatsHtml}
+        
+        <!-- Section aperçu des opérations -->
+        ${importState.allOperations.length > 0 ? `
+            <div class="result-section">
+                <h6>👁️ Aperçu des opérations (10 premières)</h6>
+                <div class="preview-wrapper">
+                    <table class="preview-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Libellé</th>
+                                <th>Catégorie</th>
+                                <th>Montant</th>
+                                <th>Fichier</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${importState.allOperations.slice(0, 10).map(op => `
+                                <tr>
+                                    <td>${formatDate(op.date)}</td>
+                                    <td class="text-truncate" style="max-width: 200px;" title="${escapeHtml(op.libelle)}">
+                                        ${escapeHtml(op.libelle)}
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-${op.categorie}">
+                                            ${getCategorieLabel(op.categorie)}
+                                        </span>
+                                    </td>
+                                    <td class="text-end ${op.montant >= 0 ? 'text-success' : 'text-danger'}">
+                                        ${op.montant >= 0 ? '+' : ''}${formatMontant(op.montant)}
+                                    </td>
+                                    <td class="text-muted" style="font-size: 12px;">
+                                        ${op.accountName || '-'}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-muted text-center" style="margin-top: 8px; font-size: 12px;">
+                    ${importState.allOperations.length} opérations uniques au total
+                </p>
+            </div>
+        ` : ''}
+    `;
 }
 
 // ========================================
@@ -316,7 +455,7 @@ function afficherResultatsAnalyse(resultat) {
 // ========================================
 
 async function confirmerImport() {
-    if (!importState.operations || importState.operations.length === 0) {
+    if (!importState.allOperations || importState.allOperations.length === 0) {
         afficherErreur('Aucune opération à importer');
         return;
     }
@@ -328,8 +467,8 @@ async function confirmerImport() {
         btnConfirmer.disabled = true;
         btnConfirmer.innerHTML = '⏳ Import en cours...';
         
-        // Importer les opérations
-        const resultat = await OperationsBancairesService.importerOperations(importState.operations);
+        // Importer toutes les opérations uniques
+        const resultat = await OperationsBancairesService.importerOperations(importState.allOperations);
         
         // Afficher le résultat
         const message = `
@@ -368,10 +507,11 @@ async function confirmerImport() {
 
 function resetImport() {
     importState = {
-        file: null,
-        operations: [],
-        stats: null,
-        format: null
+        files: [],
+        analyses: [],
+        globalStats: null,
+        allOperations: [],
+        doublons: []
     };
     
     // Détruire le composant s'il existe
@@ -437,6 +577,7 @@ function getCategorieLabel(categorie) {
         cheque: 'Chèque',
         frais_bancaires: 'Frais',
         abonnements: 'Abonnements',
+        epargne: 'Épargne',
         autre: 'Autre'
     };
     
@@ -452,8 +593,15 @@ function getCategorieLabel(categorie) {
    - Preview des opérations avant import
    - Détection des doublons
    
+   [03/02/2025] - Ajout du multi-import
+   - Support jusqu'à 10 fichiers simultanés
+   - Analyse parallèle avec Promise.allSettled
+   - Détection des doublons inter-fichiers
+   - Stats globales consolidées
+   
    NOTES:
    - Le service d'import gère tous les formats
    - Les catégories sont auto-détectées
    - Les comptes sont extraits du nom de fichier
+   - Les doublons sont détectés par date+montant+libellé
    ======================================== */
