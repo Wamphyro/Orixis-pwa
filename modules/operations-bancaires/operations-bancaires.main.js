@@ -132,6 +132,12 @@ async function initUIComponents() {
         
         console.log('🎨 Composants UI initialisés avec magasin:', userData.store);
         
+        // Pré-charger les styles du composant Button
+        const tempButton = new config.Button({ text: 'temp' });
+        await tempButton.loadStyles();
+        tempButton.destroy();
+        console.log('✅ Styles Button pré-chargés');
+        
     } catch (error) {
         console.error('❌ Erreur initialisation UI:', error);
         config.notify.error('Erreur lors de l\'initialisation de l\'interface');
