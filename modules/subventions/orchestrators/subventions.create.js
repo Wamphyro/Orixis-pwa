@@ -11,7 +11,7 @@ import { subventionsConfig } from '../core/subventions.config.js';
 import { subventionsFirestore } from '../core/subventions.firestore.js';
 import { subventionsService } from '../core/subventions.service.js';
 // Essayer l'import par défaut si l'export nommé ne fonctionne pas
-import clientsService from '../../../src/services/clients.service.js';
+import { ClientsService } from '../../../src/services/clients.service.js';
 
 class SubventionsCreate {
     constructor() {
@@ -259,7 +259,24 @@ class SubventionsCreate {
             container: this.elements.searchContainer,
             placeholder: 'Rechercher un patient par nom, prénom ou téléphone...',
             searchFunction: async (term) => {
-                return await clientsService.searchClients(term);
+                // Utiliser la méthode statique rechercherClients
+                const clients = await ClientsService.rechercherClients(term);
+                // Adapter les noms de propriétés si nécessaire
+                return clients.map(client => ({
+                    id: client.id,
+                    nom: client.nom,
+                    prenom: client.prenom,
+                    telephone: client.telephone || '',
+                    email: client.email || '',
+                    dateNaissance: client.dateNaissance || null,
+                    adresse: {
+                        rue: client.adresse?.rue || '',
+                        codePostal: client.adresse?.codePostal || '',
+                        ville: client.adresse?.ville || '',
+                        departement: client.adresse?.departement || ''
+                    },
+                    situation: client.situation || ''
+                }));
             },
             displayFormat: (patient) => {
                 return `${patient.nom} ${patient.prenom} - ${patient.telephone || 'Pas de téléphone'}`;
@@ -307,6 +324,13 @@ class SubventionsCreate {
     }
     
     async loadPatientSituation(patient) {
+        // Si le patient vient de ClientsService, il pourrait manquer certaines propriétés
+        // Assurer la compatibilité
+        if (!patient.adresse) {
+            patient.adresse = {
+                departement: '75' // Valeur par défaut Paris
+            };
+        }
         // Récupérer les dossiers existants du patient
         const dossiers = await subventionsFirestore.getDossiers({
             patientId: patient.id,
