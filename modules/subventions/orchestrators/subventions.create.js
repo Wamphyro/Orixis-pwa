@@ -10,7 +10,8 @@
 import { subventionsConfig } from '../core/subventions.config.js';
 import { subventionsFirestore } from '../core/subventions.firestore.js';
 import { subventionsService } from '../core/subventions.service.js';
-import { clientsService } from '../../../src/services/clients.service.js';
+// Essayer l'import par défaut si l'export nommé ne fonctionne pas
+import clientsService from '../../../src/services/clients.service.js';
 
 class SubventionsCreate {
     constructor() {
