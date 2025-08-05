@@ -365,13 +365,13 @@ async function initFiltres() {
     // Ajouter le bouton de réinitialisation après les filtres
     const filtresContainer = document.querySelector('.operations-filters');
     if (filtresContainer) {
-        const resetButton = config.createButton('reset', {
-            text: 'Réinitialiser',
-            size: 'sm',
-            onClick: () => resetFiltres()
-        });
+        // Créer le bouton directement en HTML avec les bonnes classes
+        const resetButton = document.createElement('button');
+        resetButton.className = 'btn btn-secondary btn-sm';
+        resetButton.innerHTML = '🔄 Réinitialiser';
+        resetButton.onclick = () => resetFiltres();
         
-        filtresContainer.appendChild(resetButton.element);
+        filtresContainer.appendChild(resetButton);
     }
     
     console.log('🔍 Filtres créés avec config locale');
