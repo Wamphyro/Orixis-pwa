@@ -1,0 +1,471 @@
+/* ========================================
+   DELAY-TRACKER.CSS - Styles du composant DelayTracker
+   Chemin: src/components/ui/delay-tracker/delay-tracker.css
+   
+   DESCRIPTION:
+   Styles pour le suivi visuel de délai/retard
+   Totalement autonome, préfixé .delay-tracker-*
+   
+   STRUCTURE:
+   - Container et layout
+   - Timeline et marqueurs
+   - Zones de criticité
+   - États et alertes
+   - Animations
+   - Responsive
+   ======================================== */
+
+/* ========================================
+   CONTAINER ET LAYOUT
+   ======================================== */
+
+.delay-tracker {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.delay-tracker.alert-warning {
+    border-color: #fbbf24;
+    background: #fffbeb;
+}
+
+.delay-tracker.alert-critical {
+    border-color: #ef4444;
+    background: #fef2f2;
+    animation: pulse-border 2s ease-in-out infinite;
+}
+
+.delay-tracker-header {
+    margin-bottom: 20px;
+}
+
+.delay-tracker-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.delay-tracker.alert-critical .delay-tracker-title {
+    color: #dc2626;
+}
+
+/* ========================================
+   TIMELINE
+   ======================================== */
+
+.delay-tracker-timeline-container {
+    position: relative;
+    padding: 20px 0;
+}
+
+.delay-tracker-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    padding: 0 10px;
+}
+
+.delay-tracker-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+}
+
+.delay-tracker-label.current {
+    color: #1f2937;
+}
+
+/* Timeline principale */
+.delay-tracker-timeline {
+    position: relative;
+    height: 40px;
+    margin-bottom: 20px;
+}
+
+.delay-tracker-line {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: #e5e7eb;
+    transform: translateY(-50%);
+}
+
+.delay-tracker-progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: repeating-linear-gradient(
+        90deg,
+        #3b82f6,
+        #3b82f6 10px,
+        #60a5fa 10px,
+        #60a5fa 20px
+    );
+    transition: width 1s ease-out;
+}
+
+.alert-critical .delay-tracker-progress {
+    background: repeating-linear-gradient(
+        90deg,
+        #dc2626,
+        #dc2626 10px,
+        #ef4444 10px,
+        #ef4444 20px
+    );
+}
+
+/* ========================================
+   MARQUEURS
+   ======================================== */
+
+.delay-tracker-markers {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+}
+
+.delay-tracker-marker {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.delay-tracker-marker:hover {
+    transform: translate(-50%, -50%) scale(1.2);
+}
+
+.marker-icon {
+    font-size: 24px;
+    font-weight: bold;
+    color: #374151;
+}
+
+/* Marqueur de début */
+.delay-tracker-marker.start {
+    left: 0;
+}
+
+.delay-tracker-marker.start .marker-icon {
+    color: #10b981;
+}
+
+/* Marqueur actuel */
+.delay-tracker-marker.current {
+    z-index: 10;
+}
+
+.delay-tracker-marker.current .marker-icon {
+    color: #3b82f6;
+}
+
+.delay-tracker-marker.current.warning .marker-icon {
+    color: #f59e0b;
+    animation: blink 1.5s ease-in-out infinite;
+}
+
+.delay-tracker-marker.current.critical .marker-icon {
+    color: #dc2626;
+    animation: blink 0.8s ease-in-out infinite;
+}
+
+/* Marqueur de fin */
+.delay-tracker-marker.end {
+    left: 100%;
+}
+
+.delay-tracker-marker.unknown {
+    left: 100%;
+}
+
+.delay-tracker-marker.unknown .marker-icon {
+    font-size: 28px;
+    animation: shake 2s ease-in-out infinite;
+}
+
+/* ========================================
+   DATES ET DURÉE
+   ======================================== */
+
+.delay-tracker-dates {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    padding: 0 10px;
+}
+
+.delay-tracker-date {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.delay-tracker-duration {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-top: 20px;
+}
+
+.duration-line {
+    color: #6b7280;
+    font-family: monospace;
+}
+
+.duration-text {
+    padding: 0 10px;
+}
+
+.alert-critical .delay-tracker-duration {
+    color: #dc2626;
+}
+
+/* ========================================
+   ZONES DE CRITICITÉ
+   ======================================== */
+
+.delay-tracker-zones {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.delay-tracker-zone-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.zone-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.zone-label.normal {
+    color: #10b981;
+}
+
+.zone-label.warning {
+    color: #f59e0b;
+}
+
+.zone-label.critical {
+    color: #dc2626;
+}
+
+.delay-tracker-zone-bar {
+    display: flex;
+    height: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    background: #f3f4f6;
+}
+
+.zone {
+    height: 100%;
+    position: relative;
+}
+
+.zone.normal {
+    background: #d1fae5;
+}
+
+.zone.warning {
+    background: #fed7aa;
+}
+
+.zone.critical {
+    background: #fecaca;
+}
+
+.delay-tracker-zone-markers {
+    position: relative;
+    height: 30px;
+    margin-top: 5px;
+}
+
+.zone-marker {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    font-size: 11px;
+    color: #6b7280;
+    font-weight: 600;
+}
+
+.zone-marker.current {
+    color: #dc2626;
+    font-weight: 700;
+    text-align: center;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+@keyframes pulse-border {
+    0%, 100% {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+    }
+    50% {
+        border-color: #dc2626;
+        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+    }
+}
+
+@keyframes blink {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(-50%) rotate(0deg);
+    }
+    25% {
+        transform: translateX(-50%) rotate(-5deg);
+    }
+    75% {
+        transform: translateX(-50%) rotate(5deg);
+    }
+}
+
+.delay-tracker.animated .delay-tracker-progress {
+    animation: fillProgress 1.5s ease-out;
+}
+
+.delay-tracker.animated .delay-tracker-marker {
+    opacity: 0;
+    animation: fadeInScale 0.5s ease-out forwards;
+}
+
+.delay-tracker.animated .delay-tracker-marker:nth-child(1) { animation-delay: 0.2s; }
+.delay-tracker.animated .delay-tracker-marker:nth-child(2) { animation-delay: 0.4s; }
+.delay-tracker.animated .delay-tracker-marker:nth-child(3) { animation-delay: 0.6s; }
+
+@keyframes fillProgress {
+    from {
+        width: 0;
+    }
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+    .delay-tracker {
+        padding: 15px;
+    }
+    
+    .delay-tracker-title {
+        font-size: 14px;
+    }
+    
+    .delay-tracker-label {
+        font-size: 11px;
+    }
+    
+    .marker-icon {
+        font-size: 20px;
+    }
+    
+    .delay-tracker-date {
+        font-size: 12px;
+    }
+    
+    .delay-tracker-duration {
+        font-size: 12px;
+    }
+    
+    .delay-tracker-zone-labels {
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    .delay-tracker-labels {
+        padding: 0 5px;
+    }
+    
+    .delay-tracker-dates {
+        padding: 0 5px;
+    }
+    
+    .delay-tracker-zone-labels {
+        font-size: 10px;
+    }
+    
+    .zone-label span:first-child {
+        display: none;
+    }
+    
+    .duration-line {
+        display: none;
+    }
+}
+
+/* ========================================
+   DARK MODE (optionnel)
+   ======================================== */
+
+@media (prefers-color-scheme: dark) {
+    .delay-tracker {
+        background: #1f2937;
+        color: #e5e7eb;
+    }
+    
+    .delay-tracker-title {
+        color: #f3f4f6;
+    }
+    
+    .delay-tracker-line {
+        background: #374151;
+    }
+    
+    .delay-tracker-date {
+        color: #e5e7eb;
+    }
+    
+    .marker-icon {
+        color: #d1d5db;
+    }
+    
+    .delay-tracker-zones {
+        border-color: #374151;
+    }
+}
