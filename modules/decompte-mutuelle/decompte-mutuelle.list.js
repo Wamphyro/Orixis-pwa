@@ -30,8 +30,6 @@ import {
     mettreAJourMutuelles,
     mettreAJourReseauxTP
 } from './decompte-mutuelle.data.js';
-import { formatDate as formatDateUtil } from '../../src/components/ui/common/date-utils.js';
-import { Button } from '../../src/components/ui/button/button.component.js';
 import config from './decompte-mutuelle.config.js';
 import { state } from './decompte-mutuelle.main.js';
 import { chargerMagasins } from '../../src/services/firebase.service.js';
@@ -267,7 +265,7 @@ function initDataTable() {
         export: {
             csv: true,
             excel: true,
-            filename: `decomptes_${formatDateUtil(new Date(), 'YYYY-MM-DD')}`,
+            filename: `decomptes_${new Date().toISOString().split('T')[0]}`,
             onBeforeExport: (data) => prepareExportData(data)
         }
     });
@@ -317,7 +315,7 @@ async function initFiltres() {
     // Remplacer le bouton reset par un composant Button stylisé
     const resetBtnElement = filtresDecomptes.getResetButtonElement();
     if (resetBtnElement) {
-        const styledResetBtn = new Button({
+        const styledResetBtn = config.Button({
             text: '🔄 Réinitialiser',
             variant: 'secondary',  // Gris neutre
             size: 'sm',
