@@ -27,7 +27,7 @@ import { Timeline } from '../../src/components/ui/timeline/timeline.component.js
 import { DropdownList } from '../../src/components/ui/dropdown-list/dropdown-list.component.js';
 import { SearchDropdown } from '../../src/components/ui/search-dropdown/search-dropdown.component.js';
 import { Modal, modalManager } from '../../src/components/ui/modal/modal.component.js';
-import { Dialog } from '../../src/components/ui/dialog/dialog.component.js';
+import Dialog from '../../src/components/ui/dialog/dialog.component.js';
 import { notify } from '../../src/components/ui/notification/notification.component.js';
 import { DropZone } from '../../src/components/ui/dropzone/dropzone.component.js';
 
