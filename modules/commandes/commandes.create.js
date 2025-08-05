@@ -106,6 +106,18 @@ function resetNouvelleCommande() {
     
     window.commandeCreateState.nouvelleCommande = nouvelleCommande;
     
+    // Détruire la timeline existante
+    if (timeline) {
+        timeline.destroy();
+        timeline = null;
+        
+        // Nettoyer le container
+        const timelineContainer = document.querySelector('#modalNouvelleCommande .timeline-container');
+        if (timelineContainer) {
+            timelineContainer.innerHTML = '';
+        }
+    }
+    
     // Attendre que la modal soit visible pour créer la Timeline
     setTimeout(() => {
         afficherEtape(1);
@@ -168,46 +180,45 @@ function afficherEtape(etape) {
         };
     });
     
-    // Si la timeline existe déjà, on doit la recréer car pas de méthode update
+    // Récupérer le container (toujours présent maintenant)
+    const timelineContainer = document.querySelector('#modalNouvelleCommande .timeline-container');
+    
+    if (!timelineContainer) {
+        console.error('❌ Container timeline introuvable dans modalNouvelleCommande');
+        return;
+    }
+    
+    // Si timeline existe, la détruire proprement
     if (timeline) {
-        console.log('🔄 Recréation de la timeline pour étape:', etape);
-        
-        // Sauvegarder le parent avant destruction
-        const parentElement = document.querySelector('#modalNouvelleCommande .modal-header');
-        
-        // Détruire l'ancienne
+        console.log('🔄 Mise à jour timeline pour étape:', etape);
         timeline.destroy();
         timeline = null;
         
-        // Recréer le container car destroy() le supprime
-        const newContainer = document.createElement('div');
-        newContainer.className = 'timeline-container';
-        newContainer.style.margin = '20px 0';
-        
-        // L'insérer après le header
-        if (parentElement && parentElement.nextSibling) {
-            parentElement.parentNode.insertBefore(newContainer, parentElement.nextSibling);
-        }
+        // Nettoyer le container
+        timelineContainer.innerHTML = '';
     }
     
-    // Créer la timeline
-    if (!timeline) {
-        const timelineContainer = document.querySelector('#modalNouvelleCommande .timeline-container');
-        if (timelineContainer) {
-            timeline = config.createCommandeTimeline('#modalNouvelleCommande .timeline-container', items, {
-                orientation: 'horizontal',
-                theme: 'colorful',
-                animated: true,
-                clickable: true,
-                onClick: (item, index) => {
-                    // Permettre de naviguer uniquement vers les étapes précédentes
-                    const targetStep = index + 1;
-                    if (targetStep < etapeActuelle) {
-                        afficherEtape(targetStep);
-                    }
+    // Créer la nouvelle timeline
+    try {
+        timeline = config.createCommandeTimeline(timelineContainer, items, {
+            orientation: 'horizontal',
+            theme: 'colorful',
+            animated: true,
+            clickable: true,
+            showDates: false,  // Pas de dates pour les étapes de création
+            showLabels: true,
+            onClick: (item, index) => {
+                // Permettre de naviguer uniquement vers les étapes précédentes
+                const targetStep = index + 1;
+                if (targetStep < etapeActuelle) {
+                    console.log(`📍 Navigation vers étape ${targetStep}`);
+                    afficherEtape(targetStep);
                 }
-            });
-        }
+            }
+        });
+        console.log('✅ Timeline créée avec succès pour étape', etape);
+    } catch (error) {
+        console.error('❌ Erreur création timeline:', error);
     }
     
     // Masquer toutes les étapes de contenu
