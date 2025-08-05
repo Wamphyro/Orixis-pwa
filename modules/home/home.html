@@ -3,42 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orixis - Dashboard</title>
+    <title>Module Subventions - ORIXIS CRM</title>
     
     <!-- PWA Meta Tags -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Orixis">
-    <link rel="manifest" href="../../manifest.json">
-    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-title" content="Orixis Subventions">
+    <link rel="manifest" href="../../../manifest.json">
+    <meta name="theme-color" content="#3b82f6">
     
     <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
     
     <!-- CSS Global -->
-    <link rel="stylesheet" href="../../src/css/main.css">
+    <link rel="stylesheet" href="../../../src/css/main.css">
     
-    <!-- CSS Composants -->
-    <link rel="stylesheet" href="../../src/components/ui/button/button.css">
+    <!-- CSS Composants nécessaires -->
+    <link rel="stylesheet" href="../../../src/components/ui/button/button.css">
+    <link rel="stylesheet" href="../../../src/components/ui/modal/modal.css">
+    <link rel="stylesheet" href="../../../src/components/ui/datatable/datatable.css">
+    <link rel="stylesheet" href="../../../src/components/ui/badge/badge.css">
+    <link rel="stylesheet" href="../../../src/components/ui/dialog/dialog.css">
+    <link rel="stylesheet" href="../../../src/components/ui/notification/notification.css">
+    <link rel="stylesheet" href="../../../src/components/ui/search-dropdown/search-dropdown.css">
+    <link rel="stylesheet" href="../../../src/components/ui/progress-timeline/progress-timeline.css">
+    <link rel="stylesheet" href="../../../src/components/ui/progress-overview/progress-overview.css">
+    <link rel="stylesheet" href="../../../src/components/ui/delay-tracker/delay-tracker.css">
     
     <!-- CSS Module -->
-    <link rel="stylesheet" href="./home.css">
+    <link rel="stylesheet" href="./subventions.css">
+    <link rel="stylesheet" href="./subventions-print.css" media="print">
 </head>
 <body>
-    <!-- Le header sera injecté ici par AppHeader -->
+    <!-- Container principal -->
+    <div id="app" class="app-container">
+        <!-- Le contenu sera injecté par subventions.main.js -->
+    </div>
     
-    <div class="container">
-        <div class="menu-grid">
-            <!-- Les cartes seront générées par JavaScript -->
-        </div>
-    </div>
-
-    <div class="footer">
-        <p>Orixis - © 2025</p>
-    </div>
-
-    <!-- Script principal -->
-    <script type="module" src="./home.main.js"></script>
+    <!-- Script principal du module -->
+    <script type="module" src="../orchestrators/subventions.main.js"></script>
 </body>
 </html>
