@@ -17,10 +17,10 @@
 // - handleTableInteractions()
 // ========================================
 
-import { DataTable } from '../../src/components/index.js';
-import { subventionsFirestore } from './subventions.firestore.js';
-import { subventionsService } from './subventions.service.js';
-import { subventionsConfig } from './subventions.config.js';
+import { DataTable } from '../../../src/components/index.js';
+import { subventionsFirestore } from '../core/subventions.firestore.js';
+import { subventionsService } from '../core/subventions.service.js';
+import { subventionsConfig } from '../core/subventions.config.js';
 
 class SubventionsList {
     constructor() {

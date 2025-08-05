@@ -16,7 +16,7 @@ import {
     getMetadata
 } from 'firebase/storage';
 
-import { storage } from '../../config/firebase.config.js';
+import { storage } from '../../../src/config/firebase-config.js';
 import { subventionsConfig } from './subventions.config.js';
 import { subventionsFirestore } from './subventions.firestore.js';
 

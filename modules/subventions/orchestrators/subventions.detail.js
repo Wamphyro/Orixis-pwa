@@ -7,10 +7,10 @@
 // Intègre les 3 composants visuels créés
 // ========================================
 
-import { subventionsConfig } from './subventions.config.js';
-import { subventionsFirestore } from './subventions.firestore.js';
-import { subventionsService } from './subventions.service.js';
-import { subventionsUploadService } from './subventions.upload.service.js';
+import { subventionsConfig } from '../core/subventions.config.js';
+import { subventionsFirestore } from '../core/subventions.firestore.js';
+import { subventionsService } from '../core/subventions.service.js';
+import { subventionsUploadService } from '../core/subventions.upload.service.js';
 
 class SubventionsDetail {
     constructor() {

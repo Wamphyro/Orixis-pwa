@@ -27,7 +27,7 @@ import {
     increment
 } from 'firebase/firestore';
 
-import { db } from '../../config/firebase.config.js';
+import { db } from '../../../src/config/firebase-config.js';
 import { subventionsConfig } from './subventions.config.js';
 
 class SubventionsFirestore {

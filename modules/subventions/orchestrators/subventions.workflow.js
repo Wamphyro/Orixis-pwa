@@ -7,10 +7,10 @@
 // Transitions, validations et actions par étape
 // ========================================
 
-import { subventionsConfig } from './subventions.config.js';
-import { subventionsData } from './subventions.data.js';
-import { subventionsService } from './subventions.service.js';
-import { subventionsFirestore } from './subventions.firestore.js';
+import { subventionsConfig } from '../core/subventions.config.js';
+import { subventionsData } from '../core/subventions.data.js';
+import { subventionsService } from '../core/subventions.service.js';
+import { subventionsFirestore } from '../core/subventions.firestore.js';
 
 class SubventionsWorkflow {
     constructor() {

@@ -7,7 +7,7 @@
 // Extraction d'informations des décisions MDPH/AGEFIPH
 // ========================================
 
-import { openaiService } from '../../services/openai.service.js';
+import { openaiService } from '../../../src/services/openai.service.js';
 import { subventionsConfig } from './subventions.config.js';
 
 class SubventionsOpenAIService {

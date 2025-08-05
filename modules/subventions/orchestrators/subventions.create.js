@@ -7,10 +7,10 @@
 // Gère le formulaire, la recherche patient et la validation
 // ========================================
 
-import { subventionsConfig } from './subventions.config.js';
-import { subventionsFirestore } from './subventions.firestore.js';
-import { subventionsService } from './subventions.service.js';
-import { patientsService } from '../../services/patients.service.js';
+import { subventionsConfig } from '../core/subventions.config.js';
+import { subventionsFirestore } from '../core/subventions.firestore.js';
+import { subventionsService } from '../core/subventions.service.js';
+import { patientsService } from '../../../services/patients.service.js';
 
 class SubventionsCreate {
     constructor() {

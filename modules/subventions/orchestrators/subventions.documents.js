@@ -7,11 +7,11 @@
 // Upload, validation, suppression et visualisation
 // ========================================
 
-import { subventionsConfig } from './subventions.config.js';
-import { subventionsData } from './subventions.data.js';
-import { subventionsFirestore } from './subventions.firestore.js';
-import { subventionsUploadService } from './subventions.upload.service.js';
-import { subventionsOpenAIService } from './subventions.openai.service.js';
+import { subventionsConfig } from '../core/subventions.config.js';
+import { subventionsData } from '../core/subventions.data.js';
+import { subventionsFirestore } from '../core/subventions.firestore.js';
+import { subventionsUploadService } from '../core/subventions.upload.service.js';
+import { subventionsOpenAIService } from '../core/subventions.openai.service.js';
 
 class SubventionsDocuments {
     constructor() {

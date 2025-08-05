@@ -16,13 +16,13 @@ import {
     Card,
     Toast,
     Dialog
-} from '../../src/components/index.js';
+} from '../../../src/components/index.js';
 
 // Import des composants spécifiques créés
-import { ProgressTimeline } from '../../src/components/ui/progress-timeline/progress-timeline.component.js';
-import { ProgressOverview } from '../../src/components/ui/progress-overview/progress-overview.component.js';
-import { DelayTracker } from '../../src/components/ui/delay-tracker/delay-tracker.component.js';
-import { SignatureModal } from '../../src/components/ui/signature-modal/signature-modal.component.js';
+import { ProgressTimeline } from '../../../src/components/ui/progress-timeline/progress-timeline.component.js';
+import { ProgressOverview } from '../../../src/components/ui/progress-overview/progress-overview.component.js';
+import { DelayTracker } from '../../../src/components/ui/delay-tracker/delay-tracker.component.js';
+import { SignatureModal } from '../../../src/components/ui/signature-modal/signature-modal.component.js';
 
 export const subventionsConfig = {
     // ========================================
