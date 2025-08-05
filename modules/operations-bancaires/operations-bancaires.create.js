@@ -50,7 +50,7 @@ export function initImportOperations() {
     
     // Préparer les listeners futurs
     window.resetImport = resetImport;
-    window.confirmerImport = confirmerImport;
+    // window.confirmerImport sera assigné plus tard après sa définition
 }
 
 // ========================================
@@ -595,6 +595,9 @@ function getCategorieLabel(categorie) {
     
     return categories[categorie] || categorie;
 }
+
+// Assigner la fonction à window après sa définition
+window.confirmerImport = confirmerImport;
 
 /* ========================================
    HISTORIQUE DES MODIFICATIONS
