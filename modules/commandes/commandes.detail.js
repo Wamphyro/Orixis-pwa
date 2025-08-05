@@ -98,7 +98,8 @@ function afficherDetailCommande(commande) {
     }
     
     // Recréer le container timeline car destroy() le supprime
-    const timelineWrapper = document.querySelector('.timeline-container');
+    const modalDetail = document.getElementById('modalDetailCommande');
+    const timelineWrapper = modalDetail.querySelector('.timeline-container');
     if (!timelineWrapper) {
         console.error('❌ Container .timeline-container non trouvé');
         return;
