@@ -192,110 +192,45 @@ body.login-page {
 }
 
 /* ========================================
-   INTÉGRATION COMPOSANT NUMPAD - THEME LOGIN
+   ADAPTATIONS THEME LOGIN POUR NUMPAD
    ======================================== */
-/* Masquer l'overlay et le container du Numpad */
+/* Adapter le numpad pour qu'il s'intègre dans le formulaire */
 .numpad-overlay.theme-login {
     position: static !important;
     background: transparent !important;
-    display: block !important;
-    padding: 0 !important;
 }
 
 .numpad-container.theme-login {
-    position: static !important;
     background: transparent !important;
-    border: none !important;
     box-shadow: none !important;
     padding: 0 !important;
-    transform: none !important;
 }
 
-/* Masquer les éléments non nécessaires */
-.numpad-container.theme-login .numpad-header {
+/* Masquer les éléments non nécessaires pour le login */
+.theme-login .numpad-header,
+.theme-login .numpad-display,
+.theme-login .numpad-footer {
     display: none !important;
 }
 
-.numpad-container.theme-login .numpad-display {
-    display: none !important;
-}
-
-.numpad-container.theme-login .numpad-footer {
-    display: none !important;
-}
-
-/* Adapter le conteneur des boutons */
-.numpad-container.theme-login .numpad-buttons {
-    background: transparent !important;
-    padding: 0 !important;
-}
-
-.numpad-container.theme-login .numpad-grid {
-    max-width: 320px;
-    margin: 0 auto;
-    gap: 12px;
-}
-
-.numpad-container.theme-login .numpad-actions {
-    margin-top: 12px;
-}
-
-/* Style des boutons numpad pour le login */
-.numpad-container.theme-login .numpad-btn {
-    height: 60px;
-    font-size: 22px;
-    font-weight: 600;
-    border: none;
-    border-radius: 16px;
-    background: rgba(255, 255, 255, 0.8);
+/* Adapter les couleurs au thème login */
+.theme-login .numpad-btn {
+    background: rgba(255, 255, 255, 0.8) !important;
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    box-shadow: 
-        0 4px 12px rgba(0, 0, 0, 0.04),
-        inset 0 1px 0 rgba(255, 255, 255, 1);
-    color: var(--login-text);
-    transition: all 0.2s ease;
 }
 
-.numpad-container.theme-login .numpad-btn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    background: rgba(102, 126, 234, 0.08);
-    box-shadow: 
-        0 6px 20px rgba(102, 126, 234, 0.15),
-        inset 0 1px 0 rgba(255, 255, 255, 1);
+.theme-login .numpad-btn:hover {
+    background: rgba(102, 126, 234, 0.08) !important;
 }
 
-.numpad-container.theme-login .numpad-btn:active:not(:disabled) {
-    transform: translateY(0);
-    box-shadow: 
-        0 2px 8px rgba(0, 0, 0, 0.08),
-        inset 0 2px 4px rgba(0, 0, 0, 0.06);
+.theme-login .numpad-clear {
+    background: rgba(255, 243, 205, 0.8) !important;
 }
 
-/* Boutons spéciaux */
-.numpad-container.theme-login .numpad-clear {
-    background: rgba(255, 243, 205, 0.8);
-    color: #856404;
+.theme-login .numpad-backspace {
+    background: rgba(255, 218, 218, 0.8) !important;
 }
 
-.numpad-container.theme-login .numpad-clear:hover:not(:disabled) {
-    background: rgba(255, 235, 186, 0.9);
-}
-
-.numpad-container.theme-login .numpad-backspace {
-    background: rgba(255, 218, 218, 0.8);
-    color: #dc3545;
-}
-
-.numpad-container.theme-login .numpad-backspace:hover:not(:disabled) {
-    background: rgba(255, 200, 200, 0.9);
-}
-
-/* État désactivé */
-.numpad-container.theme-login .numpad-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
 
 /* ========================================
    OPTIONS
