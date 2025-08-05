@@ -65,7 +65,7 @@ let dropdownPack = null;
 let dropdownType = null;
 let dropdownMagasin = null;
 let dropdownMagasinClient = null;
-let timeline = null;
+let stepper = null;
 
 // Exposer l'état pour le module principal
 window.commandeCreateState = { nouvelleCommande };
