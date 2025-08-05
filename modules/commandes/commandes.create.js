@@ -65,6 +65,7 @@ let dropdownPack = null;
 let dropdownType = null;
 let dropdownMagasin = null;
 let dropdownMagasinClient = null;
+let timeline = null;
 
 // Exposer l'état pour le module principal
 window.commandeCreateState = { nouvelleCommande };
@@ -136,6 +137,10 @@ function resetNouvelleCommande() {
         dropdownMagasin.destroy();
         dropdownMagasin = null;
     }
+    if (timeline) {
+        timeline.destroy();
+        timeline = null;
+    }
     
     const tempCartItems = document.getElementById('tempCartItems');
     if (tempCartItems) {
@@ -145,6 +150,39 @@ function resetNouvelleCommande() {
 
 function afficherEtape(etape) {
     etapeActuelle = etape;
+    
+    // Créer la timeline si elle n'existe pas encore
+    if (!timeline) {
+        const timelineContainer = document.querySelector('.timeline-container');
+        if (timelineContainer) {
+            // Initialiser les items avec le bon statut
+            const items = COMMANDES_CONFIG.ETAPES_CREATION.map((etapeData, index) => ({
+                ...etapeData,
+                status: index === 0 ? 'active' : 'pending'
+            }));
+            
+            timeline = config.createCommandeTimeline('.timeline-container', items, {
+                orientation: 'horizontal',
+                theme: 'colorful',
+                animated: true
+            });
+        }
+    }
+    
+    // Mettre à jour le statut de la timeline
+    if (timeline) {
+        const items = COMMANDES_CONFIG.ETAPES_CREATION.map((etapeData, index) => {
+            let status = 'pending';
+            if (index + 1 < etape) status = 'completed';
+            else if (index + 1 === etape) status = 'active';
+            
+            return {
+                ...etapeData,
+                status: status
+            };
+        });
+        timeline.updateItems(items);
+    }
     
     // Masquer toutes les étapes
     for (let i = 1; i <= 4; i++) {

@@ -196,6 +196,36 @@ export const COMMANDES_CONFIG = {
     },
     
     // ========================================
+    // ÉTAPES DE CRÉATION DE COMMANDE (données métier)
+    // ========================================
+    ETAPES_CREATION: [
+        {
+            id: 'step1',
+            label: 'Client',
+            icon: '👤',
+            description: 'Sélection ou création du client'
+        },
+        {
+            id: 'step2',
+            label: 'Produits',
+            icon: '📦',
+            description: 'Ajout des produits à commander'
+        },
+        {
+            id: 'step3',
+            label: 'Livraison',
+            icon: '🚚',
+            description: 'Informations de livraison'
+        },
+        {
+            id: 'step4',
+            label: 'Validation',
+            icon: '✅',
+            description: 'Récapitulatif et validation'
+        }
+    ],
+    
+    // ========================================
     // MESSAGES ET TEXTES
     // ========================================
     MESSAGES: {
