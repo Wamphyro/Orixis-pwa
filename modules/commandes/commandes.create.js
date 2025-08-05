@@ -92,6 +92,8 @@ export function ouvrirNouvelleCommande() {
 }
 
 function resetNouvelleCommande() {
+    console.log('🔄 Reset nouvelle commande');
+    
     etapeActuelle = 1;
     nouvelleCommande = {
         clientId: null,
@@ -106,23 +108,18 @@ function resetNouvelleCommande() {
     
     window.commandeCreateState.nouvelleCommande = nouvelleCommande;
     
-    // Détruire la timeline existante
+    // Nettoyer la timeline si elle existe
     if (timeline) {
-        timeline.destroy();
-        timeline = null;
-        
-        // Nettoyer le container
-        const timelineContainer = document.querySelector('#modalNouvelleCommande .timeline-container');
-        if (timelineContainer) {
-            timelineContainer.innerHTML = '';
+        try {
+            timeline.destroy();
+            timeline = null;
+        } catch (e) {
+            console.warn('⚠️ Erreur destruction timeline:', e);
+            timeline = null;
         }
     }
     
-    // Attendre que la modal soit visible pour créer la Timeline
-    setTimeout(() => {
-        afficherEtape(1);
-    }, 100);
-    
+    // Réinitialiser l'affichage client
     const searchContainer = document.querySelector('.client-search');
     if (searchContainer) {
         searchContainer.style.display = 'block';
@@ -152,19 +149,28 @@ function resetNouvelleCommande() {
         dropdownMagasin.destroy();
         dropdownMagasin = null;
     }
-    if (timeline) {
-        timeline.destroy();
-        timeline = null;
+    if (dropdownMagasinClient) {
+        dropdownMagasinClient.destroy();
+        dropdownMagasinClient = null;
     }
     
+    // Réinitialiser le panier
     const tempCartItems = document.getElementById('tempCartItems');
     if (tempCartItems) {
         tempCartItems.innerHTML = '<p>Aucun produit sélectionné</p>';
     }
+    
+    // Attendre que la modal soit visible puis afficher l'étape 1
+    setTimeout(() => {
+        console.log('📍 Affichage initial étape 1');
+        afficherEtape(1);
+    }, 100);
 }
 
 function afficherEtape(etape) {
     etapeActuelle = etape;
+    
+    console.log(`📍 Affichage étape ${etape}`);
     
     // Créer les items avec le bon statut
     const items = COMMANDES_CONFIG.ETAPES_CREATION.map((etapeData, index) => {
@@ -180,35 +186,64 @@ function afficherEtape(etape) {
         };
     });
     
-    // Récupérer le container (toujours présent maintenant)
-    const timelineContainer = document.querySelector('#modalNouvelleCommande .timeline-container');
+    // Vérifier d'abord que le modal existe
+    const modal = document.getElementById('modalNouvelleCommande');
+    if (!modal) {
+        console.error('❌ Modal nouvelle commande introuvable');
+        return;
+    }
+    
+    // Récupérer ou créer le container timeline
+    let timelineContainer = modal.querySelector('.timeline-container');
     
     if (!timelineContainer) {
-        console.error('❌ Container timeline introuvable dans modalNouvelleCommande');
-        return;
+        console.warn('⚠️ Container timeline manquant, création...');
+        
+        // Créer le container
+        timelineContainer = document.createElement('div');
+        timelineContainer.className = 'timeline-container';
+        timelineContainer.style.margin = '20px 0';
+        
+        // L'insérer après le header
+        const modalHeader = modal.querySelector('.modal-header');
+        if (modalHeader && modalHeader.parentNode) {
+            modalHeader.parentNode.insertBefore(
+                timelineContainer, 
+                modalHeader.nextSibling
+            );
+            console.log('✅ Container timeline créé');
+        } else {
+            console.error('❌ Impossible de créer le container timeline');
+            return;
+        }
     }
     
     // Si timeline existe, la détruire proprement
     if (timeline) {
-        console.log('🔄 Mise à jour timeline pour étape:', etape);
-        timeline.destroy();
-        timeline = null;
+        console.log('🔄 Destruction de l\'ancienne timeline');
+        try {
+            timeline.destroy();
+            timeline = null;
+        } catch (e) {
+            console.warn('⚠️ Erreur lors de la destruction:', e);
+            timeline = null;
+        }
         
-        // Nettoyer le container
+        // Vider le container
         timelineContainer.innerHTML = '';
     }
     
     // Créer la nouvelle timeline
     try {
+        console.log('🚀 Création de la nouvelle timeline...');
         timeline = config.createCommandeTimeline(timelineContainer, items, {
             orientation: 'horizontal',
             theme: 'colorful',
             animated: true,
             clickable: true,
-            showDates: false,  // Pas de dates pour les étapes de création
+            showDates: false,
             showLabels: true,
             onClick: (item, index) => {
-                // Permettre de naviguer uniquement vers les étapes précédentes
                 const targetStep = index + 1;
                 if (targetStep < etapeActuelle) {
                     console.log(`📍 Navigation vers étape ${targetStep}`);
@@ -223,16 +258,26 @@ function afficherEtape(etape) {
     
     // Masquer toutes les étapes de contenu
     for (let i = 1; i <= 4; i++) {
-        document.getElementById(`stepContent${i}`).classList.add('hidden');
+        const stepContent = document.getElementById(`stepContent${i}`);
+        if (stepContent) {
+            stepContent.classList.add('hidden');
+        }
     }
     
     // Afficher l'étape actuelle
-    document.getElementById(`stepContent${etape}`).classList.remove('hidden');
+    const currentStepContent = document.getElementById(`stepContent${etape}`);
+    if (currentStepContent) {
+        currentStepContent.classList.remove('hidden');
+    }
     
     // Gérer les boutons
-    document.getElementById('btnPrevStep').disabled = etape === 1;
-    document.getElementById('btnNextStep').style.display = etape < 4 ? 'block' : 'none';
-    document.getElementById('btnValiderCommande').classList.toggle('hidden', etape !== 4);
+    const btnPrev = document.getElementById('btnPrevStep');
+    const btnNext = document.getElementById('btnNextStep');
+    const btnValidate = document.getElementById('btnValiderCommande');
+    
+    if (btnPrev) btnPrev.disabled = etape === 1;
+    if (btnNext) btnNext.style.display = etape < 4 ? 'block' : 'none';
+    if (btnValidate) btnValidate.classList.toggle('hidden', etape !== 4);
     
     // Actions spécifiques par étape
     switch (etape) {
@@ -339,13 +384,13 @@ async function validerEtape(etape) {
     switch (etape) {
         case 1:
             if (!nouvelleCommande.clientId) {
-                await config.Dialog.alert('Veuillez ajouter au moins un produit', 'Attention');
+                await config.Dialog.alert('Veuillez sélectionner un client', 'Attention');
                 return false;
             }
             break;
         case 2:
             if (nouvelleCommande.produits.length === 0) {
-                await config.Dialog.alert('Veuillez sélectionner un client', 'Attention');
+                await config.Dialog.alert('Veuillez ajouter au moins un produit', 'Attention');
                 return false;
             }
             break;
