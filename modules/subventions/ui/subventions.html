@@ -3,63 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Module Subventions - ORIXIS CRM</title>
-    
-    <!-- PWA Meta Tags -->
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Orixis Subventions">
-    <link rel="manifest" href="../../../manifest.json">
-    <meta name="theme-color" content="#3b82f6">
-    
-    <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
-    
-    <!-- CSS Global -->
-    <link rel="stylesheet" href="../../../src/css/main.css">
-    
-    <!-- CSS Composants nécessaires -->
-    <link rel="stylesheet" href="../../../src/components/ui/button/button.css">
-    <link rel="stylesheet" href="../../../src/components/ui/modal/modal.css">
-    <link rel="stylesheet" href="../../../src/components/ui/datatable/datatable.css">
-    <link rel="stylesheet" href="../../../src/components/ui/badge/badge.css">
-    <link rel="stylesheet" href="../../../src/components/ui/search-dropdown/search-dropdown.css">
+    <title>Module Subventions</title>
     
     <!-- CSS Module -->
     <link rel="stylesheet" href="./subventions.css">
-    <link rel="stylesheet" href="./subventions-print.css" media="print">
 </head>
 <body>
-    <!-- Container principal -->
-    <div id="app" class="app-container">
-        <!-- Le contenu sera injecté par subventions.main.js -->
-    </div>
+    <div id="app"></div>
     
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage-compat.js"></script>
-    
-    <!-- Configuration Firebase inline -->
-    <script>
-        // Configuration Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyDY6gO9ShUzs_6MJ7PvJQPQ_VYq-crPf8Y",
-            authDomain: "orixis-c0327.firebaseapp.com",
-            projectId: "orixis-c0327",
-            storageBucket: "orixis-c0327.appspot.com",
-            messagingSenderId: "82344824090",
-            appId: "1:82344824090:web:d0b2d3f1234567890abcdef"
-        };
-        
-        // Initialiser Firebase
-        firebase.initializeApp(firebaseConfig);
-        console.log('✅ Firebase initialisé pour Subventions');
-    </script>
-    
-    <!-- Script principal du module -->
-    <script type="module" src="../orchestrators/subventions.main.js"></script>
+    <!-- Script principal -->
+    <script src="../orchestrators/subventions.main.js"></script>
 </body>
 </html>
