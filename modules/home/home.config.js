@@ -156,6 +156,17 @@ export const MENU_ITEMS = [
 ];
 
 // ========================================
+// FORCER LE CHARGEMENT DES STYLES
+// ========================================
+
+// Charger les styles du composant Button
+const initButtonStyles = () => {
+    const temp = new Button({ text: '' });
+    temp.destroy();
+};
+initButtonStyles();
+
+// ========================================
 // EXPORT PAR DÉFAUT
 // ========================================
 
@@ -163,5 +174,6 @@ export default {
     createHomeHeader,
     MENU_ITEMS,
     Dialog,
-    notify
+    notify,
+    Button
 };
