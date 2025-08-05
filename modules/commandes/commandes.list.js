@@ -374,11 +374,11 @@ async function initFiltres() {
     // Remplacer le bouton reset par un composant Button stylisé
     const resetBtnElement = filtresCommandes.getResetButtonElement();
     if (resetBtnElement) {
-        const styledResetBtn = new Button({
+        const styledResetBtn = config.createButton('reset', {
             text: '🔄 Réinitialiser',
-            variant: 'secondary',  // Gris neutre
+            variant: 'secondary',
             size: 'sm',
-            textColor: 'dark',     // Texte noir
+            textColor: 'dark',
             onClick: () => filtresCommandes.reset()
         });
         
