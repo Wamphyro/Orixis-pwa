@@ -150,7 +150,8 @@ function creerItemsTimeline(facture) {
     
     if (facture.statut === 'deja_payee' || facture.dates?.paiement) {
         // Workflow pour factures déjà payées
-        sequence = ['deja_payee', 'a_pointer', 'pointee'];
+        // IMPORTANT : Inclure "à payer" comme étape complétée
+        sequence = ['a_payer', 'deja_payee', 'a_pointer', 'pointee'];
     } else {
         // Workflow normal
         sequence = ['nouvelle', 'a_payer'];
@@ -163,20 +164,29 @@ function creerItemsTimeline(facture) {
     }
     
     sequence.forEach(statutKey => {
-        const statutConfig = FACTURES_CONFIG.STATUTS[statutKey];
-        if (!statutConfig) return;
-        
-        const isCompleted = isStatutComplete(facture, statutKey);
-        const isCurrent = facture.statut === statutKey || (statutKey === 'en_retard' && facture.enRetard);
-        
-        items.push({
-            label: statutConfig.label,
-            icon: statutConfig.icon,
-            date: getDateStatut(facture, statutKey),
-            status: isCurrent ? 'current' : (isCompleted ? 'completed' : 'pending'),
-            details: statutConfig.description
-        });
+    const statutConfig = FACTURES_CONFIG.STATUTS[statutKey];
+    if (!statutConfig) return;
+    
+    const isCompleted = isStatutComplete(facture, statutKey);
+    
+    // Logique spéciale pour déterminer l'étape courante
+    let isCurrent = false;
+    if (facture.statut === 'deja_payee') {
+        // Si le statut est "déjà payée", l'étape courante est "à pointer"
+        isCurrent = statutKey === 'a_pointer';
+    } else {
+        // Sinon, l'étape courante est celle qui correspond au statut actuel
+        isCurrent = facture.statut === statutKey || (statutKey === 'en_retard' && facture.enRetard);
+    }
+    
+    items.push({
+        label: statutConfig.label,
+        icon: statutConfig.icon,
+        date: getDateStatut(facture, statutKey),
+        status: isCurrent ? 'current' : (isCompleted ? 'completed' : 'pending'),
+        details: statutConfig.description
     });
+});
     
     return items;
 }
@@ -187,11 +197,13 @@ function isStatutComplete(facture, statut) {
         case 'nouvelle':
             return facture.dates.creation !== null;
         case 'a_payer':
-            return ['payee', 'a_pointer', 'pointee'].includes(facture.statut);
+            // Si déjà payée, alors "à payer" est forcément complété
+            return ['payee', 'deja_payee', 'a_pointer', 'pointee'].includes(facture.statut);
         case 'deja_payee':
-            return facture.statut === 'deja_payee' || ['a_pointer', 'pointee'].includes(facture.statut);
+            // Complété seulement si on est passé à l'étape suivante
+            return ['a_pointer', 'pointee'].includes(facture.statut);
         case 'payee':
-            return facture.dates.paiement !== null;
+            return facture.dates.paiement !== null || ['a_pointer', 'pointee'].includes(facture.statut);
         case 'a_pointer':
             return facture.statut === 'pointee';
         case 'pointee':
@@ -540,14 +552,14 @@ window.marquerAPayer = async function(factureId) {
 
 window.marquerDejaPayee = async function(factureId) {
     try {
+        // Marquer comme déjà payée (qui reste le statut en base)
         await FacturesFournisseursService.changerStatut(factureId, 'deja_payee');
-        // Passer automatiquement à "à pointer"
-        setTimeout(async () => {
-            await FacturesFournisseursService.changerStatut(factureId, 'a_pointer');
-            await chargerDonnees();
-            await voirDetailFacture(factureId);
-        }, 500);
-        afficherSucces('Facture marquée comme déjà payée');
+        
+        // Recharger pour afficher la Timeline correcte
+        await chargerDonnees();
+        await voirDetailFacture(factureId);
+        
+        afficherSucces('Facture marquée comme déjà payée - prête à pointer');
     } catch (error) {
         afficherErreur(error.message || 'Erreur lors du changement');
     }
