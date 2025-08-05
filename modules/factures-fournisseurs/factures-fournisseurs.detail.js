@@ -145,23 +145,16 @@ function afficherTimeline(facture) {
 function creerItemsTimeline(facture) {
     const items = [];
     
-    // Workflow selon le statut initial
-    let sequence = [];
+    // UN SEUL WORKFLOW POUR TOUS
+    let sequence = ['nouvelle', 'a_payer'];
     
-    if (facture.statut === 'deja_payee' || facture.dates?.paiement) {
-        // Workflow pour factures déjà payées
-        // IMPORTANT : Inclure "à payer" comme étape complétée
-        sequence = ['a_payer', 'deja_payee', 'a_pointer', 'pointee'];
-    } else {
-        // Workflow normal
-        sequence = ['nouvelle', 'a_payer'];
-        
-        if (facture.statut === 'en_retard' || facture.enRetard) {
-            sequence.push('en_retard');
-        }
-        
-        sequence.push('payee', 'a_pointer', 'pointee');
+    // Ajouter "en retard" si nécessaire
+    if (facture.statut === 'en_retard' || facture.enRetard) {
+        sequence.push('en_retard');
     }
+    
+    // Toujours finir par payée → à pointer → pointée
+    sequence.push('payee', 'a_pointer', 'pointee');
     
     sequence.forEach(statutKey => {
     const statutConfig = FACTURES_CONFIG.STATUTS[statutKey];
