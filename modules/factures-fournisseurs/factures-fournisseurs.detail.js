@@ -665,7 +665,19 @@ window.pointer = async function(factureId) {
     
     if (confirme) {
         try {
-            await FacturesFournisseursService.changerStatut(factureId, 'pointee');
+            // Récupérer la facture actuelle pour vérifier son statut
+            const facture = await FacturesFournisseursService.getFacture(factureId);
+            
+            if (facture.statut === 'deja_payee') {
+                // Si "déjà payée", passer d'abord à "à pointer"
+                await FacturesFournisseursService.changerStatut(factureId, 'a_pointer');
+                // Puis immédiatement à "pointée"
+                await FacturesFournisseursService.changerStatut(factureId, 'pointee');
+            } else {
+                // Sinon, passer directement à "pointée"
+                await FacturesFournisseursService.changerStatut(factureId, 'pointee');
+            }
+            
             await chargerDonnees();
             window.modalManager.close('modalDetailFacture');
             afficherSucces('Facture pointée');
