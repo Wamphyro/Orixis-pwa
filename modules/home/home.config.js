@@ -120,6 +120,14 @@ export const MENU_ITEMS = [
         permissions: ['clients.view'],
         disabled: true
     },
+        {
+        href: '#',
+        icon: '💬',
+        title: 'MaiBox & Chat',
+        description: 'Gérer les mails et les conversation',
+        permissions: ['clients.view'],
+        disabled: true
+    },
     {
         href: '../../pages/guide.html',
         icon: '📚',
