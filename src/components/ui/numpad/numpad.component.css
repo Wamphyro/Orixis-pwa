@@ -268,8 +268,73 @@
 }
 
 /* ========================================
-   RESPONSIVE
+   SUPPORT BOUTONS DÉPLACÉS (login)
    ======================================== */
+/* Quand les boutons sont déplacés hors du composant */
+#numpadContainer .numpad-btn {
+    height: 56px;
+    font-size: 20px;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #333;
+    
+    /* Glassmorphism */
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 
+        0 8px 32px 0 rgba(31, 38, 135, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+#numpadContainer .numpad-btn:hover {
+    background: rgba(255, 255, 255, 0.35);
+    transform: translateY(-2px);
+    box-shadow: 
+        0 12px 40px 0 rgba(31, 38, 135, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+#numpadContainer .numpad-btn:active {
+    transform: translateY(0);
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 
+        0 4px 20px 0 rgba(31, 38, 135, 0.1),
+        inset 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+#numpadContainer .numpad-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+#numpadContainer .numpad-zero {
+    grid-column: 2;
+}
+
+#numpadContainer .numpad-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+#numpadContainer .numpad-clear {
+    background: rgba(255, 243, 205, 0.5);
+    backdrop-filter: blur(10px);
+    color: #856404;
+}
+
+#numpadContainer .numpad-backspace {
+    background: rgba(255, 218, 218, 0.5);
+    backdrop-filter: blur(10px);
+    color: #dc3545;
+}
 @media (max-width: 480px) {
     .numpad-container {
         width: 95%;
