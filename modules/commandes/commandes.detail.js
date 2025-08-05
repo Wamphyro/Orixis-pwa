@@ -84,6 +84,116 @@ export async function voirDetailCommande(commandeId) {
 }
 
 // ========================================
+// PRÉPARATION DES ITEMS TIMELINE
+// ========================================
+
+function prepareTimelineItems(commande) {
+    const sequence = [
+        'nouvelle',
+        'preparation', 
+        'terminee',
+        'expediee',
+        'receptionnee',
+        'livree'
+    ];
+    
+    const dateFields = {
+        'nouvelle': 'dates.commande',
+        'preparation': 'dates.preparationDebut',
+        'terminee': 'dates.preparationFin',
+        'expediee': 'dates.expeditionValidee',
+        'receptionnee': 'dates.receptionValidee',
+        'livree': 'dates.livraisonClient'
+    };
+    
+    // Créer les items de la timeline
+    const items = sequence.map(statutKey => {
+        const statutConfig = COMMANDES_CONFIG.STATUTS[statutKey];
+        const dateField = dateFields[statutKey];
+        
+        let status = 'pending';
+        if (commande.statut === statutKey) {
+            status = 'active';
+        } else if (sequence.indexOf(commande.statut) > sequence.indexOf(statutKey)) {
+            status = 'completed';
+        }
+        
+        // Récupérer et formater la date
+        let dateFormatee = '';
+        if (dateField) {
+            const parts = dateField.split('.');
+            let value = commande;
+            for (const part of parts) {
+                value = value?.[part];
+            }
+            if (value) {
+                const date = value.toDate ? value.toDate() : new Date(value);
+                // Format français : 05 fév 2025 14:30
+                dateFormatee = date.toLocaleDateString('fr-FR', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric'
+                }) + ' ' + date.toLocaleTimeString('fr-FR', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+        }
+        
+        return {
+            id: statutKey,
+            label: statutConfig.label,
+            icon: statutConfig.icon,
+            status: status,
+            date: dateFormatee // Passer la date formatée en string
+        };
+    });
+    
+    // Gérer le cas annulé
+    if (commande.statut === 'annulee') {
+        const indexAnnule = sequence.indexOf(commande.annulation?.etapeAuMomentAnnulation || 'nouvelle');
+        items.forEach((item, index) => {
+            if (index <= indexAnnule) {
+                item.status = 'completed';
+            } else {
+                item.status = 'cancelled';
+            }
+        });
+        
+        // Formater la date d'annulation
+        let dateAnnulation = '';
+        if (commande.annulation?.date) {
+            const date = commande.annulation.date.toDate ? commande.annulation.date.toDate() : new Date(commande.annulation.date);
+            dateAnnulation = date.toLocaleDateString('fr-FR', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            }) + ' ' + date.toLocaleTimeString('fr-FR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        
+        // Ajouter l'étape annulée
+        const annuleItem = {
+            id: 'annulee',
+            label: 'Annulée',
+            icon: '❌',
+            status: 'error',
+            date: dateAnnulation
+        };
+        
+        if (indexAnnule >= 0 && indexAnnule < items.length - 1) {
+            items.splice(indexAnnule + 1, 0, annuleItem);
+        } else {
+            items.push(annuleItem);
+        }
+    }
+    
+    return items;
+}
+
+// ========================================
 // AFFICHAGE DU DÉTAIL
 // ========================================
 
@@ -110,7 +220,9 @@ function afficherDetailCommande(commande) {
     
     // Créer la nouvelle timeline
     try {
-        timelineInstance = config.createOrderTimeline('#timeline', commande, {
+        // Utiliser createCommandeTimeline au lieu de createOrderTimeline
+        const items = prepareTimelineItems(commande);
+        timelineInstance = config.createCommandeTimeline('#timeline', items, {
             orientation: 'horizontal',
             theme: 'colorful',
             animated: true,
