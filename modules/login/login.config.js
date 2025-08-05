@@ -3,9 +3,35 @@
 // Chemin: modules/login/login.config.js
 // ========================================
 
-import DropdownList from '../../src/components/ui/dropdown-list/dropdown-list.component.js';
-import notify from '../../src/components/ui/notification/notification.component.js';
+import { DropdownList } from '../../src/components/ui/dropdown-list/dropdown-list.component.js';
 
+// ========================================
+// NOTIFICATION LOCALE
+// ========================================
+
+const notify = {
+    success: (message) => showNotification(message, 'success'),
+    error: (message) => showNotification(message, 'error'),
+    warning: (message) => showNotification(message, 'warning'),
+    info: (message) => showNotification(message, 'info')
+};
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `login-notification ${type}`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    // Animation d'entrée
+    setTimeout(() => notification.classList.add('show'), 10);
+    
+    // Suppression après 3 secondes
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
 // ========================================
 // FACTORIES
 // ========================================

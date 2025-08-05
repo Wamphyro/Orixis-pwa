@@ -9,7 +9,6 @@
 import { initFirebase } from '../../src/services/firebase.service.js';
 import { initLoginUI } from './login.ui.js';
 import { checkExistingAuth } from './login.auth.js';
-import { loader } from '../../src/components/index.js';
 import config from './login.config.js';
 
 // ========================================
@@ -46,7 +45,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         console.log('✅ Firebase initialisé');
         
         // Mettre à jour le message
-        loader.update('Chargement des utilisateurs...');
+        showLoading(true, 'Chargement des utilisateurs...');
         
         // Initialiser l'interface
         await initLoginUI();
@@ -69,12 +68,32 @@ window.addEventListener('DOMContentLoaded', async () => {
 // ========================================
 
 export function showLoading(show, message = 'Chargement...') {
-    if (show) {
-        loader.show(message);
-    } else {
-        loader.hide();
-    }
     state.isLoading = show;
+    
+    // Créer un loader simple sans dépendance
+    let loadingEl = document.getElementById('login-loading');
+    
+    if (show) {
+        if (!loadingEl) {
+            loadingEl = document.createElement('div');
+            loadingEl.id = 'login-loading';
+            loadingEl.className = 'login-loading-overlay';
+            loadingEl.innerHTML = `
+                <div class="login-loading-content">
+                    <div class="login-spinner"></div>
+                    <p>${message}</p>
+                </div>
+            `;
+            document.body.appendChild(loadingEl);
+        } else {
+            loadingEl.querySelector('p').textContent = message;
+            loadingEl.style.display = 'flex';
+        }
+    } else {
+        if (loadingEl) {
+            loadingEl.style.display = 'none';
+        }
+    }
 }
 
 // ========================================
