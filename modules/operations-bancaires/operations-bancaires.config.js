@@ -17,8 +17,7 @@
 // - Aucun import direct de composants
 // ========================================
 
-// Import direct des composants depuis leur emplacement réel
-import { Button } from '../../src/components/ui/button/button.component.js';
+
 import { Badge } from '../../src/components/ui/badge/badge.component.js';
 import { AppHeader } from '../../src/components/ui/app-header/app-header.component.js';
 import { DataTable } from '../../src/components/ui/datatable/datatable.component.js';
@@ -407,7 +406,7 @@ export default {
     registerOperationsModals,
     
     // Components directs (pour injection)
-    Button,
+    // Button, // Composant non disponible
     Badge,
     Modal,
     Dialog,

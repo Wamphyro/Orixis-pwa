@@ -29,7 +29,6 @@ import {
     getComptesBancaires,
     determinerStatutOperation
 } from './operations-bancaires.data.js';
-import { Button } from '../../src/components/ui/button/button.component.js';
 import { Tooltip } from '../../src/components/ui/tooltip/tooltip.component.js';
 import config from './operations-bancaires.config.js';
 import { state } from './operations-bancaires.main.js';
