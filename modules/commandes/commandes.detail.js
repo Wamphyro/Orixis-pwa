@@ -221,12 +221,11 @@ function afficherDetailCommande(commande) {
         const modalBody = modalDetail.querySelector('.modal-body');
         timelineWrapper = document.createElement('div');
         timelineWrapper.className = 'timeline-container';
-        timelineWrapper.id = 'timeline';
         modalBody.insertBefore(timelineWrapper, modalBody.firstChild);
-    } else {
-        // Vider le container existant
-        timelineWrapper.innerHTML = '';
     }
+
+    // Créer le div timeline à l'intérieur
+    timelineWrapper.innerHTML = '<div id="timeline"></div>';
     
     // Créer la nouvelle timeline
     try {
@@ -244,8 +243,8 @@ function afficherDetailCommande(commande) {
         // Préparer les données de la timeline
         const items = prepareTimelineItems(commande);
         
-        // Créer l'instance de Timeline
-            timelineInstance = config.createCommandeTimeline(timelineWrapper, items, {
+        // Créer l'instance de Timeline avec le bon sélecteur
+        timelineInstance = config.createCommandeTimeline('#timeline', items, {
             orientation: 'horizontal',
             theme: 'colorful',
             animated: true,
@@ -253,17 +252,9 @@ function afficherDetailCommande(commande) {
             showLabels: true,
             clickable: false
         });
-        
-        // IMPORTANT : Rendre la timeline dans le container
-        if (timelineInstance && timelineInstance.render) {
-            const container = document.querySelector('#timeline');
-            if (container) {
-                timelineInstance.render(container);
-                console.log('✅ Timeline rendue dans le DOM');
-            } else {
-                console.error('❌ Container #timeline introuvable');
-            }
-        }
+
+        // La Timeline est déjà rendue, pas besoin d'appeler render()
+        console.log('✅ Timeline créée et rendue automatiquement');
         
         console.log('✅ Timeline créée avec succès');
     } catch (error) {
