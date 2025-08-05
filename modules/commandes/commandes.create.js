@@ -176,18 +176,19 @@ function afficherEtape(etape) {
         const timelineContainer = document.querySelector('.timeline-container');
         if (timelineContainer) {
             timeline = config.createCommandeTimeline('.timeline-container', items, {
-            orientation: 'horizontal',
-            theme: 'colorful',
-            animated: true,
-            clickable: true,
-            onClick: (item, index) => {
-                // Permettre de naviguer uniquement vers les étapes précédentes
-                const targetStep = index + 1;
-                if (targetStep < etapeActuelle) {
-                    afficherEtape(targetStep);
+                orientation: 'horizontal',
+                theme: 'colorful',
+                animated: true,
+                clickable: true,
+                onClick: (item, index) => {
+                    // Permettre de naviguer uniquement vers les étapes précédentes
+                    const targetStep = index + 1;
+                    if (targetStep < etapeActuelle) {
+                        afficherEtape(targetStep);
+                    }
                 }
-            }
-        });
+            });
+        }
     }
     
     // Masquer toutes les étapes de contenu
