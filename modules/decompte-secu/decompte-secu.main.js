@@ -34,7 +34,7 @@ import {
     voirDetailDecompteSecu
 } from './decompte-secu.detail.js';
 import config from './decompte-secu.config.js';
-import { modalManager } from '../../src/components/index.js';
+import { modalManager } from '../../src/components/ui/modal/modal.component.js';
 
 // ========================================
 // VARIABLES GLOBALES (partagées entre modules)

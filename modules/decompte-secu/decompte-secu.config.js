@@ -17,22 +17,20 @@
 // - Aucun import direct de composants
 // ========================================
 
-import { 
-    Button,
-    Badge,
-    AppHeader,
-    DataTable,
-    DataTableFilters,
-    StatsCards,
-    Timeline,
-    DropdownList,
-    SearchDropdown,
-    Modal,
-    modalManager,
-    Dialog,
-    notify,
-    DropZone
-} from '../../src/components/index.js';
+import { Button } from '../../src/components/ui/button/button.component.js';
+import { Badge } from '../../src/components/ui/badge/badge.component.js';
+import { AppHeader } from '../../src/components/ui/app-header/app-header.component.js';
+import { DataTable } from '../../src/components/ui/datatable/datatable.component.js';
+import { DataTableFilters } from '../../src/components/ui/datatable-filters/datatable-filters.component.js';
+import { StatsCards } from '../../src/components/ui/stats-cards/stats-cards.component.js';
+import { Timeline } from '../../src/components/ui/timeline/timeline.component.js';
+import { DropdownList } from '../../src/components/ui/dropdown-list/dropdown-list.component.js';
+import { SearchDropdown } from '../../src/components/ui/search-dropdown/search-dropdown.component.js';
+import { Modal } from '../../src/components/ui/modal/modal.component.js';
+import { modalManager } from '../../src/components/ui/modal/modal.component.js';
+import { Dialog } from '../../src/components/ui/dialog/dialog.component.js';
+import { notify } from '../../src/components/ui/notification/notification.component.js';
+import { DropZone } from '../../src/components/ui/dropzone/dropzone.component.js';
 
 // Import des modules DataTable
 import { DataTableSort } from '../../src/components/ui/datatable/datatable.sort.js';

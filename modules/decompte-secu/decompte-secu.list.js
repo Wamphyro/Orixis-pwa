@@ -28,7 +28,8 @@ import {
     getListeCaisses,
     mettreAJourCaisses
 } from './decompte-secu.data.js';
-import { formatDate as formatDateUtil, Button } from '../../src/components/index.js';
+import { formatDate as formatDateUtil } from '../../src/utils/date.utils.js';
+import { Button } from '../../src/components/ui/button/button.component.js';
 import config from './decompte-secu.config.js';
 import { state } from './decompte-secu.main.js';
 import { chargerMagasins } from '../../src/services/firebase.service.js';
