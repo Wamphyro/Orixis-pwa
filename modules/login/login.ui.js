@@ -6,7 +6,7 @@
 import config from './login.config.js';
 import { authenticateUser, saveAuthentication } from './login.auth.js';
 import { chargerTousLesUtilisateurs } from '../../src/services/firebase.service.js';
-import { state, incrementAttempts, animateError, animateSuccess } from './login.main.js';
+import { state, incrementAttempts, animateError, animateSuccess, showLoading } from './login.main.js';
 import { Numpad } from '../../src/components/ui/numpad/numpad.component.js';
 
 // ========================================
@@ -103,7 +103,7 @@ function getIconForRole(role) {
 function initNumpad() {
     const container = document.getElementById('numpadContainer');
     
-    // Utiliser le composant Numpad autonome
+    // Créer le composant Numpad
     numpad = new Numpad({
         title: 'Code d\'accès',
         maxLength: 4,
@@ -124,15 +124,25 @@ function initNumpad() {
         }
     });
     
-    // L'insérer dans le container
-    container.innerHTML = '';
+    // Ouvrir le numpad (il se crée dans body)
     numpad.open();
     
-    // Déplacer le contenu du numpad dans notre container
-    const numpadContent = document.querySelector(`#${numpad.id} .numpad-buttons`);
-    if (numpadContent) {
-        container.appendChild(numpadContent);
-    }
+    // Attendre que le DOM soit créé
+    setTimeout(() => {
+        // Récupérer les éléments du numpad
+        const numpadOverlay = numpad.elements.overlay;
+        const numpadButtons = numpad.elements.container.querySelector('.numpad-buttons');
+        
+        if (numpadOverlay && numpadButtons) {
+            // Ajouter la classe theme-login à l'overlay et au container
+            numpadOverlay.classList.add('theme-login');
+            numpad.elements.container.classList.add('theme-login');
+            
+            // Déplacer uniquement les boutons dans notre container
+            container.innerHTML = '';
+            container.appendChild(numpadButtons);
+        }
+    }, 100);
 }
 
 // ========================================
@@ -171,6 +181,7 @@ async function handlePinSubmit(pin) {
     try {
         // Désactiver les contrôles
         setControlsDisabled(true);
+        showLoading(true, 'Vérification en cours...');
         
         // Authentifier
         const isValid = await authenticateUser(selectedUser.id, pin);
@@ -185,6 +196,9 @@ async function handlePinSubmit(pin) {
         config.notify.error(config.LOGIN_CONFIG.messages.error);
         resetPin();
         setControlsDisabled(false);
+        showLoading(false);
+    } finally {
+        showLoading(false);
     }
 }
 

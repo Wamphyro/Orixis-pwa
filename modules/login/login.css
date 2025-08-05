@@ -456,6 +456,83 @@ body.login-page {
 }
 
 /* ========================================
+   LOADER SIMPLE
+   ======================================== */
+.login-loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.login-loading-content {
+    background: white;
+    padding: 32px;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.login-spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid var(--login-border);
+    border-top-color: var(--login-primary);
+    border-radius: 50%;
+    margin: 0 auto 16px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ========================================
+   NOTIFICATIONS
+   ======================================== */
+.login-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 16px 24px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+    z-index: 10000;
+}
+
+.login-notification.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.login-notification.success {
+    background: #28a745;
+}
+
+.login-notification.error {
+    background: #dc3545;
+}
+
+.login-notification.warning {
+    background: #ffc107;
+    color: #212529;
+}
+
+.login-notification.info {
+    background: #17a2b8;
+}
+
+/* ========================================
    HISTORIQUE DES DIFFICULTÉS
    
    [05/08/2025] - Intégration Numpad autonome
