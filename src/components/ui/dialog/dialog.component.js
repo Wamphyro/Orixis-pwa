@@ -283,89 +283,90 @@ const dialog = new Dialog();
 // API PUBLIQUE
 // ========================================
 
-export default {
-    // Alerte simple (remplace alert)
-    alert: (message, title = '') => {
-        return dialog.show({
-            type: 'info',
-            title,
-            message,
-            showCancel: false
-        });
-    },
-    
-    // Confirmation (remplace confirm)
-    confirm: (message, title = 'Confirmation') => {
-        return dialog.show({
-            type: 'confirm',
-            title,
-            message,
-            showCancel: true,
-            confirmText: 'Confirmer',
-            cancelText: 'Annuler'
-        });
-    },
-    
-    // Prompt (remplace prompt)
-    prompt: (message, defaultValue = '', title = '') => {
-        return dialog.show({
-            type: 'info',
-            title,
-            message,
-            showCancel: true,
-            inputOptions: {
-                type: 'text',
-                defaultValue,
-                required: true
-            },
-            confirmText: 'OK',
-            cancelText: 'Annuler'
-        });
-    },
-    
-    // Dialogues personnalisés
-    success: (message, title = 'Succès') => {
-        return dialog.show({
-            type: 'success',
-            title,
-            message,
-            showCancel: false
-        });
-    },
-    
-    error: (message, title = 'Erreur') => {
-        return dialog.show({
-            type: 'error',
-            title,
-            message,
-            showCancel: false
-        });
-    },
-    
-    warning: (message, title = 'Attention') => {
-        return dialog.show({
-            type: 'warning',
-            title,
-            message,
-            showCancel: false
-        });
-    },
-    
-    // Confirmation dangereuse
-    confirmDanger: (message, title = 'Attention') => {
-        return dialog.show({
-            type: 'warning',
-            title,
-            message,
-            showCancel: true,
-            danger: true,
-            confirmText: 'Supprimer',
-            cancelText: 'Annuler'
-        });
-    },
-    
-    // Custom complet
-    custom: (options) => {
-        return dialog.show(options);
-    }
+// Ajouter les méthodes statiques à la classe Dialog
+Dialog.alert = (message, title = '') => {
+    return dialog.show({
+        type: 'info',
+        title,
+        message,
+        showCancel: false
+    });
 };
+
+// Confirmation (remplace confirm)
+Dialog.confirm = (message, title = 'Confirmation') => {
+    return dialog.show({
+        type: 'confirm',
+        title,
+        message,
+        showCancel: true,
+        confirmText: 'Confirmer',
+        cancelText: 'Annuler'
+    });
+};
+
+// Prompt (remplace prompt)
+Dialog.prompt = (message, defaultValue = '', title = '') => {
+    return dialog.show({
+        type: 'info',
+        title,
+        message,
+        showCancel: true,
+        inputOptions: {
+            type: 'text',
+            defaultValue,
+            required: true
+        },
+        confirmText: 'OK',
+        cancelText: 'Annuler'
+    });
+};
+
+// Dialogues personnalisés
+Dialog.success = (message, title = 'Succès') => {
+    return dialog.show({
+        type: 'success',
+        title,
+        message,
+        showCancel: false
+    });
+};
+
+Dialog.error = (message, title = 'Erreur') => {
+    return dialog.show({
+        type: 'error',
+        title,
+        message,
+        showCancel: false
+    });
+};
+
+Dialog.warning = (message, title = 'Attention') => {
+    return dialog.show({
+        type: 'warning',
+        title,
+        message,
+        showCancel: false
+    });
+};
+
+// Confirmation dangereuse
+Dialog.confirmDanger = (message, title = 'Attention') => {
+    return dialog.show({
+        type: 'warning',
+        title,
+        message,
+        showCancel: true,
+        danger: true,
+        confirmText: 'Supprimer',
+        cancelText: 'Annuler'
+    });
+};
+
+// Custom complet
+Dialog.custom = (options) => {
+    return dialog.show(options);
+};
+
+// Export nommé uniquement (plus d'export par défaut)
+export { Dialog };
