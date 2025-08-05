@@ -7,16 +7,16 @@
 // Utilise Firebase Storage avec compression et validation
 // ========================================
 
-import { 
+// Firebase Storage via l'objet global
+const storage = firebase.storage();
+const { 
     ref, 
     uploadBytes, 
     getDownloadURL, 
     deleteObject,
     listAll,
     getMetadata
-} from 'firebase/storage';
-
-import { storage } from '../../../src/config/firebase-config.js';
+} = firebase.storage;
 import { subventionsConfig } from './subventions.config.js';
 import { subventionsFirestore } from './subventions.firestore.js';
 

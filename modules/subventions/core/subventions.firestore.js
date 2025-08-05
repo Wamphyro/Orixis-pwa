@@ -7,7 +7,8 @@
 // Gère toutes les opérations CRUD et requêtes complexes
 // ========================================
 
-import { 
+// Firebase n'est pas chargé comme module ES6, utiliser l'objet global
+const { 
     collection, 
     doc, 
     getDoc, 
@@ -25,9 +26,10 @@ import {
     arrayUnion,
     arrayRemove,
     increment
-} from 'firebase/firestore';
+} = firebase.firestore;
 
-import { db } from '../../../src/config/firebase-config.js';
+// Supposer que firebase est déjà initialisé globalement
+const db = firebase.firestore();
 import { subventionsConfig } from './subventions.config.js';
 
 class SubventionsFirestore {
