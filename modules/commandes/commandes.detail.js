@@ -137,7 +137,7 @@ function afficherDetailCommande(commande) {
     // En-tête
     document.getElementById('detailNumCommande').textContent = commande.numeroCommande;
     
-    // Timeline - Détruire l'ancienne si elle existe
+// Timeline - Détruire l'ancienne si elle existe
     if (timelineInstance) {
         try {
             timelineInstance.destroy();
@@ -147,32 +147,34 @@ function afficherDetailCommande(commande) {
         }
     }
     
+    // Récupérer le container .timeline-container
+    const timelineWrapper = document.querySelector('#modalDetailCommande .timeline-container');
+    if (!timelineWrapper) {
+        console.error('❌ Container .timeline-container non trouvé');
+        return;
+    }
+    
+    // IMPORTANT : Recréer le div interne comme dans factures-fournisseurs
+    timelineWrapper.innerHTML = '<div class="timeline" id="timeline-detail"></div>';
+    
     // Préparer les items pour la timeline détail
     const timelineItems = prepareTimelineItems(commande);
     
-    // Créer la timeline
-    const timelineContainer = document.querySelector('#modalDetailCommande .timeline-container');
-    if (timelineContainer) {
-        // Vider le container
-        timelineContainer.innerHTML = '';
-        
-        try {
-            timelineInstance = new Timeline({
-                container: timelineContainer,
-                items: timelineItems,
-                orientation: 'horizontal',
-                theme: 'colorful',
-                animated: true,
-                showDates: true,
-                showLabels: true,
-                clickable: false
-            });
-            console.log('✅ Timeline détail créée');
-        } catch (error) {
-            console.error('❌ Erreur création timeline détail:', error);
-        }
-    } else {
-        console.error('❌ Container timeline détail non trouvé');
+    // Créer la nouvelle timeline dans le div enfant
+    try {
+        timelineInstance = new Timeline({
+            container: '#timeline-detail',
+            items: timelineItems,
+            orientation: 'horizontal',
+            theme: 'colorful',
+            animated: true,
+            showDates: true,
+            showLabels: true,
+            clickable: false
+        });
+        console.log('✅ Timeline détail créée avec succès');
+    } catch (error) {
+        console.error('❌ Erreur création timeline détail:', error);
     }
     
     // Informations client

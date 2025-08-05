@@ -187,7 +187,7 @@ function afficherEtape(etape) {
         currentStepContent.classList.remove('hidden');
     }
     
-    // DÉTRUIRE l'ancienne timeline si elle existe
+    // Détruire l'ancienne timeline si elle existe
     if (timeline) {
         console.log('🗑️ Destruction timeline existante');
         try {
@@ -198,32 +198,15 @@ function afficherEtape(etape) {
         timeline = null;
     }
     
-    // RECRÉER LE CONTAINER car destroy() le supprime !
-    let timelineContainer = document.querySelector('#modalNouvelleCommande .timeline-container');
+    // Récupérer le container (qui DOIT rester dans le HTML)
+    const timelineContainer = document.querySelector('#modalNouvelleCommande .timeline-container');
     if (!timelineContainer) {
-        console.log('⚠️ Container détruit, recréation...');
-        
-        // Trouver où insérer le nouveau container
-        const modalHeader = document.querySelector('#modalNouvelleCommande .modal-header');
-        const modalBody = document.querySelector('#modalNouvelleCommande .modal-body');
-        
-        if (modalHeader && modalBody) {
-            // Créer un nouveau container
-            timelineContainer = document.createElement('div');
-            timelineContainer.className = 'timeline-container';
-            timelineContainer.style.margin = '20px 0';
-            
-            // L'insérer entre le header et le body
-            modalHeader.parentNode.insertBefore(timelineContainer, modalBody);
-            console.log('✅ Container recréé');
-        } else {
-            console.error('❌ Impossible de recréer le container');
-            return;
-        }
+        console.error('❌ Container .timeline-container non trouvé dans modalNouvelleCommande');
+        return;
     }
     
-    // Vider le container au cas où
-    timelineContainer.innerHTML = '';
+    // IMPORTANT : Vider et recréer le contenu interne comme dans factures
+    timelineContainer.innerHTML = '<div class="timeline" id="timeline-nouvelle-commande"></div>';
     
     // Créer les items avec les bons statuts
     const items = COMMANDES_CONFIG.ETAPES_CREATION.map((etapeData, index) => {
@@ -244,12 +227,12 @@ function afficherEtape(etape) {
         };
     });
     
-    // Créer la nouvelle timeline
+    console.log('📊 Items timeline:', items);
+    
+    // Créer la nouvelle timeline dans le div enfant
     try {
-        console.log('🔄 Création timeline avec items:', items);
-        
         timeline = new Timeline({
-            container: timelineContainer,
+            container: '#timeline-nouvelle-commande',
             items: items,
             orientation: 'horizontal',
             theme: 'colorful',
