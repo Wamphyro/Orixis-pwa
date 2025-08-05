@@ -169,10 +169,25 @@ function afficherEtape(etape) {
     });
     
     // Si la timeline existe déjà, la mettre à jour
-    if (timeline && timeline.updateItems) {
-        timeline.updateItems(items);
-    } else {
-        // Sinon, la créer
+    if (timeline) {
+        console.log('🔄 Mise à jour de la timeline, étape:', etape);
+        console.log('📊 Items:', items);
+        
+        // Vérifier quelle méthode existe
+        if (timeline.updateItems) {
+            timeline.updateItems(items);
+        } else if (timeline.update) {
+            timeline.update(items);
+        } else {
+            // Si aucune méthode de mise à jour, recréer
+            console.log('⚠️ Pas de méthode update, on recrée la timeline');
+            timeline.destroy();
+            timeline = null;
+        }
+    }
+    
+    // Si pas de timeline, la créer
+    if (!timeline) {
         const timelineContainer = document.querySelector('.timeline-container');
         if (timelineContainer) {
             timeline = config.createCommandeTimeline('.timeline-container', items, {
