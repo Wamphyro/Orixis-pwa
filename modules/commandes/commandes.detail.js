@@ -224,9 +224,14 @@ function afficherDetailCommande(commande) {
     
     // Créer la nouvelle timeline
     try {
+        // Debug : vérifier ce qu'on a dans config
+        console.log('🔍 Config disponible:', Object.keys(config));
+        console.log('🔍 createCommandeTimeline existe?', !!config.createCommandeTimeline);
+        
         // Vérifier que createCommandeTimeline existe
         if (!config.createCommandeTimeline) {
-            console.error('❌ createCommandeTimeline non disponible');
+            console.error('❌ createCommandeTimeline non disponible dans config');
+            console.error('❌ Config complet:', config);
             return;
         }
         
@@ -243,6 +248,7 @@ function afficherDetailCommande(commande) {
         console.log('✅ Timeline créée avec succès');
     } catch (error) {
         console.error('❌ Erreur création timeline:', error);
+        console.error('❌ Stack:', error.stack);
     }
     
     // Informations client
