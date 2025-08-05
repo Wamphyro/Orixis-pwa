@@ -6,12 +6,10 @@
 // Configuration et factories pour le module home
 // ========================================
 
-import { 
-    AppHeader,
-    DropdownList,
-    Dialog,
-    notify
-} from '../../src/components/index.js';
+import { AppHeader } from '../../src/components/ui/app-header/app-header.component.js';
+import { DropdownList } from '../../src/components/ui/dropdown-list/dropdown-list.component.js';
+import Dialog from '../../src/components/ui/dialog/dialog.component.js';
+import notify from '../../src/components/ui/notification/notification.component.js';
 
 // ========================================
 // FACTORY : HEADER HOME

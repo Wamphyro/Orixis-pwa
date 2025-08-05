@@ -7,7 +7,6 @@
 // ========================================
 
 import config from './home.config.js';
-import { DropdownList } from '../../src/components/index.js';
 
 // ========================================
 // INITIALISATION HEADER
