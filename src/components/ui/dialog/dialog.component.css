@@ -139,13 +139,44 @@
 
 /* ========================================
    BOUTONS DANS LES DIALOGUES
-   Utilise maintenant les classes de button.css
+   Styles indépendants - Aucune dépendance externe
    ======================================== */
 
-/* Les dialogues utilisent maintenant .btn au lieu de .dialog-btn */
-.dialog-footer .btn {
-    /* Ajustements spécifiques aux dialogues */
+/* Boutons basiques propres au dialog */
+.dialog-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
     min-width: 90px;
+    font-family: inherit;
+}
+
+.dialog-btn.primary {
+    background: #1976d2;
+    color: white;
+}
+
+.dialog-btn.secondary {
+    background: #f5f5f5;
+    color: #424242;
+}
+
+.dialog-btn.danger {
+    background: #d32f2f;
+    color: white;
+}
+
+.dialog-btn:hover {
+    opacity: 0.9;
+}
+
+.dialog-btn:focus {
+    outline: 2px solid #1976d2;
+    outline-offset: 2px;
 }
 
 /* Animations dialog */
