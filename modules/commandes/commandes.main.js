@@ -14,7 +14,16 @@
 // ========================================
 
 import { initFirebase } from '../../src/services/firebase.service.js';
-import { confirmerAction } from '../../src/components/index.js';
+// Supprimer cet import, confirmerAction sera créé localement
+// import { confirmerAction } from '../../src/components/index.js';
+
+// Ajouter après les imports (vers ligne 40)
+async function confirmerAction(options) {
+    return config.Dialog.confirm(
+        options.message || 'Êtes-vous sûr ?',
+        options.titre || 'Confirmation'
+    );
+}
 import { 
     initListeCommandes, 
     chargerDonnees, 

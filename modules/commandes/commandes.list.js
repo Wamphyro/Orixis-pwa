@@ -26,7 +26,19 @@ import {
     genererNumeroCommande,
     formaterPrix
 } from './commandes.data.js';
-import { formatDate as formatDateUtil, Button, StatsCards } from '../../src/components/index.js';
+// Ajouter une fonction locale pour formatDate
+function formatDateUtil(date, format = 'DD/MM/YYYY') {
+    if (!date) return '-';
+    const d = date instanceof Date ? date : new Date(date);
+    
+    if (format === 'DD/MM/YYYY') {
+        return d.toLocaleDateString('fr-FR');
+    }
+    if (format === 'YYYY-MM-DD') {
+        return d.toISOString().split('T')[0];
+    }
+    return d.toLocaleString('fr-FR');
+}
 import config from './commandes.config.js';
 import { state } from './commandes.main.js';
 import { chargerMagasins } from '../../src/services/firebase.service.js';
@@ -382,21 +394,14 @@ async function initFiltres() {
 // ========================================
 
 function initStatsCards() {
-    // 🆕 Utiliser la fonction locale genererConfigStatsCards()
     const cardsConfig = genererConfigStatsCards();
     
-    statsCards = new StatsCards({
-        container: '.commandes-stats',
-        cards: cardsConfig,
-        animated: true,
-        
-        // 🔑 GESTION DU CLIC ICI DANS L'ORCHESTRATEUR
-        onClick: (cardId) => {
-            handleStatsCardClick(cardId);
-        }
-    });
-    
-    console.log('📈 StatsCards créées');
+    // Utiliser la factory de config
+    statsCards = config.createCommandesStatsCards(
+        '.commandes-stats',
+        cardsConfig,
+        (cardId) => handleStatsCardClick(cardId)
+    );
 }
 
 // ========================================

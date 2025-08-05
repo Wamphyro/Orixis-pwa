@@ -75,14 +75,28 @@ function afficherFormulaireImport() {
     // Mettre à jour le footer avec les boutons
     const modalFooter = document.querySelector('#modalImportCSV .modal-footer');
     if (modalFooter) {
-        modalFooter.innerHTML = `
-            <button id="btnAnnulerImport" class="btn btn-ghost btn-pill" onclick="fermerModal('modalImportCSV')">
-                Annuler
-            </button>
-            <button id="btnConfirmerImport" class="btn btn-primary btn-pill" onclick="confirmerImport()" disabled>
-                📥 Importer <span id="btnImportCount"></span>
-            </button>
-        `;
+        // Vider le footer
+        modalFooter.innerHTML = '';
+        
+        // Créer les boutons avec le composant Button
+        const btnAnnuler = config.createButton('cancel', {
+            onClick: () => window.fermerModal('modalImportCSV')
+        });
+        
+        const btnConfirmer = config.createButton('primary', {
+            text: '📥 Importer',
+            disabled: true,
+            onClick: () => window.confirmerImport()
+        });
+        btnConfirmer.getElement().id = 'btnConfirmerImport';
+        
+        // Ajouter le span pour le count
+        const countSpan = document.createElement('span');
+        countSpan.id = 'btnImportCount';
+        btnConfirmer.getElement().appendChild(countSpan);
+        
+        modalFooter.appendChild(btnAnnuler.getElement());
+        modalFooter.appendChild(btnConfirmer.getElement());
     }
     
     // Créer la structure moderne avec les 3 zones

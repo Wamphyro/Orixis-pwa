@@ -9,7 +9,6 @@
 
 import { Button } from '../../src/components/ui/button/button.component.js';
 import { Badge } from '../../src/components/ui/badge/badge.component.js';
-import { COMMANDES_CONFIG } from './commandes.data.js';
 import { AppHeader } from '../../src/components/ui/app-header/app-header.component.js';
 import { DataTable } from '../../src/components/ui/datatable/datatable.component.js';
 import { DataTableFilters } from '../../src/components/ui/datatable-filters/datatable-filters.component.js';
