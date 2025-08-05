@@ -362,16 +362,15 @@ async function initFiltres() {
         (filters) => handleFilterChange(filters)
     );
     
-    // Ajouter le bouton de réinitialisation après les filtres
+    // Remplacer le bouton reset par un composant Button stylisé (comme dans decompte-mutuelle)
     const filtresContainer = document.querySelector('.operations-filters');
     if (filtresContainer) {
-        // Créer le bouton directement en HTML avec les bonnes classes
-        const resetButton = document.createElement('button');
-        resetButton.className = 'btn btn-secondary btn-sm';
-        resetButton.innerHTML = '🔄 Réinitialiser';
-        resetButton.onclick = () => resetFiltres();
+        const styledResetBtn = config.createButton('reset', {
+            onClick: () => resetFiltres()
+        });
         
-        filtresContainer.appendChild(resetButton);
+        // Ajouter le bouton au container
+        filtresContainer.appendChild(styledResetBtn.getElement());
     }
     
     console.log('🔍 Filtres créés avec config locale');
