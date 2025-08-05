@@ -315,7 +315,7 @@ async function initFiltres() {
     // Remplacer le bouton reset par un composant Button stylisé
     const resetBtnElement = filtresDecomptes.getResetButtonElement();
     if (resetBtnElement) {
-        const styledResetBtn = config.Button({
+        const styledResetBtn = new config.Button({
             text: '🔄 Réinitialiser',
             variant: 'secondary',  // Gris neutre
             size: 'sm',
