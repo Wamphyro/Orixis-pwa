@@ -1,41 +1,48 @@
 /* ========================================
-   SUBVENTIONS.CSS - Version simplifiée
+   SUBVENTIONS.CSS - Styles du module subventions
+   Chemin: modules/subventions/ui/subventions.css
+   
+   DESCRIPTION:
+   Styles spécifiques au module subventions
+   Version minimale pour démarrer
    ======================================== */
 
-.subventions-module {
+/* ========================================
+   LAYOUT GÉNÉRAL
+   ======================================== */
+
+/* Container principal après le header */
+.subventions-container {
+    padding-top: 80px; /* Hauteur du header AppHeader */
     min-height: 100vh;
-    background: #f5f5f5;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f5f5f7;
 }
 
-/* Header */
-.subventions-header {
-    background: white;
-    padding: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.subventions-header h1 {
-    margin: 0;
-    font-size: 24px;
-    color: #333;
-}
-
-/* Content */
 .subventions-content {
-    padding: 20px;
-}
-
-.container {
-    max-width: 1200px;
+    padding: 30px;
+    max-width: 1400px;
     margin: 0 auto;
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-/* Table */
+/* Container principal */
+.container {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.container h2 {
+    margin: 0 0 30px 0;
+    font-size: 28px;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+/* ========================================
+   TABLEAU DES DOSSIERS
+   ======================================== */
+
 .table-container {
     overflow-x: auto;
     margin-top: 20px;
@@ -44,79 +51,212 @@
 .table {
     width: 100%;
     border-collapse: collapse;
-}
-
-.table th,
-.table td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #e0e0e0;
+    font-size: 14px;
 }
 
 .table th {
     background: #f8f9fa;
+    padding: 16px;
+    text-align: left;
     font-weight: 600;
     color: #495057;
+    border-bottom: 2px solid #e9ecef;
+    white-space: nowrap;
 }
 
-.table tr:hover {
-    background: #f8f9fa;
+.table td {
+    padding: 16px;
+    border-bottom: 1px solid #f1f3f5;
+    vertical-align: middle;
 }
 
-/* Badge */
+.table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Colonne patient */
+.table td strong {
+    display: block;
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.table td small {
+    color: #6c757d;
+    font-size: 13px;
+}
+
+/* ========================================
+   BADGES STATUTS
+   ======================================== */
+
 .badge {
     display: inline-block;
-    padding: 4px 8px;
+    padding: 4px 12px;
     font-size: 12px;
-    font-weight: 500;
-    border-radius: 4px;
+    font-weight: 600;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.badge-primary { background: #e3f2fd; color: #1976d2; }
-.badge-info { background: #e0f2fe; color: #0284c7; }
-.badge-warning { background: #fff3cd; color: #856404; }
-.badge-success { background: #d4edda; color: #155724; }
-.badge-secondary { background: #e9ecef; color: #6c757d; }
+/* Couleurs des badges par statut */
+.badge-primary { 
+    background: #e7f1ff; 
+    color: #0066cc; 
+}
 
-/* Progress bar */
+.badge-info { 
+    background: #e0f2fe; 
+    color: #0284c7; 
+}
+
+.badge-warning { 
+    background: #fef3c7; 
+    color: #92400e; 
+}
+
+.badge-success { 
+    background: #d1fae5; 
+    color: #065f46; 
+}
+
+.badge-secondary { 
+    background: #f3f4f6; 
+    color: #4b5563; 
+}
+
+/* ========================================
+   BARRES DE PROGRESSION
+   ======================================== */
+
 .progress-bar {
     width: 100%;
     height: 6px;
-    background: #e0e0e0;
+    background: #e5e7eb;
     border-radius: 3px;
-    margin-top: 4px;
+    margin-top: 8px;
     overflow: hidden;
 }
 
 .progress-fill {
     height: 100%;
-    background: #2196f3;
+    background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+    border-radius: 3px;
     transition: width 0.3s ease;
 }
 
-/* Button */
+/* Variante AGEFIPH */
+.progress-fill.agefiph {
+    background: linear-gradient(90deg, #f97316 0%, #ea580c 100%);
+}
+
+/* ========================================
+   BOUTONS D'ACTION
+   ======================================== */
+
 .btn-icon {
-    padding: 6px;
-    border: 1px solid #ddd;
+    width: 36px;
+    height: 36px;
+    border: 1px solid #e5e7eb;
     background: white;
-    border-radius: 4px;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
 }
 
 .btn-icon:hover {
-    background: #f5f5f5;
+    background: #f8f9fa;
+    border-color: #d1d5db;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Ajout dans subventions.css */
+/* ========================================
+   RESPONSIVE
+   ======================================== */
 
-/* Container principal après le header */
-.subventions-container {
-    padding-top: 80px; /* Hauteur du header */
+@media (max-width: 768px) {
+    .subventions-content {
+        padding: 15px;
+    }
+    
+    .container {
+        padding: 20px;
+        border-radius: 10px;
+    }
+    
+    .container h2 {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+    
+    .table {
+        font-size: 13px;
+    }
+    
+    .table th,
+    .table td {
+        padding: 12px 8px;
+    }
+    
+    /* Masquer certaines colonnes sur mobile */
+    .table th:nth-child(5),
+    .table td:nth-child(5) {
+        display: none;
+    }
 }
 
-.subventions-content {
-    padding: 20px;
-    background: #f5f5f5;
-    min-height: calc(100vh - 80px);
+/* ========================================
+   UTILITAIRES
+   ======================================== */
+
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-muted { color: #6c757d; }
+
+.mt-20 { margin-top: 20px; }
+.mb-20 { margin-bottom: 20px; }
+.mt-30 { margin-top: 30px; }
+.mb-30 { margin-bottom: 30px; }
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+/* Animation de chargement de la page */
+.page-loaded .container {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========================================
+   FIX FOUC - Pour les futures modales
+   ======================================== */
+
+.modal {
+    display: none !important;
+}
+
+.modal.active {
+    display: flex !important;
 }
