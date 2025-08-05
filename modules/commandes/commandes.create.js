@@ -65,7 +65,7 @@ let dropdownPack = null;
 let dropdownType = null;
 let dropdownMagasin = null;
 let dropdownMagasinClient = null;
-let stepper = null;
+let timeline = null;
 
 // Exposer l'état pour le module principal
 window.commandeCreateState = { nouvelleCommande };
@@ -151,37 +151,41 @@ function resetNouvelleCommande() {
 function afficherEtape(etape) {
     etapeActuelle = etape;
     
-    // Créer la timeline si elle n'existe pas encore
-    if (!timeline) {
-        const timelineContainer = document.querySelector('.timeline-container');
-        if (timelineContainer) {
-            // Initialiser les items avec le bon statut
-            const items = COMMANDES_CONFIG.ETAPES_CREATION.map((etapeData, index) => ({
-                ...etapeData,
-                status: index === 0 ? 'active' : 'pending'
-            }));
-            
-            timeline = config.createCommandeTimeline('.timeline-container', items, {
-                orientation: 'horizontal',
-                theme: 'colorful',
-                animated: true
-            });
-        }
+    // Créer ou mettre à jour la timeline
+    if (timeline) {
+        timeline.destroy();
     }
     
-    // Mettre à jour le statut de la timeline
-    if (timeline) {
-        const items = COMMANDES_CONFIG.ETAPES_CREATION.map((etapeData, index) => {
-            let status = 'pending';
-            if (index + 1 < etape) status = 'completed';
-            else if (index + 1 === etape) status = 'active';
-            
-            return {
-                ...etapeData,
-                status: status
-            };
+    // Créer les items avec le bon statut
+    const items = COMMANDES_CONFIG.ETAPES_CREATION.map((etapeData, index) => {
+        let status = 'pending';
+        if (index + 1 < etape) status = 'completed';
+        else if (index + 1 === etape) status = 'active';
+        
+        return {
+            id: etapeData.id || `step${index + 1}`,
+            label: etapeData.label,
+            icon: etapeData.icon,
+            status: status
+        };
+    });
+    
+    // Créer la timeline
+    const timelineContainer = document.querySelector('.timeline-container');
+    if (timelineContainer) {
+        timeline = config.createCommandeTimeline('.timeline-container', items, {
+            orientation: 'horizontal',
+            theme: 'colorful',
+            animated: true,
+            clickable: true,
+            onClick: (item, index) => {
+                // Permettre de naviguer uniquement vers les étapes précédentes
+                const targetStep = index + 1;
+                if (targetStep < etapeActuelle) {
+                    afficherEtape(targetStep);
+                }
+            }
         });
-        timeline.updateItems(items);
     }
     
     // Masquer toutes les étapes

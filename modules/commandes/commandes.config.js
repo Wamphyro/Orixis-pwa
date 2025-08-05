@@ -14,7 +14,6 @@ import { DataTable } from '../../src/components/ui/datatable/datatable.component
 import { DataTableFilters } from '../../src/components/ui/datatable-filters/datatable-filters.component.js';
 import { StatsCards } from '../../src/components/ui/stats-cards/stats-cards.component.js';
 import { Timeline } from '../../src/components/ui/timeline/timeline.component.js';
-import { Stepper } from '../../src/components/ui/stepper/stepper.component.js';
 import { DropdownList } from '../../src/components/ui/dropdown-list/dropdown-list.component.js';
 import { SearchDropdown } from '../../src/components/ui/search-dropdown/search-dropdown.component.js';
 import { Modal, modalManager } from '../../src/components/ui/modal/modal.component.js';
@@ -135,17 +134,6 @@ export function createCommandeTimeline(container, items, options = {}) {
         showDates: true,
         showLabels: true,
         clickable: false,
-        ...options
-    });
-}
-
-// ========================================
-// FACTORY : STEPPER COMMANDE
-// ========================================
-
-export function createCommandeStepper(container, options = {}) {
-    return new Stepper({
-        container,
         ...options
     });
 }
