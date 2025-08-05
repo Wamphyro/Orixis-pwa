@@ -13,7 +13,7 @@ import {
     getUtilisateurDetails 
 } from '../../src/services/firebase.service.js';
 
-import { Numpad } from '../../src/components/index.js';
+import Numpad from '../../src/components/ui/numpad/numpad.component.js';
 
 // ========================================
 // VARIABLES GLOBALES
