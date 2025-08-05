@@ -14,7 +14,7 @@
 // ========================================
 
 import { initFirebase } from '../../src/services/firebase.service.js';
-import { confirmerAction } from '../../src/components/index.js';
+import ModalDefaults from '../../src/components/ui/modal/modal.component.js';
 import { 
     initListeCommandes, 
     chargerDonnees, 
