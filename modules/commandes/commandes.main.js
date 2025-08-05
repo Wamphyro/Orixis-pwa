@@ -15,6 +15,7 @@
 
 import { initFirebase } from '../../src/services/firebase.service.js';
 import ModalDefaults from '../../src/components/ui/modal/modal.component.js';
+const confirmerAction = ModalDefaults.confirmerAction;
 import { 
     initListeCommandes, 
     chargerDonnees, 
@@ -237,7 +238,7 @@ function initModales() {
     });
     
     // Ajouter les callbacks spécifiques pour la modal nouvelle commande
-    const modalNouvelleCommande = modalManager.get('modalNouvelleCommande');
+    const modalNouvelleCommande = config.modalManager.get('modalNouvelleCommande');
     if (modalNouvelleCommande) {
         modalNouvelleCommande.options = {
             ...modalNouvelleCommande.options,
