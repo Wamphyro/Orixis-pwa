@@ -7,9 +7,7 @@
 // Gère l'authentification, le routing et l'initialisation
 // ========================================
 
-import { authService } from '../../services/auth.service.js';
-import { navigationService } from '../../services/navigation.service.js';
-import { subventionsConfig } from './subventions.config.js';
+import { subventionsConfig } from '../core/subventions.config.js';
 import { subventionsList } from './subventions.list.js';
 import { subventionsCreate } from './subventions.create.js';
 import { subventionsDetail } from './subventions.detail.js';
@@ -73,27 +71,34 @@ class SubventionsMain {
     }
     
     async checkAuth() {
-        const user = await authService.getCurrentUser();
+        // Pour l'instant, autoriser l'accès
+        // TODO: Implémenter l'authentification avec Firebase
+        return true;
+        
+        /* Code à réactiver avec Firebase :
+        const user = firebase.auth().currentUser;
         if (!user) return false;
         
         // Vérifier les rôles autorisés
         const authorizedRoles = ['admin', 'technicien', 'commercial'];
         return authorizedRoles.includes(user.role);
+        */
     }
     
     async loadPermissions() {
-        const user = await authService.getCurrentUser();
+        // Pour l'instant, donner tous les droits
+        // TODO: Implémenter avec Firebase
         
         this.permissions = {
-            canCreate: ['admin', 'technicien'].includes(user.role),
-            canEdit: ['admin', 'technicien'].includes(user.role),
-            canDelete: user.role === 'admin',
-            canValidate: ['admin', 'technicien'].includes(user.role),
+            canCreate: true,
+            canEdit: true,
+            canDelete: true,
+            canValidate: true,
             canExport: true,
-            userId: user.uid,
-            userName: user.displayName || user.email,
-            userRole: user.role,
-            magasin: user.magasin || '9PAR'
+            userId: 'demo-user',
+            userName: 'Utilisateur Demo',
+            userRole: 'admin',
+            magasin: '9PAR'
         };
     }
     
