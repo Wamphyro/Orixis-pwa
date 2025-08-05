@@ -244,12 +244,33 @@ export function createButton(type, options = {}) {
         }
     };
     
-    const config = configs[type] || configs.primary;
+    const config = { ...configs[type] || configs.primary, ...options };
     
-    return new Button({
-        ...config,
-        ...options
-    });
+    // Créer le bouton directement en HTML
+    const button = document.createElement('button');
+    
+    // Classes
+    const classes = ['btn'];
+    if (config.variant) classes.push(`btn-${config.variant}`);
+    if (config.size) classes.push(`btn-${config.size}`);
+    if (config.pill) classes.push('btn-pill');
+    button.className = classes.join(' ');
+    
+    // Contenu
+    const icon = config.icon ? `<span>${config.icon}</span> ` : '';
+    button.innerHTML = icon + (config.text || '');
+    
+    // Click handler
+    if (config.onClick) {
+        button.addEventListener('click', config.onClick);
+    }
+    
+    // Retourner un objet compatible
+    return {
+        element: button,
+        button: button,
+        destroy: () => button.remove()
+    };
 }
 
 // ========================================
