@@ -87,7 +87,7 @@ export function initCreationCommande() {
 
 export function ouvrirNouvelleCommande() {
     resetNouvelleCommande();
-    afficherEtape(1);
+    // afficherEtape(1) est déjà appelé dans resetNouvelleCommande
     ouvrirModal('modalNouvelleCommande');
 }
 
@@ -106,7 +106,10 @@ function resetNouvelleCommande() {
     
     window.commandeCreateState.nouvelleCommande = nouvelleCommande;
     
-    afficherEtape(1);
+    // Attendre que la modal soit visible pour créer la Timeline
+    setTimeout(() => {
+        afficherEtape(1);
+    }, 100);
     
     const searchContainer = document.querySelector('.client-search');
     if (searchContainer) {
