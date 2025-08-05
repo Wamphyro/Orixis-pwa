@@ -26,7 +26,9 @@ import {
     genererNumeroCommande,
     formaterPrix
 } from './commandes.data.js';
-import { formatDate as formatDateUtil, Button, StatsCards } from '../../src/components/index.js';
+import { formatDate as formatDateUtil } from '../../src/components/index.js';
+import { Button } from '../../src/components/ui/button/button.component.js';
+import { StatsCards } from '../../src/components/ui/stats-cards/stats-cards.component.js';
 import config from './commandes.config.js';
 import { state } from './commandes.main.js';
 import { chargerMagasins } from '../../src/services/firebase.service.js';
