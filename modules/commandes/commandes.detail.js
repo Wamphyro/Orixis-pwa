@@ -75,8 +75,12 @@ export async function voirDetailCommande(commandeId) {
         if (!commande) return;
         
         commandeActuelle = commande;
-        afficherDetailCommande(commande);
         window.modalManager.open('modalDetailCommande');
+        
+        // Attendre que la modal soit ouverte
+        setTimeout(() => {
+            afficherDetailCommande(commande);
+        }, 100);
         
     } catch (error) {
         console.error('Erreur chargement détail:', error);
