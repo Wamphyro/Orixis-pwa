@@ -104,13 +104,13 @@ export const MENU_ITEMS = [
         permissions: ['factures.view'],
         disabled: false
     },
-        {
-        href: '#',
+    {
+        href: '../subventions/subventions.html',  // 🔄 MODIFIÉ : Pointe vers le nouveau module
         icon: '🗃️',
         title: 'Dossiers de subvention',
-        description: 'Gérer les dossiers de subvention client',
-        permissions: ['clients.view'],
-        disabled: true
+        description: 'Gérer les dossiers de subvention MDPH et AGEFIPH',  // 🔄 MODIFIÉ : Description mise à jour
+        permissions: ['subventions.view'],  // 🔄 MODIFIÉ : Permission appropriée
+        disabled: false  // 🔄 MODIFIÉ : Module actif
     },
     {
         href: '#',
@@ -133,18 +133,18 @@ export const MENU_ITEMS = [
         description: 'Numéros et contacts importants'
     },
     {
-        href: '../compte/compte.html',  // 🔄 MODIFIÉ : Pointe vers le nouveau module
-        icon: '👤',  // 🔄 MODIFIÉ : Icône cohérente avec le nouveau module
+        href: '../compte/compte.html',
+        icon: '👤',
         title: 'Mon Compte',
-        description: 'Gérer mon profil, mes groupes et permissions'  // 🔄 MODIFIÉ : Description plus détaillée
+        description: 'Gérer mon profil, mes groupes et permissions'
     },
     {
-        href: '../admin/admin.html',  // 🆕 NOUVEAU : Lien vers la page admin
-        icon: '👑',  // 🆕 NOUVEAU
-        title: 'Administration',  // 🆕 NOUVEAU
-        description: 'Gérer les utilisateurs, groupes et permissions',  // 🆕 NOUVEAU
-        permissions: ['admin.access'],  // 🆕 NOUVEAU : Permission spéciale admin
-        requiresAdmin: true  // 🆕 NOUVEAU : Flag pour vérification admin
+        href: '../admin/admin.html',
+        icon: '👑',
+        title: 'Administration',
+        description: 'Gérer les utilisateurs, groupes et permissions',
+        permissions: ['admin.access'],
+        requiresAdmin: true
     }
 ];
 

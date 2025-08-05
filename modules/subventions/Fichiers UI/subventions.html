@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module Subventions - ORIXIS CRM</title>
+    
+    <!-- Styles globaux -->
+    <link rel="stylesheet" href="/src/styles/main.css">
+    <link rel="stylesheet" href="/src/styles/components.css">
+    
+    <!-- Styles du module -->
+    <link rel="stylesheet" href="/modules/subventions/subventions.css">
+    <link rel="stylesheet" href="/modules/subventions/subventions-print.css" media="print">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+</head>
+<body>
+    <!-- Container principal de l'application -->
+    <div id="app" class="app-container">
+        <!-- Le contenu sera injecté par subventions.main.js -->
+    </div>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage-compat.js"></script>
+    
+    <!-- Configuration Firebase -->
+    <script src="/config/firebase.config.js" type="module"></script>
+    
+    <!-- Services globaux -->
+    <script src="/services/auth.service.js" type="module"></script>
+    <script src="/services/navigation.service.js" type="module"></script>
+    <script src="/services/patients.service.js" type="module"></script>
+    <script src="/services/openai.service.js" type="module"></script>
+    
+    <!-- Composants UI -->
+    <script src="/src/components/index.js" type="module"></script>
+    
+    <!-- Module Subventions -->
+    <script src="/modules/subventions/subventions.main.js" type="module"></script>
+    
+    <!-- Templates pour l'impression -->
+    <script type="text/template" id="print-header-template">
+        <div class="print-header">
+            <div class="print-logo">
+                <img src="/assets/logo.png" alt="Logo">
+            </div>
+            <div class="print-info">
+                <h1>{{title}}</h1>
+                <p>{{subtitle}}</p>
+                <p class="print-date">Édité le {{date}}</p>
+            </div>
+        </div>
+    </script>
+    
+    <script type="text/template" id="print-footer-template">
+        <div class="print-footer">
+            <div class="print-page">Page <span class="page-number"></span></div>
+            <div class="print-legal">
+                Document confidentiel - Ne pas diffuser
+            </div>
+        </div>
+    </script>
+</body>
+</html>

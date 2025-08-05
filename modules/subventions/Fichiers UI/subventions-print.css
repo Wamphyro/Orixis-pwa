@@ -1,0 +1,313 @@
+/* ========================================
+   SUBVENTIONS-PRINT.CSS - Styles d'impression
+   Chemin: modules/subventions/subventions-print.css
+   
+   DESCRIPTION:
+   Styles spécifiques pour l'impression des dossiers
+   ======================================== */
+
+@media print {
+    /* Reset général */
+    * {
+        background: transparent !important;
+        color: black !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+    
+    /* Masquer les éléments non imprimables */
+    .subventions-header,
+    .subventions-breadcrumb,
+    .subventions-sidebar,
+    .header-actions,
+    .btn,
+    .btn-icon,
+    .btn-link,
+    .tabs-nav,
+    .filters-section,
+    .upload-section,
+    .document-actions,
+    .workflow-action-buttons,
+    .workflow-quick-actions,
+    .alerts-filters,
+    .alert-actions,
+    .dropdown,
+    .btn-copy,
+    .btn-preview,
+    .btn-add-doc,
+    .btn-dismiss {
+        display: none !important;
+    }
+    
+    /* Layout d'impression */
+    body {
+        margin: 0;
+        padding: 0;
+        font-size: 11pt;
+        line-height: 1.5;
+    }
+    
+    .subventions-content {
+        padding-top: 0 !important;
+        margin: 0;
+    }
+    
+    /* En-tête d'impression */
+    .print-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #000;
+    }
+    
+    .print-logo img {
+        max-height: 60px;
+    }
+    
+    .print-info {
+        text-align: right;
+    }
+    
+    .print-info h1 {
+        margin: 0 0 5px 0;
+        font-size: 20pt;
+    }
+    
+    .print-date {
+        font-size: 10pt;
+        color: #666 !important;
+    }
+    
+    /* Pied de page */
+    .print-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 10px;
+        border-top: 1px solid #000;
+        font-size: 9pt;
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    /* Numérotation des pages */
+    @page {
+        margin: 2cm;
+        counter-increment: page;
+    }
+    
+    .page-number::after {
+        content: counter(page);
+    }
+    
+    /* Sections */
+    .form-section,
+    .info-card,
+    .component-card,
+    .document-card,
+    .alert-card {
+        page-break-inside: avoid;
+        margin-bottom: 20px;
+        border: 1px solid #000 !important;
+        padding: 15px !important;
+    }
+    
+    /* Titres */
+    h1, h2, h3, h4, h5, h6 {
+        page-break-after: avoid;
+        margin-top: 20px;
+        margin-bottom: 10px;
+    }
+    
+    /* Tableaux */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 15px 0;
+    }
+    
+    th, td {
+        border: 1px solid #000;
+        padding: 8px;
+        text-align: left;
+    }
+    
+    th {
+        background: #f0f0f0 !important;
+        font-weight: bold;
+    }
+    
+    /* Listes */
+    ul, ol {
+        margin: 10px 0;
+        padding-left: 20px;
+    }
+    
+    /* Composants visuels */
+    .progress-bar-container {
+        border: 1px solid #000;
+        height: 20px;
+        margin: 5px 0;
+    }
+    
+    .progress-fill {
+        background: #000 !important;
+        height: 100%;
+    }
+    
+    /* Timeline */
+    .timeline-step {
+        display: inline-block;
+        margin-right: 20px;
+    }
+    
+    .step-icon {
+        display: none;
+    }
+    
+    .step-title {
+        font-weight: bold;
+    }
+    
+    /* Documents */
+    .document-icon {
+        display: none;
+    }
+    
+    .file-item {
+        border: 1px solid #000;
+        margin: 5px 0;
+        padding: 5px;
+    }
+    
+    /* Alertes */
+    .alert {
+        border: 1px solid #000;
+        padding: 10px;
+        margin: 10px 0;
+    }
+    
+    .alert i {
+        display: none;
+    }
+    
+    /* Badges */
+    .badge {
+        border: 1px solid #000;
+        padding: 2px 5px;
+        display: inline-block;
+    }
+    
+    /* Images */
+    img {
+        max-width: 100%;
+        page-break-inside: avoid;
+    }
+    
+    /* Liens */
+    a {
+        text-decoration: underline;
+    }
+    
+    a[href]:after {
+        content: " (" attr(href) ")";
+        font-size: 9pt;
+    }
+    
+    /* Masquer les URLs internes */
+    a[href^="#"]:after,
+    a[href^="javascript:"]:after {
+        content: "";
+    }
+    
+    /* Montants */
+    .amount-large {
+        font-size: 16pt !important;
+        font-weight: bold;
+    }
+    
+    /* Informations patient */
+    .patient-header {
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #000;
+    }
+    
+    .patient-avatar {
+        display: none;
+    }
+    
+    /* Page de garde pour impression complète */
+    .print-cover-page {
+        page-break-after: always;
+        text-align: center;
+        padding-top: 200px;
+    }
+    
+    .print-cover-page h1 {
+        font-size: 24pt;
+        margin-bottom: 20px;
+    }
+    
+    .print-cover-page .cover-info {
+        font-size: 14pt;
+        line-height: 2;
+    }
+    
+    /* Résumé exécutif */
+    .print-summary {
+        page-break-after: always;
+        margin-bottom: 30px;
+    }
+    
+    .print-summary h2 {
+        font-size: 18pt;
+        margin-bottom: 20px;
+    }
+    
+    .summary-table {
+        width: 100%;
+        margin: 20px 0;
+    }
+    
+    .summary-table td {
+        padding: 10px;
+        border-bottom: 1px solid #ccc;
+    }
+    
+    .summary-table td:first-child {
+        font-weight: bold;
+        width: 40%;
+    }
+}
+
+/* Classes utilitaires pour l'impression */
+.print-only {
+    display: none;
+}
+
+@media print {
+    .print-only {
+        display: block !important;
+    }
+    
+    .no-print {
+        display: none !important;
+    }
+}
+
+/* Forcer les sauts de page */
+.page-break {
+    page-break-after: always;
+}
+
+.page-break-before {
+    page-break-before: always;
+}
+
+.avoid-break {
+    page-break-inside: avoid;
+}
