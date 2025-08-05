@@ -207,13 +207,13 @@ export class Timeline {
             content.appendChild(label);
         }
         
-        if (this.options.showDates && item.date) {
+        if (this.options.showDates) {
             const date = document.createElement('div');
             date.className = 'timeline-date';
-            date.textContent = item.date;
+            date.textContent = item.date || '\u00A0'; // Espace insécable si pas de date
             content.appendChild(date);
         }
-        
+                
         // Tooltip si description fournie
         if (item.description) {
             itemEl.setAttribute('title', item.description);

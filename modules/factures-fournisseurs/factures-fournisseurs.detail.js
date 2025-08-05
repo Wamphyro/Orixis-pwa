@@ -200,8 +200,8 @@ function isStatutComplete(facture, statut) {
             // Si déjà payée, alors "à payer" est forcément complété
             return ['payee', 'deja_payee', 'a_pointer', 'pointee'].includes(facture.statut);
         case 'deja_payee':
-            // Complété seulement si on est passé à l'étape suivante
-            return ['a_pointer', 'pointee'].includes(facture.statut);
+            // Complété si on est à cette étape OU après
+            return ['deja_payee', 'a_pointer', 'pointee'].includes(facture.statut);
         case 'payee':
             return facture.dates.paiement !== null || ['a_pointer', 'pointee'].includes(facture.statut);
         case 'a_pointer':
@@ -220,17 +220,17 @@ function getDateStatut(facture, statut) {
         case 'nouvelle':
             return formaterDate(facture.dates.creation, 'complet');
         case 'a_payer':
-            return facture.dates.analyse ? formaterDate(facture.dates.analyse, 'complet') : null;
+            return facture.dates.analyse ? formaterDate(facture.dates.analyse, 'complet') : '';
         case 'deja_payee':
-            return facture.dates.creation ? formaterDate(facture.dates.creation, 'complet') : null;
+            return facture.dates.creation ? formaterDate(facture.dates.creation, 'complet') : '';
         case 'payee':
-            return facture.dates.paiement ? formaterDate(facture.dates.paiement, 'complet') : null;
+            return facture.dates.paiement ? formaterDate(facture.dates.paiement, 'complet') : '';
         case 'a_pointer':
-            return facture.dates.paiement ? formaterDate(facture.dates.paiement, 'complet') : null;
+            return facture.dates.paiement ? formaterDate(facture.dates.paiement, 'complet') : '';
         case 'pointee':
-            return facture.dates.pointage ? formaterDate(facture.dates.pointage, 'complet') : null;
+            return facture.dates.pointage ? formaterDate(facture.dates.pointage, 'complet') : '';
         default:
-            return null;
+            return '';
     }
 }
 
