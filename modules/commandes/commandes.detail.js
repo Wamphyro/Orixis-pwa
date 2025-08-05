@@ -215,14 +215,14 @@ function afficherDetailCommande(commande) {
         return;
     }
     
-    // Recréer le div timeline à l'intérieur
-    timelineWrapper.innerHTML = '<div class="timeline" id="timeline"></div>';
+    // Vider le container (la Timeline créera sa propre structure)
+    timelineWrapper.innerHTML = '';
     
     // Créer la nouvelle timeline
     try {
         // Utiliser createCommandeTimeline au lieu de createOrderTimeline
         const items = prepareTimelineItems(commande);
-        timelineInstance = config.createCommandeTimeline('#timeline', items, {
+        timelineInstance = config.createCommandeTimeline('.timeline-container', items, {
             orientation: 'horizontal',
             theme: 'colorful',
             animated: true,
