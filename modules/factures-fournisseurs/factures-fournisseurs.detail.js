@@ -196,7 +196,7 @@ function isStatutComplete(facture, statut) {
             // Complété si on est à cette étape OU après
             return ['deja_payee', 'a_pointer', 'pointee'].includes(facture.statut);
         case 'payee':
-            return facture.dates.paiement !== null || ['a_pointer', 'pointee'].includes(facture.statut);
+            return facture.dates.paiement !== null || ['deja_payee', 'a_pointer', 'pointee'].includes(facture.statut);
         case 'a_pointer':
             return facture.statut === 'pointee';
         case 'pointee':
