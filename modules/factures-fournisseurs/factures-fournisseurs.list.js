@@ -27,7 +27,11 @@ import {
     getListeFournisseurs,
     mettreAJourFournisseurs
 } from './factures-fournisseurs.data.js';
-import { formatDate as formatDateUtil, Button } from '../../src/components/index.js';
+
+// Imports directs des composants/utilitaires nécessaires
+import { formatDate as formatDateUtil } from '../../src/utils/date.utils.js';
+import { Button } from '../../src/components/ui/button/button.component.js';
+
 import config from './factures-fournisseurs.config.js';
 import { state } from './factures-fournisseurs.main.js';
 import { chargerMagasins } from '../../src/services/firebase.service.js';

@@ -17,24 +17,36 @@
 // - Aucun import direct de composants
 // ========================================
 
-import { 
-    Button,
-    Badge,
-    AppHeader,
-    DataTable,
-    DataTableFilters,
-    StatsCards,
-    Timeline,
-    DropdownList,
-    SearchDropdown,
-    Modal,
-    modalManager,
-    Dialog,
-    notify,
-    DropZone
-} from '../../src/components/index.js';
+// ========================================
+// IMPORTS DIRECTS DES COMPOSANTS UI
+// ========================================
 
-// Import des modules DataTable
+// Composants de base
+import { Button } from '../../src/components/ui/button/button.component.js';
+import { Badge } from '../../src/components/ui/badge/badge.component.js';
+import { AppHeader } from '../../src/components/ui/app-header/app-header.component.js';
+
+// Composants de données
+import { DataTable } from '../../src/components/ui/datatable/datatable.component.js';
+import { DataTableFilters } from '../../src/components/ui/datatable-filters/datatable-filters.component.js';
+import { StatsCards } from '../../src/components/ui/stats-cards/stats-cards.component.js';
+
+// Composants d'affichage
+import { Timeline } from '../../src/components/ui/timeline/timeline.component.js';
+
+// Composants de sélection
+import { DropdownList } from '../../src/components/ui/dropdown-list/dropdown-list.component.js';
+import { SearchDropdown } from '../../src/components/ui/search-dropdown/search-dropdown.component.js';
+
+// Composants de feedback
+import { Modal, modalManager } from '../../src/components/ui/modal/modal.component.js';
+import { Dialog } from '../../src/components/ui/dialog/dialog.component.js';
+import { notify } from '../../src/components/ui/notification/notification.component.js';
+
+// Composants d'upload
+import { DropZone } from '../../src/components/ui/dropzone/dropzone.component.js';
+
+// Modules DataTable
 import { DataTableSort } from '../../src/components/ui/datatable/datatable.sort.js';
 import { DataTableExport } from '../../src/components/ui/datatable/datatable.export.js';
 import { DataTablePagination } from '../../src/components/ui/datatable/datatable.pagination.js';

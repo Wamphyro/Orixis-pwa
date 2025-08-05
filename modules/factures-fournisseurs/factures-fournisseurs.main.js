@@ -34,7 +34,7 @@ import {
     voirDetailFacture
 } from './factures-fournisseurs.detail.js';
 import config from './factures-fournisseurs.config.js';
-import { modalManager } from '../../src/components/index.js';
+import { modalManager } from '../../src/components/ui/modal/modal.component.js';
 
 // ========================================
 // VARIABLES GLOBALES (partagées entre modules)
