@@ -14,7 +14,7 @@
     <meta name="theme-color" content="#667eea">
     
     <!-- ========================================
-         CSS - Ordre de chargement optimisé
+         CSS - Les composants chargent leur CSS eux-mêmes
          ======================================== -->
     
     <!-- 1. Base et layout -->
@@ -23,22 +23,11 @@
     <!-- 2. CSS utilitaires partagés -->
     <link rel="stylesheet" href="../../src/components/ui/common/animation.css">
     <link rel="stylesheet" href="../../src/components/ui/common/form.css">
-    <link rel="stylesheet" href="../../src/components/ui/button/button.css">
 
-    <!-- 3. Composants UI -->
-    <link rel="stylesheet" href="../../src/components/ui/modal/modal.css">
-    <link rel="stylesheet" href="../../src/components/ui/dialog/dialog.css">
-    <link rel="stylesheet" href="../../src/components/ui/notification/notification.css">
-    <link rel="stylesheet" href="../../src/components/ui/dropzone/dropzone.css">
-    <link rel="stylesheet" href="../../src/components/ui/datatable/datatable.css">
-    <link rel="stylesheet" href="../../src/components/ui/datatable-filters/datatable-filters.css">
-    <link rel="stylesheet" href="../../src/components/ui/dropdown-list/dropdown-list.css">
-    <link rel="stylesheet" href="../../src/components/ui/stats-cards/stats-cards.css">
-    <link rel="stylesheet" href="../../src/components/ui/app-header/app-header.css">
-    <link rel="stylesheet" href="../../src/components/ui/badge/badge.css">
-
-    <!-- 4. CSS spécifique au module opérations bancaires -->
+    <!-- 3. CSS spécifique au module opérations bancaires -->
     <link rel="stylesheet" href="./operations-bancaires.css">
+    
+    <!-- Note: Les composants UI chargent leur CSS automatiquement via loadStyles() -->
 </head>
 <body>
     <!-- Container pour le composant AppHeader -->

@@ -33,7 +33,7 @@ import {
 } from './operations-bancaires.create.js';
 import { voirDetailOperation } from './operations-bancaires.detail.js';
 import config from './operations-bancaires.config.js';
-import { modalManager } from '../../src/components/index.js';
+import { modalManager } from '../../src/components/ui/modal/modal.component.js';
 
 // ========================================
 // VARIABLES GLOBALES (partagées entre modules)
