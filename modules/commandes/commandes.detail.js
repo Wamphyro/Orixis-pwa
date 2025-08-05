@@ -235,9 +235,11 @@ function afficherDetailCommande(commande) {
             return;
         }
         
-        // Utiliser createCommandeTimeline au lieu de createOrderTimeline
+        // Préparer les données de la timeline
         const items = prepareTimelineItems(commande);
-        timelineInstance = config.createCommandeTimeline('.timeline-container', items, {
+        
+        // Créer l'instance de Timeline
+        timelineInstance = config.createCommandeTimeline('#timeline', items, {
             orientation: 'horizontal',
             theme: 'colorful',
             animated: true,
@@ -245,6 +247,18 @@ function afficherDetailCommande(commande) {
             showLabels: true,
             clickable: false
         });
+        
+        // IMPORTANT : Rendre la timeline dans le container
+        if (timelineInstance && timelineInstance.render) {
+            const container = document.querySelector('#timeline');
+            if (container) {
+                timelineInstance.render(container);
+                console.log('✅ Timeline rendue dans le DOM');
+            } else {
+                console.error('❌ Container #timeline introuvable');
+            }
+        }
+        
         console.log('✅ Timeline créée avec succès');
     } catch (error) {
         console.error('❌ Erreur création timeline:', error);
