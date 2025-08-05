@@ -154,11 +154,6 @@ function resetNouvelleCommande() {
 function afficherEtape(etape) {
     etapeActuelle = etape;
     
-    // Créer ou mettre à jour la timeline
-    if (timeline) {
-        timeline.destroy();
-    }
-    
     // Créer les items avec le bon statut
     const items = COMMANDES_CONFIG.ETAPES_CREATION.map((etapeData, index) => {
         let status = 'pending';
@@ -173,10 +168,14 @@ function afficherEtape(etape) {
         };
     });
     
-    // Créer la timeline
-    const timelineContainer = document.querySelector('.timeline-container');
-    if (timelineContainer) {
-        timeline = config.createCommandeTimeline('.timeline-container', items, {
+    // Si la timeline existe déjà, la mettre à jour
+    if (timeline && timeline.updateItems) {
+        timeline.updateItems(items);
+    } else {
+        // Sinon, la créer
+        const timelineContainer = document.querySelector('.timeline-container');
+        if (timelineContainer) {
+            timeline = config.createCommandeTimeline('.timeline-container', items, {
             orientation: 'horizontal',
             theme: 'colorful',
             animated: true,
