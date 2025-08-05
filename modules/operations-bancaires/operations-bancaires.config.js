@@ -56,7 +56,8 @@ export function createOperationsHeader(userData) {
         },
         onLogout: async () => {
             console.log('🔴 Bouton déconnexion cliqué !');
-            const confirme = await Dialog.confirm(
+            const dialog = new Dialog();
+            const confirme = await dialog.confirm(
                 'Voulez-vous vraiment vous déconnecter ?',
                 'Déconnexion'
             );
