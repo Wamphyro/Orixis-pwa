@@ -10,7 +10,7 @@
 import { subventionsConfig } from '../core/subventions.config.js';
 import { subventionsFirestore } from '../core/subventions.firestore.js';
 import { subventionsService } from '../core/subventions.service.js';
-import { patientsService } from '../../../src/services/patients.service.js';
+import { clientsService } from '../../../src/services/clients.service.js';
 
 class SubventionsCreate {
     constructor() {
@@ -258,7 +258,7 @@ class SubventionsCreate {
             container: this.elements.searchContainer,
             placeholder: 'Rechercher un patient par nom, prénom ou téléphone...',
             searchFunction: async (term) => {
-                return await patientsService.searchPatients(term);
+                return await clientsService.searchClients(term);
             },
             displayFormat: (patient) => {
                 return `${patient.nom} ${patient.prenom} - ${patient.telephone || 'Pas de téléphone'}`;

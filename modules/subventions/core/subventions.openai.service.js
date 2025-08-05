@@ -7,7 +7,14 @@
 // Extraction d'informations des décisions MDPH/AGEFIPH
 // ========================================
 
-import { openaiService } from '../../../src/services/openai.service.js';
+// import { openaiService } from '../../../src/services/openai.service.js';
+
+// Service OpenAI temporairement désactivé
+const openaiService = {
+    analyzeDocument: async () => ({ error: 'Service OpenAI non disponible' }),
+    analyzeMultipleDocuments: async () => ({ error: 'Service OpenAI non disponible' }),
+    complete: async () => ({ error: 'Service OpenAI non disponible' })
+};
 import { subventionsConfig } from './subventions.config.js';
 
 class SubventionsOpenAIService {
