@@ -22,7 +22,6 @@ import {
 } from './commandes.data.js';
 import config from './commandes.config.js';
 import { ouvrirModal, afficherSucces, afficherErreur } from './commandes.main.js';
-import Dialog from '../../src/components/ui/dialog/dialog.component.js';
 import { chargerDonnees } from './commandes.list.js';
 
 // MAINTENANT LES FONCTIONS (APRÈS TOUS LES IMPORTS)
@@ -272,27 +271,27 @@ async function validerEtape(etape) {
     switch (etape) {
         case 1:
             if (!nouvelleCommande.clientId) {
-                await Dialog.alert('Veuillez ajouter au moins un produit', 'Attention');
+                await config.Dialog.alert('Veuillez ajouter au moins un produit', 'Attention');
                 return false;
             }
             break;
         case 2:
             if (nouvelleCommande.produits.length === 0) {
-                await Dialog.alert('Veuillez sélectionner un client', 'Attention');
+                await config.Dialog.alert('Veuillez sélectionner un client', 'Attention');
                 return false;
             }
             break;
         case 3:
             if (!nouvelleCommande.typePreparation) {
-                await Dialog.alert('Veuillez sélectionner un type de préparation', 'Attention');
+                await config.Dialog.alert('Veuillez sélectionner un type de préparation', 'Attention');
                 return false;
             }
             if (!nouvelleCommande.magasinLivraison) {
-                await Dialog.alert('Veuillez sélectionner un magasin de livraison', 'Attention');
+                await config.Dialog.alert('Veuillez sélectionner un magasin de livraison', 'Attention');
                 return false;
             }
             if (!document.getElementById('dateLivraison').value) {
-                await Dialog.alert('Veuillez sélectionner une date de livraison', 'Attention');
+                await config.Dialog.alert('Veuillez sélectionner une date de livraison', 'Attention');
                 return false;
             }
             break;
@@ -487,7 +486,7 @@ export async function creerNouveauClient() {
         
     } catch (error) {
         console.error('Erreur création client:', error);
-        await Dialog.error('Erreur lors de la création du client: ' + error.message);
+        await config.Dialog.error('Erreur lors de la création du client: ' + error.message);
     }
 }
 
