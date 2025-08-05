@@ -187,7 +187,7 @@ function afficherEtape(etape) {
         currentStepContent.classList.remove('hidden');
     }
     
-    // DÉTRUIRE complètement l'ancienne timeline
+    // DÉTRUIRE l'ancienne timeline si elle existe
     if (timeline) {
         console.log('🗑️ Destruction timeline existante');
         try {
@@ -198,76 +198,79 @@ function afficherEtape(etape) {
         timeline = null;
     }
     
-    // Récupérer le container
-    const timelineContainer = document.querySelector('#modalNouvelleCommande .timeline-container');
+    // RECRÉER LE CONTAINER car destroy() le supprime !
+    let timelineContainer = document.querySelector('#modalNouvelleCommande .timeline-container');
     if (!timelineContainer) {
-        console.error('❌ Container timeline introuvable');
-        return;
+        console.log('⚠️ Container détruit, recréation...');
+        
+        // Trouver où insérer le nouveau container
+        const modalHeader = document.querySelector('#modalNouvelleCommande .modal-header');
+        const modalBody = document.querySelector('#modalNouvelleCommande .modal-body');
+        
+        if (modalHeader && modalBody) {
+            // Créer un nouveau container
+            timelineContainer = document.createElement('div');
+            timelineContainer.className = 'timeline-container';
+            timelineContainer.style.margin = '20px 0';
+            
+            // L'insérer entre le header et le body
+            modalHeader.parentNode.insertBefore(timelineContainer, modalBody);
+            console.log('✅ Container recréé');
+        } else {
+            console.error('❌ Impossible de recréer le container');
+            return;
+        }
     }
     
-    // VIDER COMPLÈTEMENT le container
+    // Vider le container au cas où
     timelineContainer.innerHTML = '';
-    timelineContainer.style.opacity = '0';
     
     // Créer les items avec les bons statuts
-    const items = [];
-    for (let i = 0; i < COMMANDES_CONFIG.ETAPES_CREATION.length; i++) {
-        const etapeData = COMMANDES_CONFIG.ETAPES_CREATION[i];
-        const stepNumber = i + 1;
-        
-        // Déterminer le statut
+    const items = COMMANDES_CONFIG.ETAPES_CREATION.map((etapeData, index) => {
+        const stepNumber = index + 1;
         let status = 'pending';
+        
         if (stepNumber < etape) {
             status = 'completed';
         } else if (stepNumber === etape) {
             status = 'active';
         }
         
-        items.push({
+        return {
             id: `step${stepNumber}`,
             label: etapeData.label,
             icon: etapeData.icon,
             status: status
+        };
+    });
+    
+    // Créer la nouvelle timeline
+    try {
+        console.log('🔄 Création timeline avec items:', items);
+        
+        timeline = new Timeline({
+            container: timelineContainer,
+            items: items,
+            orientation: 'horizontal',
+            theme: 'colorful',
+            animated: true,
+            clickable: true,
+            showDates: false,
+            showLabels: true,
+            onClick: (item, index) => {
+                const targetStep = index + 1;
+                if (targetStep < etapeActuelle) {
+                    console.log(`📍 Clic sur étape ${targetStep}`);
+                    afficherEtape(targetStep);
+                }
+            }
         });
         
-        console.log(`  Étape ${stepNumber}: ${etapeData.label} - Status: ${status}`);
+        console.log(`✅ Timeline créée pour étape ${etape}`);
+        
+    } catch (error) {
+        console.error('❌ Erreur création timeline:', error);
     }
-    
-    // ATTENDRE UN PEU puis créer la nouvelle timeline
-    setTimeout(() => {
-        try {
-            console.log('🔄 Création nouvelle timeline avec items:', items);
-            
-            timeline = new Timeline({
-                container: timelineContainer,
-                items: items,
-                orientation: 'horizontal',
-                theme: 'colorful',
-                animated: true,
-                clickable: true,
-                showDates: false,
-                showLabels: true,
-                onClick: (item, index) => {
-                    const targetStep = index + 1;
-                    if (targetStep < etapeActuelle) {
-                        console.log(`📍 Clic sur étape ${targetStep}`);
-                        afficherEtape(targetStep);
-                    }
-                }
-            });
-            
-            // Faire apparaître progressivement
-            timelineContainer.style.transition = 'opacity 0.3s';
-            timelineContainer.style.opacity = '1';
-            
-            console.log(`✅ Timeline créée pour étape ${etape}`);
-            
-        } catch (error) {
-            console.error('❌ Erreur création timeline:', error);
-            // En cas d'erreur, rendre visible quand même
-            timelineContainer.style.opacity = '1';
-        }
-    }, 150); // Attendre 150ms pour être sûr
     
     // Gérer les boutons
     const btnPrev = document.getElementById('btnPrevStep');
