@@ -75,11 +75,17 @@ export class DelayTracker {
     
     loadStyles() {
         if (!document.getElementById('delay-tracker-styles')) {
+            // ✅ NOUVELLE MÉTHODE : Chemin dynamique basé sur l'emplacement du JS
+            const componentUrl = new URL(import.meta.url).href;
+            const cssUrl = componentUrl.replace('.js', '.css');
+            
             const link = document.createElement('link');
             link.id = 'delay-tracker-styles';
             link.rel = 'stylesheet';
-            link.href = '/src/components/ui/delay-tracker/delay-tracker.css';
+            link.href = cssUrl;
             document.head.appendChild(link);
+            
+            console.log('📦 DelayTracker styles chargés depuis:', cssUrl);
         }
     }
     

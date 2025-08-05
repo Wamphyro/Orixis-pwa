@@ -97,14 +97,18 @@ export class StatsCards {
             const styleId = 'stats-cards-styles';
             
             if (!document.getElementById(styleId)) {
+                // ✅ NOUVELLE MÉTHODE : Chemin dynamique
+                const componentUrl = new URL(import.meta.url).href;
+                const cssUrl = componentUrl.replace('.js', '.css');
+                
                 const link = document.createElement('link');
                 link.id = styleId;
                 link.rel = 'stylesheet';
-                link.href = '../../src/components/ui/stats-cards/stats-cards.css';
+                link.href = cssUrl;
                 
                 // Attendre que le CSS soit chargé
                 link.onload = () => {
-                    console.log('📦 CSS StatsCards chargé');
+                    console.log('📦 CSS StatsCards chargé depuis:', cssUrl);
                     resolve();
                 };
                 

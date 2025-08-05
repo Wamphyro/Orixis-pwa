@@ -69,14 +69,18 @@ export class NotificationManager {
             return;
         }
         
+        // ✅ NOUVELLE MÉTHODE : Chemin dynamique basé sur l'emplacement du JS
+        const componentUrl = new URL(import.meta.url).href;
+        const cssUrl = componentUrl.replace('.js', '.css');
+        
         // Créer le lien vers le fichier CSS
         const link = document.createElement('link');
         link.id = 'notification-styles';
         link.rel = 'stylesheet';
-        link.href = '../../src/components/ui/notification/notification.css';
+        link.href = cssUrl;
         document.head.appendChild(link);
         
-        console.log('📦 Notification styles chargés');
+        console.log('📦 Notification styles chargés depuis:', cssUrl);
     }
     
     // ========================================

@@ -156,11 +156,16 @@ export class Stepper {
     loadStyles() {
         const existingLink = document.querySelector('link[href*="stepper.css"]');
         if (!existingLink) {
+            // ✅ NOUVELLE MÉTHODE : Chemin dynamique
+            const componentUrl = new URL(import.meta.url).href;
+            const cssUrl = componentUrl.replace('.js', '.css');
+            
             const link = document.createElement('link');
             link.rel = 'stylesheet';
-            link.href = '../../src/components/ui/stepper/stepper.css';
+            link.href = cssUrl;
             document.head.appendChild(link);
-            console.log('📦 CSS Stepper chargé');
+            
+            console.log('📦 CSS Stepper chargé depuis:', cssUrl);
         }
     }
     

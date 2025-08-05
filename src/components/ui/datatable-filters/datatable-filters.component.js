@@ -72,6 +72,9 @@ export class DataTableFilters {
     // ========================================
     
     init() {
+    // Charger les styles
+        this.loadStyles();
+        
         // 🔑 DÉFINIR LES TYPES APRÈS QUE LES MÉTHODES EXISTENT
         this.setupFilterTypes();
         
@@ -98,6 +101,25 @@ export class DataTableFilters {
         
         console.log('✅ DataTableFilters initialisé:', this.id, 
             this.config.DropdownClass ? 'avec DropdownList' : 'sans DropdownList');
+    }
+
+    /**
+     * Charger les styles du composant
+     */
+    loadStyles() {
+        if (!document.getElementById('datatable-filters-styles')) {
+            // ✅ NOUVELLE MÉTHODE : Chemin dynamique basé sur l'emplacement du JS
+            const componentUrl = new URL(import.meta.url).href;
+            const cssUrl = componentUrl.replace('.js', '.css');
+            
+            const link = document.createElement('link');
+            link.id = 'datatable-filters-styles';
+            link.rel = 'stylesheet';
+            link.href = cssUrl;
+            document.head.appendChild(link);
+            
+            console.log('📦 DataTableFilters styles chargés depuis:', cssUrl);
+        }
     }
     
     /**

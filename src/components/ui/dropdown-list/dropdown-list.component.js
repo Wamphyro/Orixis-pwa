@@ -152,14 +152,18 @@ export class DropdownList {
             return;
         }
         
+        // ✅ NOUVELLE MÉTHODE : Chemin dynamique
+        const componentUrl = new URL(import.meta.url).href;
+        const cssUrl = componentUrl.replace('.js', '.css');
+        
         // Créer le lien vers le CSS
         const link = document.createElement('link');
         link.id = 'dropdown-list-styles';
         link.rel = 'stylesheet';
-        link.href = '../../src/components/ui/dropdown-list/dropdown-list.css';
+        link.href = cssUrl;
         document.head.appendChild(link);
         
-        console.log('📦 DropdownList styles chargés');
+        console.log('📦 DropdownList styles chargés depuis:', cssUrl);
     }
     
     initFromSelect() {

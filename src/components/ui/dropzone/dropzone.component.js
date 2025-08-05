@@ -108,13 +108,17 @@ export class DropZone {
             return;
         }
         
+        // ✅ NOUVELLE MÉTHODE : Chemin dynamique
+        const componentUrl = new URL(import.meta.url).href;
+        const cssUrl = componentUrl.replace('.js', '.css');
+        
         const link = document.createElement('link');
         link.id = 'dropzone-styles';
         link.rel = 'stylesheet';
-        link.href = '../../src/components/ui/dropzone/dropzone.css';
+        link.href = cssUrl;
         document.head.appendChild(link);
         
-        console.log('📦 DropZone styles chargés');
+        console.log('📦 DropZone styles chargés depuis:', cssUrl);
     }
     
     // ========================================

@@ -68,11 +68,17 @@ export class ProgressOverview {
     
     loadStyles() {
         if (!document.getElementById('progress-overview-styles')) {
+            // ✅ NOUVELLE MÉTHODE : Chemin dynamique
+            const componentUrl = new URL(import.meta.url).href;
+            const cssUrl = componentUrl.replace('.js', '.css');
+            
             const link = document.createElement('link');
             link.id = 'progress-overview-styles';
             link.rel = 'stylesheet';
-            link.href = '/src/components/ui/progress-overview/progress-overview.css';
+            link.href = cssUrl;
             document.head.appendChild(link);
+            
+            console.log('📦 ProgressOverview styles chargés depuis:', cssUrl);
         }
     }
     

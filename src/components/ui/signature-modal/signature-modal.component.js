@@ -80,11 +80,17 @@ export class SignatureModal {
     
     loadStyles() {
         if (!document.getElementById('signature-modal-styles')) {
+            // ✅ NOUVELLE MÉTHODE : Chemin dynamique basé sur l'emplacement du JS
+            const componentUrl = new URL(import.meta.url).href;
+            const cssUrl = componentUrl.replace('.js', '.css');
+            
             const link = document.createElement('link');
             link.id = 'signature-modal-styles';
             link.rel = 'stylesheet';
-            link.href = '/src/components/ui/signature-modal/signature-modal.css';
+            link.href = cssUrl;
             document.head.appendChild(link);
+            
+            console.log('📦 SignatureModal styles chargés depuis:', cssUrl);
         }
     }
     

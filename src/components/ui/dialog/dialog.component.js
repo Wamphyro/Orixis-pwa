@@ -71,14 +71,17 @@ export class Dialog {
             return;
         }
         
-        // Créer le lien vers le fichier CSS
+        // ✅ NOUVELLE MÉTHODE : Chemin dynamique
+        const componentUrl = new URL(import.meta.url).href;
+        const cssUrl = componentUrl.replace('.js', '.css');
+        
         const link = document.createElement('link');
         link.id = 'dialog-styles';
         link.rel = 'stylesheet';
-        link.href = '../../src/components/ui/dialog/dialog.css';
+        link.href = cssUrl;
         document.head.appendChild(link);
         
-        console.log('📦 Dialog styles chargés');
+        console.log('📦 Dialog styles chargés depuis:', cssUrl);
     }
     
     // ========================================

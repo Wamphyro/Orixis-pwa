@@ -59,13 +59,17 @@ export class LoadingOverlay {
         const styleId = 'loading-overlay-styles';
         
         if (!document.getElementById(styleId)) {
+            // ✅ MÊME SYNTAXE QUE LES AUTRES COMPOSANTS
+            const componentUrl = new URL(import.meta.url).href;
+            const cssUrl = componentUrl.replace('.js', '.css');
+            
             const link = document.createElement('link');
             link.id = styleId;
             link.rel = 'stylesheet';
-            link.href = new URL('./loading-overlay.css', import.meta.url).href;
+            link.href = cssUrl;
             document.head.appendChild(link);
             
-            console.log('📦 CSS LoadingOverlay chargé');
+            console.log('📦 LoadingOverlay styles chargés depuis:', cssUrl);
         }
     }
     

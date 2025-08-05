@@ -65,11 +65,17 @@ export class ProgressTimeline {
     
     loadStyles() {
         if (!document.getElementById('progress-timeline-styles')) {
+            // ✅ NOUVELLE MÉTHODE : Chemin dynamique
+            const componentUrl = new URL(import.meta.url).href;
+            const cssUrl = componentUrl.replace('.js', '.css');
+            
             const link = document.createElement('link');
             link.id = 'progress-timeline-styles';
             link.rel = 'stylesheet';
-            link.href = '/src/components/ui/progress-timeline/progress-timeline.css';
+            link.href = cssUrl;
             document.head.appendChild(link);
+            
+            console.log('📦 ProgressTimeline styles chargés depuis:', cssUrl);
         }
     }
     

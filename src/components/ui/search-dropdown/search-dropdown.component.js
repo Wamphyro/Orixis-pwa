@@ -118,14 +118,18 @@ export class SearchDropdown {
             return;
         }
         
+        // ✅ NOUVELLE MÉTHODE : Chemin dynamique
+        const componentUrl = new URL(import.meta.url).href;
+        const cssUrl = componentUrl.replace('.js', '.css');
+        
         // Créer le lien vers le fichier CSS
         const link = document.createElement('link');
         link.id = 'search-dropdown-styles';
         link.rel = 'stylesheet';
-        link.href = '../../src/components/ui/search-dropdown/search-dropdown.css';
+        link.href = cssUrl;
         document.head.appendChild(link);
         
-        console.log('📦 SearchDropdown styles chargés');
+        console.log('📦 SearchDropdown styles chargés depuis:', cssUrl);
     }
     
     createElements() {

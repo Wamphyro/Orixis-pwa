@@ -80,13 +80,17 @@ export class Badge {
         const styleId = 'badge-styles';
         
         if (!document.getElementById(styleId)) {
+            // ✅ MÊME SYNTAXE QUE LES AUTRES COMPOSANTS
+            const componentUrl = new URL(import.meta.url).href;
+            const cssUrl = componentUrl.replace('.js', '.css');
+            
             const link = document.createElement('link');
             link.id = styleId;
             link.rel = 'stylesheet';
-            link.href = new URL('./badge.css', import.meta.url).href;
+            link.href = cssUrl;
             document.head.appendChild(link);
             
-            console.log('📦 Badge styles chargés');
+            console.log('📦 Badge styles chargés depuis:', cssUrl);
         }
     }
     

@@ -156,11 +156,17 @@ export class ProgressBar {
     
     loadStyles() {
         if (!document.getElementById('progress-bar-styles')) {
+            // ✅ NOUVELLE MÉTHODE : Chemin dynamique
+            const componentUrl = new URL(import.meta.url).href;
+            const cssUrl = componentUrl.replace('.js', '.css');
+            
             const link = document.createElement('link');
             link.id = 'progress-bar-styles';
             link.rel = 'stylesheet';
-            link.href = '../../src/components/ui/progress-bar/progress-bar.css';
+            link.href = cssUrl;
             document.head.appendChild(link);
+            
+            console.log('📦 ProgressBar styles chargés depuis:', cssUrl);
         }
     }
     

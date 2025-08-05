@@ -141,6 +141,9 @@ export class DataTable {
     // ========================================
     
     init() {
+        // Charger les styles
+        this.loadStyles();
+        
         // Vérifier le container
         if (typeof this.config.container === 'string') {
             this.elements.container = document.querySelector(this.config.container);
@@ -165,6 +168,27 @@ export class DataTable {
         }
         
         console.log('✅ DataTable initialisé:', this.id);
+    }
+
+    /**
+     * Charger les styles du composant
+     */
+    loadStyles() {
+        const styleId = 'datatable-styles';
+        
+        if (!document.getElementById(styleId)) {
+            // ✅ NOUVELLE MÉTHODE : Chemin dynamique basé sur l'emplacement du JS
+            const componentUrl = new URL(import.meta.url).href;
+            const cssUrl = componentUrl.replace('.js', '.css');
+            
+            const link = document.createElement('link');
+            link.id = styleId;
+            link.rel = 'stylesheet';
+            link.href = cssUrl;
+            document.head.appendChild(link);
+            
+            console.log('📦 DataTable styles chargés depuis:', cssUrl);
+        }
     }
     
     /**

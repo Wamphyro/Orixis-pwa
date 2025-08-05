@@ -86,14 +86,18 @@ export class Modal {
             return;
         }
         
+        // ✅ NOUVELLE MÉTHODE : Chemin dynamique
+        const componentUrl = new URL(import.meta.url).href;
+        const cssUrl = componentUrl.replace('.js', '.css');
+        
         // Créer le lien vers le fichier CSS
         const link = document.createElement('link');
         link.id = 'modal-styles';
         link.rel = 'stylesheet';
-        link.href = '../../src/components/ui/modal/modal.css';
+        link.href = cssUrl;
         document.head.appendChild(link);
         
-        console.log('📦 Modal styles chargés');
+        console.log('📦 Modal styles chargés depuis:', cssUrl);
     }
     
     // ========================================

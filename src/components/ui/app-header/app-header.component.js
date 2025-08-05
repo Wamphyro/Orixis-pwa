@@ -143,16 +143,17 @@ export class AppHeader {
         const styleId = 'app-header-styles';
         
         if (!document.getElementById(styleId)) {
+            // ✅ NOUVELLE MÉTHODE : Chemin dynamique basé sur l'emplacement du JS
+            const componentUrl = new URL(import.meta.url).href;
+            const cssUrl = componentUrl.replace('.js', '.css');
+            
             const link = document.createElement('link');
             link.id = styleId;
             link.rel = 'stylesheet';
-            
-            // Utiliser import.meta.url pour un chemin relatif au composant
-            link.href = new URL('./app-header.css', import.meta.url).href;
-            
+            link.href = cssUrl;
             document.head.appendChild(link);
             
-            console.log('📦 CSS AppHeader chargé');
+            console.log('📦 AppHeader styles chargés depuis:', cssUrl);
         }
     }
     

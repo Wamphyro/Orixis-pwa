@@ -126,11 +126,17 @@ export class Button {
         const styleId = 'button-component-styles';
         
         if (!document.getElementById(styleId)) {
+            // ✅ NOUVELLE MÉTHODE : Chemin dynamique basé sur l'emplacement du JS
+            const componentUrl = new URL(import.meta.url).href;
+            const cssUrl = componentUrl.replace('.js', '.css');
+            
             const link = document.createElement('link');
             link.id = styleId;
             link.rel = 'stylesheet';
-            link.href = '../../src/components/ui/button/button.css';
+            link.href = cssUrl;
             document.head.appendChild(link);
+            
+            console.log('📦 Button styles chargés depuis:', cssUrl);
         }
     }
     
