@@ -105,12 +105,12 @@ export const MENU_ITEMS = [
         disabled: false
     },
     {
-        href: '../subventions/subventions.html',  // 🔄 MODIFIÉ : Pointe vers le nouveau module
+        href: '../subventions/ui/subventions.html',  // ✅ CHEMIN CORRECT
         icon: '🗃️',
         title: 'Dossiers de subvention',
-        description: 'Gérer les dossiers de subvention MDPH et AGEFIPH',  // 🔄 MODIFIÉ : Description mise à jour
-        permissions: ['subventions.view'],  // 🔄 MODIFIÉ : Permission appropriée
-        disabled: false  // 🔄 MODIFIÉ : Module actif
+        description: 'Gérer les dossiers de subvention MDPH et AGEFIPH',
+        permissions: ['subventions.view'],
+        disabled: false
     },
     {
         href: '#',
