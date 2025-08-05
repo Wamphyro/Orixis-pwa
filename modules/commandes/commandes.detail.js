@@ -24,8 +24,8 @@ import {
 } from './commandes.data.js';
 import './commandes.print.js'; // Import du module d'impression
 import config from './commandes.config.js';
-import { createOrderTimeline } from '../../src/components/ui/timeline/timeline.component.js';
 import { chargerDonnees } from './commandes.list.js';
+// Suppression de l'import createOrderTimeline - on utilisera config
 import { afficherSucces, afficherErreur } from './commandes.main.js';
 
 function genererOptionsUrgence() {
@@ -98,19 +98,26 @@ function afficherDetailCommande(commande) {
         timelineInstance = null;
     }
     
-    // Recréer le container timeline car destroy() le supprime
-    const timelineWrapper = document.querySelector('.timeline-container');
+    // Récupérer ou recréer le container timeline
+    let timelineWrapper = document.querySelector('#modalDetailCommande .timeline-container');
     if (!timelineWrapper) {
         console.error('❌ Container .timeline-container non trouvé');
         return;
     }
+
+    // Nettoyer et préparer le container
+    timelineWrapper.innerHTML = '';
+
+    // Créer le div timeline à l'intérieur
+    const timelineDiv = document.createElement('div');
+    timelineDiv.className = 'timeline';
+    timelineDiv.id = 'timeline';
+    timelineWrapper.appendChild(timelineDiv);
     
-    // Recréer le div timeline à l'intérieur
-    timelineWrapper.innerHTML = '<div class="timeline" id="timeline"></div>';
-    
-    // Créer la nouvelle timeline
+    // Créer la nouvelle timeline avec la config
     try {
-        timelineInstance = createOrderTimeline('#timeline', commande, {
+        // Utiliser la même approche que create.js
+        timelineInstance = config.createOrderTimeline('#timeline', commande, {
             orientation: 'horizontal',
             theme: 'colorful',
             animated: true,
@@ -118,9 +125,9 @@ function afficherDetailCommande(commande) {
             showLabels: true,
             clickable: false
         });
-        console.log('✅ Timeline créée avec succès');
+        console.log('✅ Timeline détail créée avec succès');
     } catch (error) {
-        console.error('❌ Erreur création timeline:', error);
+        console.error('❌ Erreur création timeline détail:', error);
     }
     
     // Informations client
