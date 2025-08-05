@@ -151,18 +151,13 @@
     gap: 10px;
 }
 
-/* Buttons */
+/* Buttons - Structure uniquement, pas de style visuel */
 .signature-btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
+    /* Retirer tous les styles visuels */
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    /* L'orchestrateur appliquera padding, border, colors, etc. */
 }
 
 .signature-btn:disabled {
@@ -170,32 +165,10 @@
     cursor: not-allowed;
 }
 
-.signature-btn-clear {
-    background: #f3f4f6;
-    color: #374151;
-}
-
-.signature-btn-clear:hover:not(:disabled) {
-    background: #e5e7eb;
-}
-
-.signature-btn-cancel {
-    background: #f3f4f6;
-    color: #374151;
-}
-
-.signature-btn-cancel:hover {
-    background: #e5e7eb;
-}
-
-.signature-btn-confirm {
-    background: #10b981;
-    color: white;
-}
-
-.signature-btn-confirm:hover:not(:disabled) {
-    background: #059669;
-}
+/* Classes pour identification uniquement */
+.signature-btn-clear {}
+.signature-btn-cancel {}
+.signature-btn-confirm {}
 
 /* Animations */
 @keyframes shake {
