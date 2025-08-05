@@ -224,6 +224,12 @@ function afficherDetailCommande(commande) {
     
     // Créer la nouvelle timeline
     try {
+        // Vérifier que createCommandeTimeline existe
+        if (!config.createCommandeTimeline) {
+            console.error('❌ createCommandeTimeline non disponible');
+            return;
+        }
+        
         // Utiliser createCommandeTimeline au lieu de createOrderTimeline
         const items = prepareTimelineItems(commande);
         timelineInstance = config.createCommandeTimeline('.timeline-container', items, {

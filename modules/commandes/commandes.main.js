@@ -152,6 +152,13 @@ async function initUIComponents() {
         // selon la nouvelle architecture où l'orchestrateur contrôle toute l'UI
         console.log('📊 Stats cards seront initialisées par commandes.list.js');
         
+        // 3. IMPORTANT: S'assurer que Timeline est bien initialisée dans config
+        if (!config.createCommandeTimeline) {
+            console.error('❌ createCommandeTimeline non disponible dans config');
+            // Charger Timeline si nécessaire
+            await config.initializeTimeline();
+        }
+        
         console.log('🎨 Composants UI initialisés avec magasin:', userData.store);
         
     } catch (error) {
