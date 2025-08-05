@@ -180,73 +180,17 @@ export function createImportDropzone(container, options = {}) {
 
 export function createButton(type, options = {}) {
     const configs = {
-        // Boutons de base
-        primary: {
-            variant: 'primary',
-            pill: true
-        },
-        save: {
-            text: 'Enregistrer',
-            variant: 'success',
-            pill: true,
-            icon: '💾'
-        },
-        cancel: {
-            text: 'Annuler',
-            variant: 'ghost',
-            pill: true
-        },
-        delete: {
-            text: 'Supprimer',
-            variant: 'danger',
-            size: 'sm',
-            icon: '🗑️'
-        },
-        
-        // Boutons d'action
-        action: {
-            variant: 'action',
-            size: 'sm'
-        },
-        view: {
-            variant: 'action',
-            size: 'sm',
-            icon: '👁️'
-        },
-        
-        // Boutons spécifiques opérations
-        importCSV: {
-            text: 'Importer CSV',
-            variant: 'primary',
-            pill: true,
-            icon: '📥'
-        },
-        categoriser: {
-            text: 'Catégoriser',
-            variant: 'info',
-            icon: '🏷️'
-        },
-        rapprocher: {
-            text: 'Pointer',
-            variant: 'success',
-            icon: '✓'
-        },
-        export: {
-            text: 'Exporter',
-            variant: 'secondary',
-            icon: '📤'
-        },
-        reset: {
-            text: 'Réinitialiser',
-            variant: 'secondary',
-            size: 'sm',
-            icon: '🔄'
-        }
+        primary: { variant: 'primary', pill: true },
+        save: { text: 'Enregistrer', variant: 'success', pill: true, icon: '💾' },
+        cancel: { text: 'Annuler', variant: 'ghost', pill: true },
+        delete: { text: 'Supprimer', variant: 'danger', size: 'sm', icon: '🗑️' },
+        action: { variant: 'action', size: 'sm' },
+        reset: { text: 'Réinitialiser', variant: 'secondary', size: 'sm', icon: '🔄' }
     };
     
     const config = { ...configs[type] || configs.primary, ...options };
     
-    // Créer le bouton directement en HTML
+    // Créer le bouton en HTML
     const button = document.createElement('button');
     
     // Classes
@@ -265,10 +209,8 @@ export function createButton(type, options = {}) {
         button.addEventListener('click', config.onClick);
     }
     
-    // Retourner un objet compatible
     return {
         element: button,
-        button: button,
         destroy: () => button.remove()
     };
 }
