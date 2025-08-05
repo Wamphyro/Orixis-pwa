@@ -24,7 +24,6 @@ import {
 } from './commandes.data.js';
 import './commandes.print.js'; // Import du module d'impression
 import config from './commandes.config.js';
-import { createOrderTimeline } from '../../src/components/ui/timeline/timeline.component.js';
 import { chargerDonnees } from './commandes.list.js';
 import { afficherSucces, afficherErreur } from './commandes.main.js';
 
@@ -110,7 +109,7 @@ function afficherDetailCommande(commande) {
     
     // Créer la nouvelle timeline
     try {
-        timelineInstance = createOrderTimeline('#timeline', commande, {
+        timelineInstance = config.createOrderTimeline('#timeline', commande, {
             orientation: 'horizontal',
             theme: 'colorful',
             animated: true,

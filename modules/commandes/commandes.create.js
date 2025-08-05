@@ -188,20 +188,13 @@ function afficherEtape(etape) {
         });
     }
     
-    // Masquer toutes les étapes
+    // Masquer toutes les étapes de contenu
     for (let i = 1; i <= 4; i++) {
         document.getElementById(`stepContent${i}`).classList.add('hidden');
-        document.getElementById(`step${i}`).classList.remove('active', 'completed');
     }
     
     // Afficher l'étape actuelle
     document.getElementById(`stepContent${etape}`).classList.remove('hidden');
-    document.getElementById(`step${etape}`).classList.add('active');
-    
-    // Marquer les étapes précédentes comme complétées
-    for (let i = 1; i < etape; i++) {
-        document.getElementById(`step${i}`).classList.add('completed');
-    }
     
     // Gérer les boutons
     document.getElementById('btnPrevStep').disabled = etape === 1;

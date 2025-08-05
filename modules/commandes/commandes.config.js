@@ -9,6 +9,7 @@
 
 import { Button } from '../../src/components/ui/button/button.component.js';
 import { Badge } from '../../src/components/ui/badge/badge.component.js';
+import { COMMANDES_CONFIG } from './commandes.data.js';
 import { AppHeader } from '../../src/components/ui/app-header/app-header.component.js';
 import { DataTable } from '../../src/components/ui/datatable/datatable.component.js';
 import { DataTableFilters } from '../../src/components/ui/datatable-filters/datatable-filters.component.js';
@@ -134,6 +135,100 @@ export function createCommandeTimeline(container, items, options = {}) {
         showDates: true,
         showLabels: true,
         clickable: false,
+        ...options
+    });
+}
+
+// ========================================
+// FACTORY : TIMELINE ORDRE (pour le détail)
+// ========================================
+
+export function createOrderTimeline(container, commande, options = {}) {
+    // Configuration de la séquence des statuts
+    const sequence = [
+        'nouvelle',
+        'preparation', 
+        'terminee',
+        'expediee',
+        'receptionnee',
+        'livree'
+    ];
+    
+    // Mapping des dates
+    const dateFields = {
+        'nouvelle': 'dates.commande',
+        'preparation': 'dates.preparationDebut',
+        'terminee': 'dates.preparationFin',
+        'expediee': 'dates.expeditionValidee',
+        'receptionnee': 'dates.receptionValidee',
+        'livree': 'dates.livraisonClient'
+    };
+    
+    // Créer les items de la timeline
+    const items = sequence.map(statutKey => {
+        const statutConfig = COMMANDES_CONFIG.STATUTS[statutKey];
+        const dateField = dateFields[statutKey];
+        
+        let status = 'pending';
+        if (commande.statut === statutKey) {
+            status = 'active';
+        } else if (sequence.indexOf(commande.statut) > sequence.indexOf(statutKey)) {
+            status = 'completed';
+        }
+        
+        // Récupérer la date si elle existe
+        let date = null;
+        if (dateField) {
+            const parts = dateField.split('.');
+            let value = commande;
+            for (const part of parts) {
+                value = value?.[part];
+            }
+            if (value) {
+                date = value.toDate ? value.toDate() : new Date(value);
+            }
+        }
+        
+        return {
+            id: statutKey,
+            label: statutConfig.label,
+            icon: statutConfig.icon,
+            status: status,
+            date: date
+        };
+    });
+    
+    // Gérer le cas annulé
+    if (commande.statut === 'annulee') {
+        const indexAnnule = sequence.indexOf(commande.annulation?.etapeAuMomentAnnulation || 'nouvelle');
+        items.forEach((item, index) => {
+            if (index <= indexAnnule) {
+                item.status = 'completed';
+            } else {
+                item.status = 'cancelled';
+            }
+        });
+        
+        // Ajouter l'étape annulée
+        const annuleItem = {
+            id: 'annulee',
+            label: 'Annulée',
+            icon: '❌',
+            status: 'error',
+            date: commande.annulation?.date?.toDate?.() || null
+        };
+        
+        if (indexAnnule >= 0 && indexAnnule < items.length - 1) {
+            items.splice(indexAnnule + 1, 0, annuleItem);
+        } else {
+            items.push(annuleItem);
+        }
+    }
+    
+    // Créer la timeline
+    return new Timeline({
+        container,
+        items,
         ...options
     });
 }
@@ -324,10 +419,11 @@ export default {
     createCommandesFilters,
     createCommandesStatsCards,
     createCommandeTimeline,
+    createOrderTimeline,  // ← AJOUTER ICI
     createDropdown,
     createSearchDropdown,
     createButton,
-    createBadge,  // ← AJOUTER ICI
+    createBadge,
     
     // Configs
     BUTTON_CLASSES,
@@ -336,7 +432,7 @@ export default {
     
     // Components directs (pour injection)
     Button,
-    Badge,  // ← AJOUTER ICI
+    Badge,
     Modal,
     Dialog,
     notify,
