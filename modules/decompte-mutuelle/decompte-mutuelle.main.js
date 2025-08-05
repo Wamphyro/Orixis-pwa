@@ -34,7 +34,7 @@ import {
     voirDetailDecompte
 } from './decompte-mutuelle.detail.js';
 import config from './decompte-mutuelle.config.js';
-import { modalManager } from '../../src/components/index.js';
+import { modalManager } from '../../src/components/ui/modal/modal.component.js';
 
 // ========================================
 // VARIABLES GLOBALES (partagées entre modules)
