@@ -26,7 +26,7 @@
 // const name = await Dialog.prompt('Votre nom ?', 'John');
 // ========================================
 
-export class Dialog {
+class Dialog {
     static instance = null;
     static queue = [];
     static isShowing = false;
