@@ -307,7 +307,7 @@ function initDataTable() {
         export: {
             csv: true,
             excel: true,
-            filename: `commandes_${formatDateUtil(new Date(), 'YYYY-MM-DD')}`,
+            filename: `commandes_${formatDate(new Date(), 'YYYY-MM-DD')}`,
             onBeforeExport: (data) => prepareExportData(data)
         }
     });
@@ -664,11 +664,24 @@ export function resetFiltres() {
 // FORMATTERS ET UTILITAIRES
 // ========================================
 
-function formatDate(timestamp) {
+function formatDate(timestamp, format = 'DD/MM/YYYY') {
     if (!timestamp) return '-';
     
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return formatDateUtil(date, 'DD/MM/YYYY');
+    
+    // Fonction de formatage locale simple
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    
+    switch (format) {
+        case 'DD/MM/YYYY':
+            return `${day}/${month}/${year}`;
+        case 'YYYY-MM-DD':
+            return `${year}-${month}-${day}`;
+        default:
+            return date.toLocaleDateString('fr-FR');
+    }
 }
 
 function afficherUrgence(urgence) {
