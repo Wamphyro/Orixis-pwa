@@ -419,7 +419,7 @@ export default {
     createCommandesFilters,
     createCommandesStatsCards,
     createCommandeTimeline,
-    createOrderTimeline,  // ← AJOUTER ICI
+    createOrderTimeline,
     createDropdown,
     createSearchDropdown,
     createButton,

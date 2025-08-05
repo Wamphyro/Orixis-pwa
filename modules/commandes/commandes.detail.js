@@ -24,6 +24,7 @@ import {
 } from './commandes.data.js';
 import './commandes.print.js'; // Import du module d'impression
 import config from './commandes.config.js';
+window.config = config; // Pour debug
 import { chargerDonnees } from './commandes.list.js';
 import { afficherSucces, afficherErreur } from './commandes.main.js';
 
