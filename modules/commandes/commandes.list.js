@@ -26,8 +26,7 @@ import {
     genererNumeroCommande,
     formaterPrix
 } from './commandes.data.js';
-import { Button } from '../../src/components/ui/button/button.component.js';
-import { StatsCards } from '../../src/components/ui/stats-cards/stats-cards.component.js';
+import { formatDate as formatDateUtil, Button, StatsCards } from '../../src/components/index.js';
 import config from './commandes.config.js';
 import { state } from './commandes.main.js';
 import { chargerMagasins } from '../../src/services/firebase.service.js';
@@ -307,7 +306,7 @@ function initDataTable() {
         export: {
             csv: true,
             excel: true,
-            filename: `commandes_${formatDate(new Date(), 'YYYY-MM-DD')}`,
+            filename: `commandes_${formatDateUtil(new Date(), 'YYYY-MM-DD')}`,
             onBeforeExport: (data) => prepareExportData(data)
         }
     });
@@ -664,24 +663,11 @@ export function resetFiltres() {
 // FORMATTERS ET UTILITAIRES
 // ========================================
 
-function formatDate(timestamp, format = 'DD/MM/YYYY') {
+function formatDate(timestamp) {
     if (!timestamp) return '-';
     
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    
-    // Fonction de formatage locale simple
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    
-    switch (format) {
-        case 'DD/MM/YYYY':
-            return `${day}/${month}/${year}`;
-        case 'YYYY-MM-DD':
-            return `${year}-${month}-${day}`;
-        default:
-            return date.toLocaleDateString('fr-FR');
-    }
+    return formatDateUtil(date, 'DD/MM/YYYY');
 }
 
 function afficherUrgence(urgence) {

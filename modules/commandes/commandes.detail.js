@@ -24,7 +24,7 @@ import {
 } from './commandes.data.js';
 import './commandes.print.js'; // Import du module d'impression
 import config from './commandes.config.js';
-window.config = config; // Pour debug
+import { createOrderTimeline } from '../../src/components/ui/timeline/timeline.component.js';
 import { chargerDonnees } from './commandes.list.js';
 import { afficherSucces, afficherErreur } from './commandes.main.js';
 
@@ -75,127 +75,13 @@ export async function voirDetailCommande(commandeId) {
         if (!commande) return;
         
         commandeActuelle = commande;
+        afficherDetailCommande(commande);
         window.modalManager.open('modalDetailCommande');
-        
-        // Attendre que la modal soit ouverte
-        setTimeout(() => {
-            afficherDetailCommande(commande);
-        }, 100);
         
     } catch (error) {
         console.error('Erreur chargement détail:', error);
         afficherErreur('Erreur lors du chargement des détails');
     }
-}
-
-// ========================================
-// PRÉPARATION DES ITEMS TIMELINE
-// ========================================
-
-function prepareTimelineItems(commande) {
-    const sequence = [
-        'nouvelle',
-        'preparation', 
-        'terminee',
-        'expediee',
-        'receptionnee',
-        'livree'
-    ];
-    
-    const dateFields = {
-        'nouvelle': 'dates.commande',
-        'preparation': 'dates.preparationDebut',
-        'terminee': 'dates.preparationFin',
-        'expediee': 'dates.expeditionValidee',
-        'receptionnee': 'dates.receptionValidee',
-        'livree': 'dates.livraisonClient'
-    };
-    
-    // Créer les items de la timeline
-    const items = sequence.map(statutKey => {
-        const statutConfig = COMMANDES_CONFIG.STATUTS[statutKey];
-        const dateField = dateFields[statutKey];
-        
-        let status = 'pending';
-        if (commande.statut === statutKey) {
-            status = 'active';
-        } else if (sequence.indexOf(commande.statut) > sequence.indexOf(statutKey)) {
-            status = 'completed';
-        }
-        
-        // Récupérer et formater la date
-        let dateFormatee = '';
-        if (dateField) {
-            const parts = dateField.split('.');
-            let value = commande;
-            for (const part of parts) {
-                value = value?.[part];
-            }
-            if (value) {
-                const date = value.toDate ? value.toDate() : new Date(value);
-                // Format français : 05 fév 2025 14:30
-                dateFormatee = date.toLocaleDateString('fr-FR', {
-                    day: '2-digit',
-                    month: 'short',
-                    year: 'numeric'
-                }) + ' ' + date.toLocaleTimeString('fr-FR', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-            }
-        }
-        
-        return {
-            id: statutKey,
-            label: statutConfig.label,
-            icon: statutConfig.icon,
-            status: status,
-            date: dateFormatee // Passer la date formatée en string
-        };
-    });
-    
-    // Gérer le cas annulé
-    if (commande.statut === 'annulee') {
-        const indexAnnule = sequence.indexOf(commande.annulation?.etapeAuMomentAnnulation || 'nouvelle');
-        items.forEach((item, index) => {
-            if (index <= indexAnnule) {
-                item.status = 'completed';
-            } else {
-                item.status = 'cancelled';
-            }
-        });
-        
-        // Formater la date d'annulation
-        let dateAnnulation = '';
-        if (commande.annulation?.date) {
-            const date = commande.annulation.date.toDate ? commande.annulation.date.toDate() : new Date(commande.annulation.date);
-            dateAnnulation = date.toLocaleDateString('fr-FR', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric'
-            }) + ' ' + date.toLocaleTimeString('fr-FR', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        }
-        
-        // Ajouter l'étape annulée
-        const annuleItem = {
-            id: 'annulee',
-            label: 'Annulée',
-            icon: '❌',
-            status: 'error',
-            date: dateAnnulation
-        };
-        
-        if (indexAnnule >= 0 && indexAnnule < items.length - 1) {
-            items.splice(indexAnnule + 1, 0, annuleItem);
-        } else {
-            items.push(annuleItem);
-        }
-    }
-    
-    return items;
 }
 
 // ========================================
@@ -206,7 +92,6 @@ function afficherDetailCommande(commande) {
     // En-tête
     document.getElementById('detailNumCommande').textContent = commande.numeroCommande;
     
-    
     // Timeline - Détruire l'ancienne si elle existe
     if (timelineInstance) {
         timelineInstance.destroy();
@@ -214,37 +99,18 @@ function afficherDetailCommande(commande) {
     }
     
     // Recréer le container timeline car destroy() le supprime
-    const modalDetail = document.getElementById('modalDetailCommande');
-    let timelineWrapper = modalDetail.querySelector('.timeline-container');
+    const timelineWrapper = document.querySelector('.timeline-container');
     if (!timelineWrapper) {
-        // Créer le container s'il n'existe pas
-        const modalBody = modalDetail.querySelector('.modal-body');
-        timelineWrapper = document.createElement('div');
-        timelineWrapper.className = 'timeline-container';
-        modalBody.insertBefore(timelineWrapper, modalBody.firstChild);
+        console.error('❌ Container .timeline-container non trouvé');
+        return;
     }
-
-    // Créer le div timeline à l'intérieur
-    timelineWrapper.innerHTML = '<div id="timeline"></div>';
+    
+    // Recréer le div timeline à l'intérieur
+    timelineWrapper.innerHTML = '<div class="timeline" id="timeline"></div>';
     
     // Créer la nouvelle timeline
     try {
-        // Debug : vérifier ce qu'on a dans config
-        console.log('🔍 Config disponible:', Object.keys(config));
-        console.log('🔍 createCommandeTimeline existe?', !!config.createCommandeTimeline);
-        
-        // Vérifier que createCommandeTimeline existe
-        if (!config.createCommandeTimeline) {
-            console.error('❌ createCommandeTimeline non disponible dans config');
-            console.error('❌ Config complet:', config);
-            return;
-        }
-        
-        // Préparer les données de la timeline
-        const items = prepareTimelineItems(commande);
-        
-        // Créer l'instance de Timeline avec le bon sélecteur
-        timelineInstance = config.createCommandeTimeline('#timeline', items, {
+        timelineInstance = createOrderTimeline('#timeline', commande, {
             orientation: 'horizontal',
             theme: 'colorful',
             animated: true,
@@ -252,14 +118,9 @@ function afficherDetailCommande(commande) {
             showLabels: true,
             clickable: false
         });
-
-        // La Timeline est déjà rendue, pas besoin d'appeler render()
-        console.log('✅ Timeline créée et rendue automatiquement');
-        
         console.log('✅ Timeline créée avec succès');
     } catch (error) {
         console.error('❌ Erreur création timeline:', error);
-        console.error('❌ Stack:', error.stack);
     }
     
     // Informations client

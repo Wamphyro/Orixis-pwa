@@ -17,10 +17,28 @@
          CSS - Ordre de chargement optimisé
          ======================================== -->
     
-    <!-- CSS -->
+    <!-- 1. Base et layout -->
     <link rel="stylesheet" href="../../src/css/main.css">
+
+    <!-- 2. CSS utilitaires partagés -->
     <link rel="stylesheet" href="../../src/components/ui/common/animation.css">
     <link rel="stylesheet" href="../../src/components/ui/common/form.css">
+    <link rel="stylesheet" href="../../src/components/ui/button/button.css">
+
+    <!-- 3. Composants UI (les composants chargent leur CSS automatiquement) -->
+    <link rel="stylesheet" href="../../src/components/ui/modal/modal.css">
+    <link rel="stylesheet" href="../../src/components/ui/dialog/dialog.css">
+    <link rel="stylesheet" href="../../src/components/ui/notification/notification.css">
+    <link rel="stylesheet" href="../../src/components/ui/timeline/timeline.css">
+    <link rel="stylesheet" href="../../src/components/ui/search-dropdown/search-dropdown.css">
+    <link rel="stylesheet" href="../../src/components/ui/stepper/stepper.css">
+    <link rel="stylesheet" href="../../src/components/ui/datatable/datatable.css">
+    <link rel="stylesheet" href="../../src/components/ui/datatable-filters/datatable-filters.css">
+    <link rel="stylesheet" href="../../src/components/ui/dropdown-list/dropdown-list.css">
+    <link rel="stylesheet" href="../../src/components/ui/stats-cards/stats-cards.css">
+    <link rel="stylesheet" href="../../src/components/ui/app-header/app-header.css">
+
+    <!-- 4. CSS spécifique au module commandes (local) -->
     <link rel="stylesheet" href="./commandes.css">
     <link rel="stylesheet" href="./commandes.print.css">
 </head>
@@ -212,7 +230,12 @@
             </div>
             
             <div class="modal-body">
-                <!-- La timeline sera créée dynamiquement par JavaScript -->
+                <!-- Timeline du statut -->
+                <div class="timeline-container">
+                    <div class="timeline" id="timeline">
+                        <!-- Timeline générée dynamiquement par createOrderTimeline() -->
+                    </div>
+                </div>
                 
                 <!-- Sections détail -->
                 <div class="detail-sections">

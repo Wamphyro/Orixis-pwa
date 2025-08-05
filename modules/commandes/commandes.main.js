@@ -14,8 +14,7 @@
 // ========================================
 
 import { initFirebase } from '../../src/services/firebase.service.js';
-import ModalDefaults from '../../src/components/ui/modal/modal.component.js';
-const confirmerAction = ModalDefaults.confirmerAction;
+import { confirmerAction } from '../../src/components/index.js';
 import { 
     initListeCommandes, 
     chargerDonnees, 
@@ -44,6 +43,8 @@ import {
 } from './commandes.detail.js';
 import './commandes.serial.js'; // Import du module de gestion des NS
 import config from './commandes.config.js';
+import { modalManager } from '../../src/components/index.js';
+
 
 // ========================================
 // VARIABLES GLOBALES (partagées entre modules)
@@ -152,13 +153,6 @@ async function initUIComponents() {
         // selon la nouvelle architecture où l'orchestrateur contrôle toute l'UI
         console.log('📊 Stats cards seront initialisées par commandes.list.js');
         
-        // 3. IMPORTANT: S'assurer que Timeline est bien initialisée dans config
-        if (!config.createCommandeTimeline) {
-            console.error('❌ createCommandeTimeline non disponible dans config');
-            // Charger Timeline si nécessaire
-            await config.initializeTimeline();
-        }
-        
         console.log('🎨 Composants UI initialisés avec magasin:', userData.store);
         
     } catch (error) {
@@ -245,7 +239,7 @@ function initModales() {
     });
     
     // Ajouter les callbacks spécifiques pour la modal nouvelle commande
-    const modalNouvelleCommande = config.modalManager.get('modalNouvelleCommande');
+    const modalNouvelleCommande = modalManager.get('modalNouvelleCommande');
     if (modalNouvelleCommande) {
         modalNouvelleCommande.options = {
             ...modalNouvelleCommande.options,
