@@ -13,9 +13,8 @@ import {
     DataTable, 
     SearchDropdown,
     Badge,
-    Card,
-    Toast,
     Dialog,
+    notify,  // Remplace Toast
     ProgressTimeline,
     ProgressOverview,
     DelayTracker,
@@ -60,16 +59,16 @@ export const subventionsConfig = {
             ...config
         }),
         
-        Card: (config) => new Card({
-            shadow: true,
-            padding: 'md',
-            ...config
-        }),
+        // Card retiré car n'existe pas
         
-        Toast: (config) => new Toast({
-            position: 'top-right',
-            duration: 5000,
-            ...config
+        Toast: (config) => ({
+            show: () => {
+                const type = config.type || 'info';
+                const message = config.message || '';
+                const title = config.title || '';
+                notify[type](message, title);
+            },
+            hide: () => {} // notify se cache automatiquement
         }),
         
         Dialog: (config) => new Dialog({
