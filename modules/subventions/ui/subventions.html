@@ -6,15 +6,15 @@
     <title>Module Subventions - ORIXIS CRM</title>
     
     <!-- Styles globaux -->
-    <link rel="stylesheet" href="/src/styles/main.css">
-    <link rel="stylesheet" href="/src/styles/components.css">
+    <link rel="stylesheet" href="../../src/styles/main.css">
+    <link rel="stylesheet" href="../../src/styles/components.css">
     
     <!-- Styles du module -->
-    <link rel="stylesheet" href="/modules/subventions/subventions.css">
-    <link rel="stylesheet" href="/modules/subventions/subventions-print.css" media="print">
+    <link rel="stylesheet" href="./subventions.css">
+    <link rel="stylesheet" href="./subventions-print.css" media="print">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="../../assets/favicon.ico">
 </head>
 <body>
     <!-- Container principal de l'application -->
@@ -29,25 +29,25 @@
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage-compat.js"></script>
     
     <!-- Configuration Firebase -->
-    <script src="/config/firebase.config.js" type="module"></script>
+    <script src="../../config/firebase.config.js" type="module"></script>
     
     <!-- Services globaux -->
-    <script src="/services/auth.service.js" type="module"></script>
-    <script src="/services/navigation.service.js" type="module"></script>
-    <script src="/services/patients.service.js" type="module"></script>
-    <script src="/services/openai.service.js" type="module"></script>
+    <script src="../../services/auth.service.js" type="module"></script>
+    <script src="../../services/navigation.service.js" type="module"></script>
+    <script src="../../services/patients.service.js" type="module"></script>
+    <script src="../../services/openai.service.js" type="module"></script>
     
     <!-- Composants UI -->
-    <script src="/src/components/index.js" type="module"></script>
+    <script src="../../src/components/index.js" type="module"></script>
     
     <!-- Module Subventions -->
-    <script src="/modules/subventions/subventions.main.js" type="module"></script>
+    <script src="./subventions.main.js" type="module"></script>
     
     <!-- Templates pour l'impression -->
     <script type="text/template" id="print-header-template">
         <div class="print-header">
             <div class="print-logo">
-                <img src="/assets/logo.png" alt="Logo">
+                <img src="../../assets/logo.png" alt="Logo">
             </div>
             <div class="print-info">
                 <h1>{{title}}</h1>

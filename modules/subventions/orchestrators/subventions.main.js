@@ -45,7 +45,7 @@ class SubventionsMain {
             // Vérifier l'authentification
             const isAuthenticated = await this.checkAuth();
             if (!isAuthenticated) {
-                window.location.href = '/login';
+                window.location.href = '../../login.html';
                 return;
             }
             
@@ -102,7 +102,7 @@ class SubventionsMain {
             const link = document.createElement('link');
             link.id = 'subventions-styles';
             link.rel = 'stylesheet';
-            link.href = '/modules/subventions/subventions.css';
+            link.href = './subventions.css';
             document.head.appendChild(link);
         }
     }
