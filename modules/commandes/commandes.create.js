@@ -192,9 +192,9 @@ function afficherEtape(etape) {
     
     // Créer la timeline
     if (!timeline) {
-        const timelineContainer = document.querySelector('.timeline-container');
+        const timelineContainer = document.querySelector('#modalNouvelleCommande .timeline-container');
         if (timelineContainer) {
-            timeline = config.createCommandeTimeline('.timeline-container', items, {
+            timeline = config.createCommandeTimeline('#modalNouvelleCommande .timeline-container', items, {
                 orientation: 'horizontal',
                 theme: 'colorful',
                 animated: true,
