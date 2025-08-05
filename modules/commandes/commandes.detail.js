@@ -202,6 +202,12 @@ function afficherDetailCommande(commande) {
     // En-tête
     document.getElementById('detailNumCommande').textContent = commande.numeroCommande;
     
+    // S'assurer que la modal est visible
+    const modal = document.getElementById('modalDetailCommande');
+    if (!modal || modal.style.display === 'none') {
+        console.error('❌ Modal pas encore visible');
+        return;
+    }
     // Timeline - Détruire l'ancienne si elle existe
     if (timelineInstance) {
         timelineInstance.destroy();
