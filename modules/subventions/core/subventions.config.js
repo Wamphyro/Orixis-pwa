@@ -1,8 +1,10 @@
 // ========================================
 // SUBVENTIONS.CONFIG.JS - Configuration minimale
+// Chemin: modules/subventions/core/subventions.config.js
 // ========================================
 
-import { AppHeader } from '../../src/components/index.js';
+// Depuis core/, remonter 3 niveaux pour src/
+import { AppHeader } from '../../../src/components/index.js';
 
 export function createSubventionsHeader(userData) {
     return new AppHeader({
@@ -18,7 +20,7 @@ export function createSubventionsHeader(userData) {
         },
         onLogout: async () => {
             localStorage.removeItem('sav_auth');
-            window.location.href = '../../index.html';
+            window.location.href = '../../../index.html';
         }
     });
 }

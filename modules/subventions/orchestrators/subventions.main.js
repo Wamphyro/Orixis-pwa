@@ -1,8 +1,10 @@
 // ========================================
-// SUBVENTIONS.MAIN.JS - Version avec header
+// SUBVENTIONS.MAIN.JS - Version simplifiée
+// Chemin: modules/subventions/orchestrators/subventions.main.js
 // ========================================
 
-import config from './subventions.config.js';
+// Depuis orchestrators/, aller dans core/
+import config from '../core/subventions.config.js';
 
 class SubventionsMain {
     constructor() {
@@ -15,6 +17,9 @@ class SubventionsMain {
         
         // Créer le header
         this.initHeader();
+        
+        // Ajouter la classe pour les animations
+        document.body.classList.add('page-loaded');
         
         // Rendre la page
         this.renderPage();
@@ -91,7 +96,7 @@ class SubventionsMain {
                         ${dossier.agefiph.statut}
                     </span>
                     <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${dossier.agefiph.progression}%"></div>
+                        <div class="progress-fill agefiph" style="width: ${dossier.agefiph.progression}%"></div>
                     </div>
                 </td>
                 <td>${dossier.montant}€</td>
@@ -115,7 +120,6 @@ class SubventionsMain {
     }
     
     getMockData() {
-        // Même données mock qu'avant
         return [
             {
                 numero: 'SUB-2024-0001',
@@ -133,14 +137,30 @@ class SubventionsMain {
                     progression: 40
                 },
                 montant: 3500
+            },
+            {
+                numero: 'SUB-2024-0002',
+                patient: {
+                    nom: 'DURAND',
+                    prenom: 'Marie',
+                    telephone: '06 98 76 54 32'
+                },
+                mdph: {
+                    statut: 'accord',
+                    progression: 100
+                },
+                agefiph: {
+                    statut: 'depot',
+                    progression: 80
+                },
+                montant: 4200
             }
-            // ... autres données
         ];
     }
 }
 
 // Initialiser au chargement
-document.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('load', () => {
     const app = new SubventionsMain();
     app.init();
 });
