@@ -245,7 +245,7 @@ function afficherDetailCommande(commande) {
         const items = prepareTimelineItems(commande);
         
         // Créer l'instance de Timeline
-        timelineInstance = config.createCommandeTimeline('#timeline', items, {
+            timelineInstance = config.createCommandeTimeline(timelineWrapper, items, {
             orientation: 'horizontal',
             theme: 'colorful',
             animated: true,
