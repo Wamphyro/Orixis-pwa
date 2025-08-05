@@ -29,6 +29,7 @@ import { Modal, modalManager } from '../../src/components/ui/modal/modal.compone
 import { Dialog } from '../../src/components/ui/dialog/dialog.component.js';
 import { notify } from '../../src/components/ui/notification/notification.component.js';
 import { DropZone } from '../../src/components/ui/dropzone/dropzone.component.js';
+import { Button } from '../../src/components/ui/common/button.component.js';
 
 // Import des modules DataTable
 import { DataTableSort } from '../../src/components/ui/datatable/datatable.sort.js';
@@ -399,6 +400,7 @@ export default {
     createImportDropzone,
     createButton,
     createBadge,
+    Button,
     
     // Configs
     BUTTON_CLASSES,
