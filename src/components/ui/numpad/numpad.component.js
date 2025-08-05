@@ -100,21 +100,22 @@ export class Numpad {
     }
     
     loadStyles() {
-        const styleId = 'numpad-styles';
-        
-        if (!document.getElementById(styleId)) {
-            // ✅ NOUVELLE MÉTHODE : Chemin dynamique
-            const componentUrl = new URL(import.meta.url).href;
-            const cssUrl = componentUrl.replace('.js', '.css');
-            
-            const link = document.createElement('link');
-            link.id = styleId;
-            link.rel = 'stylesheet';
-            link.href = cssUrl;
-            document.head.appendChild(link);
-            
-            console.log('📦 CSS Numpad chargé depuis:', cssUrl);
+        // Vérifier si les styles sont déjà chargés
+        if (document.getElementById('numpad-styles')) {
+            return;
         }
+        
+        // ✅ NOUVELLE MÉTHODE : Chemin dynamique basé sur l'emplacement du JS
+        const componentUrl = new URL(import.meta.url).href;
+        const cssUrl = componentUrl.replace('.js', '.css');
+        
+        const link = document.createElement('link');
+        link.id = 'numpad-styles';
+        link.rel = 'stylesheet';
+        link.href = cssUrl;
+        document.head.appendChild(link);
+        
+        console.log('📦 Numpad styles chargés depuis:', cssUrl);
     }
     
     createStructure() {

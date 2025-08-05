@@ -7,6 +7,7 @@ import config from './login.config.js';
 import { authenticateUser, saveAuthentication } from './login.auth.js';
 import { chargerTousLesUtilisateurs } from '../../src/services/firebase.service.js';
 import { state, incrementAttempts, animateError, animateSuccess } from './login.main.js';
+import { Numpad } from '../../src/components/ui/numpad/numpad.component.js';
 
 // ========================================
 // COMPOSANTS UI
@@ -102,16 +103,36 @@ function getIconForRole(role) {
 function initNumpad() {
     const container = document.getElementById('numpadContainer');
     
-    numpad = config.createLoginNumpad(container, {
+    // Utiliser le composant Numpad autonome
+    numpad = new Numpad({
+        title: 'Code d\'accès',
         maxLength: 4,
+        allowDecimal: false,
+        allowNegative: false,
+        autoSubmitLength: 4,
+        showDisplay: false,
+        showCancel: false,
+        showSubmit: false,
+        showClear: true,
+        theme: 'login',
         onInput: (value) => {
             currentPin = value;
             updatePinDisplay(value);
         },
-        onComplete: (value) => {
+        onSubmit: (value) => {
             handlePinSubmit(value);
         }
     });
+    
+    // L'insérer dans le container
+    container.innerHTML = '';
+    numpad.open();
+    
+    // Déplacer le contenu du numpad dans notre container
+    const numpadContent = document.querySelector(`#${numpad.id} .numpad-buttons`);
+    if (numpadContent) {
+        container.appendChild(numpadContent);
+    }
 }
 
 // ========================================
@@ -219,12 +240,12 @@ function handleFailure() {
 
 function resetPin() {
     currentPin = '';
-    if (numpad) numpad.reset();
+    if (numpad) numpad.clear();
     updatePinDisplay('');
 }
 
 function setControlsDisabled(disabled) {
-    // DropdownList utilise disable/enable, pas setEnabled
+    // DropdownList utilise disable/enable
     if (userDropdown) {
         if (disabled) {
             userDropdown.disable();
@@ -232,5 +253,11 @@ function setControlsDisabled(disabled) {
             userDropdown.enable();
         }
     }
-    if (numpad) numpad.setDisabled(disabled);
+    
+    // Le composant Numpad n'a pas de méthode setDisabled
+    // On désactive les boutons directement
+    if (numpad && numpad.elements.container) {
+        const buttons = numpad.elements.container.querySelectorAll('.numpad-btn');
+        buttons.forEach(btn => btn.disabled = disabled);
+    }
 }

@@ -3,10 +3,8 @@
 // Chemin: modules/login/login.config.js
 // ========================================
 
-import { 
-    DropdownList,
-    notify
-} from '../../src/components/index.js';
+import DropdownList from '../../src/components/ui/dropdown-list/dropdown-list.component.js';
+import notify from '../../src/components/ui/notification/notification.component.js';
 
 // ========================================
 // FACTORIES
@@ -23,84 +21,6 @@ export function createUserDropdown(container, options = {}) {
     });
 }
 
-export function createLoginNumpad(container, options = {}) {
-    // Créer le numpad HTML personnalisé
-    const numpadHTML = `
-        <div class="login-numpad-grid">
-            ${[1,2,3,4,5,6,7,8,9].map(n => 
-                `<button type="button" class="login-numpad-btn" data-value="${n}">${n}</button>`
-            ).join('')}
-            <button type="button" class="login-numpad-btn login-numpad-clear" data-action="clear">C</button>
-            <button type="button" class="login-numpad-btn login-numpad-zero" data-value="0">0</button>
-            <button type="button" class="login-numpad-btn login-numpad-delete" data-action="delete">⌫</button>
-        </div>
-    `;
-    
-    container.innerHTML = numpadHTML;
-    
-    // API du numpad
-    const api = {
-        value: '',
-        maxLength: options.maxLength || 4,
-        onInput: options.onInput || null,
-        onComplete: options.onComplete || null,
-        
-        init() {
-            container.addEventListener('click', this.handleClick.bind(this));
-        },
-        
-        handleClick(e) {
-            const btn = e.target.closest('.login-numpad-btn');
-            if (!btn || btn.disabled) return;
-            
-            const value = btn.dataset.value;
-            const action = btn.dataset.action;
-            
-            if (value) {
-                this.inputDigit(value);
-            } else if (action === 'clear') {
-                this.clear();
-            } else if (action === 'delete') {
-                this.backspace();
-            }
-        },
-        
-        inputDigit(digit) {
-            if (this.value.length < this.maxLength) {
-                this.value += digit;
-                if (this.onInput) this.onInput(this.value);
-                
-                if (this.value.length === this.maxLength && this.onComplete) {
-                    this.onComplete(this.value);
-                }
-            }
-        },
-        
-        backspace() {
-            if (this.value.length > 0) {
-                this.value = this.value.slice(0, -1);
-                if (this.onInput) this.onInput(this.value);
-            }
-        },
-        
-        clear() {
-            this.value = '';
-            if (this.onInput) this.onInput(this.value);
-        },
-        
-        setDisabled(disabled) {
-            const buttons = container.querySelectorAll('.login-numpad-btn');
-            buttons.forEach(btn => btn.disabled = disabled);
-        },
-        
-        reset() {
-            this.clear();
-        }
-    };
-    
-    api.init();
-    return api;
-}
 
 // ========================================
 // CONFIGURATION
@@ -131,7 +51,6 @@ export const LOGIN_CONFIG = {
 
 export default {
     createUserDropdown,
-    createLoginNumpad,
     LOGIN_CONFIG,
     notify
 };
