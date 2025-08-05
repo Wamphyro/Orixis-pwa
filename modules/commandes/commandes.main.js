@@ -43,8 +43,6 @@ import {
 } from './commandes.detail.js';
 import './commandes.serial.js'; // Import du module de gestion des NS
 import config from './commandes.config.js';
-import { modalManager } from '../../src/components/index.js';
-
 
 // ========================================
 // VARIABLES GLOBALES (partagées entre modules)
