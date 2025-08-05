@@ -16,6 +16,7 @@ import { db } from '../../src/services/firebase.service.js';
 import { ClientsService } from '../../src/services/clients.service.js';
 import { ProduitsService } from '../../src/services/produits.service.js';
 import { CommandesService } from './commandes.service.js';
+import { Timeline } from '../../src/components/ui/timeline/timeline.component.js';
 import { 
     COMMANDES_CONFIG,
     calculerDelaiLivraison
@@ -172,7 +173,21 @@ function afficherEtape(etape) {
     
     console.log(`📍 Affichage étape ${etape}`);
     
-    // Créer les items avec le bon statut
+    // Masquer toutes les étapes de contenu
+    for (let i = 1; i <= 4; i++) {
+        const stepContent = document.getElementById(`stepContent${i}`);
+        if (stepContent) {
+            stepContent.classList.add('hidden');
+        }
+    }
+    
+    // Afficher l'étape actuelle
+    const currentStepContent = document.getElementById(`stepContent${etape}`);
+    if (currentStepContent) {
+        currentStepContent.classList.remove('hidden');
+    }
+    
+    // Créer les items pour la timeline
     const items = COMMANDES_CONFIG.ETAPES_CREATION.map((etapeData, index) => {
         let status = 'pending';
         if (index + 1 < etape) status = 'completed';
@@ -186,88 +201,47 @@ function afficherEtape(etape) {
         };
     });
     
-    // Vérifier d'abord que le modal existe
-    const modal = document.getElementById('modalNouvelleCommande');
-    if (!modal) {
-        console.error('❌ Modal nouvelle commande introuvable');
-        return;
-    }
-    
-    // Récupérer ou créer le container timeline
-    let timelineContainer = modal.querySelector('.timeline-container');
-    
-    if (!timelineContainer) {
-        console.warn('⚠️ Container timeline manquant, création...');
-        
-        // Créer le container
-        timelineContainer = document.createElement('div');
-        timelineContainer.className = 'timeline-container';
-        timelineContainer.style.margin = '20px 0';
-        
-        // L'insérer après le header
-        const modalHeader = modal.querySelector('.modal-header');
-        if (modalHeader && modalHeader.parentNode) {
-            modalHeader.parentNode.insertBefore(
-                timelineContainer, 
-                modalHeader.nextSibling
-            );
-            console.log('✅ Container timeline créé');
-        } else {
-            console.error('❌ Impossible de créer le container timeline');
-            return;
-        }
-    }
-    
-    // Si timeline existe, la détruire proprement
-    if (timeline) {
-        console.log('🔄 Destruction de l\'ancienne timeline');
-        try {
-            timeline.destroy();
-            timeline = null;
-        } catch (e) {
-            console.warn('⚠️ Erreur lors de la destruction:', e);
-            timeline = null;
+    // Gérer la timeline
+    const timelineContainer = document.querySelector('#modalNouvelleCommande .timeline-container');
+    if (timelineContainer) {
+        // Détruire l'ancienne timeline si elle existe
+        if (timeline) {
+            try {
+                timeline.destroy();
+                timeline = null;
+            } catch (e) {
+                console.warn('Erreur destroy:', e);
+            }
         }
         
         // Vider le container
         timelineContainer.innerHTML = '';
-    }
-    
-    // Créer la nouvelle timeline
-    try {
-        console.log('🚀 Création de la nouvelle timeline...');
-        timeline = config.createCommandeTimeline(timelineContainer, items, {
-            orientation: 'horizontal',
-            theme: 'colorful',
-            animated: true,
-            clickable: true,
-            showDates: false,
-            showLabels: true,
-            onClick: (item, index) => {
-                const targetStep = index + 1;
-                if (targetStep < etapeActuelle) {
-                    console.log(`📍 Navigation vers étape ${targetStep}`);
-                    afficherEtape(targetStep);
+        
+        // Créer la nouvelle timeline DIRECTEMENT
+        try {
+            timeline = new Timeline({
+                container: timelineContainer,
+                items: items,
+                orientation: 'horizontal',
+                theme: 'colorful',
+                animated: true,
+                clickable: true,
+                showDates: false,
+                showLabels: true,
+                onClick: (item, index) => {
+                    const targetStep = index + 1;
+                    if (targetStep < etapeActuelle) {
+                        console.log(`📍 Navigation vers étape ${targetStep}`);
+                        afficherEtape(targetStep);
+                    }
                 }
-            }
-        });
-        console.log('✅ Timeline créée avec succès pour étape', etape);
-    } catch (error) {
-        console.error('❌ Erreur création timeline:', error);
-    }
-    
-    // Masquer toutes les étapes de contenu
-    for (let i = 1; i <= 4; i++) {
-        const stepContent = document.getElementById(`stepContent${i}`);
-        if (stepContent) {
-            stepContent.classList.add('hidden');
+            });
+            console.log('✅ Timeline créée pour étape', etape);
+        } catch (error) {
+            console.error('❌ Erreur création timeline:', error);
         }
-    }
-    
-    // Afficher l'étape actuelle
-    const currentStepContent = document.getElementById(`stepContent${etape}`);
-    if (currentStepContent) {
-        currentStepContent.classList.remove('hidden');
+    } else {
+        console.warn('⚠️ Container timeline introuvable');
     }
     
     // Gérer les boutons
@@ -290,7 +264,7 @@ function afficherEtape(etape) {
             }, 300);
             break;
         case 2:
-            console.log('📍 Arrivée à l\'étape 2 - Chargement des packs');
+            console.log('📍 Étape 2 - Chargement des packs');
             chargerPackTemplates();
             setTimeout(() => {
                 const productSearchContainer = document.querySelector('.product-search');

@@ -19,6 +19,7 @@
 // ========================================
 
 import { CommandesService } from './commandes.service.js';
+import { Timeline } from '../../src/components/ui/timeline/timeline.component.js';
 import { 
     COMMANDES_CONFIG
 } from './commandes.data.js';
@@ -27,6 +28,41 @@ import config from './commandes.config.js';
 import { chargerDonnees } from './commandes.list.js';
 // Suppression de l'import createOrderTimeline - on utilisera config
 import { afficherSucces, afficherErreur } from './commandes.main.js';
+
+// ========================================
+// HELPER : Préparer les items de timeline
+// ========================================
+
+function prepareTimelineItems(commande) {
+    const sequence = ['nouvelle', 'preparation', 'terminee', 'expediee', 'receptionnee', 'livree'];
+    
+    const items = sequence.map(statutKey => {
+        const statutConfig = COMMANDES_CONFIG.STATUTS[statutKey];
+        
+        let status = 'pending';
+        if (commande.statut === statutKey) {
+            status = 'active';
+        } else if (sequence.indexOf(commande.statut) > sequence.indexOf(statutKey)) {
+            status = 'completed';
+        }
+        
+        return {
+            id: statutKey,
+            label: statutConfig.label,
+            icon: statutConfig.icon,
+            status: status
+        };
+    });
+    
+    // Gérer le cas annulé
+    if (commande.statut === 'annulee') {
+        items.forEach(item => {
+            item.status = 'cancelled';
+        });
+    }
+    
+    return items;
+}
 
 function genererOptionsUrgence() {
     return Object.entries(COMMANDES_CONFIG.NIVEAUX_URGENCE).map(([key, urgence]) => ({
@@ -94,40 +130,40 @@ function afficherDetailCommande(commande) {
     
     // Timeline - Détruire l'ancienne si elle existe
     if (timelineInstance) {
-        timelineInstance.destroy();
-        timelineInstance = null;
+        try {
+            timelineInstance.destroy();
+            timelineInstance = null;
+        } catch (e) {
+            console.warn('Erreur destroy:', e);
+        }
     }
     
-    // Récupérer ou recréer le container timeline
-    let timelineWrapper = document.querySelector('#modalDetailCommande .timeline-container');
-    if (!timelineWrapper) {
-        console.error('❌ Container .timeline-container non trouvé');
-        return;
-    }
-
-    // Nettoyer et préparer le container
-    timelineWrapper.innerHTML = '';
-
-    // Créer le div timeline à l'intérieur
-    const timelineDiv = document.createElement('div');
-    timelineDiv.className = 'timeline';
-    timelineDiv.id = 'timeline';
-    timelineWrapper.appendChild(timelineDiv);
+    // Préparer les items pour la timeline détail
+    const timelineItems = prepareTimelineItems(commande);
     
-    // Créer la nouvelle timeline avec la config
-    try {
-        // Utiliser la même approche que create.js
-        timelineInstance = config.createOrderTimeline('#timeline', commande, {
-            orientation: 'horizontal',
-            theme: 'colorful',
-            animated: true,
-            showDates: true,
-            showLabels: true,
-            clickable: false
-        });
-        console.log('✅ Timeline détail créée avec succès');
-    } catch (error) {
-        console.error('❌ Erreur création timeline détail:', error);
+    // Créer la timeline
+    const timelineContainer = document.querySelector('#modalDetailCommande .timeline-container');
+    if (timelineContainer) {
+        // Vider le container
+        timelineContainer.innerHTML = '';
+        
+        try {
+            timelineInstance = new Timeline({
+                container: timelineContainer,
+                items: timelineItems,
+                orientation: 'horizontal',
+                theme: 'colorful',
+                animated: true,
+                showDates: true,
+                showLabels: true,
+                clickable: false
+            });
+            console.log('✅ Timeline détail créée');
+        } catch (error) {
+            console.error('❌ Erreur création timeline détail:', error);
+        }
+    } else {
+        console.error('❌ Container timeline détail non trouvé');
     }
     
     // Informations client
