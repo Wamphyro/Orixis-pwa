@@ -29,7 +29,7 @@ import { Modal, modalManager } from '../../src/components/ui/modal/modal.compone
 import { Dialog } from '../../src/components/ui/dialog/dialog.component.js';
 import { notify } from '../../src/components/ui/notification/notification.component.js';
 import { DropZone } from '../../src/components/ui/dropzone/dropzone.component.js';
-import { Button } from '../../src/components/ui/common/button.component.js';
+import { Button } from '../../src/components/ui/button/button.component.js';
 
 // Import des modules DataTable
 import { DataTableSort } from '../../src/components/ui/datatable/datatable.sort.js';
@@ -190,29 +190,8 @@ export function createButton(type, options = {}) {
     
     const config = { ...configs[type] || configs.primary, ...options };
     
-    // Créer le bouton en HTML
-    const button = document.createElement('button');
-    
-    // Classes
-    const classes = ['btn'];
-    if (config.variant) classes.push(`btn-${config.variant}`);
-    if (config.size) classes.push(`btn-${config.size}`);
-    if (config.pill) classes.push('btn-pill');
-    button.className = classes.join(' ');
-    
-    // Contenu
-    const icon = config.icon ? `<span>${config.icon}</span> ` : '';
-    button.innerHTML = icon + (config.text || '');
-    
-    // Click handler
-    if (config.onClick) {
-        button.addEventListener('click', config.onClick);
-    }
-    
-    return {
-        element: button,
-        destroy: () => button.remove()
-    };
+    // Utiliser le composant Button
+    return new Button(config);
 }
 
 // ========================================
@@ -350,7 +329,6 @@ export default {
     registerOperationsModals,
     
     // Components directs (pour injection)
-    // Button, // Composant non disponible
     Badge,
     Modal,
     Dialog,
