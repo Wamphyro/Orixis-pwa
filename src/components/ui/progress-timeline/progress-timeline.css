@@ -1,0 +1,326 @@
+/* ========================================
+   PROGRESS-TIMELINE.CSS - Styles du composant ProgressTimeline
+   Chemin: src/components/ui/progress-timeline/progress-timeline.css
+   
+   DESCRIPTION:
+   Styles pour la timeline de progression horizontale
+   Totalement autonome, préfixé .progress-timeline-*
+   
+   STRUCTURE:
+   - Container et layout
+   - Items et milestones
+   - Connecteurs
+   - États et animations
+   - Responsive
+   ======================================== */
+
+/* ========================================
+   CONTAINER ET LAYOUT
+   ======================================== */
+
+.progress-timeline {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.progress-timeline-header {
+    margin-bottom: 25px;
+}
+
+.progress-timeline-title {
+    margin: 0 0 15px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.progress-timeline-line {
+    height: 2px;
+    background: repeating-linear-gradient(
+        90deg,
+        #6b7280,
+        #6b7280 10px,
+        transparent 10px,
+        transparent 20px
+    );
+    opacity: 0.3;
+}
+
+/* ========================================
+   TRACK ET ITEMS
+   ======================================== */
+
+.progress-timeline-track {
+    position: relative;
+    padding: 20px 0;
+}
+
+.progress-timeline-items {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    position: relative;
+    z-index: 2;
+}
+
+.progress-timeline-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.progress-timeline-item:hover {
+    transform: translateY(-2px);
+}
+
+/* ========================================
+   MILESTONES
+   ======================================== */
+
+.progress-timeline-milestone {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f3f4f6;
+    border-radius: 50%;
+    margin-bottom: 10px;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.progress-timeline-icon {
+    font-size: 20px;
+    line-height: 1;
+}
+
+/* États des milestones */
+.progress-timeline-item.completed .progress-timeline-milestone {
+    background: #d1fae5;
+    border: 2px solid #34d399;
+}
+
+.progress-timeline-item.current .progress-timeline-milestone,
+.progress-timeline-item.blocked .progress-timeline-milestone {
+    background: #fee2e2;
+    border: 3px solid #ef4444;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.progress-timeline-item.pending .progress-timeline-milestone {
+    background: #f3f4f6;
+    border: 2px solid #d1d5db;
+    opacity: 0.6;
+}
+
+/* ========================================
+   CONTENU
+   ======================================== */
+
+.progress-timeline-content {
+    text-align: center;
+    max-width: 100px;
+}
+
+.progress-timeline-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 4px;
+}
+
+.progress-timeline-date {
+    font-size: 11px;
+    color: #6b7280;
+}
+
+/* États du contenu */
+.progress-timeline-item.current .progress-timeline-label,
+.progress-timeline-item.blocked .progress-timeline-label {
+    color: #dc2626;
+    font-weight: 700;
+}
+
+.progress-timeline-item.pending .progress-timeline-label {
+    color: #9ca3af;
+}
+
+/* ========================================
+   CONNECTEURS
+   ======================================== */
+
+.progress-timeline-connectors {
+    position: absolute;
+    top: 45px;
+    left: 50px;
+    right: 50px;
+    height: 4px;
+    display: flex;
+    z-index: 1;
+}
+
+.progress-timeline-connector {
+    flex: 1;
+    height: 100%;
+    background: #e5e7eb;
+    position: relative;
+    margin: 0 -25px;
+}
+
+.progress-timeline-connector::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0;
+    background: #34d399;
+    transition: width 1s ease;
+}
+
+/* États des connecteurs */
+.progress-timeline-connector.completed::after {
+    width: 100%;
+}
+
+.progress-timeline-connector.active {
+    background: repeating-linear-gradient(
+        90deg,
+        #fbbf24,
+        #fbbf24 5px,
+        transparent 5px,
+        transparent 10px
+    );
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+}
+
+.progress-timeline.animated .progress-timeline-item {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideIn 0.5s ease forwards;
+}
+
+.progress-timeline.animated .progress-timeline-item:nth-child(1) { animation-delay: 0.1s; }
+.progress-timeline.animated .progress-timeline-item:nth-child(2) { animation-delay: 0.2s; }
+.progress-timeline.animated .progress-timeline-item:nth-child(3) { animation-delay: 0.3s; }
+.progress-timeline.animated .progress-timeline-item:nth-child(4) { animation-delay: 0.4s; }
+.progress-timeline.animated .progress-timeline-item:nth-child(5) { animation-delay: 0.5s; }
+.progress-timeline.animated .progress-timeline-item:nth-child(6) { animation-delay: 0.6s; }
+.progress-timeline.animated .progress-timeline-item:nth-child(7) { animation-delay: 0.7s; }
+.progress-timeline.animated .progress-timeline-item:nth-child(8) { animation-delay: 0.8s; }
+
+@keyframes slideIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+    .progress-timeline {
+        padding: 15px;
+    }
+    
+    .progress-timeline-items {
+        overflow-x: auto;
+        padding-bottom: 10px;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .progress-timeline-item {
+        min-width: 80px;
+        margin: 0 5px;
+    }
+    
+    .progress-timeline-milestone {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .progress-timeline-icon {
+        font-size: 16px;
+    }
+    
+    .progress-timeline-label {
+        font-size: 11px;
+    }
+    
+    .progress-timeline-date {
+        font-size: 10px;
+    }
+    
+    .progress-timeline-connectors {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .progress-timeline-content {
+        max-width: 70px;
+    }
+    
+    .progress-timeline-item {
+        min-width: 70px;
+    }
+}
+
+/* ========================================
+   DARK MODE (optionnel)
+   ======================================== */
+
+@media (prefers-color-scheme: dark) {
+    .progress-timeline {
+        background: #1f2937;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    .progress-timeline-title {
+        color: #e5e7eb;
+    }
+    
+    .progress-timeline-label {
+        color: #f3f4f6;
+    }
+    
+    .progress-timeline-date {
+        color: #9ca3af;
+    }
+    
+    .progress-timeline-milestone {
+        background: #374151;
+    }
+    
+    .progress-timeline-connector {
+        background: #374151;
+    }
+}
