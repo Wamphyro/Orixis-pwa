@@ -107,3 +107,16 @@
 .btn-icon:hover {
     background: #f5f5f5;
 }
+
+/* Ajout dans subventions.css */
+
+/* Container principal après le header */
+.subventions-container {
+    padding-top: 80px; /* Hauteur du header */
+}
+
+.subventions-content {
+    padding: 20px;
+    background: #f5f5f5;
+    min-height: calc(100vh - 80px);
+}

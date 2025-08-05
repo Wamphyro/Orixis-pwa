@@ -5,13 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Module Subventions</title>
     
+    <!-- CSS du composant header -->
+    <link rel="stylesheet" href="../../src/components/ui/app-header/app-header.css">
+    
     <!-- CSS Module -->
     <link rel="stylesheet" href="./subventions.css">
 </head>
 <body>
-    <div id="app"></div>
+    <!-- Le header sera injecté ici par AppHeader -->
+    <!-- Le contenu sera injecté après -->
     
-    <!-- Script principal -->
-    <script src="../orchestrators/subventions.main.js"></script>
+    <!-- Script principal avec type module -->
+    <script type="module" src="../orchestrators/subventions.main.js"></script>
 </body>
 </html>
