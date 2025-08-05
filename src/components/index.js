@@ -49,6 +49,15 @@ export { DropZone } from './ui/dropzone/dropzone.component.js';
 // Tooltip
 export { Tooltip } from './ui/tooltip/tooltip.component.js';
 
+// Progress Bar
+export { ProgressBar } from './ui/progress-bar/progress-bar.component.js';
+
+// Composants spécifiques Subventions
+export { ProgressTimeline } from './ui/progress-timeline/progress-timeline.component.js';
+export { ProgressOverview } from './ui/progress-overview/progress-overview.component.js';
+export { DelayTracker } from './ui/delay-tracker/delay-tracker.component.js';
+export { SignatureModal } from './ui/signature-modal/signature-modal.component.js';
+
 // ========================================
 // FONCTIONS UTILITAIRES
 // ========================================

@@ -10,7 +10,7 @@
 import { subventionsConfig } from '../core/subventions.config.js';
 import { subventionsFirestore } from '../core/subventions.firestore.js';
 import { subventionsService } from '../core/subventions.service.js';
-import { patientsService } from '../../../services/patients.service.js';
+import { patientsService } from '../../../src/services/patients.service.js';
 
 class SubventionsCreate {
     constructor() {
