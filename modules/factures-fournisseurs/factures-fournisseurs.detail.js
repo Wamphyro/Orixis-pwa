@@ -172,9 +172,17 @@ function creerItemsTimeline(facture) {
         isCurrent = facture.statut === statutKey || (statutKey === 'en_retard' && facture.enRetard);
     }
     
+    // Adapter le label pour "à payer" si facture déjà payée
+    let label = statutConfig.label;
+    let icon = statutConfig.icon;
+    if (statutKey === 'a_payer' && facture.statut === 'deja_payee') {
+        label = 'Validée';
+        icon = '✔️';
+    }
+    
     items.push({
-        label: statutConfig.label,
-        icon: statutConfig.icon,
+        label: label,
+        icon: icon,
         date: getDateStatut(facture, statutKey),
         status: isCurrent ? 'current' : (isCompleted ? 'completed' : 'pending'),
         details: statutConfig.description
