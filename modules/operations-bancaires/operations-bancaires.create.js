@@ -79,12 +79,17 @@ function afficherFormulaireImport() {
         modalFooter.innerHTML = '';
         
         // Créer les boutons avec le composant Button
-        const btnAnnuler = config.createButton('cancel', {
+        const btnAnnuler = new config.Button({
+            text: 'Annuler',
+            variant: 'ghost',
+            pill: true,
             onClick: () => window.fermerModal('modalImportCSV')
         });
-        
-        const btnConfirmer = config.createButton('primary', {
+
+        const btnConfirmer = new config.Button({
             text: '📥 Importer',
+            variant: 'primary',
+            pill: true,
             disabled: true,
             onClick: () => window.confirmerImport()
         });
