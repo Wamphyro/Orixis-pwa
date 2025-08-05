@@ -107,11 +107,20 @@ const dropdownInstances = {
 
 export async function voirDetailCommande(commandeId) {
     try {
+        console.log('📋 Chargement détail commande:', commandeId);
+        
         const commande = await CommandesService.getCommande(commandeId);
-        if (!commande) return;
+        if (!commande) {
+            console.error('Commande non trouvée');
+            return;
+        }
         
         commandeActuelle = commande;
+        
+        // IMPORTANT : Afficher le détail AVANT d'ouvrir la modal
         afficherDetailCommande(commande);
+        
+        // Puis ouvrir la modal
         window.modalManager.open('modalDetailCommande');
         
     } catch (error) {
@@ -920,7 +929,21 @@ window.changerStatutDetail = async function(commandeId, nouveauStatut, skipConfi
             const commandeMAJ = await CommandesService.getCommande(commandeId);
             if (commandeMAJ) {
                 commandeActuelle = commandeMAJ;
-                afficherDetailCommande(commandeMAJ);
+                
+                // Détruire l'ancienne timeline avant de réafficher
+                if (timelineInstance) {
+                    try {
+                        timelineInstance.destroy();
+                        timelineInstance = null;
+                    } catch (e) {
+                        console.warn('Erreur destroy timeline:', e);
+                    }
+                }
+                
+                // Petite pause pour laisser le DOM se stabiliser
+                setTimeout(() => {
+                    afficherDetailCommande(commandeMAJ);
+                }, 100);
             }
             
             afficherSucces(`Commande passée au statut : ${labelStatut}`);
