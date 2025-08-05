@@ -60,11 +60,13 @@ export function initImportOperations() {
 export function ouvrirModalImport() {
     resetImport();
     
-    // Afficher le formulaire
-    afficherFormulaireImport();
-    
-    // Ouvrir la modal
+    // Ouvrir la modal D'ABORD
     window.modalManager.open('modalImportCSV');
+    
+    // PUIS afficher le formulaire après un court délai
+    setTimeout(() => {
+        afficherFormulaireImport();
+    }, 100);
 }
 
 // ========================================
