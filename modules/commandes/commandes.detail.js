@@ -209,14 +209,18 @@ function afficherDetailCommande(commande) {
     
     // Recréer le container timeline car destroy() le supprime
     const modalDetail = document.getElementById('modalDetailCommande');
-    const timelineWrapper = modalDetail.querySelector('.timeline-container');
+    let timelineWrapper = modalDetail.querySelector('.timeline-container');
     if (!timelineWrapper) {
-        console.error('❌ Container .timeline-container non trouvé');
-        return;
+        // Créer le container s'il n'existe pas
+        const modalBody = modalDetail.querySelector('.modal-body');
+        timelineWrapper = document.createElement('div');
+        timelineWrapper.className = 'timeline-container';
+        timelineWrapper.id = 'timeline';
+        modalBody.insertBefore(timelineWrapper, modalBody.firstChild);
+    } else {
+        // Vider le container existant
+        timelineWrapper.innerHTML = '';
     }
-    
-    // Vider le container (la Timeline créera sa propre structure)
-    timelineWrapper.innerHTML = '';
     
     // Créer la nouvelle timeline
     try {
