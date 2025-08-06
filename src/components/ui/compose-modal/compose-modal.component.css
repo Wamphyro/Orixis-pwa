@@ -8,8 +8,8 @@
     inset: 0;
     z-index: 1000;
     display: none;
-    align-items: flex-end;
-    justify-content: flex-end;
+    align-items: center;
+    justify-content: center;
     padding: 20px;
     pointer-events: none;
 }
