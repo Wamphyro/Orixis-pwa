@@ -184,37 +184,6 @@
     flex-shrink: 0;
 }
 
-/* Bouton retour glassmorphism */
-.btn.on-dark {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    color: white;
-    text-decoration: none;
-    padding: 10px 20px;
-    border-radius: 25px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s ease;
-    font-size: 14px;
-    font-weight: 500;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    cursor: pointer;
-}
-
-.btn.on-dark:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateX(-2px);
-    border-color: rgba(255, 255, 255, 0.3);
-    text-decoration: none;
-    color: white;
-}
-
-.btn.on-dark:active {
-    transform: translateX(-1px) scale(0.98);
-}
-
 /* Icône du bouton retour */
 .back-icon {
     font-size: 16px;
@@ -251,7 +220,6 @@
 }
 
 /* Focus pour accessibilité */
-.btn:focus,
 .header-user-section:focus {
     outline: 2px solid rgba(255, 255, 255, 0.8);
     outline-offset: 2px;
@@ -302,14 +270,6 @@
     background: rgba(255, 255, 255, 0.2);
 }
 
-.theme-dark .btn.on-dark {
-    background: rgba(255, 255, 255, 0.15);
-}
-
-.theme-dark .btn.on-dark:hover {
-    background: rgba(255, 255, 255, 0.25);
-}
-
 /* Thème success */
 .app-header.theme-success {
     background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
@@ -335,20 +295,6 @@
 
 .theme-warning .header-user-section:hover {
     background: rgba(0, 0, 0, 0.2);
-}
-
-.theme-warning .btn.on-dark {
-    background: rgba(0, 0, 0, 0.1);
-    color: #333;
-}
-
-.theme-warning .btn.on-dark:hover {
-    background: rgba(0, 0, 0, 0.2);
-}
-
-.theme-warning .btn.btn-danger {
-    background: #dc3545;
-    color: white;
 }
 
 /* Thème minimal */
@@ -377,22 +323,6 @@
     background: #e9ecef;
 }
 
-.theme-minimal .btn.on-dark {
-    background: #f8f9fa;
-    color: #333;
-    border: 1px solid #dee2e6;
-    backdrop-filter: none;
-}
-
-.theme-minimal .btn.on-dark:hover {
-    background: #e9ecef;
-}
-
-.theme-minimal .btn.btn-danger {
-    background: #dc3545;
-    color: white;
-}
-
 /* ========================================
    RESPONSIVE
    ======================================== */
@@ -418,11 +348,6 @@
     .user-name,
     .user-store {
         font-size: 13px;
-    }
-    
-    .btn.btn-danger {
-        font-size: 12px;
-        padding: 5px 10px;
     }
 }
 
@@ -485,16 +410,6 @@
     .user-store {
         font-size: 12px;
     }
-    
-    .btn.btn-danger {
-        font-size: 12px;
-        padding: 6px 12px;
-    }
-    
-    .btn.on-dark {
-        font-size: 13px;
-        padding: 8px 16px;
-    }
 }
 
 @media (max-width: 480px) {
@@ -530,11 +445,6 @@
         opacity: 0.8;
     }
     
-    .btn.btn-danger {
-        font-size: 11px;
-        padding: 5px 10px;
-    }
-    
     .app-header-icon {
         font-size: 20px;
     }
@@ -555,8 +465,8 @@
         background: #ccc !important;
     }
     
-    .btn.on-dark,
-    .btn.btn-danger {
+    /* Les boutons dans le header seront masqués via une classe générique */
+    .app-header button {
         display: none !important;
     }
 
