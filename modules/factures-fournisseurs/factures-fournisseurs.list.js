@@ -22,6 +22,7 @@
 import { FacturesFournisseursService } from './factures-fournisseurs.service.js';
 import { 
     FACTURES_CONFIG,
+    BUTTON_CLASSES,
     formaterDate,
     formaterMontant,
     getListeFournisseurs,
@@ -176,7 +177,13 @@ async function chargerDonneesInitiales() {
 // ========================================
 
 function initDataTable() {
-    tableFactures = config.createFacturesTable('.factures-table-container', {
+    const container = document.querySelector('.factures-table-container');
+    if (!container) {
+        console.error('❌ Container .factures-table-container introuvable !');
+        return;
+    }
+    
+    tableFactures = config.createFacturesTable(container, {
         columns: [
             {
                 key: 'dateFacture',
@@ -229,7 +236,7 @@ function initDataTable() {
                 resizable: false,
                 exportable: false,
                 formatter: (_, row) => `
-                    <button class="${config.BUTTON_CLASSES.action}" onclick="voirDetailFacture('${row.id}')">
+                    <button class="${BUTTON_CLASSES.action}" onclick="voirDetailFacture('${row.id}')">
                         👁️
                     </button>
                 `
@@ -285,8 +292,14 @@ async function initFiltres() {
     }
     
     // Créer l'instance DataTableFilters
+    const filtresContainer = document.querySelector('.factures-filters');
+    if (!filtresContainer) {
+        console.error('❌ Container .factures-filters introuvable !');
+        return;
+    }
+
     filtresFactures = config.createFacturesFilters(
-        '.factures-filters',
+        filtresContainer,
         filtresConfig,
         (filters) => handleFilterChange(filters)
     );
@@ -314,10 +327,16 @@ async function initFiltres() {
 // ========================================
 
 function initStatsCards() {
+    const statsContainer = document.querySelector('.factures-stats');
+    if (!statsContainer) {
+        console.error('❌ Container .factures-stats introuvable !');
+        return;
+    }
+    
     const cardsConfig = genererConfigStatsCards();
     
     statsCards = config.createFacturesStatsCards(
-        '.factures-stats',
+        statsContainer,
         cardsConfig,
         (cardId) => handleStatsCardClick(cardId)
     );
