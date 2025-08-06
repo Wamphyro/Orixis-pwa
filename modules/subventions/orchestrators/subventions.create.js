@@ -7,10 +7,13 @@
 // Gère le formulaire, la recherche patient et la validation
 // ========================================
 
+
+// ========================================
+// IMPORTS
+// ========================================
 import config from '../core/subventions.config.js';
-// TODO: import { subventionsFirestore } from '../core/subventions.firestore.js';
-// TODO: import { subventionsService } from '../core/subventions.service.js';
 import { ClientsService } from '../../../src/services/clients.service.js';
+import { SearchDropdown } from '../../../src/components/ui/search-dropdown/search-dropdown.component.js';  // <-- AJOUTER CETTE LIGNE
 
 class SubventionsCreate {
     constructor() {
@@ -253,42 +256,41 @@ class SubventionsCreate {
     // COMPOSANTS
     // ========================================
     
-    initSearchDropdown() {
-        const searchDropdown = config.createSearchDropdown({
-            container: this.elements.searchContainer,
-            placeholder: 'Rechercher un patient par nom, prénom ou téléphone...',
-            searchFunction: async (term) => {
-                // Utiliser la méthode statique rechercherClients
-                const clients = await ClientsService.rechercherClients(term);
-                // Adapter les noms de propriétés si nécessaire
-                return clients.map(client => ({
-                    id: client.id,
-                    nom: client.nom,
-                    prenom: client.prenom,
-                    telephone: client.telephone || '',
-                    email: client.email || '',
-                    dateNaissance: client.dateNaissance || null,
-                    adresse: {
-                        rue: client.adresse?.rue || '',
-                        codePostal: client.adresse?.codePostal || '',
-                        ville: client.adresse?.ville || '',
-                        departement: client.adresse?.departement || ''
-                    },
-                    situation: client.situation || ''
-                }));
-            },
-            displayFormat: (patient) => {
-                return `${patient.nom} ${patient.prenom} - ${patient.telephone || 'Pas de téléphone'}`;
-            },
-            onSelect: (patient) => {
-                this.selectPatient(patient);
-            },
-            minChars: 2,
-            debounceTime: 300
-        });
-        
-        this.elements.searchInput = searchDropdown.getInput();
-    }
+initSearchDropdown() {
+    // Créer directement une instance de SearchDropdown
+    const searchDropdown = new SearchDropdown({
+        container: this.elements.searchContainer,
+        placeholder: 'Rechercher un patient par nom, prénom ou téléphone...',
+        searchFunction: async (term) => {
+            const clients = await ClientsService.rechercherClients(term);
+            return clients.map(client => ({
+                id: client.id,
+                nom: client.nom,
+                prenom: client.prenom,
+                telephone: client.telephone || '',
+                email: client.email || '',
+                dateNaissance: client.dateNaissance || null,
+                adresse: {
+                    rue: client.adresse?.rue || '',
+                    codePostal: client.adresse?.codePostal || '',
+                    ville: client.adresse?.ville || '',
+                    departement: client.adresse?.departement || ''
+                },
+                situation: client.situation || ''
+            }));
+        },
+        displayFormat: (patient) => {
+            return `${patient.nom} ${patient.prenom} - ${patient.telephone || 'Pas de téléphone'}`;
+        },
+        onSelect: (patient) => {
+            this.selectPatient(patient);
+        },
+        minChars: 2,
+        debounceTime: 300
+    });
+    
+    this.elements.searchInput = searchDropdown.getInput();
+}
     
     // ========================================
     // GESTION DU PATIENT
