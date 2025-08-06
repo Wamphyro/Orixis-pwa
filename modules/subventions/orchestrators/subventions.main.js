@@ -261,9 +261,53 @@ window.addEventListener('load', async () => {
 // API GLOBALE (window)
 // ========================================
 
-window.ouvrirNouveauDossier = () => {
-    console.log('Ouverture nouveau dossier...');
-    config.notify.info('Fonctionnalité à venir');
+window.ouvrirNouveauDossier = async () => {
+    console.log('Ouverture création dossier...');
+    
+    try {
+        // Créer une modal pour le formulaire
+        const modal = document.createElement('div');
+        modal.id = 'modalCreateSubvention';
+        modal.className = 'modal';
+        modal.style.display = 'none';
+        modal.innerHTML = `
+            <div class="modal-content modal-extra-large" style="width: 90%; max-width: 1200px;">
+                <div class="modal-header">
+                    <h2>Créer un nouveau dossier de subvention</h2>
+                    <button class="modal-close" onclick="config.modalManager.close('modalCreateSubvention')">&times;</button>
+                </div>
+                <div class="modal-body" id="subventions-create-container" style="max-height: 80vh; overflow-y: auto;">
+                    <!-- Le formulaire sera injecté ici -->
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Enregistrer et ouvrir la modal
+        config.modalManager.register('modalCreateSubvention', {
+            closeOnOverlayClick: false,
+            closeOnEscape: true
+        });
+        config.modalManager.open('modalCreateSubvention');
+        
+        // Charger le module create
+        const { default: subventionsCreate } = await import('./subventions.create.js');
+        
+        // Récupérer les données utilisateur
+        const userData = getUserData();
+        
+        // Initialiser avec les permissions
+        await subventionsCreate.init({
+            userId: userData.name,
+            userName: userData.name,
+            magasin: userData.store,
+            canCreate: true
+        });
+        
+    } catch (error) {
+        console.error('❌ Erreur ouverture création:', error);
+        config.notify.error('Erreur lors de l\'ouverture du formulaire');
+    }
 };
 
 window.voirDetailDossier = async (dossierId) => {
