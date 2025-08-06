@@ -121,8 +121,9 @@ export function createDropdown(container, options) {
 }
 
 export function createSearchDropdown(container, options) {
-    // SearchDropdown attend (container, options) en 2 paramètres séparés !
-    return new SearchDropdown(container, {
+    // SearchDropdown prend un objet config avec container dedans
+    const searchDropdown = new SearchDropdown({
+        container: container,
         minLength: options.minChars || 2,
         noResultsText: 'Aucun résultat trouvé',
         loadingText: 'Recherche en cours...',
@@ -132,6 +133,11 @@ export function createSearchDropdown(container, options) {
         onSelect: options.onSelect,
         debounceTime: options.debounceTime || 300
     });
+    
+    // Initialiser le composant
+    searchDropdown.init();
+    
+    return searchDropdown;
 }
 
 export function createSubventionsDropzone(container, options = {}) {

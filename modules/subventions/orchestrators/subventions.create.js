@@ -7,13 +7,8 @@
 // Gère le formulaire, la recherche patient et la validation
 // ========================================
 
-
-// ========================================
-// IMPORTS
-// ========================================
 import config from '../core/subventions.config.js';
 import { ClientsService } from '../../../src/services/clients.service.js';
-import { SearchDropdown } from '../../../src/components/ui/search-dropdown/search-dropdown.component.js';  // <-- AJOUTER CETTE LIGNE
 
 class SubventionsCreate {
     constructor() {
@@ -27,23 +22,25 @@ class SubventionsCreate {
         
         this.elements = {};
         this.isSubmitting = false;
+        this.searchDropdown = null;
     }
     
     // ========================================
     // INITIALISATION
     // ========================================
     
-async init(permissions) {
-    this.permissions = permissions;
-    this.render();
-    this.attachEvents();
-    
-    // Focus sur la recherche patient
-    setTimeout(() => {
-        const searchInput = this.elements.searchContainer?.querySelector('input');
-        searchInput?.focus();
-    }, 100);
-}
+    async init(permissions) {
+        this.permissions = permissions;
+        this.render();
+        this.attachEvents();
+        
+        // Focus sur la recherche patient
+        setTimeout(() => {
+            if (this.searchDropdown && this.searchDropdown.input) {
+                this.searchDropdown.input.focus();
+            }
+        }, 100);
+    }
     
     // ========================================
     // RENDU
@@ -216,7 +213,7 @@ async init(permissions) {
                     <div class="form-actions">
                         <button type="button" 
                                 class="btn btn-secondary" 
-                                onclick="window.history.back()">
+                                onclick="config.modalManager.close('modalCreateSubvention')">
                             Annuler
                         </button>
                         <button type="submit" 
@@ -233,7 +230,7 @@ async init(permissions) {
             </div>
         `;
         
-        // Stocker les références D'ABORD
+        // Stocker les références
         this.elements = {
             form: document.getElementById('create-form'),
             searchContainer: document.getElementById('search-container'),
@@ -248,8 +245,8 @@ async init(permissions) {
             recapContent: document.getElementById('recap-content'),
             submitBtn: document.getElementById('btn-submit')
         };
-
-        // Initialiser la recherche patient APRÈS
+        
+        // Initialiser la recherche patient
         this.initSearchDropdown();
     }
     
@@ -257,40 +254,40 @@ async init(permissions) {
     // COMPOSANTS
     // ========================================
     
-initSearchDropdown() {
-    const searchDropdown = config.createSearchDropdown(
-        this.elements.searchContainer,
-        {
-            placeholder: 'Rechercher un patient par nom, prénom ou téléphone...',
-            searchFunction: async (term) => {
-                const clients = await ClientsService.rechercherClients(term);
-                return clients.map(client => ({
-                    id: client.id,
-                    nom: client.nom,
-                    prenom: client.prenom,
-                    telephone: client.telephone || '',
-                    email: client.email || '',
-                    dateNaissance: client.dateNaissance || null,
-                    adresse: {
-                        rue: client.adresse?.rue || '',
-                        codePostal: client.adresse?.codePostal || '',
-                        ville: client.adresse?.ville || '',
-                        departement: client.adresse?.departement || ''
-                    },
-                    situation: client.situation || ''
-                }));
-            },
-            displayFormat: (patient) => {
-                return `${patient.nom} ${patient.prenom} - ${patient.telephone || 'Pas de téléphone'}`;
-            },
-            onSelect: (patient) => {
-                this.selectPatient(patient);
-            },
-            minChars: 2,
-            debounceTime: 300
-        }
-    );
-}
+    initSearchDropdown() {
+        this.searchDropdown = config.createSearchDropdown(
+            this.elements.searchContainer,
+            {
+                placeholder: 'Rechercher un patient par nom, prénom ou téléphone...',
+                searchFunction: async (term) => {
+                    const clients = await ClientsService.rechercherClients(term);
+                    return clients.map(client => ({
+                        id: client.id,
+                        nom: client.nom,
+                        prenom: client.prenom,
+                        telephone: client.telephone || '',
+                        email: client.email || '',
+                        dateNaissance: client.dateNaissance || null,
+                        adresse: {
+                            rue: client.adresse?.rue || '',
+                            codePostal: client.adresse?.codePostal || '',
+                            ville: client.adresse?.ville || '',
+                            departement: client.adresse?.departement || ''
+                        },
+                        situation: client.situation || ''
+                    }));
+                },
+                displayFormat: (patient) => {
+                    return `${patient.nom} ${patient.prenom} - ${patient.telephone || 'Pas de téléphone'}`;
+                },
+                onSelect: (patient) => {
+                    this.selectPatient(patient);
+                },
+                minChars: 2,
+                debounceTime: 300
+            }
+        );
+    }
     
     // ========================================
     // GESTION DU PATIENT
@@ -328,9 +325,6 @@ initSearchDropdown() {
         if (!patient.adresse) {
             patient.adresse = { departement: '75' };
         }
-        
-        // TODO: Récupérer depuis Firebase plus tard
-        // const dossiers = await subventionsFirestore.getDossiers({...});
         
         let situation = patient.situation || '';
         
@@ -438,26 +432,26 @@ initSearchDropdown() {
         });
     }
     
-resetPatient() {
-    this.selectedPatient = null;
-    this.elements.selectedPatient.style.display = 'none';
-    this.elements.searchContainer.style.display = 'block';
-    
-    // Récupérer l'input directement du DOM au lieu de this.elements.searchInput
-    const searchInput = this.elements.searchContainer.querySelector('input');
-    if (searchInput) {
-        searchInput.value = '';
-        searchInput.focus();
+    resetPatient() {
+        this.selectedPatient = null;
+        this.elements.selectedPatient.style.display = 'none';
+        this.elements.searchContainer.style.display = 'block';
+        
+        // Utiliser le searchDropdown stocké
+        if (this.searchDropdown) {
+            this.searchDropdown.clear();
+            if (this.searchDropdown.input) {
+                this.searchDropdown.input.focus();
+            }
+        }
+        
+        this.elements.situationSelect.disabled = true;
+        this.elements.situationSelect.value = '';
+        this.elements.patientAlert.innerHTML = '';
+        this.disableForm();
     }
     
-    this.elements.situationSelect.disabled = true;
-    this.elements.situationSelect.value = '';
-    this.elements.patientAlert.innerHTML = '';
-    this.disableForm();
-}
-    
     openCreatePatient() {
-        // TODO: Ouvrir modal création patient
         config.notify.info('Création patient à venir');
     }
     
@@ -553,13 +547,10 @@ resetPatient() {
                         nom: this.permissions.userName
                     },
                     magasin: this.permissions.magasin,
-                    societe: 'BA' // TODO: Récupérer dynamiquement
+                    societe: 'BA'
                 },
                 notes: this.elements.notesTextarea.value
             };
-            
-            // TODO: Créer le dossier dans Firebase
-            // const dossier = await subventionsFirestore.createDossier(data);
             
             // MOCK pour tester
             const dossier = {
@@ -657,7 +648,9 @@ resetPatient() {
     // ========================================
     
     destroy() {
-        // Nettoyer les event listeners si nécessaire
+        if (this.searchDropdown && this.searchDropdown.destroy) {
+            this.searchDropdown.destroy();
+        }
     }
 }
 
