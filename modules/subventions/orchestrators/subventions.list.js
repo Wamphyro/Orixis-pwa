@@ -5,7 +5,7 @@
 
 import config from '../core/subventions.config.js';
 import { state } from './subventions.main.js';
-import { subventionsData } from '../subventions.data.js'; // VOTRE FICHIER DATA
+import { subventionsData } from '../core/subventions.data.js';
 
 // ========================================
 // CONFIGURATION UI (adaptée à votre data.js)
