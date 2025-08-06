@@ -149,7 +149,7 @@ render() {
                     ${this.dossier.patient.nom} ${this.dossier.patient.prenom} - 
                     <span class="badge badge-primary">${this.dossier.numeroDossier}</span>
                 </h2>
-                <button class="modal-close" onclick="window.modalManager.close('modalDetailSubvention')">&times;</button>
+                <button class="modal-close" id="btnCloseModal">&times;</button>
             </div>
             <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
                 <!-- Les 3 composants visuels -->
@@ -195,10 +195,10 @@ render() {
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-ghost btn-pill" onclick="window.modalManager.close('modalDetailSubvention')">
+                <button class="btn btn-ghost btn-pill" id="btnFermerModal">
                     Fermer
                 </button>
-                <button class="btn btn-primary btn-pill" onclick="alert('Édition à venir')">
+                <button class="btn btn-primary btn-pill" id="btnModifierModal">
                     ✏️ Modifier
                 </button>
             </div>
@@ -215,6 +215,19 @@ render() {
     
     // Ouvrir la modal
     config.modalManager.open('modalDetailSubvention');
+    
+    // Attacher les événements APRÈS création
+    document.getElementById('btnCloseModal')?.addEventListener('click', () => {
+        config.modalManager.close('modalDetailSubvention');
+    });
+    
+    document.getElementById('btnFermerModal')?.addEventListener('click', () => {
+        config.modalManager.close('modalDetailSubvention');
+    });
+    
+    document.getElementById('btnModifierModal')?.addEventListener('click', () => {
+        alert('Édition à venir');
+    });
     
     // Initialiser les composants APRÈS l'ouverture
     setTimeout(() => {
