@@ -3,14 +3,18 @@
 // Chemin: modules/factures-fournisseurs/factures-fournisseurs.config.js
 //
 // DESCRIPTION:
-// Factories simples pour créer tous les composants UI
-// AUCUNE décision n'est prise ici - tout est pass-through
-// L'orchestrateur (main.js) décide de TOUT
+// Configuration UI complète pour le module factures fournisseurs
+// Factories pour créer tous les composants UI
+// AUCUN composant n'importe un autre composant
 //
 // ARCHITECTURE:
-// - Ce fichier = simple pont vers les composants
-// - main.js = toutes les décisions et configurations
+// - Ce fichier crée les factories pour tous les composants
+// - Les orchestrateurs utiliseront ces factories
 // - Communication uniquement par callbacks
+//
+// DÉPENDANCES:
+// - Import depuis components/index.js uniquement
+// - Aucun import direct de composants
 // ========================================
 
 // ========================================
@@ -49,64 +53,128 @@ import { DataTablePagination } from '../../src/components/ui/datatable/datatable
 import { DataTableResize } from '../../src/components/ui/datatable/datatable.resize.js';
 
 // ========================================
-// FACTORIES SIMPLES - AUCUNE DÉCISION
-// Tout est pass-through vers les composants
+// FACTORIES - Signatures d'origine préservées
 // ========================================
 
 export function createFacturesHeader(config) {
     return new AppHeader(config);
 }
 
-export function createFacturesTable(config) {
-    return new DataTable(config);
+export function createFacturesTable(container, options = {}) {
+    return new DataTable({
+        container,
+        modules: {
+            SortClass: DataTableSort,
+            ExportClass: DataTableExport,
+            PaginationClass: DataTablePagination,
+            ResizeClass: DataTableResize
+        },
+        features: {
+            sort: true,
+            resize: true,
+            export: true,
+            selection: false,
+            pagination: true
+        },
+        pagination: {
+            itemsPerPage: 20,
+            pageSizeOptions: [10, 20, 50, 100]
+        },
+        messages: {
+            noData: 'Aucune facture trouvée',
+            loading: 'Chargement des factures...',
+            itemsPerPage: 'Éléments par page',
+            page: 'Page',
+            of: 'sur',
+            items: 'éléments'
+        },
+        ...options
+    });
 }
 
-export function createFacturesFilters(config) {
-    return new DataTableFilters(config);
+export function createFacturesFilters(container, filters, onFilter) {
+    return new DataTableFilters({
+        container,
+        filters,
+        DropdownClass: DropdownList,
+        onFilter
+    });
 }
 
-export function createFacturesStatsCards(config) {
-    return new StatsCards(config);
+export function createFacturesStatsCards(container, cards, onClick) {
+    return new StatsCards({
+        container,
+        cards,
+        animated: true,
+        onClick
+    });
 }
 
-export function createFactureTimeline(config) {
-    return new Timeline(config);
+export function createFactureTimeline(container, items, options = {}) {
+    return new Timeline({
+        container,
+        items,
+        theme: 'colorful',
+        orientation: 'horizontal',
+        animated: true,
+        showDates: true,
+        showLabels: true,
+        clickable: false,
+        ...options
+    });
 }
 
-export function createDropdown(config) {
-    return new DropdownList(config);
+export function createDropdown(container, options) {
+    return new DropdownList({
+        container,
+        ...options
+    });
 }
 
-export function createSearchDropdown(config) {
-    return new SearchDropdown(config);
+export function createSearchDropdown(container, options) {
+    return new SearchDropdown({
+        container,
+        minLength: 2,
+        noResultsText: 'Aucun résultat trouvé',
+        loadingText: 'Recherche en cours...',
+        ...options
+    });
 }
 
-export function createFactureDropzone(config) {
-    return new DropZone(config);
+export function createFactureDropzone(container, options = {}) {
+    return new DropZone({
+        container,
+        acceptedTypes: ['application/pdf', 'image/jpeg', 'image/png'],
+        maxFiles: 10,
+        maxFileSize: 10 * 1024 * 1024,
+        multiple: true,
+        showPreview: true,
+        previewSize: 'medium',
+        messages: {
+            drop: '📁 Glissez vos factures ici (jusqu\'à 10 fichiers)',
+            browse: 'ou cliquez pour parcourir',
+            typeError: 'Seuls les PDF et images (JPG, PNG) sont acceptés',
+            sizeError: 'Fichier trop volumineux (max 10MB)',
+            maxFilesError: 'Maximum 10 fichiers autorisés'
+        },
+        ...options
+    });
 }
 
 export function createButton(config) {
     return new Button(config);
 }
 
-export function createBadge(config) {
-    return new Badge(config);
+export function createBadge(text, options = {}) {
+    return new Badge({
+        text,
+        size: 'table',
+        ...options
+    });
 }
 
 // ========================================
-// EXPORTS DE MODULES (pour main.js)
-// ========================================
-
-export const modules = {
-    DataTableSort,
-    DataTableExport,
-    DataTablePagination,
-    DataTableResize
-};
-
-// ========================================
 // CONFIG : TEMPLATES HTML
-// Les templates restent ici car ce sont des helpers, pas des composants
 // ========================================
 
 export const HTML_TEMPLATES = {
@@ -168,7 +236,7 @@ export const HTML_TEMPLATES = {
 };
 
 // ========================================
-// HELPER : ENREGISTREMENT DES MODALES
+// CONFIG : MODALES DU MODULE
 // ========================================
 
 export function registerFacturesModals() {
@@ -181,6 +249,8 @@ export function registerFacturesModals() {
         const modalElement = document.getElementById(id);
         if (modalElement) {
             modalManager.register(id, options);
+        } else {
+            console.warn(`⚠️ Modal "${id}" non trouvé, enregistrement ignoré`);
         }
     });
 }
@@ -190,7 +260,7 @@ export function registerFacturesModals() {
 // ========================================
 
 export default {
-    // Factories simples
+    // Factories
     createFacturesHeader,
     createFacturesTable,
     createFacturesFilters,
@@ -202,18 +272,16 @@ export default {
     createButton,
     createBadge,
     
-    // Modules DataTable
-    modules,
-    
-    // Templates HTML
+    // Templates
     HTML_TEMPLATES,
-    
-    // Helper
     registerFacturesModals,
     
-    // Components directs (pour utilisation dans main.js)
+    // Components directs
+    Button,
+    Badge,
+    Modal,
     Dialog,
     notify,
     modalManager,
-    DropdownList  // Pour passer aux filtres
+    DropdownList
 };

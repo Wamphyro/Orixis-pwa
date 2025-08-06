@@ -218,6 +218,74 @@ export const FACTURES_CONFIG = {
 };
 
 // ========================================
+// CONFIGURATIONS DE BOUTONS (données métier)
+// ========================================
+export const BUTTON_CONFIGS = {
+    primary: {
+        variant: 'primary',
+        pill: true
+    },
+    save: {
+        text: 'Enregistrer',
+        variant: 'success',
+        pill: true,
+        icon: '💾'
+    },
+    cancel: {
+        text: 'Annuler',
+        variant: 'ghost',
+        pill: true
+    },
+    delete: {
+        text: 'Supprimer',
+        variant: 'danger',
+        size: 'sm',
+        icon: '🗑️'
+    },
+    action: {
+        variant: 'action',
+        size: 'sm'
+    },
+    view: {
+        variant: 'action',
+        size: 'sm',
+        icon: '👁️'
+    },
+    newFacture: {
+        text: 'Nouvelle facture',
+        variant: 'primary',
+        pill: true,
+        icon: '➕'
+    },
+    marquerPayee: {
+        text: 'Marquer comme payée',
+        variant: 'success',
+        icon: '💰'
+    },
+    pointer: {
+        text: 'Pointer',
+        variant: 'info',
+        icon: '🔍'
+    },
+    enRetard: {
+        text: 'En retard',
+        variant: 'warning',
+        icon: '⚠️'
+    }
+};
+
+// ========================================
+// CLASSES DE BOUTONS (pour compatibilité HTML)
+// ========================================
+export const BUTTON_CLASSES = {
+    primary: 'btn btn-primary btn-pill',
+    save: 'btn btn-success btn-pill',
+    cancel: 'btn btn-ghost btn-pill',
+    delete: 'btn btn-danger btn-sm',
+    action: 'btn-action'
+};
+
+// ========================================
 // DONNÉES DYNAMIQUES (mises à jour depuis Firestore)
 // ========================================
 
@@ -351,18 +419,3 @@ export function determinerCategorieFournisseur(nomFournisseur) {
     // Par défaut
     return 'autre';
 }
-
-/* ========================================
-   HISTORIQUE DES MODIFICATIONS
-   
-   [03/02/2025] - Création initiale
-   - Adaptation depuis decompte-mutuelle.data.js
-   - Statuts adaptés au workflow factures
-   - Ajout catégories fournisseurs
-   - Helpers pour calculs TVA
-   
-   NOTES POUR REPRISES FUTURES:
-   - Ce fichier contient UNIQUEMENT les données métier
-   - Toute config UI est dans les orchestrateurs
-   - Les fonctions de génération UI sont dans les orchestrateurs
-   ======================================== */
