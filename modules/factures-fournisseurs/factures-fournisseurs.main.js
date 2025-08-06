@@ -186,6 +186,124 @@ async function initUIComponents() {
 // INITIALISATION PRINCIPALE
 // ========================================
 
+// ========================================
+// CRÉATION DES CONTAINERS HTML
+// ========================================
+
+function createHTMLStructure() {
+    // Vérifier si les containers existent déjà (par classe)
+    const existingTable = document.querySelector('.factures-table-container');
+    const existingFilters = document.querySelector('.factures-filters');
+    const existingStats = document.querySelector('.factures-stats');
+    
+    if (existingTable && existingFilters && existingStats) {
+        console.log('✅ Containers HTML déjà présents');
+        return;
+    }
+    
+    console.log('📦 Création des containers HTML manquants...');
+    
+    // Si le container principal n'existe pas, le créer
+    let mainContainer = document.querySelector('.container');
+    if (!mainContainer) {
+        mainContainer = document.createElement('div');
+        mainContainer.className = 'container';
+        document.body.appendChild(mainContainer);
+    }
+    
+    // Créer la structure complète si elle n'existe pas
+    if (!document.querySelector('.factures-header')) {
+        const headerSection = document.createElement('div');
+        headerSection.className = 'factures-header';
+        headerSection.innerHTML = `
+            <div class="factures-stats">
+                <!-- StatsCards sera généré ici -->
+            </div>
+            
+            <div class="factures-actions">
+                <button class="btn btn-primary btn-with-icon btn-lg pill" onclick="ouvrirNouvelleFacture()">
+                    <span>➕</span> Nouvelle facture
+                </button>
+            </div>
+        `;
+        mainContainer.appendChild(headerSection);
+    }
+    
+    // Créer la section filtres si elle n'existe pas
+    if (!document.querySelector('.factures-filters')) {
+        const filtersSection = document.createElement('div');
+        filtersSection.className = 'factures-filters section';
+        filtersSection.innerHTML = '<!-- DataTableFilters sera généré ici -->';
+        mainContainer.appendChild(filtersSection);
+    }
+    
+    // Créer la section table si elle n'existe pas
+    if (!document.querySelector('.factures-table-container')) {
+        const tableSection = document.createElement('div');
+        tableSection.className = 'factures-table-container section';
+        tableSection.innerHTML = '<!-- DataTable sera généré ici -->';
+        mainContainer.appendChild(tableSection);
+    }
+    
+    // Créer les modales si elles n'existent pas
+    if (!document.getElementById('modalNouvelleFacture')) {
+        const modalNouvelle = document.createElement('div');
+        modalNouvelle.id = 'modalNouvelleFacture';
+        modalNouvelle.className = 'modal';
+        modalNouvelle.style.display = 'none';
+        modalNouvelle.innerHTML = `
+            <div class="modal-content modal-large">
+                <div class="modal-header">
+                    <h2>Nouvelle Facture Fournisseur</h2>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <!-- Le contenu sera généré par factures-fournisseurs.create.js -->
+                </div>
+                <div class="modal-footer">
+                    <!-- Les boutons seront ajoutés dynamiquement par JavaScript -->
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modalNouvelle);
+    }
+    
+    if (!document.getElementById('modalDetailFacture')) {
+        const modalDetail = document.createElement('div');
+        modalDetail.id = 'modalDetailFacture';
+        modalDetail.className = 'modal';
+        modalDetail.style.display = 'none';
+        modalDetail.innerHTML = `
+            <div class="modal-content modal-large">
+                <div class="modal-header">
+                    <h2>Détail de la facture <span id="detailNumFacture"></span></h2>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <!-- Timeline du statut -->
+                    <div class="timeline-container">
+                        <div class="timeline" id="timeline">
+                            <!-- Timeline générée dynamiquement -->
+                        </div>
+                    </div>
+                    
+                    <!-- Sections détail -->
+                    <div class="detail-sections">
+                        <!-- Contenu généré dynamiquement -->
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modalDetail);
+    }
+    
+    console.log('✅ Structure HTML créée/vérifiée');
+}
+
+// ========================================
+// INITIALISATION PRINCIPALE
+// ========================================
+
 window.addEventListener('load', async () => {
     // Vérification auth
     if (!checkAuth()) {
@@ -199,28 +317,34 @@ window.addEventListener('load', async () => {
         // 1. UI Components (Header)
         await initUIComponents();
         
-        // 2. Firebase
+        // 2. CRÉER/VÉRIFIER LA STRUCTURE HTML - IMPORTANT !
+        createHTMLStructure();
+        
+        // 3. Firebase
         await initFirebase();
         console.log('✅ Firebase initialisé');
         
-        // 3. Modales
+        // 4. Modales
         initModales();
         console.log('✅ Modales initialisées');
         
-        // 4. Sous-orchestrateurs
+        // 5. Attendre un peu pour que le DOM soit prêt
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // 6. Sous-orchestrateurs (maintenant les containers existent)
         await initListeFactures();
         initCreationFacture();
         console.log('✅ Sous-orchestrateurs initialisés');
         
-        // 5. Données initiales
+        // 7. Données initiales
         afficherFactures();
         await chargerDonnees();
         console.log('✅ Données chargées');
         
-        // 6. Animations
+        // 8. Animations
         document.body.classList.add('page-loaded');
         
-        // 7. Container dialogs
+        // 9. Container dialogs
         if (!document.getElementById('dialog-container')) {
             const dialogContainer = document.createElement('div');
             dialogContainer.id = 'dialog-container';
@@ -228,7 +352,7 @@ window.addEventListener('load', async () => {
             document.body.appendChild(dialogContainer);
         }
         
-        // 8. Surveillance retards
+        // 10. Surveillance retards
         verifierRetardsAutomatiquement();
         
         console.log('✅ Module Factures Fournisseurs prêt !');
