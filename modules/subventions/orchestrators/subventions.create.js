@@ -33,16 +33,17 @@ class SubventionsCreate {
     // INITIALISATION
     // ========================================
     
-    async init(permissions) {
-        this.permissions = permissions;
-        this.render();
-        this.attachEvents();
-        
-        // Focus sur la recherche patient
-        setTimeout(() => {
-            this.elements.searchInput?.focus();
-        }, 100);
-    }
+async init(permissions) {
+    this.permissions = permissions;
+    this.render();
+    this.attachEvents();
+    
+    // Focus sur la recherche patient
+    setTimeout(() => {
+        const searchInput = this.elements.searchContainer?.querySelector('input');
+        searchInput?.focus();
+    }, 100);
+}
     
     // ========================================
     // RENDU
@@ -437,17 +438,23 @@ initSearchDropdown() {
         });
     }
     
-    resetPatient() {
-        this.selectedPatient = null;
-        this.elements.selectedPatient.style.display = 'none';
-        this.elements.searchContainer.style.display = 'block';
-        this.elements.searchInput.value = '';
-        this.elements.searchInput.focus();
-        this.elements.situationSelect.disabled = true;
-        this.elements.situationSelect.value = '';
-        this.elements.patientAlert.innerHTML = '';
-        this.disableForm();
+resetPatient() {
+    this.selectedPatient = null;
+    this.elements.selectedPatient.style.display = 'none';
+    this.elements.searchContainer.style.display = 'block';
+    
+    // Récupérer l'input directement du DOM au lieu de this.elements.searchInput
+    const searchInput = this.elements.searchContainer.querySelector('input');
+    if (searchInput) {
+        searchInput.value = '';
+        searchInput.focus();
     }
+    
+    this.elements.situationSelect.disabled = true;
+    this.elements.situationSelect.value = '';
+    this.elements.patientAlert.innerHTML = '';
+    this.disableForm();
+}
     
     openCreatePatient() {
         // TODO: Ouvrir modal création patient
