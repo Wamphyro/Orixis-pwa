@@ -11,12 +11,22 @@
    VARIABLES & DESIGN TOKENS
    ======================================== */
 :root {
-    /* Glassmorphism */
+    /* Glassmorphism - BLUR CENTRALISÉ */
+    --glass-blur-none: 0;
+    --glass-blur-subtle: 2px;
+    --glass-blur-light: 4px;
+    --glass-blur-medium: 8px;
+    --glass-blur-strong: 12px;
+    
+    /* Configuration du blur (CHANGER ICI POUR TOUT MODIFIER) */
+    --glass-blur: var(--glass-blur-light);           /* Par défaut: 4px au lieu de 10px */
+    --glass-blur-danger: var(--glass-blur-medium);   /* Danger: 8px au lieu de 15px */
+    
+    /* Glassmorphism - autres propriétés */
     --glass-bg: rgba(255, 255, 255, 0.1);
     --glass-bg-hover: rgba(255, 255, 255, 0.15);
     --glass-border: rgba(255, 255, 255, 0.2);
     --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
-    --glass-blur: 10px;
     
     /* Couleurs avec transparence */
     --primary-glass: rgba(102, 126, 234, 0.15);
@@ -124,8 +134,8 @@
 /* Danger - Rouge */
 .btn-danger {
     background: rgba(220, 53, 69, 0.85);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
+    backdrop-filter: blur(var(--glass-blur-danger));
+    -webkit-backdrop-filter: blur(var(--glass-blur-danger));
     border-color: rgba(220, 53, 69, 0.3);
 }
 
