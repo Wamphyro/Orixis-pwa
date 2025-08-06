@@ -1,324 +1,490 @@
 // ========================================
-// SUBVENTIONS.CREATE.JS - Création de dossier
+// SUBVENTIONS.CREATE.JS - Gestion de la création de dossiers MDPH/AGEFIPH
 // Chemin: modules/subventions/orchestrators/subventions.create.js
 //
 // DESCRIPTION:
-// Orchestrateur pour la création de nouveaux dossiers
-// Gère le formulaire, la recherche patient et la validation
+// Module de création de dossiers de subvention avec workflow par étapes
+// Basé sur le modèle du module commandes qui fonctionne
+//
+// ARCHITECTURE:
+// - 4 étapes avec Timeline
+// - SearchDropdown pour la recherche patient
+// - Validation progressive
+// ========================================
+
+// ========================================
+// IMPORTS
 // ========================================
 
 import config from '../core/subventions.config.js';
 import { ClientsService } from '../../../src/services/clients.service.js';
+import { Timeline } from '../../../src/components/ui/timeline/timeline.component.js';
 
-class SubventionsCreate {
-    constructor() {
-        this.permissions = null;
-        this.selectedPatient = null;
-        this.formData = {
-            type: 'mdph_agefiph',
-            montantAppareil: 350000, // 3500€ en centimes
-            notes: ''
-        };
-        
-        this.elements = {};
-        this.isSubmitting = false;
-        this.searchDropdown = null;
+// ========================================
+// CONFIGURATION DES ÉTAPES
+// ========================================
+
+const ETAPES_CREATION = [
+    { label: 'Patient', icon: '👤' },
+    { label: 'Type dossier', icon: '📋' },
+    { label: 'Informations', icon: '📝' },
+    { label: 'Validation', icon: '✅' }
+];
+
+// ========================================
+// ÉTAT LOCAL DU MODULE
+// ========================================
+
+let etapeActuelle = 1;
+let nouveauDossier = {
+    // Patient
+    patientId: null,
+    patient: null,
+    
+    // Type de dossier
+    typeDossier: 'mdph_agefiph',
+    
+    // Situation professionnelle
+    situationPro: '',
+    
+    // Montants
+    montantAppareil: 3500,
+    
+    // Notes
+    notes: '',
+    
+    // Dates
+    dateCreation: new Date()
+};
+
+// Instances des composants
+let patientSearchDropdown = null;
+let dropdownSituation = null;
+let timeline = null;
+
+// Exposer l'état pour le module principal
+window.subventionCreateState = { nouveauDossier };
+
+// ========================================
+// INITIALISATION DU MODULE
+// ========================================
+
+export function initCreationSubvention() {
+    // Exposer les fonctions globales
+    window.resetNouveauDossier = resetNouveauDossier;
+    
+    console.log('✅ Module création subvention initialisé');
+}
+
+// ========================================
+// OUVERTURE NOUVEAU DOSSIER
+// ========================================
+
+export function ouvrirNouveauDossier() {
+    console.log('📋 Ouverture nouveau dossier subvention');
+    
+    // Réinitialiser l'état
+    resetNouveauDossier();
+    
+    // Créer la modal si elle n'existe pas
+    if (!document.getElementById('modalNouveauDossier')) {
+        createModalHTML();
     }
     
-    // ========================================
-    // INITIALISATION
-    // ========================================
-    
-    async init(permissions) {
-        this.permissions = permissions;
-        this.render();
-        this.attachEvents();
-        
-        // Focus sur la recherche patient
-        setTimeout(() => {
-            if (this.searchDropdown && this.searchDropdown.input) {
-                this.searchDropdown.input.focus();
+    // Ouvrir la modal
+    config.modalManager.register('modalNouveauDossier', {
+        closeOnOverlayClick: false,
+        closeOnEscape: true,
+        onBeforeClose: async () => {
+            if (window.skipConfirmation) {
+                window.skipConfirmation = false;
+                return true;
             }
-        }, 100);
-    }
+            
+            if (nouveauDossier.patientId || nouveauDossier.montantAppareil !== 3500) {
+                return await config.Dialog.confirm(
+                    'Voulez-vous vraiment fermer ? Les données non sauvegardées seront perdues.'
+                );
+            }
+            return true;
+        }
+    });
     
-    // ========================================
-    // RENDU
-    // ========================================
+    config.modalManager.open('modalNouveauDossier');
     
-    render() {
-        const container = document.getElementById('subventions-create-container');
-        if (!container) return;
-        
-        container.innerHTML = `
-            <div class="create-dossier">
-                <div class="create-header">
-                    <h2>Créer un nouveau dossier de subvention</h2>
-                    <p class="subtitle">Sélectionnez un patient et configurez le type de dossier</p>
+    // Afficher l'étape 1 après ouverture
+    setTimeout(() => {
+        afficherEtape(1);
+    }, 100);
+}
+
+// ========================================
+// CRÉATION DU HTML DE LA MODAL
+// ========================================
+
+function createModalHTML() {
+    const modalHTML = `
+        <div id="modalNouveauDossier" class="modal" style="display: none;">
+            <div class="modal-content modal-large">
+                <div class="modal-header">
+                    <h2>Nouveau Dossier de Subvention</h2>
+                    <button class="modal-close">&times;</button>
                 </div>
                 
-                <form id="create-form" class="create-form">
-                    <!-- Section Patient -->
-                    <!-- Section Patient -->
-                        <div class="form-section">
-                            <h3 class="section-title">
-                                <span class="section-number">1</span>
-                                Patient
-                            </h3>
-                            
-                            <div class="patient-search">
-                                <!-- SearchDropdown -->
-                                <div class="search-container" id="search-container">
-                                    <!-- Le SearchDropdown sera injecté ici -->
-                                </div>
+                <!-- Timeline ENTRE header et body comme dans commandes -->
+                <div class="timeline-container" style="margin: 20px 0;">
+                    <div class="timeline" id="timeline-nouveau-dossier"></div>
+                </div>
+                
+                <div class="modal-body">
+                    <!-- ÉTAPE 1 : Sélection patient -->
+                    <div class="step-content" id="stepContent1">
+                        <h3>Sélection du patient</h3>
+                        
+                        <!-- Recherche avec CLASSE comme dans commandes -->
+                        <div class="patient-search">
+                            <!-- SearchDropdown sera initialisé ici -->
+                        </div>
+                        
+                        <!-- Patient sélectionné (caché par défaut) -->
+                        <div class="patient-selected" id="patientSelected" style="display: none;">
+                            <h4>Patient sélectionné :</h4>
+                            <div class="patient-card" style="
+                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                border-radius: 12px;
+                                padding: 20px;
+                                color: white;
+                                box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                                 
-                                <!-- Carte patient sélectionné (comme commandes) -->
-                                <div class="selected-patient" id="selected-patient" style="display: none;">
-                                    <div class="patient-card" style="
-                                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                                        border-radius: 12px;
-                                        padding: 20px;
-                                        color: white;
-                                        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                                        margin: 20px 0;">
-                                        
-                                        <div style="display: flex; justify-content: space-between; align-items: start;">
-                                            <div class="patient-info">
-                                                <h4 id="patient-name" style="margin: 0 0 8px 0; font-size: 1.2rem;"></h4>
-                                                <p id="patient-details" style="margin: 0; opacity: 0.9; font-size: 0.9rem;"></p>
-                                            </div>
-                                            <button type="button" class="btn-change" id="btn-change-patient" 
-                                                    style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); 
-                                                        color: white; padding: 6px 16px; border-radius: 20px; cursor: pointer;">
-                                                Changer
-                                            </button>
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <div>
+                                        <p style="margin: 0 0 8px 0; font-size: 1.2rem; font-weight: 600;">
+                                            <span id="selectedPatientName"></span>
+                                        </p>
+                                        <p style="margin: 0; opacity: 0.9;" id="selectedPatientInfo"></p>
+                                    </div>
+                                    <button type="button" class="btn-link" onclick="changerPatient()"
+                                            style="background: rgba(255,255,255,0.2); 
+                                                   border: 1px solid rgba(255,255,255,0.3);
+                                                   color: white; padding: 6px 16px; 
+                                                   border-radius: 20px;">
+                                        Changer
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Alerte éligibilité -->
+                            <div id="patientEligibilite" style="margin-top: 15px;"></div>
+                        </div>
+                        
+                        <div class="divider" style="text-align: center; margin: 30px 0; color: #999;">
+                            OU
+                        </div>
+                        
+                        <button class="btn btn-secondary btn-with-icon pill" onclick="ouvrirNouveauPatient()">
+                            <span>➕</span> Créer un nouveau patient
+                        </button>
+                    </div>
+                    
+                    <!-- ÉTAPE 2 : Type de dossier -->
+                    <div class="step-content hidden" id="stepContent2">
+                        <h3>Type de dossier</h3>
+                        
+                        <div class="radio-group" style="display: flex; flex-direction: column; gap: 15px;">
+                            <label class="radio-card" style="cursor: pointer;">
+                                <input type="radio" name="typeDossier" value="mdph_agefiph" checked
+                                       style="display: none;">
+                                <div class="radio-content" style="
+                                    border: 2px solid #e0e0e0;
+                                    border-radius: 12px;
+                                    padding: 20px;
+                                    transition: all 0.3s;">
+                                    <div style="display: flex; align-items: center; gap: 15px;">
+                                        <span style="font-size: 30px;">📋</span>
+                                        <div>
+                                            <strong style="font-size: 1.1rem;">MDPH + AGEFIPH</strong>
+                                            <p style="margin: 5px 0 0 0; color: #666; font-size: 0.9rem;">
+                                                Dossier complet avec demande RQTH/PCH et financement AGEFIPH
+                                            </p>
                                         </div>
                                     </div>
-                                    <div class="patient-alert" id="patient-alert"></div>
-                                </div>
-                            </div>
-                            
-                            <!-- Option création rapide (style amélioré) -->
-                            <div class="quick-create" style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
-                                <span style="color: #999;">OU</span>
-                                <button type="button" class="btn btn-outline-primary" id="btn-create-patient" 
-                                        style="display: block; margin: 15px auto; padding: 12px 30px; border-radius: 25px;">
-                                    ➕ Créer un nouveau patient
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <!-- Option création rapide -->
-                        <div class="quick-create">
-                            <p>Patient non trouvé ? 
-                                <button type="button" class="btn-link" id="btn-create-patient">
-                                    Créer un nouveau patient
-                                </button>
-                            </p>
-                        </div>
-                    </div>
-                    
-                    <!-- Section Type de dossier -->
-                    <div class="form-section">
-                        <h3 class="section-title">
-                            <span class="section-number">2</span>
-                            Type de dossier
-                        </h3>
-                        
-                        <div class="radio-group">
-                            <label class="radio-card">
-                                <input type="radio" 
-                                       name="type" 
-                                       value="mdph_agefiph"
-                                       checked>
-                                <div class="radio-content">
-                                    <div class="radio-header">
-                                        <span class="radio-icon">📋</span>
-                                        <span class="radio-title">MDPH + AGEFIPH</span>
-                                    </div>
-                                    <p class="radio-description">
-                                        Dossier complet avec demande RQTH/PCH et financement AGEFIPH
-                                    </p>
                                 </div>
                             </label>
                             
-                            <label class="radio-card">
-                                <input type="radio" 
-                                       name="type" 
-                                       value="mdph_pch">
-                                <div class="radio-content">
-                                    <div class="radio-header">
-                                        <span class="radio-icon">🏥</span>
-                                        <span class="radio-title">MDPH avec PCH uniquement</span>
+                            <label class="radio-card" style="cursor: pointer;">
+                                <input type="radio" name="typeDossier" value="mdph_pch"
+                                       style="display: none;">
+                                <div class="radio-content" style="
+                                    border: 2px solid #e0e0e0;
+                                    border-radius: 12px;
+                                    padding: 20px;
+                                    transition: all 0.3s;">
+                                    <div style="display: flex; align-items: center; gap: 15px;">
+                                        <span style="font-size: 30px;">🏥</span>
+                                        <div>
+                                            <strong style="font-size: 1.1rem;">MDPH avec PCH uniquement</strong>
+                                            <p style="margin: 5px 0 0 0; color: #666; font-size: 0.9rem;">
+                                                Patient ayant déjà la RQTH, demande PCH uniquement
+                                            </p>
+                                        </div>
                                     </div>
-                                    <p class="radio-description">
-                                        Patient ayant déjà la RQTH, demande PCH uniquement
-                                    </p>
                                 </div>
                             </label>
                             
-                            <label class="radio-card">
-                                <input type="radio" 
-                                       name="type" 
-                                       value="mdph_seul">
-                                <div class="radio-content">
-                                    <div class="radio-header">
-                                        <span class="radio-icon">📄</span>
-                                        <span class="radio-title">MDPH seul</span>
+                            <label class="radio-card" style="cursor: pointer;">
+                                <input type="radio" name="typeDossier" value="mdph_seul"
+                                       style="display: none;">
+                                <div class="radio-content" style="
+                                    border: 2px solid #e0e0e0;
+                                    border-radius: 12px;
+                                    padding: 20px;
+                                    transition: all 0.3s;">
+                                    <div style="display: flex; align-items: center; gap: 15px;">
+                                        <span style="font-size: 30px;">📄</span>
+                                        <div>
+                                            <strong style="font-size: 1.1rem;">MDPH seul</strong>
+                                            <p style="margin: 5px 0 0 0; color: #666; font-size: 0.9rem;">
+                                                Uniquement la demande MDPH (sans AGEFIPH)
+                                            </p>
+                                        </div>
                                     </div>
-                                    <p class="radio-description">
-                                        Uniquement la demande MDPH (sans AGEFIPH)
-                                    </p>
                                 </div>
                             </label>
                         </div>
                     </div>
                     
-                    <!-- Section Informations -->
-                    <div class="form-section">
-                        <h3 class="section-title">
-                            <span class="section-number">3</span>
-                            Informations complémentaires
-                        </h3>
+                    <!-- ÉTAPE 3 : Informations -->
+                    <div class="step-content hidden" id="stepContent3">
+                        <h3>Informations complémentaires</h3>
                         
-                        <div class="form-grid">
+                        <div class="form-row">
                             <div class="form-group">
-                                <label for="montant">Montant de l'appareil</label>
-                                <div class="input-group">
-                                    <input type="number" 
-                                           id="montant" 
-                                           name="montant"
-                                           value="${this.formData.montantAppareil / 100}"
-                                           min="0"
-                                           step="0.01"
-                                           class="form-input">
-                                    <span class="input-addon">€</span>
-                                </div>
-                                <small class="form-help">Prix total de l'appareillage</small>
+                                <label>Situation professionnelle *</label>
+                                <div id="situationPro"></div>
                             </div>
                             
                             <div class="form-group">
-                                <label for="situation">Situation professionnelle</label>
-                                <select id="situation" 
-                                        name="situation" 
-                                        class="form-select"
-                                        disabled>
-                                    <option value="">Sélectionner un patient d'abord</option>
-                                </select>
-                                <small class="form-help">Détermine les documents requis</small>
+                                <label>Montant de l'appareil (€) *</label>
+                                <input type="number" id="montantAppareil" 
+                                       value="${nouveauDossier.montantAppareil}"
+                                       min="0" step="0.01" required>
                             </div>
                         </div>
                         
                         <div class="form-group">
-                            <label for="notes">Notes internes (optionnel)</label>
-                            <textarea id="notes" 
-                                      name="notes"
-                                      rows="3"
-                                      class="form-textarea"
+                            <label>Notes internes (optionnel)</label>
+                            <textarea id="notes" rows="4"
                                       placeholder="Informations particulières sur ce dossier..."></textarea>
                         </div>
                     </div>
                     
-                    <!-- Récapitulatif -->
-                    <div class="form-section" id="recap-section" style="display: none;">
-                        <h3 class="section-title">
-                            <span class="section-number">✓</span>
-                            Récapitulatif
-                        </h3>
+                    <!-- ÉTAPE 4 : Validation -->
+                    <div class="step-content hidden" id="stepContent4">
+                        <h3>Récapitulatif du dossier</h3>
                         
-                        <div class="recap-card">
-                            <div class="recap-content" id="recap-content">
-                                <!-- Sera rempli dynamiquement -->
-                            </div>
+                        <div class="recap-section" style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                            <h4 style="color: #667eea; margin-bottom: 15px;">Patient</h4>
+                            <div id="recapPatient"></div>
+                        </div>
+                        
+                        <div class="recap-section" style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                            <h4 style="color: #667eea; margin-bottom: 15px;">Type de dossier</h4>
+                            <div id="recapType"></div>
+                        </div>
+                        
+                        <div class="recap-section" style="background: #f8f9fa; padding: 20px; border-radius: 12px;">
+                            <h4 style="color: #667eea; margin-bottom: 15px;">Informations</h4>
+                            <div id="recapInfos"></div>
                         </div>
                     </div>
-                    
-                    <!-- Actions -->
-                    <div class="form-actions">
-                        <button type="button" 
-                                class="btn btn-secondary" 
-                                onclick="config.modalManager.close('modalCreateSubvention')">
-                            Annuler
-                        </button>
-                        <button type="submit" 
-                                class="btn btn-primary" 
-                                id="btn-submit"
-                                disabled>
-                            <span class="btn-text">Créer le dossier</span>
-                            <span class="btn-loading" style="display: none;">
-                                <i class="icon-loader"></i> Création...
-                            </span>
-                        </button>
-                    </div>
-                </form>
+                </div>
+                
+                <div class="modal-footer">
+                    <button class="btn btn-secondary pill" id="btnPrevStep" 
+                            onclick="etapePrecedente()" disabled>
+                        ← Précédent
+                    </button>
+                    <button class="btn btn-primary pill" id="btnNextStep" 
+                            onclick="etapeSuivante()">
+                        Suivant →
+                    </button>
+                    <button class="btn btn-success pill hidden" id="btnValiderDossier" 
+                            onclick="validerDossier()">
+                        ✓ Créer le dossier
+                    </button>
+                </div>
             </div>
-        `;
+        </div>
+    `;
+    
+    // Ajouter au body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Ajouter les styles pour les radio cards
+    addModalStyles();
+}
+
+// ========================================
+// GESTION DES ÉTAPES
+// ========================================
+
+function afficherEtape(etape) {
+    etapeActuelle = etape;
+    
+    console.log(`📍 Affichage étape ${etape}`);
+    
+    // Masquer toutes les étapes
+    for (let i = 1; i <= 4; i++) {
+        const stepContent = document.getElementById(`stepContent${i}`);
+        if (stepContent) {
+            stepContent.classList.add('hidden');
+        }
+    }
+    
+    // Afficher l'étape actuelle
+    const currentStepContent = document.getElementById(`stepContent${etape}`);
+    if (currentStepContent) {
+        currentStepContent.classList.remove('hidden');
+    }
+    
+    // Gérer la timeline (comme dans commandes)
+    updateTimeline(etape);
+    
+    // Gérer les boutons
+    const btnPrev = document.getElementById('btnPrevStep');
+    const btnNext = document.getElementById('btnNextStep');
+    const btnValidate = document.getElementById('btnValiderDossier');
+    
+    if (btnPrev) btnPrev.disabled = etape === 1;
+    if (btnNext) btnNext.style.display = etape < 4 ? 'block' : 'none';
+    if (btnValidate) btnValidate.classList.toggle('hidden', etape !== 4);
+    
+    // Actions spécifiques par étape
+    switch (etape) {
+        case 1:
+            // Initialiser la recherche patient
+            setTimeout(() => {
+                initPatientSearch();
+            }, 100);
+            break;
+            
+        case 2:
+            // Radio cards déjà dans le HTML
+            initRadioCards();
+            break;
+            
+        case 3:
+            // Charger les options de situation
+            chargerSituations();
+            break;
+            
+        case 4:
+            // Afficher le récapitulatif
+            afficherRecapitulatif();
+            break;
+    }
+}
+
+// ========================================
+// TIMELINE (COMME DANS COMMANDES)
+// ========================================
+
+function updateTimeline(etapeActive) {
+    // Détruire l'ancienne timeline
+    if (timeline) {
+        try {
+            timeline.destroy();
+        } catch (e) {
+            console.warn('Timeline destroy error:', e);
+        }
+        timeline = null;
+    }
+    
+    // Container pour la timeline
+    const timelineContainer = document.querySelector('#modalNouveauDossier .timeline-container');
+    if (!timelineContainer) {
+        console.error('❌ Container timeline non trouvé');
+        return;
+    }
+    
+    // Vider et recréer le contenu
+    timelineContainer.innerHTML = '<div class="timeline" id="timeline-nouveau-dossier"></div>';
+    
+    // Créer les items
+    const items = ETAPES_CREATION.map((etapeData, index) => {
+        const stepNumber = index + 1;
+        let status = 'pending';
         
-        // Stocker les références
-        this.elements = {
-            form: document.getElementById('create-form'),
-            searchContainer: document.getElementById('search-container'),
-            selectedPatient: document.getElementById('selected-patient'),
-            patientName: document.getElementById('patient-name'),
-            patientDetails: document.getElementById('patient-details'),
-            patientAlert: document.getElementById('patient-alert'),
-            situationSelect: document.getElementById('situation'),
-            montantInput: document.getElementById('montant'),
-            notesTextarea: document.getElementById('notes'),
-            recapSection: document.getElementById('recap-section'),
-            recapContent: document.getElementById('recap-content'),
-            submitBtn: document.getElementById('btn-submit')
+        if (stepNumber < etapeActive) {
+            status = 'completed';
+        } else if (stepNumber === etapeActive) {
+            status = 'active';
+        }
+        
+        return {
+            id: `step${stepNumber}`,
+            label: etapeData.label,
+            icon: etapeData.icon,
+            status: status
         };
+    });
+    
+    // Créer la nouvelle timeline
+    try {
+        timeline = new Timeline({
+            container: '#timeline-nouveau-dossier',
+            items: items,
+            orientation: 'horizontal',
+            theme: 'colorful',
+            animated: true,
+            clickable: true,
+            showDates: false,
+            showLabels: true,
+            onClick: (item, index) => {
+                const targetStep = index + 1;
+                if (targetStep < etapeActuelle) {
+                    afficherEtape(targetStep);
+                }
+            }
+        });
         
-        // Initialiser la recherche patient
-        this.initSearchDropdown();
+        console.log(`✅ Timeline créée pour étape ${etapeActive}`);
+        
+    } catch (error) {
+        console.error('❌ Erreur création timeline:', error);
+    }
+}
+
+// ========================================
+// ÉTAPE 1 : RECHERCHE PATIENT
+// ========================================
+
+function initPatientSearch() {
+    // Détruire l'ancienne instance
+    if (patientSearchDropdown) {
+        patientSearchDropdown.destroy();
     }
     
-    // ========================================
-    // COMPOSANTS
-    // ========================================
-    
-initSearchDropdown() {
-    // Détruire l'ancienne instance si elle existe
-    if (this.searchDropdown) {
-        this.searchDropdown.destroy();
-    }
-    
-    this.searchDropdown = config.createSearchDropdown(this.elements.searchContainer, {
+    // IMPORTANT : Utiliser un sélecteur STRING comme dans commandes
+    patientSearchDropdown = config.createSearchDropdown('.patient-search', {
         placeholder: 'Rechercher un patient (nom, prénom, téléphone...)',
         onSearch: async (query) => {
             try {
-                const clients = await ClientsService.rechercherClients(query);
-                return clients.map(client => ({
-                    id: client.id,
-                    nom: client.nom,
-                    prenom: client.prenom,
-                    telephone: client.telephone || '',
-                    email: client.email || '',
-                    dateNaissance: client.dateNaissance || null,
-                    adresse: {
-                        rue: client.adresse?.rue || '',
-                        codePostal: client.adresse?.codePostal || '',
-                        ville: client.adresse?.ville || '',
-                        departement: client.adresse?.departement || ''
-                    },
-                    situation: client.situation || ''
-                }));
+                return await ClientsService.rechercherClients(query);
             } catch (error) {
                 console.error('Erreur recherche patient:', error);
                 throw error;
             }
         },
         onSelect: (patient) => {
-            this.selectPatient(patient);
+            selectionnerPatient(patient.id);
         },
         renderItem: (patient) => {
-            // Template élégant comme dans commandes
             return `
-                <div style="padding: 8px;">
-                    <strong style="color: #2c3e50;">${patient.nom} ${patient.prenom}</strong>
+                <div style="padding: 10px;">
+                    <strong>${patient.nom} ${patient.prenom}</strong>
                     <div style="font-size: 0.85rem; color: #666; margin-top: 4px;">
-                        ${patient.telephone || 'Pas de téléphone'} 
+                        ${patient.telephone || ''} 
                         ${patient.email ? '• ' + patient.email : ''}
                     </div>
                 </div>
@@ -326,382 +492,490 @@ initSearchDropdown() {
         }
     });
 }
-    
-    // ========================================
-    // GESTION DU PATIENT
-    // ========================================
-    
-async selectPatient(patient) {
-    this.selectedPatient = patient;
-    
-    // Masquer la recherche
-    this.elements.searchContainer.style.display = 'none';
-    
-    // Afficher la carte patient avec animation
-    this.elements.selectedPatient.style.display = 'block';
-    this.elements.selectedPatient.style.animation = 'fadeInUp 0.3s ease';
-    
-    // Remplir les infos
-    this.elements.patientName.textContent = `${patient.nom} ${patient.prenom}`;
-    
-    let details = [];
-    if (patient.dateNaissance) {
-        details.push(`Né(e) le ${this.formatDate(patient.dateNaissance)}`);
-    }
-    if (patient.telephone) {
-        details.push(`📱 ${patient.telephone}`);
-    }
-    if (patient.email) {
-        details.push(`✉️ ${patient.email}`);
-    }
-    
-    this.elements.patientDetails.innerHTML = details.join(' • ');
-    
-    // Suite du traitement...
-    await this.loadPatientSituation(patient);
-    this.checkEligibilite();
-    this.enableForm();
-    this.updateRecap();
-}
-    
-    async loadPatientSituation(patient) {
-        if (!patient.adresse) {
-            patient.adresse = { departement: '75' };
-        }
-        
-        let situation = patient.situation || '';
-        
-        // Options de situation en dur pour l'instant
-        const situations = [
-            { value: 'salarie', label: 'Salarié' },
-            { value: 'independant', label: 'Indépendant' },
-            { value: 'demandeur_emploi', label: 'Demandeur d\'emploi' },
-            { value: 'retraite', label: 'Retraité' },
-            { value: 'etudiant', label: 'Étudiant' }
-        ];
-        
-        this.elements.situationSelect.innerHTML = `
-            <option value="">-- Sélectionner --</option>
-            ${situations.map(opt => `
-                <option value="${opt.value}" ${situation === opt.value ? 'selected' : ''}>
-                    ${opt.label}
-                </option>
-            `).join('')}
-        `;
-        
-        this.elements.situationSelect.disabled = false;
-        
-        if (situation) {
-            this.checkEligibilite();
-        }
-    }
-    
-    checkEligibilite() {
-        const situation = this.elements.situationSelect.value;
-        if (!situation) {
-            this.elements.patientAlert.innerHTML = '';
-            return;
-        }
-        
-        const eligibilite = {
-            eligible: situation === 'salarie' || situation === 'independant',
-            raison: situation === 'retraite' ? 'Retraité depuis plus de 2 ans' : null,
-            conditions: situation === 'demandeur_emploi' ? ['Inscription < 2 ans'] : null
-        };
-        
-        if (!eligibilite.eligible) {
-            this.elements.patientAlert.innerHTML = `
-                <div class="alert alert-danger">
-                    <i class="icon-alert-circle"></i>
-                    <strong>Non éligible AGEFIPH :</strong> ${eligibilite.raison}
-                    ${eligibilite.alternative ? `<br>Alternative : ${eligibilite.alternative}` : ''}
-                </div>
-            `;
+
+export async function selectionnerPatient(patientId) {
+    try {
+        const patient = await ClientsService.getClient(patientId);
+        if (patient) {
+            nouveauDossier.patientId = patientId;
+            nouveauDossier.patient = patient;
             
-            // Forcer MDPH seul
-            document.querySelector('input[name="type"][value="mdph_seul"]').checked = true;
-            document.querySelector('input[name="type"][value="mdph_agefiph"]').disabled = true;
+            // Masquer la recherche
+            const searchContainer = document.querySelector('.patient-search');
+            if (searchContainer) {
+                searchContainer.style.display = 'none';
+            }
             
-        } else if (eligibilite.conditions) {
-            this.elements.patientAlert.innerHTML = `
-                <div class="alert alert-warning">
-                    <i class="icon-info"></i>
-                    <strong>Éligibilité conditionnelle :</strong>
-                    <ul>
-                        ${eligibilite.conditions.map(c => `<li>${c}</li>`).join('')}
-                    </ul>
-                </div>
-            `;
-        } else {
-            this.elements.patientAlert.innerHTML = `
-                <div class="alert alert-success">
-                    <i class="icon-check"></i>
-                    Éligible MDPH et AGEFIPH
-                </div>
-            `;
-        }
-    }
-    
-    // ========================================
-    // ÉVÉNEMENTS
-    // ========================================
-    
-    attachEvents() {
-        // Changement de patient
-        document.getElementById('btn-change-patient')?.addEventListener('click', () => {
-            this.resetPatient();
-        });
-        
-        // Créer patient
-        document.getElementById('btn-create-patient')?.addEventListener('click', () => {
-            this.openCreatePatient();
-        });
-        
-        // Changement de situation
-        this.elements.situationSelect?.addEventListener('change', () => {
-            this.checkEligibilite();
-            this.updateRecap();
-        });
-        
-        // Changements dans le formulaire
-        this.elements.form?.addEventListener('change', () => {
-            this.updateRecap();
-        });
-        
-        // Soumission
-        this.elements.form?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.handleSubmit();
-        });
-    }
-    
-    resetPatient() {
-        this.selectedPatient = null;
-        this.elements.selectedPatient.style.display = 'none';
-        this.elements.searchContainer.style.display = 'block';
-        
-        // Utiliser le searchDropdown stocké
-        if (this.searchDropdown) {
-            this.searchDropdown.clear();
-            if (this.searchDropdown.input) {
-                this.searchDropdown.input.focus();
+            // Afficher le patient sélectionné
+            const patientSelected = document.getElementById('patientSelected');
+            if (patientSelected) {
+                patientSelected.style.display = 'block';
+            }
+            
+            // Remplir les infos
+            const selectedPatientName = document.getElementById('selectedPatientName');
+            if (selectedPatientName) {
+                selectedPatientName.textContent = `${patient.prenom} ${patient.nom}`;
+            }
+            
+            const selectedPatientInfo = document.getElementById('selectedPatientInfo');
+            if (selectedPatientInfo) {
+                let infoText = [];
+                if (patient.telephone) infoText.push(`📱 ${patient.telephone}`);
+                if (patient.email) infoText.push(`✉️ ${patient.email}`);
+                selectedPatientInfo.innerHTML = infoText.join(' • ');
+            }
+            
+            // Vérifier l'éligibilité si on a la situation
+            if (patient.situation) {
+                checkEligibilite(patient.situation);
             }
         }
+    } catch (error) {
+        console.error('Erreur sélection patient:', error);
+        config.notify.error('Erreur lors de la sélection du patient');
+    }
+}
+
+export function changerPatient() {
+    nouveauDossier.patientId = null;
+    nouveauDossier.patient = null;
+    
+    // Afficher la recherche
+    const searchContainer = document.querySelector('.patient-search');
+    if (searchContainer) {
+        searchContainer.style.display = 'block';
+    }
+    
+    // Masquer le patient sélectionné
+    const patientSelected = document.getElementById('patientSelected');
+    if (patientSelected) {
+        patientSelected.style.display = 'none';
+    }
+    
+    // Clear le SearchDropdown
+    if (patientSearchDropdown) {
+        patientSearchDropdown.clear();
+    }
+}
+
+// ========================================
+// ÉTAPE 2 : TYPE DE DOSSIER
+// ========================================
+
+function initRadioCards() {
+    // Gérer le style des radio cards
+    const radioCards = document.querySelectorAll('.radio-card');
+    
+    radioCards.forEach(card => {
+        const input = card.querySelector('input[type="radio"]');
+        const content = card.querySelector('.radio-content');
         
-        this.elements.situationSelect.disabled = true;
-        this.elements.situationSelect.value = '';
-        this.elements.patientAlert.innerHTML = '';
-        this.disableForm();
-    }
-    
-    openCreatePatient() {
-        config.notify.info('Création patient à venir');
-    }
-    
-    // ========================================
-    // RÉCAPITULATIF
-    // ========================================
-    
-    updateRecap() {
-        if (!this.selectedPatient) {
-            this.elements.recapSection.style.display = 'none';
-            return;
+        // État initial
+        if (input.checked) {
+            content.style.borderColor = '#667eea';
+            content.style.background = '#f8f9ff';
         }
         
-        const type = document.querySelector('input[name="type"]:checked')?.value;
-        const situation = this.elements.situationSelect.value;
-        const montant = parseFloat(this.elements.montantInput.value) || 0;
+        // Au clic
+        card.addEventListener('click', () => {
+            // Reset tous les cards
+            document.querySelectorAll('.radio-content').forEach(c => {
+                c.style.borderColor = '#e0e0e0';
+                c.style.background = 'white';
+            });
+            
+            // Activer celui-ci
+            input.checked = true;
+            content.style.borderColor = '#667eea';
+            content.style.background = '#f8f9ff';
+            
+            // Sauvegarder la valeur
+            nouveauDossier.typeDossier = input.value;
+        });
+    });
+}
+
+// ========================================
+// ÉTAPE 3 : INFORMATIONS
+// ========================================
+
+function chargerSituations() {
+    const situations = [
+        { value: 'salarie', label: 'Salarié' },
+        { value: 'independant', label: 'Indépendant' },
+        { value: 'demandeur_emploi', label: 'Demandeur d\'emploi' },
+        { value: 'retraite', label: 'Retraité' },
+        { value: 'etudiant', label: 'Étudiant' }
+    ];
+    
+    // Créer le dropdown
+    dropdownSituation = config.createDropdown('#situationPro', {
+        placeholder: '-- Sélectionner --',
+        options: situations,
+        value: nouveauDossier.situationPro,
+        onChange: (value) => {
+            nouveauDossier.situationPro = value;
+            checkEligibilite(value);
+        }
+    });
+    
+    // Listeners pour le montant
+    const montantInput = document.getElementById('montantAppareil');
+    if (montantInput) {
+        montantInput.addEventListener('change', (e) => {
+            nouveauDossier.montantAppareil = parseFloat(e.target.value) || 0;
+        });
+    }
+    
+    // Listeners pour les notes
+    const notesInput = document.getElementById('notes');
+    if (notesInput) {
+        notesInput.addEventListener('change', (e) => {
+            nouveauDossier.notes = e.target.value;
+        });
+    }
+}
+
+function checkEligibilite(situation) {
+    const alertDiv = document.getElementById('patientEligibilite');
+    if (!alertDiv) return;
+    
+    const eligible = situation === 'salarie' || situation === 'independant';
+    
+    if (!eligible) {
+        alertDiv.innerHTML = `
+            <div style="background: #fff3cd; border: 1px solid #ffc107; 
+                        border-radius: 8px; padding: 12px; color: #856404;">
+                ⚠️ <strong>Attention :</strong> Non éligible AGEFIPH
+            </div>
+        `;
         
+        // Forcer MDPH seul
+        const radioMdphSeul = document.querySelector('input[value="mdph_seul"]');
+        if (radioMdphSeul) {
+            radioMdphSeul.click();
+        }
+    } else {
+        alertDiv.innerHTML = `
+            <div style="background: #d4edda; border: 1px solid #28a745; 
+                        border-radius: 8px; padding: 12px; color: #155724;">
+                ✅ Éligible MDPH et AGEFIPH
+            </div>
+        `;
+    }
+}
+
+// ========================================
+// ÉTAPE 4 : RÉCAPITULATIF
+// ========================================
+
+function afficherRecapitulatif() {
+    // Patient
+    const recapPatient = document.getElementById('recapPatient');
+    if (recapPatient && nouveauDossier.patient) {
+        recapPatient.innerHTML = `
+            <p><strong>${nouveauDossier.patient.prenom} ${nouveauDossier.patient.nom}</strong></p>
+            <p>${nouveauDossier.patient.telephone || ''}</p>
+            <p>${nouveauDossier.patient.email || ''}</p>
+        `;
+    }
+    
+    // Type
+    const recapType = document.getElementById('recapType');
+    if (recapType) {
         const typeLabels = {
             'mdph_agefiph': 'MDPH + AGEFIPH',
             'mdph_pch': 'MDPH avec PCH uniquement',
             'mdph_seul': 'MDPH seul'
         };
-        
-        this.elements.recapContent.innerHTML = `
-            <div class="recap-item">
-                <span class="recap-label">Patient :</span>
-                <span class="recap-value">${this.selectedPatient.nom} ${this.selectedPatient.prenom}</span>
-            </div>
-            <div class="recap-item">
-                <span class="recap-label">Type de dossier :</span>
-                <span class="recap-value">${typeLabels[type] || '-'}</span>
-            </div>
-            <div class="recap-item">
-                <span class="recap-label">Situation :</span>
-                <span class="recap-value">${situation ? this.getSituationLabel(situation) : '-'}</span>
-            </div>
-            <div class="recap-item">
-                <span class="recap-label">Montant appareil :</span>
-                <span class="recap-value">${this.formatMontant(montant)}</span>
-            </div>
-        `;
-        
-        this.elements.recapSection.style.display = 'block';
+        recapType.innerHTML = `<p>${typeLabels[nouveauDossier.typeDossier]}</p>`;
     }
     
-    // ========================================
-    // VALIDATION ET SOUMISSION
-    // ========================================
-    
-    enableForm() {
-        this.elements.submitBtn.disabled = false;
-    }
-    
-    disableForm() {
-        this.elements.submitBtn.disabled = true;
-    }
-    
-    async handleSubmit() {
-        if (this.isSubmitting) return;
-        
-        try {
-            // Validation
-            if (!this.validateForm()) {
-                return;
-            }
-            
-            this.isSubmitting = true;
-            this.showLoading();
-            
-            // Préparer les données
-            const data = {
-                patient: {
-                    id: this.selectedPatient.id,
-                    nom: this.selectedPatient.nom,
-                    prenom: this.selectedPatient.prenom,
-                    dateNaissance: this.selectedPatient.dateNaissance,
-                    telephone: this.selectedPatient.telephone,
-                    email: this.selectedPatient.email,
-                    adresse: this.selectedPatient.adresse,
-                    situation: this.elements.situationSelect.value
-                },
-                type: document.querySelector('input[name="type"]:checked').value,
-                montants: {
-                    appareil: Math.round(parseFloat(this.elements.montantInput.value) * 100),
-                    accordeMDPH: 0,
-                    accordeAGEFIPH: 0,
-                    mutuelle: 0,
-                    resteACharge: Math.round(parseFloat(this.elements.montantInput.value) * 100)
-                },
-                organisation: {
-                    technicien: {
-                        id: this.permissions.userId,
-                        nom: this.permissions.userName
-                    },
-                    magasin: this.permissions.magasin,
-                    societe: 'BA'
-                },
-                notes: this.elements.notesTextarea.value
-            };
-            
-            // MOCK pour tester
-            const dossier = {
-                id: 'test-' + Date.now(),
-                numeroDossier: 'SUB-2025-' + Math.floor(Math.random() * 1000),
-                ...data
-            };
-            console.log('📋 Dossier créé (MOCK):', dossier);
-            
-            // Afficher le succès
-            config.notify.success(`Dossier ${dossier.numeroDossier} créé avec succès`);
-            
-            // Fermer la modal après succès
-            setTimeout(() => {
-                config.modalManager.close('modalCreateSubvention');
-                // Recharger la liste
-                window.location.reload();
-            }, 1500);
-            
-        } catch (error) {
-            console.error('Erreur création dossier:', error);
-            config.notify.error(error.message || 'Erreur lors de la création du dossier');
-            
-        } finally {
-            this.isSubmitting = false;
-            this.hideLoading();
-        }
-    }
-    
-    validateForm() {
-        const errors = [];
-        
-        if (!this.selectedPatient) {
-            errors.push('Veuillez sélectionner un patient');
-        }
-        
-        const situation = this.elements.situationSelect.value;
-        if (!situation) {
-            errors.push('Veuillez indiquer la situation professionnelle');
-        }
-        
-        const montant = parseFloat(this.elements.montantInput.value);
-        if (!montant || montant <= 0) {
-            errors.push('Veuillez indiquer le montant de l\'appareil');
-        }
-        
-        if (errors.length > 0) {
-            config.notify.error(errors.join('<br>'));
-            return false;
-        }
-        
-        return true;
-    }
-    
-    showLoading() {
-        this.elements.submitBtn.querySelector('.btn-text').style.display = 'none';
-        this.elements.submitBtn.querySelector('.btn-loading').style.display = 'inline-flex';
-        this.elements.submitBtn.disabled = true;
-    }
-    
-    hideLoading() {
-        this.elements.submitBtn.querySelector('.btn-text').style.display = 'inline';
-        this.elements.submitBtn.querySelector('.btn-loading').style.display = 'none';
-        this.elements.submitBtn.disabled = false;
-    }
-    
-    // ========================================
-    // UTILITAIRES
-    // ========================================
-    
-    formatDate(date) {
-        return new Date(date).toLocaleDateString('fr-FR');
-    }
-    
-    formatMontant(montant) {
-        return new Intl.NumberFormat('fr-FR', {
-            style: 'currency',
-            currency: 'EUR'
-        }).format(montant);
-    }
-    
-    getSituationLabel(value) {
-        const labels = {
+    // Infos
+    const recapInfos = document.getElementById('recapInfos');
+    if (recapInfos) {
+        const situationLabels = {
             'salarie': 'Salarié',
             'independant': 'Indépendant',
             'demandeur_emploi': 'Demandeur d\'emploi',
             'retraite': 'Retraité',
             'etudiant': 'Étudiant'
         };
-        return labels[value] || value;
-    }
-    
-    // ========================================
-    // NETTOYAGE
-    // ========================================
-    
-    destroy() {
-        if (this.searchDropdown && this.searchDropdown.destroy) {
-            this.searchDropdown.destroy();
-        }
+        
+        recapInfos.innerHTML = `
+            <p><strong>Situation :</strong> ${situationLabels[nouveauDossier.situationPro] || '-'}</p>
+            <p><strong>Montant appareil :</strong> ${nouveauDossier.montantAppareil.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</p>
+            ${nouveauDossier.notes ? `<p><strong>Notes :</strong> ${nouveauDossier.notes}</p>` : ''}
+        `;
     }
 }
 
-// Export de l'instance
-export const subventionsCreate = new SubventionsCreate();
+// ========================================
+// NAVIGATION ENTRE ÉTAPES
+// ========================================
+
+export function etapePrecedente() {
+    if (etapeActuelle > 1) {
+        etapeActuelle--;
+        afficherEtape(etapeActuelle);
+    }
+}
+
+export async function etapeSuivante() {
+    if (!await validerEtape(etapeActuelle)) {
+        return;
+    }
+    
+    if (etapeActuelle < 4) {
+        etapeActuelle++;
+        afficherEtape(etapeActuelle);
+    }
+}
+
+async function validerEtape(etape) {
+    switch (etape) {
+        case 1:
+            if (!nouveauDossier.patientId) {
+                await config.Dialog.alert('Veuillez sélectionner un patient', 'Attention');
+                return false;
+            }
+            break;
+            
+        case 2:
+            // Type déjà sélectionné par défaut
+            break;
+            
+        case 3:
+            if (!nouveauDossier.situationPro) {
+                await config.Dialog.alert('Veuillez sélectionner une situation professionnelle', 'Attention');
+                return false;
+            }
+            if (!nouveauDossier.montantAppareil || nouveauDossier.montantAppareil <= 0) {
+                await config.Dialog.alert('Veuillez indiquer le montant de l\'appareil', 'Attention');
+                return false;
+            }
+            break;
+    }
+    return true;
+}
+
+// ========================================
+// VALIDATION FINALE
+// ========================================
+
+export async function validerDossier() {
+    try {
+        // Préparer les données
+        const dossierData = {
+            patient: {
+                id: nouveauDossier.patient.id,
+                nom: nouveauDossier.patient.nom,
+                prenom: nouveauDossier.patient.prenom,
+                telephone: nouveauDossier.patient.telephone,
+                email: nouveauDossier.patient.email
+            },
+            type: nouveauDossier.typeDossier,
+            situation: nouveauDossier.situationPro,
+            montants: {
+                appareil: Math.round(nouveauDossier.montantAppareil * 100), // En centimes
+                accordeMDPH: 0,
+                accordeAGEFIPH: 0,
+                mutuelle: 0,
+                resteACharge: Math.round(nouveauDossier.montantAppareil * 100)
+            },
+            notes: nouveauDossier.notes,
+            dateCreation: new Date()
+        };
+        
+        // TODO : Appeler le service pour créer le dossier
+        console.log('📋 Création dossier:', dossierData);
+        
+        // Empêcher la confirmation de fermeture
+        window.skipConfirmation = true;
+        
+        // Fermer la modal
+        config.modalManager.close('modalNouveauDossier');
+        
+        // Notifier
+        config.notify.success('Dossier créé avec succès !');
+        
+        // Recharger la liste
+        if (window.chargerDonnees) {
+            await window.chargerDonnees();
+        }
+        
+    } catch (error) {
+        console.error('Erreur création dossier:', error);
+        config.notify.error('Erreur lors de la création du dossier');
+    }
+}
+
+// ========================================
+// RESET
+// ========================================
+
+function resetNouveauDossier() {
+    console.log('🔄 Reset nouveau dossier');
+    
+    etapeActuelle = 1;
+    nouveauDossier = {
+        patientId: null,
+        patient: null,
+        typeDossier: 'mdph_agefiph',
+        situationPro: '',
+        montantAppareil: 3500,
+        notes: '',
+        dateCreation: new Date()
+    };
+    
+    // Nettoyer la timeline
+    if (timeline) {
+        try {
+            timeline.destroy();
+            timeline = null;
+        } catch (e) {
+            console.warn('Timeline destroy error:', e);
+        }
+    }
+    
+    // Détruire les composants
+    if (patientSearchDropdown) {
+        patientSearchDropdown.destroy();
+        patientSearchDropdown = null;
+    }
+    if (dropdownSituation) {
+        dropdownSituation.destroy();
+        dropdownSituation = null;
+    }
+}
+
+// ========================================
+// STYLES ADDITIONNELS
+// ========================================
+
+function addModalStyles() {
+    if (document.getElementById('subvention-modal-styles')) return;
+    
+    const styles = `
+        <style id="subvention-modal-styles">
+            .hidden { display: none !important; }
+            
+            .radio-card input[type="radio"]:checked + .radio-content {
+                border-color: #667eea !important;
+                background: #f8f9ff !important;
+            }
+            
+            .form-row {
+                display: flex;
+                gap: 20px;
+                margin-bottom: 20px;
+            }
+            
+            .form-row .form-group {
+                flex: 1;
+            }
+            
+            .form-group {
+                margin-bottom: 20px;
+            }
+            
+            .form-group label {
+                display: block;
+                margin-bottom: 8px;
+                font-weight: 600;
+                color: #495057;
+            }
+            
+            .form-group input,
+            .form-group textarea {
+                width: 100%;
+                padding: 10px 12px;
+                border: 2px solid #e0e0e0;
+                border-radius: 6px;
+                font-size: 14px;
+            }
+            
+            .form-group input:focus,
+            .form-group textarea:focus {
+                outline: none;
+                border-color: #667eea;
+            }
+            
+            #modalNouveauDossier .modal-content {
+                width: 900px;
+                max-width: 95%;
+                height: 80vh;
+                max-height: 90vh;
+            }
+            
+            .patient-selected {
+                margin: 20px 0;
+            }
+            
+            .divider {
+                position: relative;
+                text-align: center;
+                margin: 30px 0;
+            }
+            
+            .divider::before,
+            .divider::after {
+                content: '';
+                position: absolute;
+                top: 50%;
+                width: 45%;
+                height: 1px;
+                background: #e0e0e0;
+            }
+            
+            .divider::before { left: 0; }
+            .divider::after { right: 0; }
+        </style>
+    `;
+    
+    document.head.insertAdjacentHTML('beforeend', styles);
+}
+
+// ========================================
+// NOUVEAU PATIENT (STUB)
+// ========================================
+
+export function ouvrirNouveauPatient() {
+    window.skipConfirmation = true;
+    config.modalManager.close('modalNouveauDossier');
+    
+    setTimeout(() => {
+        config.notify.info('Création de patient à implémenter');
+        config.modalManager.open('modalNouveauDossier');
+    }, 300);
+}
+
+// ========================================
+// EXPORTS GLOBAUX
+// ========================================
+
+// Exposer les fonctions pour le HTML
+window.etapePrecedente = etapePrecedente;
+window.etapeSuivante = etapeSuivante;
+window.validerDossier = validerDossier;
+window.changerPatient = changerPatient;
+window.ouvrirNouveauPatient = ouvrirNouveauPatient;
+window.ouvrirNouveauDossier = ouvrirNouveauDossier;
 
 /* ========================================
-   EXPORT PAR DÉFAUT
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [Date] - Refonte complète basée sur commandes
+   Solution: Copier exactement la structure de commandes.create.js
+   - Timeline entre header et body
+   - SearchDropdown avec sélecteur string
+   - 4 étapes avec navigation
+   - Reset propre des composants
+   
+   NOTES POUR REPRISES FUTURES:
+   - NE PAS passer d'élément DOM à SearchDropdown
+   - TOUJOURS utiliser un sélecteur string (.classe)
+   - Timeline dans son propre container
+   - Détruire proprement tous les composants
    ======================================== */
-
-export default subventionsCreate;
