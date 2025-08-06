@@ -476,6 +476,51 @@ function calculerRetardMDPH(dossier) {
 }
 
 // ========================================
+// FONCTIONS UTILITAIRES (suite)
+// ========================================
+
+function formatDate(date) {
+    if (!date) return '-';
+    const d = date instanceof Date ? date : new Date(date);
+    return d.toLocaleDateString('fr-FR');
+}
+
+function formatMontant(montant) {
+    return montant.toLocaleString('fr-FR', { 
+        style: 'currency', 
+        currency: 'EUR' 
+    });
+}
+
+function calculerStatistiques() {
+    const stats = {
+        nouveau: 0,
+        en_cours: 0,
+        en_retard: 0,
+        termine: 0,
+        bloque: 0,
+        montant_total: 0
+    };
+    
+    state.dossiersData.forEach(dossier => {
+        // Vérifier si en retard avec la fonction MDPH
+        if (calculerRetardMDPH(dossier)) {
+            stats.en_retard++;
+        }
+        
+        // Compter par statut global
+        if (dossier.statutGlobal === 'nouveau') stats.nouveau++;
+        else if (dossier.statutGlobal === 'en_cours') stats.en_cours++;
+        else if (dossier.statutGlobal === 'termine') stats.termine++;
+        else if (dossier.statutGlobal === 'bloque') stats.bloque++;
+        
+        stats.montant_total += dossier.montant || 0;
+    });
+    
+    return stats;
+}
+
+// ========================================
 // DONNÉES MOCK
 // ========================================
 
