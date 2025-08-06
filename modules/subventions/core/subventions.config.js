@@ -5,6 +5,7 @@
 
 // ✅ IMPORT DIRECT - Plus d'index.js !
 import { AppHeader } from '../../../src/components/ui/app-header/app-header.component.js';
+import { Button } from '../../src/components/ui/button/button.component.js';
 
 export function createSubventionsHeader(userData) {
     return new AppHeader({
