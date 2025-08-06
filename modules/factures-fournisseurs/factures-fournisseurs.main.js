@@ -4,19 +4,14 @@
 //
 // DESCRIPTION:
 // Point d'entrée principal du module factures fournisseurs
-// Gère l'initialisation, l'authentification et le header
-// Coordonne tous les orchestrateurs
+// ORCHESTRATEUR PRINCIPAL - Décide de toute la configuration
+// Coordonne tous les sous-orchestrateurs
 //
 // ARCHITECTURE:
-// - main.js : Initialisation globale et auth
-// - list.js : Orchestre DataTable + Filtres + StatsCards
-// - create.js : Gère la création avec sélection "à payer"
-// - detail.js : Gère le détail avec timeline
-//
-// DÉPENDANCES:
-// - Firebase pour l'auth
-// - config pour les factories
-// - Les orchestrateurs de chaque section
+// - main.js : Orchestrateur principal + config UI
+// - list.js : Sous-orchestrateur DataTable + Filtres + StatsCards
+// - create.js : Sous-orchestrateur création
+// - detail.js : Sous-orchestrateur détail
 // ========================================
 
 import { initFirebase } from '../../src/services/firebase.service.js';
@@ -50,8 +45,7 @@ export const state = {
         fournisseur: '',
         categorie: '',
         periode: 'all',
-        statutsActifs: [] // Array pour filtrage multi-statuts depuis cards UNIQUEMENT
-        // SUPPRIMÉ : statut, aPayer, enRetard
+        statutsActifs: []
     }
 };
 
@@ -59,10 +53,9 @@ export const state = {
 let appHeader = null;
 
 // ========================================
-// INITIALISATION
+// AUTHENTIFICATION
 // ========================================
 
-// Vérifier l'authentification
 function checkAuth() {
     const auth = localStorage.getItem('sav_auth');
     if (!auth) return false;
@@ -78,7 +71,6 @@ function checkAuth() {
     return authData.authenticated;
 }
 
-// Obtenir les données utilisateur
 function getUserData() {
     const auth = JSON.parse(localStorage.getItem('sav_auth'));
     if (auth && auth.collaborateur) {
@@ -119,18 +111,70 @@ function getUserData() {
     };
 }
 
-// Initialiser les composants UI
+// ========================================
+// ORCHESTRATEUR UI - MAIN.JS DÉCIDE DE TOUT
+// ========================================
+
 async function initUIComponents() {
     try {
         const userData = getUserData();
         
-        // Créer le header avec la config locale
+        // DEBUG
+        console.log('🔍 DEBUG userData:', userData);
+        console.log('  - name:', userData.name);
+        console.log('  - store:', userData.store);
+        console.log('  - showLogout:', userData.showLogout);
+        
+        // MAIN.JS EST L'ORCHESTRATEUR - TOUTE LA CONFIG ICI
         appHeader = config.createFacturesHeader({
-            ...userData,
-            showMagasinSelector: false  // PAS de dropdown, juste afficher le magasin
+            // Container
+            container: 'body',
+            position: 'prepend',
+            
+            // Contenu
+            title: '📑 Factures Fournisseurs',
+            subtitle: 'Gestion des factures à payer',
+            theme: 'default',
+            
+            // Navigation
+            backUrl: window.location.origin + '/Orixis-pwa/modules/home/home.html',
+            
+            // Utilisateur
+            user: userData,
+            showMagasinDropdown: false,
+            showLogout: true,
+            
+            // Classes CSS (orchestrateur décide)
+            buttonClasses: {
+                back: 'btn on-dark btn-pill',
+                logout: 'btn btn-danger btn-sm on-dark text-white',
+                userSection: 'header-user-section'
+            },
+            
+            // Callbacks (orchestrateur gère)
+            onBack: null,  // Utilise backUrl
+            
+            onLogout: async () => {
+                console.log('🔴 Déconnexion demandée');
+                const confirme = await config.Dialog.confirm(
+                    'Voulez-vous vraiment vous déconnecter ?',
+                    'Déconnexion'
+                );
+                if (confirme) {
+                    console.log('✅ Déconnexion confirmée');
+                    localStorage.removeItem('sav_auth');
+                    window.location.href = '../../index.html';
+                }
+            },
+            
+            onUserClick: (userData) => {
+                console.log('👤 Clic sur utilisateur:', userData);
+                // Possibilité d'ajouter une action future
+            }
         });
         
-        console.log('🎨 Composants UI initialisés avec magasin:', userData.store);
+        console.log('✅ AppHeader créé avec succès');
+        console.log('🎨 Config complète définie par main.js');
         
     } catch (error) {
         console.error('❌ Erreur initialisation UI:', error);
@@ -139,39 +183,44 @@ async function initUIComponents() {
 }
 
 // ========================================
-// INITIALISATION AU CHARGEMENT
+// INITIALISATION PRINCIPALE
 // ========================================
 
 window.addEventListener('load', async () => {
+    // Vérification auth
     if (!checkAuth()) {
         window.location.href = '../../index.html';
         return;
     }
     
     try {
-        // 1. Initialiser les composants UI
+        console.log('🚀 Démarrage module Factures Fournisseurs');
+        
+        // 1. UI Components (Header)
         await initUIComponents();
         
-        // 2. Initialiser Firebase
+        // 2. Firebase
         await initFirebase();
+        console.log('✅ Firebase initialisé');
         
-        // 3. Initialiser les modales
+        // 3. Modales
         initModales();
+        console.log('✅ Modales initialisées');
         
-        // 4. Initialiser les modules
+        // 4. Sous-orchestrateurs
         await initListeFactures();
         initCreationFacture();
+        console.log('✅ Sous-orchestrateurs initialisés');
         
-        // 5. Afficher les factures déjà chargées
+        // 5. Données initiales
         afficherFactures();
-        
-        // 6. Recharger pour les stats
         await chargerDonnees();
+        console.log('✅ Données chargées');
         
-        // 7. Activer les animations
+        // 6. Animations
         document.body.classList.add('page-loaded');
         
-        // 8. Container pour les dialogs
+        // 7. Container dialogs
         if (!document.getElementById('dialog-container')) {
             const dialogContainer = document.createElement('div');
             dialogContainer.id = 'dialog-container';
@@ -179,13 +228,13 @@ window.addEventListener('load', async () => {
             document.body.appendChild(dialogContainer);
         }
         
-        // 9. Vérifier les retards (toutes les heures)
+        // 8. Surveillance retards
         verifierRetardsAutomatiquement();
         
-        console.log('✅ Page factures fournisseurs initialisée avec succès');
+        console.log('✅ Module Factures Fournisseurs prêt !');
         
     } catch (error) {
-        console.error('❌ Erreur lors de l\'initialisation:', error);
+        console.error('❌ Erreur initialisation module:', error);
         config.notify.error('Erreur lors du chargement de la page');
     }
 });
@@ -195,29 +244,24 @@ window.addEventListener('load', async () => {
 // ========================================
 
 function initModales() {
-    // Enregistrer les modales via la config
+    // Enregistrer les modales
     config.registerFacturesModals();
     
-    // Vérifier l'existence des modales
+    // Vérifier leur présence
     const modalIds = ['modalNouvelleFacture', 'modalDetailFacture'];
-    
     modalIds.forEach(modalId => {
         const modalElement = document.getElementById(modalId);
         if (!modalElement) {
-            console.warn(`⚠️ Modal HTML "${modalId}" non trouvé dans le DOM`);
+            console.warn(`⚠️ Modal "${modalId}" non trouvée dans le DOM`);
         }
     });
     
-    // Callbacks pour la modal nouvelle facture
+    // Configuration callbacks
     const modalNouvelleFacture = modalManager.get('modalNouvelleFacture');
     if (modalNouvelleFacture) {
-        modalNouvelleFacture.options = {
-            ...modalNouvelleFacture.options,
-            onClose: () => {
-                // Réinitialiser si nécessaire
-                if (window.resetNouvelleFacture) {
-                    window.resetNouvelleFacture();
-                }
+        modalNouvelleFacture.options.onClose = () => {
+            if (window.resetNouvelleFacture) {
+                window.resetNouvelleFacture();
             }
         };
     }
@@ -228,13 +272,13 @@ function initModales() {
 // ========================================
 
 function verifierRetardsAutomatiquement() {
-    // Vérifier immédiatement
+    // Vérification immédiate
     verifierRetards();
     
     // Puis toutes les heures
     setInterval(() => {
         verifierRetards();
-    }, 60 * 60 * 1000); // 1 heure
+    }, 60 * 60 * 1000);
 }
 
 async function verifierRetards() {
@@ -244,7 +288,6 @@ async function verifierRetards() {
         
         if (nombre > 0) {
             config.notify.warning(`${nombre} facture(s) marquée(s) en retard`);
-            // Recharger les données pour mettre à jour l'affichage
             await chargerDonnees();
         }
     } catch (error) {
@@ -253,21 +296,14 @@ async function verifierRetards() {
 }
 
 // ========================================
-// EXPOSITION DES FONCTIONS GLOBALES
+// API GLOBALE (window)
 // ========================================
 
-// Exposer modalManager
 window.modalManager = config.modalManager;
-
-// Fonctions pour le HTML
 window.ouvrirNouvelleFacture = ouvrirNouvelleFacture;
 window.voirDetailFacture = voirDetailFacture;
 window.resetFiltres = resetFiltres;
-
-// Fonction fermer modal
-window.fermerModal = function(modalId) {
-    config.modalManager.close(modalId);
-};
+window.fermerModal = (modalId) => config.modalManager.close(modalId);
 
 // ========================================
 // FONCTIONS UTILITAIRES EXPORTÉES
@@ -289,27 +325,23 @@ export function afficherAvertissement(message) {
     config.notify.warning(message);
 }
 
-// Cleanup au déchargement
+// ========================================
+// CLEANUP
+// ========================================
+
 window.addEventListener('beforeunload', () => {
     config.modalManager.destroyAll();
-    
     if (appHeader) {
         appHeader.destroy();
     }
 });
 
 /* ========================================
-   HISTORIQUE DES DIFFICULTÉS
+   HISTORIQUE
    
-   [03/02/2025] - Création initiale
-   - Architecture identique à decompte-mutuelle.main.js
-   - Gestion auth et header
-   - Initialisation des orchestrateurs
-   - Vérification automatique des retards
-   
-   NOTES POUR REPRISES FUTURES:
-   - main.js reste léger, juste l'init
-   - Les orchestrateurs gèrent leur section
-   - Les composants ne se connaissent pas
-   - Vérification retards toutes les heures
+   [05/02/2025] - Refactoring Option 1
+   - main.js est maintenant L'ORCHESTRATEUR
+   - Toute la configuration UI dans main.js
+   - config.js = simples factories
+   - Architecture IoC respectée
    ======================================== */
