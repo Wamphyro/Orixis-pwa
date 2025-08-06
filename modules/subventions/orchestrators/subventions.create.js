@@ -258,8 +258,8 @@ class SubventionsCreate {
     
 initSearchDropdown() {
     const searchDropdown = config.createSearchDropdown(
-        this.elements.searchContainer,  // Premier param = container
-        {  // Deuxième param = options
+        this.elements.searchContainer,
+        {
             placeholder: 'Rechercher un patient par nom, prénom ou téléphone...',
             searchFunction: async (term) => {
                 const clients = await ClientsService.rechercherClients(term);
@@ -290,7 +290,35 @@ initSearchDropdown() {
         }
     );
     
-    this.elements.searchInput = searchDropdown.getInput();
+    // DEBUG - Voir ce qu'on a
+    console.log('🔍 SearchDropdown créé:', searchDropdown);
+    console.log('📋 Méthodes disponibles:', Object.getOwnPropertyNames(Object.getPrototypeOf(searchDropdown)));
+    console.log('🔍 Propriétés:', Object.keys(searchDropdown));
+    
+    // COMMENTER CETTE LIGNE QUI CAUSE L'ERREUR
+    // this.elements.searchInput = searchDropdown.getInput();
+    
+    // ESSAYER DE RÉCUPÉRER L'INPUT AUTREMENT
+    // Option 1: Chercher dans le DOM
+    setTimeout(() => {
+        const input = this.elements.searchContainer.querySelector('input');
+        if (input) {
+            this.elements.searchInput = input;
+            console.log('✅ Input trouvé dans le DOM:', input);
+        }
+    }, 100);
+    
+    // Option 2: Le SearchDropdown retourne peut-être l'input directement
+    if (searchDropdown.input) {
+        this.elements.searchInput = searchDropdown.input;
+        console.log('✅ Input trouvé via .input:', searchDropdown.input);
+    }
+    
+    // Option 3: Peut-être une méthode différente
+    if (searchDropdown.getElement) {
+        this.elements.searchInput = searchDropdown.getElement();
+        console.log('✅ Input trouvé via getElement()');
+    }
 }
     
     // ========================================
