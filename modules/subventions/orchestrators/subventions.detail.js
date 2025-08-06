@@ -148,55 +148,146 @@ render() {
                 </h2>
                 <button class="modal-close" id="btnCloseModal">&times;</button>
             </div>
-            <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
-                <!-- Les 3 composants visuels -->
-                <div class="components-grid" style="display: grid; gap: 20px; margin-bottom: 20px;">
-                    <div class="component-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                        <div id="progress-timeline-container"></div>
-                    </div>
-                    
-                    <div class="component-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                        <div id="progress-overview-container"></div>
-                    </div>
-                    
-                    ${this.hasDelay() ? `
-                    <div class="component-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                        <div id="delay-tracker-container"></div>
-                    </div>
-                    ` : ''}
+            <div class="modal-body" style="max-height: 80vh; overflow-y: auto; padding: 20px;">
+                
+                <!-- Section Composants Visuels -->
+                <div style="margin-bottom: 30px;">
+                    <div id="progress-timeline-container" style="margin-bottom: 20px;"></div>
+                    <div id="progress-overview-container" style="margin-bottom: 20px;"></div>
+                    ${this.hasDelay() ? '<div id="delay-tracker-container" style="margin-bottom: 20px;"></div>' : ''}
                 </div>
                 
-                <!-- Informations patient -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-                    <div class="info-card" style="background: white; padding: 15px; border-radius: 8px;">
-                        <h4>👤 Patient</h4>
-                        <p><strong>Tél:</strong> ${this.dossier.patient.telephone}</p>
-                        <p><strong>Email:</strong> ${this.dossier.patient.email || 'Non renseigné'}</p>
-                        <p><strong>Département:</strong> ${this.dossier.patient.departement}</p>
-                        <p><strong>Situation:</strong> ${this.dossier.patient.situation}</p>
+                <!-- Section Informations -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    
+                    <!-- Card Informations Patient -->
+                    <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px;">
+                        <h3 style="color: #dc3545; font-size: 1.1rem; margin: 0 0 15px 0; font-weight: 600;">
+                            Informations patient
+                        </h3>
+                        <div style="display: grid; gap: 12px;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <label style="color: #6c757d; font-size: 0.9rem;">Nom complet</label>
+                                <span style="font-weight: 500;">${this.dossier.patient.nom} ${this.dossier.patient.prenom}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <label style="color: #6c757d; font-size: 0.9rem;">Téléphone</label>
+                                <span style="font-weight: 500;">${this.dossier.patient.telephone}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <label style="color: #6c757d; font-size: 0.9rem;">Email</label>
+                                <span style="font-weight: 500;">${this.dossier.patient.email || '-'}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <label style="color: #6c757d; font-size: 0.9rem;">Département</label>
+                                <span style="font-weight: 500;">${this.dossier.patient.departement}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <label style="color: #6c757d; font-size: 0.9rem;">Situation</label>
+                                <span class="badge badge-info">${this.dossier.patient.situation}</span>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="info-card" style="background: white; padding: 15px; border-radius: 8px;">
-                        <h4>💰 Montants</h4>
-                        <p><strong>Appareil:</strong> ${this.formatMontant(this.dossier.montants.appareil)}</p>
-                        <p><strong>MDPH:</strong> ${this.formatMontant(this.dossier.montants.accordeMDPH)}</p>
-                        <p><strong>AGEFIPH:</strong> ${this.formatMontant(this.dossier.montants.accordeAGEFIPH)}</p>
-                        <p style="color: #e74c3c;"><strong>Reste à charge:</strong> ${this.formatMontant(this.dossier.montants.resteACharge)}</p>
-                    </div>
-                    
-                    <div class="info-card" style="background: white; padding: 15px; border-radius: 8px;">
-                        <h4>🔑 Accès Patient</h4>
-                        <p><strong>Code:</strong> <code style="background: #f4f4f4; padding: 5px;">${this.dossier.acces.code}</code></p>
-                        <p><strong>Statut:</strong> ${this.dossier.acces.actif ? '✅ Actif' : '❌ Inactif'}</p>
+                    <!-- Card Accès Patient -->
+                    <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px;">
+                        <h3 style="color: #dc3545; font-size: 1.1rem; margin: 0 0 15px 0; font-weight: 600;">
+                            Accès patient
+                        </h3>
+                        <div style="display: grid; gap: 12px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <label style="color: #6c757d; font-size: 0.9rem;">Code d'accès</label>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <code style="background: #fff; padding: 4px 8px; border: 1px solid #dee2e6; border-radius: 4px; font-family: monospace;">
+                                        ${this.dossier.acces.code}
+                                    </code>
+                                    <button class="btn-icon" onclick="navigator.clipboard.writeText('${this.dossier.acces.code}')" title="Copier">
+                                        📋
+                                    </button>
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <label style="color: #6c757d; font-size: 0.9rem;">Statut</label>
+                                <span class="badge badge-${this.dossier.acces.actif ? 'success' : 'danger'}">
+                                    ${this.dossier.acces.actif ? 'Actif' : 'Inactif'}
+                                </span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <label style="color: #6c757d; font-size: 0.9rem;">Documents manquants</label>
+                                <span style="font-weight: 500;">3</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <label style="color: #6c757d; font-size: 0.9rem;">Dernière connexion</label>
+                                <span style="font-weight: 500;">${this.dossier.acces.derniereConnexion ? this.formatDateTime(this.dossier.acces.derniereConnexion) : 'Jamais'}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                
+                <!-- Section Montants -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+                    
+                    <!-- Card Détail des montants -->
+                    <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px;">
+                        <h3 style="color: #dc3545; font-size: 1.1rem; margin: 0 0 15px 0; font-weight: 600;">
+                            Montants
+                        </h3>
+                        <div style="display: grid; gap: 12px;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <label style="color: #6c757d; font-size: 0.9rem;">Coût appareil</label>
+                                <span style="font-weight: 500; font-size: 1.1rem;">${this.formatMontant(this.dossier.montants.appareil)}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <label style="color: #6c757d; font-size: 0.9rem;">Aide MDPH</label>
+                                <span style="font-weight: 500; color: #28a745;">${this.formatMontant(this.dossier.montants.accordeMDPH)}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <label style="color: #6c757d; font-size: 0.9rem;">Aide AGEFIPH</label>
+                                <span style="font-weight: 500; color: #28a745;">${this.formatMontant(this.dossier.montants.accordeAGEFIPH)}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <label style="color: #6c757d; font-size: 0.9rem;">Mutuelle</label>
+                                <span style="font-weight: 500; color: #28a745;">${this.formatMontant(this.dossier.montants.mutuelle)}</span>
+                            </div>
+                            <hr style="margin: 10px 0; border: none; border-top: 2px solid #dee2e6;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <label style="color: #dc3545; font-weight: 600;">Reste à charge</label>
+                                <span style="font-weight: 700; font-size: 1.2rem; color: #dc3545;">
+                                    ${this.formatMontant(this.dossier.montants.resteACharge)}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Card Actions -->
+                    <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px;">
+                        <h3 style="color: #dc3545; font-size: 1.1rem; margin: 0 0 15px 0; font-weight: 600;">
+                            Actions rapides
+                        </h3>
+                        <div style="display: grid; gap: 10px;">
+                            <button class="btn btn-secondary btn-block" onclick="window.print()">
+                                🖨️ Imprimer
+                            </button>
+                            <button class="btn btn-secondary btn-block" onclick="alert('Export PDF à venir')">
+                                📄 Export PDF
+                            </button>
+                            <button class="btn btn-secondary btn-block" onclick="alert('Envoi email à venir')">
+                                ✉️ Envoyer par email
+                            </button>
+                            <button class="btn btn-primary btn-block" onclick="alert('Relance à venir')">
+                                🔔 Relancer patient
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
             </div>
             <div class="modal-footer">
                 <button class="btn btn-ghost btn-pill" id="btnFermerModal">
                     Fermer
                 </button>
                 <button class="btn btn-primary btn-pill" id="btnModifierModal">
-                    ✏️ Modifier
+                    ✏️ Modifier le dossier
                 </button>
             </div>
         </div>
