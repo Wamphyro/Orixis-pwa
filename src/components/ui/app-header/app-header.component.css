@@ -453,7 +453,7 @@
 /* ========================================
    PRINT
    ======================================== */
-    
+@media print {
     .app-header-title,
     .app-header-subtitle,
     .user-name,
@@ -469,6 +469,7 @@
     .app-header button {
         display: none !important;
     }
+}
 
 /* ========================================
    UTILITAIRES
