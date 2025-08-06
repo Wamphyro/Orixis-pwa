@@ -19,8 +19,7 @@
     --glass-blur-strong: 12px;
     
     /* Configuration du blur (CHANGER ICI POUR TOUT MODIFIER) */
-    --glass-blur: var(--glass-blur-light);           /* Par défaut: 4px au lieu de 10px */
-    --glass-blur-danger: var(--glass-blur-medium);   /* Danger: 8px au lieu de 15px */
+    --glass-blur: var(--glass-blur-light);           /* UNE SEULE variable pour TOUT: 4px */
     
     /* Glassmorphism - autres propriétés */
     --glass-bg: rgba(255, 255, 255, 0.1);
@@ -134,8 +133,8 @@
 /* Danger - Rouge */
 .btn-danger {
     background: rgba(220, 53, 69, 0.85);
-    backdrop-filter: blur(var(--glass-blur-danger));
-    -webkit-backdrop-filter: blur(var(--glass-blur-danger));
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
     border-color: rgba(220, 53, 69, 0.3);
 }
 
