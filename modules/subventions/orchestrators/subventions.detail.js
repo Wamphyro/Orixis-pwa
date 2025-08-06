@@ -38,9 +38,6 @@ class SubventionsDetail {
             // Rendre la vue
             this.render();
             
-            // Initialiser les composants
-            this.initComponents();
-            
             // Attacher les événements
             this.attachEvents();
             
