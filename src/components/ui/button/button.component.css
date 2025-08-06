@@ -21,11 +21,14 @@
     /* Configuration du blur (CHANGER ICI POUR TOUT MODIFIER) */
     --glass-blur: var(--glass-blur-light);           /* UNE SEULE variable pour TOUT: 4px */
     
+    /* OMBRES CENTRALISÉES - CHANGER ICI POUR TOUT MODIFIER */
+    --glass-shadow: none;        /* Ombre par défaut : AUCUNE */
+    --glass-shadow-hover: none;  /* Ombre au hover : AUCUNE */
+    
     /* Glassmorphism - autres propriétés */
     --glass-bg: rgba(255, 255, 255, 0.1);
     --glass-bg-hover: rgba(255, 255, 255, 0.15);
     --glass-border: rgba(255, 255, 255, 0.2);
-    --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
     
     /* Couleurs avec transparence */
     --primary-glass: rgba(102, 126, 234, 0.15);
@@ -101,7 +104,7 @@
     background: var(--glass-bg-hover);
     border-color: rgba(255, 255, 255, 0.3);
     transform: translateY(-2px);
-    box-shadow: 0 12px 40px rgba(31, 38, 135, 0.5);
+    box-shadow: var(--glass-shadow-hover);
 }
 
 .btn:active {
@@ -127,7 +130,7 @@
 .btn-primary:hover {
     background: rgba(102, 126, 234, 0.25);
     border-color: rgba(102, 126, 234, 0.5);
-    box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
+    box-shadow: var(--glass-shadow-hover);
 }
 
 /* Danger - Rouge */
@@ -141,7 +144,7 @@
 .btn-danger:hover {
     background: rgba(220, 53, 69, 0.95);
     border-color: rgba(220, 53, 69, 0.5);
-    box-shadow: 0 12px 40px rgba(220, 53, 69, 0.4);
+    box-shadow: var(--glass-shadow-hover);
     transform: translateY(-2px);
 }
 
@@ -159,7 +162,7 @@
 .btn-success:hover {
     background: rgba(40, 167, 69, 0.25);
     border-color: rgba(40, 167, 69, 0.5);
-    box-shadow: 0 12px 40px rgba(40, 167, 69, 0.4);
+    box-shadow: var(--glass-shadow-hover);
 }
 
 /* Warning - Jaune */
@@ -171,7 +174,7 @@
 .btn-warning:hover {
     background: rgba(255, 193, 7, 0.25);
     border-color: rgba(255, 193, 7, 0.5);
-    box-shadow: 0 12px 40px rgba(255, 193, 7, 0.4);
+    box-shadow: var(--glass-shadow-hover);
 }
 
 /* Secondary - Neutre */
@@ -305,13 +308,13 @@
     color: #333;
     background: rgba(0, 0, 0, 0.05);
     border-color: rgba(0, 0, 0, 0.1);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);  /* AJOUT : ombre très douce */
+    box-shadow: var(--glass-shadow);
 }
 
 .on-light:hover {
     background: rgba(0, 0, 0, 0.1);
     border-color: rgba(0, 0, 0, 0.2);
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);  /* AJOUT : ombre douce au hover */
+    box-shadow: var(--glass-shadow-hover);
 }
 
 /* ========================================
