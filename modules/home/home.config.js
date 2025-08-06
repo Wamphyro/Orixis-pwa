@@ -112,12 +112,12 @@ export const MENU_ITEMS = [
         disabled: false
     },
     {
-        href: '#',
-        icon: '👥',
-        title: 'Comptes Clients',
-        description: 'Gérer les comptes clients',
+        href: '/modules/test/test-widgets.html',
+        icon: '🧪',
+        title: 'TEST PAGE WIDGETS',
+        description: 'Environnement de test pour les nouveaux widgets',
         permissions: ['clients.view'],
-        disabled: true
+        disabled: false  // Activé pour les tests
     },
         {
         href: '../gmail/gmail.html',
