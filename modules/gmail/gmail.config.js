@@ -7,17 +7,16 @@
 // utilisés dans le module Gmail
 //
 // DÉPENDANCES:
-// - Components UI globaux
+// - Components UI globaux (imports directs)
 // ========================================
 
-import { 
-    Modal,
-    Button,
-    Dialog,
-    notify
-} from '../../src/components/index.js';
+// Import direct des composants existants
+import { Modal } from '../../src/components/ui/modal/modal.component.js';
+import { Button } from '../../src/components/ui/button/button.component.js';
+import { Dialog } from '../../src/components/ui/dialog/dialog.component.js';
+import { notify } from '../../src/components/ui/notification/notification.component.js';
 
-// Import des composants Gmail
+// Import des nouveaux composants Gmail
 import { EmailCard } from '../../src/components/ui/email-card/email-card.component.js';
 import { MailboxSidebar } from '../../src/components/ui/mailbox-sidebar/mailbox-sidebar.component.js';
 import { ComposeModal } from '../../src/components/ui/compose-modal/compose-modal.component.js';
