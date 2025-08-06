@@ -59,9 +59,9 @@ export class AppHeader {
             
             // Classes CSS personnalisables (l'orchestrateur décide)
             buttonClasses: {
-                back: 'btn on-dark pill',           // Classes par défaut
-                logout: 'header-logout-button',     // Classes par défaut
-                userSection: 'header-user-section'  // Classes par défaut
+                back: 'btn on-dark btn-pill',              // Classes correctes
+                logout: 'btn btn-danger btn-sm on-dark',   // Classes correctes pour bouton rouge
+                userSection: 'header-user-section'
             },
             
             // Callbacks
