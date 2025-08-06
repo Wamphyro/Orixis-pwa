@@ -229,7 +229,7 @@ class SubventionsCreate {
             </div>
         `;
         
-        // Stocker les références
+        // Stocker les références D'ABORD
         this.elements = {
             form: document.getElementById('create-form'),
             searchContainer: document.getElementById('search-container'),
@@ -244,8 +244,8 @@ class SubventionsCreate {
             recapContent: document.getElementById('recap-content'),
             submitBtn: document.getElementById('btn-submit')
         };
-        
-        // Initialiser la recherche patient
+
+        // Initialiser la recherche patient APRÈS
         this.initSearchDropdown();
     }
     
