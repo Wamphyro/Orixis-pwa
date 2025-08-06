@@ -257,37 +257,38 @@ class SubventionsCreate {
     // ========================================
     
 initSearchDropdown() {
-    // Créer directement une instance de SearchDropdown
-    const searchDropdown = new SearchDropdown({
-        container: this.elements.searchContainer,
-        placeholder: 'Rechercher un patient par nom, prénom ou téléphone...',
-        searchFunction: async (term) => {
-            const clients = await ClientsService.rechercherClients(term);
-            return clients.map(client => ({
-                id: client.id,
-                nom: client.nom,
-                prenom: client.prenom,
-                telephone: client.telephone || '',
-                email: client.email || '',
-                dateNaissance: client.dateNaissance || null,
-                adresse: {
-                    rue: client.adresse?.rue || '',
-                    codePostal: client.adresse?.codePostal || '',
-                    ville: client.adresse?.ville || '',
-                    departement: client.adresse?.departement || ''
-                },
-                situation: client.situation || ''
-            }));
-        },
-        displayFormat: (patient) => {
-            return `${patient.nom} ${patient.prenom} - ${patient.telephone || 'Pas de téléphone'}`;
-        },
-        onSelect: (patient) => {
-            this.selectPatient(patient);
-        },
-        minChars: 2,
-        debounceTime: 300
-    });
+    const searchDropdown = config.createSearchDropdown(
+        this.elements.searchContainer,  // Premier param = container
+        {  // Deuxième param = options
+            placeholder: 'Rechercher un patient par nom, prénom ou téléphone...',
+            searchFunction: async (term) => {
+                const clients = await ClientsService.rechercherClients(term);
+                return clients.map(client => ({
+                    id: client.id,
+                    nom: client.nom,
+                    prenom: client.prenom,
+                    telephone: client.telephone || '',
+                    email: client.email || '',
+                    dateNaissance: client.dateNaissance || null,
+                    adresse: {
+                        rue: client.adresse?.rue || '',
+                        codePostal: client.adresse?.codePostal || '',
+                        ville: client.adresse?.ville || '',
+                        departement: client.adresse?.departement || ''
+                    },
+                    situation: client.situation || ''
+                }));
+            },
+            displayFormat: (patient) => {
+                return `${patient.nom} ${patient.prenom} - ${patient.telephone || 'Pas de téléphone'}`;
+            },
+            onSelect: (patient) => {
+                this.selectPatient(patient);
+            },
+            minChars: 2,
+            debounceTime: 300
+        }
+    );
     
     this.elements.searchInput = searchDropdown.getInput();
 }

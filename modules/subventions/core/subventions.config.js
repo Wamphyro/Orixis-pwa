@@ -121,12 +121,16 @@ export function createDropdown(container, options) {
 }
 
 export function createSearchDropdown(container, options) {
-    return new SearchDropdown({
-        container,
-        minLength: 2,
+    // SearchDropdown attend (container, options) en 2 paramètres séparés !
+    return new SearchDropdown(container, {
+        minLength: options.minChars || 2,
         noResultsText: 'Aucun résultat trouvé',
         loadingText: 'Recherche en cours...',
-        ...options
+        placeholder: options.placeholder,
+        searchFunction: options.searchFunction,
+        displayFormat: options.displayFormat,
+        onSelect: options.onSelect,
+        debounceTime: options.debounceTime || 300
     });
 }
 
