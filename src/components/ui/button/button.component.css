@@ -1,43 +1,60 @@
 /* ========================================
-   BUTTON.CSS - Styles glassmorphism pour TOUS les boutons
+   BUTTON.CSS - Design System Centralisé des Boutons
    Chemin: src/components/ui/common/button.css
    
    DESCRIPTION:
-   Design system unifié avec glassmorphism pour toute l'application
-   Créé le 28/12/2024 : Refonte complète glassmorphism
+   Système de design unifié pour TOUS les boutons de l'application
+   Aucun autre fichier ne doit définir de styles de boutons
+   
+   ARCHITECTURE:
+   1. Variables & Design Tokens - Configuration globale
+   2. Base - Styles de base pour tous les boutons
+   3. Variantes - Types de boutons (primary, danger, etc.)
+   4. Tailles - Dimensions des boutons
+   5. Formes - Shapes des boutons
+   6. Contextes - Adaptations selon le fond (dark/light)
+   7. États - Disabled, loading, etc.
+   8. Responsive - Adaptations mobiles
+   9. Utilitaires - Classes helper
+   
+   Créé le 28/12/2024 : Refonte glassmorphism
+   Mis à jour le 05/02/2025 : Centralisation complète
    ======================================== */
 
 /* ========================================
-   VARIABLES & DESIGN TOKENS
+   1. VARIABLES & DESIGN TOKENS
+   Configuration centralisée pour tout modifier d'un coup
    ======================================== */
 :root {
-    /* Glassmorphism - BLUR CENTRALISÉ */
+    /* === BLUR GLASSMORPHISM === */
+    /* Niveaux de blur disponibles */
     --glass-blur-none: 0;
     --glass-blur-subtle: 2px;
     --glass-blur-light: 4px;
     --glass-blur-medium: 8px;
     --glass-blur-strong: 12px;
     
-    /* Configuration du blur (CHANGER ICI POUR TOUT MODIFIER) */
-    --glass-blur: var(--glass-blur-light);           /* UNE SEULE variable pour TOUT: 4px */
+    /* Configuration active (MODIFIER ICI) */
+    --glass-blur: var(--glass-blur-light);
     
-    /* OMBRES CENTRALISÉES - CHANGER ICI POUR TOUT MODIFIER */
-    --glass-shadow: none;        /* Ombre par défaut : AUCUNE */
-    --glass-shadow-hover: none;  /* Ombre au hover : AUCUNE */
+    /* === OMBRES === */
+    /* Configuration active (MODIFIER ICI) */
+    --glass-shadow: none;        /* Ombre par défaut */
+    --glass-shadow-hover: none;  /* Ombre au survol */
     
-    /* Glassmorphism - autres propriétés */
+    /* === BACKGROUNDS GLASSMORPHISM === */
     --glass-bg: rgba(255, 255, 255, 0.1);
     --glass-bg-hover: rgba(255, 255, 255, 0.15);
     --glass-border: rgba(255, 255, 255, 0.2);
     
-    /* Couleurs avec transparence */
+    /* === COULEURS VARIANTES === */
     --primary-glass: rgba(102, 126, 234, 0.15);
     --danger-glass: rgba(220, 53, 69, 0.15);
     --success-glass: rgba(40, 167, 69, 0.15);
     --warning-glass: rgba(255, 193, 7, 0.15);
     --info-glass: rgba(23, 162, 184, 0.15);
     
-    /* Tailles */
+    /* === DIMENSIONS === */
     --btn-padding-sm: 8px 16px;
     --btn-padding-md: 12px 24px;
     --btn-padding-lg: 16px 32px;
@@ -47,10 +64,10 @@
 }
 
 /* ========================================
-   BASE GLASSMORPHISM BUTTON
+   2. BASE - Style par défaut de tous les boutons
    ======================================== */
 .btn {
-    /* Structure */
+    /* Structure de base */
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -59,16 +76,16 @@
     border: 1px solid var(--glass-border);
     border-radius: 12px;
     
-    /* Glassmorphism */
+    /* Glassmorphism par défaut */
     background: var(--glass-bg);
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
     box-shadow: var(--glass-shadow);
     
-    /* Typographie */
+    /* Typographie par défaut */
     font-size: var(--btn-font-md);
     font-weight: 600;
-    color: #333;  /* CHANGÉ : Noir par défaut au lieu de blanc */
+    color: #333;
     text-decoration: none;
     font-family: inherit;
     
@@ -79,7 +96,7 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Hover avec effet de lumière */
+/* Effet de lumière au survol */
 .btn::before {
     content: '';
     position: absolute;
@@ -100,6 +117,7 @@
     left: 100%;
 }
 
+/* État hover par défaut */
 .btn:hover {
     background: var(--glass-bg-hover);
     border-color: rgba(255, 255, 255, 0.3);
@@ -107,21 +125,23 @@
     box-shadow: var(--glass-shadow-hover);
 }
 
+/* État actif par défaut */
 .btn:active {
     transform: translateY(0);
     box-shadow: var(--glass-shadow);
 }
 
-/* Boutons d'action restent avec texte noir sauf cas spéciaux */
-.btn-action-danger {
-    color: white;
+/* Focus pour accessibilité */
+.btn:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 2px;
 }
 
 /* ========================================
-   VARIANTES GLASSMORPHISM
+   3. VARIANTES - Types de boutons
    ======================================== */
 
-/* Primary - Violet/Bleu */
+/* === PRIMARY === */
 .btn-primary {
     background: var(--primary-glass);
     border-color: rgba(102, 126, 234, 0.3);
@@ -133,12 +153,13 @@
     box-shadow: var(--glass-shadow-hover);
 }
 
-/* Danger - Rouge */
+/* === DANGER === */
 .btn-danger {
     background: rgba(220, 53, 69, 0.85);
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
     border-color: rgba(220, 53, 69, 0.3);
+    color: white; /* Texte blanc par défaut */
 }
 
 .btn-danger:hover {
@@ -153,7 +174,7 @@
     transform: translateY(0);
 }
 
-/* Success - Vert */
+/* === SUCCESS === */
 .btn-success {
     background: var(--success-glass);
     border-color: rgba(40, 167, 69, 0.3);
@@ -165,7 +186,7 @@
     box-shadow: var(--glass-shadow-hover);
 }
 
-/* Warning - Jaune */
+/* === WARNING === */
 .btn-warning {
     background: var(--warning-glass);
     border-color: rgba(255, 193, 7, 0.3);
@@ -177,7 +198,7 @@
     box-shadow: var(--glass-shadow-hover);
 }
 
-/* Secondary - Neutre */
+/* === SECONDARY === */
 .btn-secondary {
     background: rgba(108, 117, 125, 0.15);
     border-color: rgba(108, 117, 125, 0.3);
@@ -186,9 +207,10 @@
 .btn-secondary:hover {
     background: rgba(108, 117, 125, 0.25);
     border-color: rgba(108, 117, 125, 0.5);
+    box-shadow: var(--glass-shadow-hover);
 }
 
-/* Ghost - Transparent */
+/* === GHOST === */
 .btn-ghost {
     background: transparent;
     border-color: var(--glass-border);
@@ -199,7 +221,7 @@
 }
 
 /* ========================================
-   TAILLES
+   4. TAILLES - Dimensions des boutons
    ======================================== */
 .btn-sm {
     padding: var(--btn-padding-sm);
@@ -214,7 +236,7 @@
 }
 
 /* ========================================
-   FORMES
+   5. FORMES - Shapes des boutons
    ======================================== */
 .btn-pill {
     border-radius: 50px;
@@ -242,8 +264,77 @@
 }
 
 /* ========================================
-   BOUTONS ICÔNE (Actions tableau)
+   6. CONTEXTES - Adaptations selon le fond
    ======================================== */
+
+/* === SUR FOND SOMBRE === */
+/* Style par défaut pour les boutons sur fond sombre/coloré */
+.btn.on-dark {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: var(--glass-shadow);
+}
+
+.btn.on-dark:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.35);
+    transform: translateY(-1px);
+    box-shadow: var(--glass-shadow-hover);
+    color: white; /* Garder le texte blanc au hover */
+}
+
+.btn.on-dark:active {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(0);
+}
+
+/* Bouton danger sur fond sombre - Plus visible */
+.btn-danger.on-dark {
+    background: rgba(220, 53, 69, 0.9);
+    border: 2px solid rgba(220, 53, 69, 0.4);
+    color: white;
+}
+
+.btn-danger.on-dark:hover {
+    background: rgba(220, 53, 69, 1);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: var(--glass-shadow-hover);
+}
+
+/* Bouton primary sur fond sombre */
+.btn-primary.on-dark {
+    background: rgba(102, 126, 234, 0.2);
+    border-color: rgba(102, 126, 234, 0.4);
+    color: white;
+}
+
+.btn-primary.on-dark:hover {
+    background: rgba(102, 126, 234, 0.35);
+    border-color: rgba(102, 126, 234, 0.6);
+}
+
+/* === SUR FOND CLAIR === */
+.btn.on-light {
+    color: #333;
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: var(--glass-shadow);
+}
+
+.btn.on-light:hover {
+    background: rgba(0, 0, 0, 0.1);
+    border-color: rgba(0, 0, 0, 0.2);
+    box-shadow: var(--glass-shadow-hover);
+}
+
+/* ========================================
+   7. BOUTONS SPÉCIAUX - Types particuliers
+   ======================================== */
+
+/* === BOUTONS ACTION (dans tableaux) === */
 .btn-action {
     padding: 6px;
     width: 32px;
@@ -260,10 +351,10 @@
     transform: scale(1.1);
 }
 
-/* Action danger (supprimer) */
 .btn-action-danger {
     background: var(--danger-glass);
     border-color: rgba(220, 53, 69, 0.3);
+    color: white;
 }
 
 .btn-action-danger:hover {
@@ -271,17 +362,13 @@
     transform: scale(1.1) rotate(-5deg);
 }
 
-/* ========================================
-   BOUTONS SPÉCIAUX
-   ======================================== */
-
-/* Export */
+/* === BOUTON EXPORT === */
 .btn-export {
     background: linear-gradient(135deg, var(--success-glass), var(--info-glass));
     border-color: rgba(40, 167, 69, 0.3);
 }
 
-/* Reset/Clear */
+/* === BOUTON RESET === */
 .btn-reset {
     background: transparent;
     border-style: dashed;
@@ -295,56 +382,10 @@
 }
 
 /* ========================================
-   CONTEXTES
+   8. ÉTATS - États des boutons
    ======================================== */
 
-/* Sur fond sombre (défaut) */
-.on-dark {
-    /* Styles par défaut déjà adaptés */
-}
-
-/* Sur fond clair */
-.on-light {
-    color: #333;
-    background: rgba(0, 0, 0, 0.05);
-    border-color: rgba(0, 0, 0, 0.1);
-    box-shadow: var(--glass-shadow);
-}
-
-.on-light:hover {
-    background: rgba(0, 0, 0, 0.1);
-    border-color: rgba(0, 0, 0, 0.2);
-    box-shadow: var(--glass-shadow-hover);
-}
-
-/* ========================================
-   CONTEXTES SPÉCIAUX
-   ======================================== */
-
-/* Boutons dans un header gradient */
-.app-header .btn {
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.app-header .btn:hover {
-    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.15);
-}
-
-/* Bouton danger dans header = plus visible */
-.app-header .btn-danger {
-    background: rgba(220, 53, 69, 0.9);
-    border: 1px solid rgba(220, 53, 69, 0.4);
-}
-
-.app-header .btn-danger:hover {
-    background: rgba(220, 53, 69, 1);
-    border-color: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 6px 30px rgba(220, 53, 69, 0.5);
-}
-
-/* ========================================
-   ÉTATS
-   ======================================== */
+/* === DISABLED === */
 .btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -352,7 +393,7 @@
     pointer-events: none;
 }
 
-/* Loading */
+/* === LOADING === */
 .btn.loading {
     color: transparent;
 }
@@ -373,7 +414,7 @@
 }
 
 /* ========================================
-   GROUPES
+   9. GROUPES - Groupes de boutons
    ======================================== */
 .btn-group {
     display: flex;
@@ -386,7 +427,7 @@
 }
 
 /* ========================================
-   RESPONSIVE
+   10. RESPONSIVE - Adaptations mobiles
    ======================================== */
 @media (max-width: 768px) {
     .btn {
@@ -398,10 +439,16 @@
         padding: 6px 12px;
         font-size: 12px;
     }
+    
+    /* Boutons sur fond sombre en mobile */
+    .btn.on-dark {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
 }
 
 /* ========================================
-   CLASSES UTILITAIRES COULEUR TEXTE
+   11. UTILITAIRES - Classes helper pour le texte
    ======================================== */
 .text-white { 
     color: white !important; 
