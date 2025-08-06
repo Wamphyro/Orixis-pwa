@@ -120,12 +120,12 @@ export const MENU_ITEMS = [
         disabled: true
     },
         {
-        href: '#',
-        icon: '💬',
-        title: 'MaiBox & Chat',
-        description: 'Gérer les mails et les conversation',
-        permissions: ['clients.view'],
-        disabled: true
+        href: '../gmail/gmail.html',
+        icon: '📧',
+        title: 'MailBox & Chat',
+        description: 'Gérer les emails et les conversations',
+        permissions: ['gmail.view'],
+        disabled: false
     },
     {
         href: '../../pages/guide.html',
