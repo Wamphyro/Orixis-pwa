@@ -3,200 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Widgets - ORIXIS</title>
-    
-    <!-- ========================================
-         PAGE DE TEST DES WIDGETS
-         Chemin: modules/test/test-widgets.html
-         
-         DESCRIPTION:
-         Page de test pour développer et tester les widgets
-         sans impacter les modules en production
-         ======================================== -->
+    <title>Test - HeaderWidget</title>
     
     <!-- CSS Global -->
     <link rel="stylesheet" href="../../src/css/main.css">
     
-    <!-- CSS du Widget Header -->
+    <!-- CSS du VRAI Widget -->
     <link rel="stylesheet" href="../../widgets/header/header.widget.css">
-    
-    <!-- CSS de la page de test -->
-    <link rel="stylesheet" href="./test-widgets.css">
 </head>
 <body>
-    <!-- Le header sera injecté ici par le widget -->
+    <!-- Le VRAI header sera injecté ici -->
     
-    <!-- Container principal -->
-    <div class="test-container">
-        <div class="test-content">
-            <!-- Section Tests Header -->
-            <section class="test-section">
-                <h2>🧪 Tests du HeaderWidget</h2>
-                
-                <div class="test-controls">
-                    <h3>Contrôles du Header</h3>
-                    
-                    <div class="control-group">
-                        <label>Thème :</label>
-                        <div class="button-group">
-                            <button onclick="changeTheme('gradient')" class="btn btn-sm">Gradient</button>
-                            <button onclick="changeTheme('solid')" class="btn btn-sm">Solid</button>
-                            <button onclick="changeTheme('glass')" class="btn btn-sm">Glass</button>
-                        </div>
-                    </div>
-                    
-                    <div class="control-group">
-                        <label>Titre :</label>
-                        <input type="text" id="headerTitle" value="Test Widgets" placeholder="Nouveau titre">
-                        <button onclick="changeTitle()" class="btn btn-sm btn-primary">Changer</button>
-                    </div>
-                    
-                    <div class="control-group">
-                        <label>Sous-titre :</label>
-                        <input type="text" id="headerSubtitle" placeholder="Nouveau sous-titre">
-                        <button onclick="changeSubtitle()" class="btn btn-sm btn-primary">Changer</button>
-                    </div>
-                    
-                    <div class="control-group">
-                        <label>Progression :</label>
-                        <input type="range" id="progressValue" min="0" max="100" value="0">
-                        <span id="progressLabel">0%</span>
-                        <button onclick="toggleProgress()" class="btn btn-sm btn-info">Toggle</button>
-                    </div>
-                    
-                    <div class="control-group">
-                        <label>Options :</label>
-                        <div class="checkbox-group">
-                            <label>
-                                <input type="checkbox" id="showBack" checked onchange="recreateHeader()">
-                                Bouton retour
-                            </label>
-                            <label>
-                                <input type="checkbox" id="showUser" checked onchange="recreateHeader()">
-                                Info utilisateur
-                            </label>
-                            <label>
-                                <input type="checkbox" id="showMagasin" checked onchange="recreateHeader()">
-                                Magasin
-                            </label>
-                            <label>
-                                <input type="checkbox" id="showLogout" checked onchange="recreateHeader()">
-                                Déconnexion
-                            </label>
-                            <label>
-                                <input type="checkbox" id="sticky" checked onchange="recreateHeader()">
-                                Sticky
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <div class="control-group">
-                        <label>Actions :</label>
-                        <div class="button-group">
-                            <button onclick="refreshHeader()" class="btn btn-warning">🔄 Refresh</button>
-                            <button onclick="destroyHeader()" class="btn btn-danger">🗑️ Détruire</button>
-                            <button onclick="createHeader()" class="btn btn-success">➕ Créer</button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Logs -->
-                <div class="test-logs">
-                    <h3>📋 Logs</h3>
-                    <div id="logContainer" class="log-container">
-                        <div class="log-entry info">Page de test chargée</div>
-                    </div>
-                    <button onclick="clearLogs()" class="btn btn-sm btn-secondary">Vider les logs</button>
-                </div>
-            </section>
-            
-            <!-- Section pour tester les futurs widgets -->
-            <section class="test-section">
-                <h2>🚧 Futurs Widgets</h2>
-                
-                <div class="widget-preview">
-                    <h3>DataGridWidget (à venir)</h3>
-                    <div class="placeholder">
-                        <p>Le DataGrid remplacera :</p>
-                        <ul>
-                            <li>DataTable</li>
-                            <li>DataTableFilters</li>
-                            <li>DataTableSort</li>
-                            <li>DataTablePagination</li>
-                        </ul>
-                    </div>
-                </div>
-                
-                <div class="widget-preview">
-                    <h3>CreationModalWidget (à venir)</h3>
-                    <div class="placeholder">
-                        <p>Le CreationModal gérera :</p>
-                        <ul>
-                            <li>Wizard multi-étapes</li>
-                            <li>Timeline</li>
-                            <li>Upload + IA</li>
-                            <li>Validation</li>
-                        </ul>
-                    </div>
-                </div>
-                
-                <div class="widget-preview">
-                    <h3>StatsDashboardWidget (à venir)</h3>
-                    <div class="placeholder">
-                        <p>Le StatsDashboard affichera :</p>
-                        <ul>
-                            <li>Cards animées</li>
-                            <li>Graphiques</li>
-                            <li>Temps réel</li>
-                        </ul>
-                    </div>
-                </div>
-            </section>
-            
-            <!-- Section Playground -->
-            <section class="test-section">
-                <h2>🎮 Playground</h2>
-                
-                <div class="playground">
-                    <h3>Tester différentes configurations</h3>
-                    
-                    <div class="config-editor">
-                        <label>Configuration JSON :</label>
-                        <textarea id="configEditor" rows="15">{
-    "title": "🧪 Test Widgets",
-    "subtitle": "Environnement de test",
-    "icon": "🧪",
-    "theme": "gradient",
-    "showBack": true,
-    "backUrl": "/modules/home/home.html",
-    "showUser": true,
-    "showMagasin": true,
-    "showLogout": true,
-    "sticky": true,
-    "autoAuth": true,
-    "autoRefresh": false
-}</textarea>
-                        <button onclick="applyConfig()" class="btn btn-primary">Appliquer la config</button>
-                    </div>
-                    
-                    <div class="config-presets">
-                        <h4>Presets :</h4>
-                        <button onclick="loadPreset('minimal')" class="btn btn-sm">Minimal</button>
-                        <button onclick="loadPreset('complete')" class="btn btn-sm">Complet</button>
-                        <button onclick="loadPreset('noauth')" class="btn btn-sm">Sans Auth</button>
-                        <button onclick="loadPreset('mobile')" class="btn btn-sm">Mobile</button>
-                    </div>
-                </div>
-            </section>
-        </div>
+    <div class="container" style="padding: 100px 20px;">
+        <h1>Test du HeaderWidget</h1>
+        <p>Si tu vois un beau header en haut, ça marche ! 🎉</p>
+        
+        <br><br>
+        
+        <button onclick="header.setTitle('Nouveau titre')">Changer le titre</button>
+        <button onclick="header.showProgress(50)">Montrer progression 50%</button>
+        <button onclick="header.hideProgress()">Cacher progression</button>
     </div>
     
-    <!-- Footer -->
-    <footer class="test-footer">
-        <p>🧪 Page de test des widgets - ORIXIS © 2025</p>
-    </footer>
-    
-    <!-- JavaScript -->
-    <script type="module" src="./test-widgets.js"></script>
+    <script type="module">
+        // Import du VRAI widget
+        import { HeaderWidget } from '../../widgets/header/header.widget.js';
+        
+        // Créer une fausse auth pour tester
+        localStorage.setItem('sav_auth', JSON.stringify({
+            authenticated: true,
+            timestamp: Date.now(),
+            expiry: 86400000,
+            collaborateur: {
+                nom: 'TEST',
+                prenom: 'User',
+                magasin: '9TEST'
+            },
+            magasin: '9TEST',
+            societe: 'ORIXIS TEST'
+        }));
+        
+        // Créer le VRAI header
+        const header = new HeaderWidget({
+            title: '🧪 Test du VRAI HeaderWidget',
+            icon: '🧪',
+            theme: 'gradient'
+        });
+        
+        // Pour debug dans la console
+        window.header = header;
+        console.log('✅ HeaderWidget créé ! Tape "header" dans la console pour jouer avec.');
+    </script>
 </body>
 </html>
