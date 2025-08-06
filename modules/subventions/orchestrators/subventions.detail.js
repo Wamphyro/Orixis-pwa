@@ -1,16 +1,17 @@
 // ========================================
 // SUBVENTIONS.DETAIL.JS - Vue détaillée d'un dossier
-// Chemin: modules/subventions/subventions.detail.js
+// Chemin: modules/subventions/orchestrators/subventions.detail.js
 //
 // DESCRIPTION:
 // Orchestrateur pour l'affichage détaillé d'un dossier
 // Intègre les 3 composants visuels créés
 // ========================================
 
-import { subventionsConfig } from '../core/subventions.config.js';
-import { subventionsFirestore } from '../core/subventions.firestore.js';
-import { subventionsService } from '../core/subventions.service.js';
-import { subventionsUploadService } from '../core/subventions.upload.service.js';
+import config from '../core/subventions.config.js';
+// TODO: Créer ces services ou commenter pour l'instant
+// import { subventionsFirestore } from '../core/subventions.firestore.js';
+// import { subventionsService } from '../core/subventions.service.js';
+// import { subventionsUploadService } from '../core/subventions.upload.service.js';
 
 class SubventionsDetail {
     constructor() {
@@ -53,7 +54,63 @@ class SubventionsDetail {
     }
     
     async loadDossier() {
-        this.dossier = await subventionsFirestore.getDossier(this.dossierId);
+    // TODO: this.dossier = await subventionsFirestore.getDossier(this.dossierId);
+    
+    // MOCK DATA pour tester
+    this.dossier = {
+        id: this.dossierId,
+        numeroDossier: 'SUB-2024-0001',
+        type: 'mdph_agefiph',
+        patient: {
+            nom: 'MARTIN',
+            prenom: 'Jean',
+            telephone: '06 12 34 56 78',
+            email: 'jean.martin@email.fr',
+            dateNaissance: '1985-03-15',
+            departement: '75',
+            situation: 'salarie'
+        },
+        workflow: {
+            mdph: {
+                statut: 'depot',
+                progression: 60,
+                dates: {
+                    creation: new Date('2024-01-15'),
+                    documents: new Date('2024-01-20'),
+                    formulaire: new Date('2024-01-25'),
+                    depot: new Date('2024-01-30'),
+                    recepisse: null,
+                    accord: null
+                }
+            },
+            agefiph: {
+                statut: 'documents',
+                progression: 20,
+                bloque: false,
+                dates: {
+                    debut: new Date('2024-01-15'),
+                    documents: new Date('2024-01-20')
+                }
+            }
+        },
+        montants: {
+            appareil: 3500,
+            accordeMDPH: 0,
+            accordeAGEFIPH: 0,
+            mutuelle: 500,
+            resteACharge: 3000
+        },
+        documents: {
+            mdph: {},
+            agefiph: {}
+        },
+        acces: {
+            code: 'MARTIN-2024-X7B3',
+            actif: true,
+            derniereConnexion: null
+        },
+        historique: []
+    };
         
         if (!this.dossier) {
             throw new Error('Dossier non trouvé');
@@ -279,7 +336,7 @@ class SubventionsDetail {
     
     initComponents() {
         // Progress Timeline
-        this.components.timeline = subventionsConfig.factories.ProgressTimeline({
+        this.components.timeline = config.createProgressTimeline({
             container: '#progress-timeline-container',
             title: 'PROGRESSION GLOBALE',
             items: this.getTimelineItems(),
@@ -289,7 +346,7 @@ class SubventionsDetail {
         });
         
         // Progress Overview
-        this.components.overview = subventionsConfig.factories.ProgressOverview({
+        this.components.overview = config.createProgressOverview({
             container: '#progress-overview-container',
             title: 'VUE D\'ENSEMBLE DU PARCOURS',
             items: this.getOverviewItems(),
@@ -304,7 +361,7 @@ class SubventionsDetail {
         if (this.hasDelay()) {
             document.getElementById('delay-tracker-card').style.display = 'block';
             
-            this.components.delayTracker = subventionsConfig.factories.DelayTracker({
+            this.components.delayTracker = config.createDelayTracker({
                 container: '#delay-tracker-container',
                 title: this.getDelayTitle(),
                 startDate: this.dossier.workflow.mdph.dates.depot,
@@ -516,50 +573,30 @@ class SubventionsDetail {
     
     async exportDossier() {
         // TODO: Implémenter l'export
-        const toast = subventionsConfig.factories.Toast({
-            type: 'info',
-            message: 'Export du dossier à venir...'
-        });
-        toast.show();
+        config.notify.info('Export du dossier à venir...');
     }
     
     async sendEmail() {
         // TODO: Implémenter l'envoi email
-        const toast = subventionsConfig.factories.Toast({
-            type: 'info',
-            message: 'Envoi par email à venir...'
-        });
-        toast.show();
+        config.notify.info('Envoi par email à venir...');
     }
     
     async deleteDossier() {
-        const dialog = subventionsConfig.factories.Dialog({
-            title: 'Supprimer le dossier',
-            message: `Êtes-vous sûr de vouloir supprimer le dossier ${this.dossier.numeroDossier} ?`,
-            type: 'danger',
-            confirmText: 'Supprimer',
-            onConfirm: async () => {
-                try {
-                    await subventionsFirestore.deleteDossier(this.dossierId);
-                    
-                    const toast = subventionsConfig.factories.Toast({
-                        type: 'success',
-                        message: 'Dossier supprimé'
-                    });
-                    toast.show();
-                    
-                    window.location.hash = '#subventions/list';
-                    
-                } catch (error) {
-                    const toast = subventionsConfig.factories.Toast({
-                        type: 'error',
-                        message: 'Erreur lors de la suppression'
-                    });
-                    toast.show();
-                }
+        const confirme = await config.Dialog.confirm(
+            `Êtes-vous sûr de vouloir supprimer le dossier ${this.dossier.numeroDossier} ?`,
+            'Supprimer le dossier'
+        );
+        if (confirme) {
+            try {
+                // TODO: await subventionsFirestore.deleteDossier(this.dossierId);
+                
+                config.notify.success('Dossier supprimé');
+                window.location.hash = '#subventions/list';
+                
+            } catch (error) {
+                config.notify.error('Erreur lors de la suppression');
             }
-        });
-        dialog.open();
+        }
     }
     
     toggleEditMode() {
@@ -578,11 +615,7 @@ class SubventionsDetail {
     
     enableEditMode() {
         // TODO: Activer le mode édition
-        const toast = subventionsConfig.factories.Toast({
-            type: 'info',
-            message: 'Mode édition activé'
-        });
-        toast.show();
+        config.notify.info('Mode édition activé');
     }
     
     disableEditMode() {
@@ -594,13 +627,8 @@ class SubventionsDetail {
     // ========================================
     
     subscribeToChanges() {
-        this.unsubscribe = subventionsFirestore.subscribeToDossier(
-            this.dossierId,
-            (dossier) => {
-                this.dossier = dossier;
-                this.updateComponents();
-            }
-        );
+        // TODO: Implémenter l'abonnement temps réel
+        // this.unsubscribe = subventionsFirestore.subscribeToDossier(...)
     }
     
     updateComponents() {
@@ -703,7 +731,14 @@ class SubventionsDetail {
     // ========================================
     
     hasDelay() {
-        return subventionsService.hasRetard(this.dossier);
+        // TODO: return subventionsService.hasRetard(this.dossier);
+        // Pour l'instant, vérifier si dépôt > 60 jours
+        if (this.dossier?.workflow?.mdph?.dates?.depot) {
+            const dateDepot = new Date(this.dossier.workflow.mdph.dates.depot);
+            const joursEcoules = Math.floor((new Date() - dateDepot) / (1000 * 60 * 60 * 24));
+            return joursEcoules > 60;
+        }
+        return false;
     }
     
     getDelayTitle() {
@@ -739,10 +774,8 @@ class SubventionsDetail {
     
     getSituationLabel() {
         const situation = this.dossier.patient.situation;
-        const option = subventionsConfig.forms.options.situation.find(
-            opt => opt.value === situation
-        );
-        return option ? option.label : situation || 'Non renseigné';
+        // Utiliser les données de subventions.data.js
+        return situation || 'Non renseigné';
     }
     
     getStatutLabel(statut) {
@@ -873,17 +906,16 @@ class SubventionsDetail {
         return new Date(date).toLocaleString('fr-FR');
     }
     
-    formatMontant(centimes) {
-        return subventionsConfig.helpers.formatMontant(centimes);
+    formatMontant(montant) {
+        return montant.toLocaleString('fr-FR', { 
+            style: 'currency', 
+            currency: 'EUR' 
+        });
     }
     
     copyToClipboard(text) {
         navigator.clipboard.writeText(text).then(() => {
-            const toast = subventionsConfig.factories.Toast({
-                type: 'success',
-                message: 'Code copié dans le presse-papier'
-            });
-            toast.show();
+            config.notify.success('Code copié dans le presse-papier');
         });
     }
     
