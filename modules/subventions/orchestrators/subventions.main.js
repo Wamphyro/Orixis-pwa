@@ -266,9 +266,23 @@ window.ouvrirNouveauDossier = () => {
     config.notify.info('Fonctionnalité à venir');
 };
 
-window.voirDetailDossier = (numero) => {
-    console.log('Voir détail dossier:', numero);
-    config.notify.info(`Détail du dossier ${numero}`);
+window.voirDetailDossier = async (dossierId) => {
+    console.log('Voir détail dossier:', dossierId);
+    
+    try {
+        // Importer le module detail
+        const { subventionsDetail } = await import('./subventions.detail.js');
+        
+        // Initialiser avec les permissions
+        await subventionsDetail.init(dossierId, {
+            canEdit: true,
+            canDelete: true
+        });
+        
+    } catch (error) {
+        console.error('❌ Erreur ouverture détail:', error);
+        config.notify.error('Erreur lors de l\'ouverture du détail');
+    }
 };
 
 // ========================================

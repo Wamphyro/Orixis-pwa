@@ -129,11 +129,16 @@ class SubventionsDetail {
     // ========================================
     
     render() {
-        const container = document.getElementById('subventions-detail-container');
-        if (!container) return;
-        
-        container.innerHTML = `
-            <div class="detail-dossier">
+    // Créer le container s'il n'existe pas
+    let container = document.getElementById('subventions-detail-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'subventions-detail-container';
+        document.body.appendChild(container);
+    }
+    
+    container.innerHTML = `
+        <div class="detail-dossier">
                 <!-- Header avec infos patient et actions -->
                 <div class="detail-header">
                     <div class="patient-header">
