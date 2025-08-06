@@ -121,16 +121,16 @@ export function createDropdown(container, options) {
 }
 
 export function createSearchDropdown(container, options) {
-    // SearchDropdown prend un objet config avec container dedans
+    // COMME DANS COMMANDES - Un seul objet config
     const searchDropdown = new SearchDropdown({
         container: container,
         minLength: options.minChars || 2,
         noResultsText: 'Aucun résultat trouvé',
         loadingText: 'Recherche en cours...',
         placeholder: options.placeholder,
-        searchFunction: options.searchFunction,
-        displayFormat: options.displayFormat,
+        onSearch: options.searchFunction || options.onSearch,  // Support both names
         onSelect: options.onSelect,
+        renderItem: options.displayFormat || options.renderItem,  // Support both names
         debounceTime: options.debounceTime || 300
     });
     

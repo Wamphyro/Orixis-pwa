@@ -1,0 +1,167 @@
+/* ========================================
+   EMAIL-CARD.COMPONENT.CSS
+   Styles pour les cartes email
+   ======================================== */
+
+.email-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+    transform-origin: center;
+}
+
+.email-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.email-card.unread {
+    background: rgba(255, 255, 255, 0.95);
+    border-left: 3px solid #0f172a;
+}
+
+.email-card.unread .email-subject {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+/* Header de la carte */
+.email-card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.email-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: #0f172a;
+    margin-right: 16px;
+    flex-shrink: 0;
+    border: 2px solid rgba(148, 163, 184, 0.2);
+    font-size: 16px;
+}
+
+.email-info {
+    flex: 1;
+}
+
+.email-sender {
+    font-weight: 600;
+    font-size: 16px;
+    color: #0f172a;
+    margin-bottom: 4px;
+}
+
+.email-time {
+    font-size: 13px;
+    color: #64748b;
+}
+
+/* Actions */
+.email-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.action-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.action-btn.starred {
+    color: #fbbf24;
+}
+
+/* Contenu */
+.email-subject {
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #0f172a;
+}
+
+.email-preview {
+    font-size: 14px;
+    color: #64748b;
+    line-height: 1.6;
+    margin-bottom: 16px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Meta */
+.email-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.email-label {
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 600;
+    background: transparent;
+    color: #64748b;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    transition: all 0.2s ease;
+}
+
+.email-label:hover {
+    background: #ffffff;
+}
+
+.email-label.important {
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.email-label.work {
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+
+.email-label.personal {
+    border-color: #10b981;
+    color: #10b981;
+}
+
+.attachment-indicator {
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+    font-size: 13px;
+}

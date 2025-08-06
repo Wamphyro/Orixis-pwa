@@ -59,28 +59,52 @@ class SubventionsCreate {
                 
                 <form id="create-form" class="create-form">
                     <!-- Section Patient -->
-                    <div class="form-section">
-                        <h3 class="section-title">
-                            <span class="section-number">1</span>
-                            Patient
-                        </h3>
-                        
-                        <div class="patient-search">
-                            <div class="search-container" id="search-container">
-                                <!-- Le SearchDropdown sera injecté ici -->
+                    <!-- Section Patient -->
+                        <div class="form-section">
+                            <h3 class="section-title">
+                                <span class="section-number">1</span>
+                                Patient
+                            </h3>
+                            
+                            <div class="patient-search">
+                                <!-- SearchDropdown -->
+                                <div class="search-container" id="search-container">
+                                    <!-- Le SearchDropdown sera injecté ici -->
+                                </div>
+                                
+                                <!-- Carte patient sélectionné (comme commandes) -->
+                                <div class="selected-patient" id="selected-patient" style="display: none;">
+                                    <div class="patient-card" style="
+                                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                        border-radius: 12px;
+                                        padding: 20px;
+                                        color: white;
+                                        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                                        margin: 20px 0;">
+                                        
+                                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                                            <div class="patient-info">
+                                                <h4 id="patient-name" style="margin: 0 0 8px 0; font-size: 1.2rem;"></h4>
+                                                <p id="patient-details" style="margin: 0; opacity: 0.9; font-size: 0.9rem;"></p>
+                                            </div>
+                                            <button type="button" class="btn-change" id="btn-change-patient" 
+                                                    style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); 
+                                                        color: white; padding: 6px 16px; border-radius: 20px; cursor: pointer;">
+                                                Changer
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="patient-alert" id="patient-alert"></div>
+                                </div>
                             </div>
                             
-                            <div class="selected-patient" id="selected-patient" style="display: none;">
-                                <div class="patient-card">
-                                    <div class="patient-info">
-                                        <h4 id="patient-name"></h4>
-                                        <p id="patient-details"></p>
-                                    </div>
-                                    <button type="button" class="btn-change" id="btn-change-patient">
-                                        Changer
-                                    </button>
-                                </div>
-                                <div class="patient-alert" id="patient-alert"></div>
+                            <!-- Option création rapide (style amélioré) -->
+                            <div class="quick-create" style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
+                                <span style="color: #999;">OU</span>
+                                <button type="button" class="btn btn-outline-primary" id="btn-create-patient" 
+                                        style="display: block; margin: 15px auto; padding: 12px 30px; border-radius: 25px;">
+                                    ➕ Créer un nouveau patient
+                                </button>
                             </div>
                         </div>
                         
@@ -254,72 +278,91 @@ class SubventionsCreate {
     // COMPOSANTS
     // ========================================
     
-    initSearchDropdown() {
-        this.searchDropdown = config.createSearchDropdown(
-            this.elements.searchContainer,
-            {
-                placeholder: 'Rechercher un patient par nom, prénom ou téléphone...',
-                searchFunction: async (term) => {
-                    const clients = await ClientsService.rechercherClients(term);
-                    return clients.map(client => ({
-                        id: client.id,
-                        nom: client.nom,
-                        prenom: client.prenom,
-                        telephone: client.telephone || '',
-                        email: client.email || '',
-                        dateNaissance: client.dateNaissance || null,
-                        adresse: {
-                            rue: client.adresse?.rue || '',
-                            codePostal: client.adresse?.codePostal || '',
-                            ville: client.adresse?.ville || '',
-                            departement: client.adresse?.departement || ''
-                        },
-                        situation: client.situation || ''
-                    }));
-                },
-                displayFormat: (patient) => {
-                    return `${patient.nom} ${patient.prenom} - ${patient.telephone || 'Pas de téléphone'}`;
-                },
-                onSelect: (patient) => {
-                    this.selectPatient(patient);
-                },
-                minChars: 2,
-                debounceTime: 300
-            }
-        );
+initSearchDropdown() {
+    // Détruire l'ancienne instance si elle existe
+    if (this.searchDropdown) {
+        this.searchDropdown.destroy();
     }
+    
+    this.searchDropdown = config.createSearchDropdown(this.elements.searchContainer, {
+        placeholder: 'Rechercher un patient (nom, prénom, téléphone...)',
+        onSearch: async (query) => {
+            try {
+                const clients = await ClientsService.rechercherClients(query);
+                return clients.map(client => ({
+                    id: client.id,
+                    nom: client.nom,
+                    prenom: client.prenom,
+                    telephone: client.telephone || '',
+                    email: client.email || '',
+                    dateNaissance: client.dateNaissance || null,
+                    adresse: {
+                        rue: client.adresse?.rue || '',
+                        codePostal: client.adresse?.codePostal || '',
+                        ville: client.adresse?.ville || '',
+                        departement: client.adresse?.departement || ''
+                    },
+                    situation: client.situation || ''
+                }));
+            } catch (error) {
+                console.error('Erreur recherche patient:', error);
+                throw error;
+            }
+        },
+        onSelect: (patient) => {
+            this.selectPatient(patient);
+        },
+        renderItem: (patient) => {
+            // Template élégant comme dans commandes
+            return `
+                <div style="padding: 8px;">
+                    <strong style="color: #2c3e50;">${patient.nom} ${patient.prenom}</strong>
+                    <div style="font-size: 0.85rem; color: #666; margin-top: 4px;">
+                        ${patient.telephone || 'Pas de téléphone'} 
+                        ${patient.email ? '• ' + patient.email : ''}
+                    </div>
+                </div>
+            `;
+        }
+    });
+}
     
     // ========================================
     // GESTION DU PATIENT
     // ========================================
     
-    async selectPatient(patient) {
-        this.selectedPatient = patient;
-        
-        // Afficher les infos patient
-        this.elements.patientName.textContent = `${patient.nom} ${patient.prenom}`;
-        this.elements.patientDetails.textContent = `
-            ${patient.dateNaissance ? `Né(e) le ${this.formatDate(patient.dateNaissance)}` : ''} 
-            ${patient.telephone ? `- ${patient.telephone}` : ''}
-            ${patient.email ? `- ${patient.email}` : ''}
-        `;
-        
-        // Afficher la carte patient
-        this.elements.selectedPatient.style.display = 'block';
-        this.elements.searchContainer.style.display = 'none';
-        
-        // Charger la situation
-        await this.loadPatientSituation(patient);
-        
-        // Vérifier l'éligibilité
-        this.checkEligibilite();
-        
-        // Activer le formulaire
-        this.enableForm();
-        
-        // Mettre à jour le récap
-        this.updateRecap();
+async selectPatient(patient) {
+    this.selectedPatient = patient;
+    
+    // Masquer la recherche
+    this.elements.searchContainer.style.display = 'none';
+    
+    // Afficher la carte patient avec animation
+    this.elements.selectedPatient.style.display = 'block';
+    this.elements.selectedPatient.style.animation = 'fadeInUp 0.3s ease';
+    
+    // Remplir les infos
+    this.elements.patientName.textContent = `${patient.nom} ${patient.prenom}`;
+    
+    let details = [];
+    if (patient.dateNaissance) {
+        details.push(`Né(e) le ${this.formatDate(patient.dateNaissance)}`);
     }
+    if (patient.telephone) {
+        details.push(`📱 ${patient.telephone}`);
+    }
+    if (patient.email) {
+        details.push(`✉️ ${patient.email}`);
+    }
+    
+    this.elements.patientDetails.innerHTML = details.join(' • ');
+    
+    // Suite du traitement...
+    await this.loadPatientSituation(patient);
+    this.checkEligibilite();
+    this.enableForm();
+    this.updateRecap();
+}
     
     async loadPatientSituation(patient) {
         if (!patient.adresse) {

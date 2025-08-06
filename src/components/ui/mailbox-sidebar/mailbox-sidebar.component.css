@@ -1,0 +1,296 @@
+/* ========================================
+   MAILBOX-SIDEBAR.COMPONENT.CSS
+   Styles pour la sidebar de messagerie
+   ======================================== */
+
+.mailbox-sidebar {
+    width: 320px;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(148, 163, 184, 0.2);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    position: relative;
+}
+
+/* Header */
+.sidebar-header {
+    padding: 24px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.sidebar-logo {
+    font-size: 26px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.sidebar-logo svg {
+    width: 32px;
+    height: 32px;
+    stroke: #3b82f6;
+}
+
+.compose-btn {
+    width: 100%;
+    margin-top: 24px;
+    padding: 14px 24px;
+    background: #0f172a;
+    color: white;
+    border: none;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: opacity 0.2s ease;
+}
+
+.compose-btn:hover {
+    opacity: 0.8;
+}
+
+/* Content */
+.sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 20px;
+}
+
+/* Navigation */
+.nav-menu {
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 14px 24px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    margin: 4px 12px;
+    border-radius: 12px;
+}
+
+.nav-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 0;
+    background: #0f172a;
+    border-radius: 2px;
+    transition: height 0.3s ease;
+}
+
+.nav-item:hover {
+    background: #ffffff;
+}
+
+.nav-item.active {
+    background: #ffffff;
+    color: #0f172a;
+    font-weight: 600;
+}
+
+.nav-item.active::before {
+    height: 24px;
+}
+
+.nav-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 16px;
+    opacity: 0.7;
+}
+
+.nav-item.active .nav-icon {
+    opacity: 1;
+}
+
+.nav-text {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.nav-badge {
+    background: #ffffff;
+    color: #64748b;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+/* Chat Section */
+.chat-section {
+    padding-top: 8px;
+}
+
+.section-title {
+    padding: 16px 24px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chat-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 24px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    margin: 4px 12px;
+    border-radius: 12px;
+}
+
+.chat-item:hover {
+    background: #ffffff;
+}
+
+.chat-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    color: #0f172a;
+    margin-right: 12px;
+    position: relative;
+    flex-shrink: 0;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.status-indicator {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+}
+
+.status-indicator.online {
+    background: #10b981;
+}
+
+.status-indicator.offline {
+    background: #94a3b8;
+}
+
+.chat-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.chat-name {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+.chat-preview {
+    font-size: 12px;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chat-badge {
+    background: #3b82f6;
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+}
+
+/* Mobile Toggle */
+.sidebar-toggle-mobile {
+    display: none;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1001;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    border: none;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    color: #0f172a;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .mailbox-sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 1000;
+        transform: translateX(-100%);
+    }
+    
+    .mailbox-sidebar.open {
+        transform: translateX(0);
+    }
+    
+    .sidebar-toggle-mobile {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* Scrollbar */
+.sidebar-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.3);
+    border-radius: 3px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.5);
+}
