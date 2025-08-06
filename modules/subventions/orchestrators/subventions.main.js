@@ -6,6 +6,12 @@
 import { initFirebase } from '../../../src/services/firebase.service.js';
 import config from '../core/subventions.config.js';
 import { modalManager } from '../../../src/components/ui/modal/modal.component.js';
+import { 
+    initListeDossiers, 
+    chargerDonnees, 
+    resetFiltres,
+    afficherDossiers
+} from './subventions.list.js';
 
 // ========================================
 // VARIABLES GLOBALES
@@ -17,9 +23,11 @@ export const state = {
     itemsPerPage: 20,
     filtres: {
         recherche: '',
-        statut: '',
+        statutMDPH: '',
+        statutAGEFIPH: '',
         technicien: '',
-        periode: 'all'
+        periode: 'all',
+        statutsActifs: []
     }
 };
 
@@ -167,7 +175,7 @@ function createHTMLStructure() {
         document.body.appendChild(mainContainer);
     }
     
-    // Structure de la page
+    // Structure de la page COMME FACTURES
     mainContainer.innerHTML = `
         <div class="subventions-page">
             <!-- Stats en haut -->
@@ -189,118 +197,12 @@ function createHTMLStructure() {
             
             <!-- Table -->
             <div class="subventions-table-container section">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>N° Dossier</th>
-                            <th>Patient</th>
-                            <th>MDPH</th>
-                            <th>AGEFIPH</th>
-                            <th>Montant</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="table-body">
-                        <!-- Les lignes seront ajoutées ici -->
-                    </tbody>
-                </table>
+                <!-- DataTable sera généré ici -->
             </div>
         </div>
     `;
     
     console.log('✅ Structure HTML créée');
-}
-
-// ========================================
-// DONNÉES MOCK TEMPORAIRES
-// ========================================
-
-function getMockData() {
-    return [
-        {
-            numero: 'SUB-2024-0001',
-            patient: {
-                nom: 'MARTIN',
-                prenom: 'Jean',
-                telephone: '06 12 34 56 78'
-            },
-            mdph: {
-                statut: 'depot',
-                progression: 60
-            },
-            agefiph: {
-                statut: 'documents',
-                progression: 40
-            },
-            montant: 3500
-        },
-        {
-            numero: 'SUB-2024-0002',
-            patient: {
-                nom: 'DURAND',
-                prenom: 'Marie',
-                telephone: '06 98 76 54 32'
-            },
-            mdph: {
-                statut: 'accord',
-                progression: 100
-            },
-            agefiph: {
-                statut: 'depot',
-                progression: 80
-            },
-            montant: 4200
-        }
-    ];
-}
-
-function renderTableRows() {
-    const tbody = document.getElementById('table-body');
-    if (!tbody) return;
-    
-    const dossiers = getMockData();
-    
-    tbody.innerHTML = dossiers.map(dossier => `
-        <tr>
-            <td>${dossier.numero}</td>
-            <td>
-                <strong>${dossier.patient.nom} ${dossier.patient.prenom}</strong><br>
-                <small>${dossier.patient.telephone}</small>
-            </td>
-            <td>
-                <span class="badge badge-${getStatusClass(dossier.mdph.statut)}">
-                    ${dossier.mdph.statut}
-                </span>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: ${dossier.mdph.progression}%"></div>
-                </div>
-            </td>
-            <td>
-                <span class="badge badge-${getStatusClass(dossier.agefiph.statut)}">
-                    ${dossier.agefiph.statut}
-                </span>
-                <div class="progress-bar">
-                    <div class="progress-fill agefiph" style="width: ${dossier.agefiph.progression}%"></div>
-                </div>
-            </td>
-            <td>${dossier.montant}€</td>
-            <td>
-                <button class="btn-icon" onclick="voirDetailDossier('${dossier.numero}')">
-                    👁️
-                </button>
-            </td>
-        </tr>
-    `).join('');
-}
-
-function getStatusClass(statut) {
-    const classes = {
-        'nouveau': 'primary',
-        'documents': 'info',
-        'depot': 'warning',
-        'accord': 'success'
-    };
-    return classes[statut] || 'secondary';
 }
 
 // ========================================
@@ -330,13 +232,16 @@ window.addEventListener('load', async () => {
         // 4. Attendre un peu pour que le DOM soit prêt
         await new Promise(resolve => setTimeout(resolve, 100));
         
-        // 5. Afficher les données mock
-        renderTableRows();
+        // 5. Initialiser la liste (DataTable + Filtres + Stats)
+        await initListeDossiers();
+
+        // 6. Charger les données
+        await chargerDonnees();
         
-        // 6. Animations
+        // 7. Animations
         document.body.classList.add('page-loaded');
         
-        // 7. Container dialogs
+        // 8. Container dialogs
         if (!document.getElementById('dialog-container')) {
             const dialogContainer = document.createElement('div');
             dialogContainer.id = 'dialog-container';
@@ -375,3 +280,4 @@ window.addEventListener('beforeunload', () => {
         appHeader.destroy();
     }
 });
+window.resetFiltres = resetFiltres;

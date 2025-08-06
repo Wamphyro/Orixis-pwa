@@ -1,636 +1,575 @@
 // ========================================
-// SUBVENTIONS.LIST.JS - Orchestrateur liste des dossiers
-// Chemin: modules/subventions/subventions.list.js
-//
-// DESCRIPTION:
-// Gère l'affichage de la liste des dossiers avec :
-// - Widget d'alertes du jour
-// - Timeline hebdomadaire
-// - Tableau avec double suivi MDPH/AGEFIPH
-// - Interactions et filtres
-//
-// STRUCTURE:
-// - initList()
-// - renderAlertsWidget()
-// - renderWeeklyTimeline()
-// - renderDossiersTable()
-// - handleTableInteractions()
+// SUBVENTIONS.LIST.JS - Orchestrateur de la liste des dossiers
+// Chemin: modules/subventions/orchestrators/subventions.list.js
 // ========================================
 
-import { DataTable } from '../../../src/components/index.js';
-import { subventionsFirestore } from '../core/subventions.firestore.js';
-import { subventionsService } from '../core/subventions.service.js';
-import { subventionsConfig } from '../core/subventions.config.js';
-// Import direct du service clients
-import { ClientsService } from '../../../src/services/clients.service.js';
+import config from '../core/subventions.config.js';
+import { state } from './subventions.main.js';
 
-class SubventionsCreate {
-    constructor() {
-        this.dossiers = [];
-        this.alertes = [];
-        this.timelineEvents = [];
-        this.filters = {
-            search: '',
-            status: 'all',
-            technicien: 'all',
-            periode: 'all'
-        };
+// ========================================
+// CONFIGURATION UI (L'ORCHESTRATEUR DÉCIDE)
+// ========================================
+
+// Configuration des filtres
+const FILTERS_CONFIG = {
+    recherche: {
+        type: 'search',
+        key: 'recherche',
+        placeholder: 'Patient, n° dossier, téléphone...'
+    },
+    statutMDPH: {
+        type: 'select',
+        key: 'statutMDPH',
+        label: 'Statut MDPH',
+        keepPlaceholder: true,
+        options: [
+            { value: '', label: 'Tous' },
+            { value: 'nouveau', label: 'Nouveau' },
+            { value: 'documents', label: 'Documents' },
+            { value: 'depot', label: 'Dépôt' },
+            { value: 'accord', label: 'Accord' },
+            { value: 'refuse', label: 'Refusé' }
+        ]
+    },
+    statutAGEFIPH: {
+        type: 'select',
+        key: 'statutAGEFIPH',
+        label: 'Statut AGEFIPH',
+        keepPlaceholder: true,
+        options: [
+            { value: '', label: 'Tous' },
+            { value: 'nouveau', label: 'Nouveau' },
+            { value: 'documents', label: 'Documents' },
+            { value: 'depot', label: 'Dépôt' },
+            { value: 'accord', label: 'Accord' },
+            { value: 'refuse', label: 'Refusé' }
+        ]
+    },
+    technicien: {
+        type: 'select',
+        key: 'technicien',
+        label: 'Technicien',
+        keepPlaceholder: true,
+        searchable: true,
+        options: [
+            { value: '', label: 'Tous' },
+            { value: 'jean', label: 'Jean Dupont' },
+            { value: 'marie', label: 'Marie Martin' },
+            { value: 'pierre', label: 'Pierre Durand' }
+        ]
+    },
+    periode: {
+        type: 'select',
+        key: 'periode',
+        label: 'Période',
+        defaultValue: 'all',
+        keepPlaceholder: true,
+        options: [
+            { value: 'all', label: 'Toutes' },
+            { value: 'today', label: "Aujourd'hui" },
+            { value: 'week', label: 'Cette semaine' },
+            { value: 'month', label: 'Ce mois' },
+            { value: 'quarter', label: 'Ce trimestre' }
+        ]
+    }
+};
+
+// Configuration des stats cards
+const STATS_CARDS_CONFIG = {
+    cartes: [
+        { id: 'nouveau', label: 'Nouveaux', icon: '📄', color: 'primary' },
+        { id: 'en_cours', label: 'En cours', icon: '⏳', color: 'warning' },
+        { id: 'en_retard', label: 'En retard', icon: '⚠️', color: 'danger' },
+        { id: 'termine', label: 'Terminés', icon: '✅', color: 'success' },
+        { id: 'bloque', label: 'Bloqués', icon: '🔴', color: 'error' },
+        { id: 'montant_total', label: 'Montant total', icon: '💰', color: 'info', special: true }
+    ]
+};
+
+// ========================================
+// INSTANCES DES COMPOSANTS
+// ========================================
+
+let tableDossiers = null;
+let filtresDossiers = null;
+let statsCards = null;
+
+// ========================================
+// INITIALISATION DU MODULE
+// ========================================
+
+export async function initListeDossiers() {
+    console.log('🚀 Initialisation orchestrateur liste dossiers...');
+    
+    // 1. Charger les données d'abord
+    await chargerDonneesInitiales();
+    
+    // 2. Créer l'instance DataTable
+    initDataTable();
+    
+    // 3. Créer les filtres
+    initFiltres();
+    
+    // 4. Créer les cartes de statistiques
+    initStatsCards();
+    
+    // 5. Connecter les composants entre eux
+    connectComponents();
+    
+    console.log('✅ Orchestrateur liste dossiers initialisé');
+}
+
+// ========================================
+// CHARGEMENT DONNÉES INITIALES
+// ========================================
+
+async function chargerDonneesInitiales() {
+    try {
+        // TODO: Charger depuis Firebase
+        // Pour l'instant, utiliser les données mock
+        state.dossiersData = getMockData();
+        console.log('✅ Données initiales chargées');
+    } catch (error) {
+        console.error('❌ Erreur chargement initial:', error);
+        state.dossiersData = [];
+    }
+}
+
+// ========================================
+// INITIALISATION DATATABLE
+// ========================================
+
+function initDataTable() {
+    const container = document.querySelector('.subventions-table-container');
+    if (!container) {
+        console.error('❌ Container .subventions-table-container introuvable !');
+        return;
     }
     
-    // ========================================
-    // INITIALISATION
-    // ========================================
+    tableDossiers = config.createSubventionsTable(container, {
+        columns: [
+            {
+                key: 'numero',
+                label: 'N° Dossier',
+                sortable: true,
+                width: 150,
+                formatter: (value) => `<strong>${value}</strong>`
+            },
+            {
+                key: 'patient',
+                label: 'Patient',
+                sortable: true,
+                formatter: (patient) => config.HTML_TEMPLATES.patient(patient || {})
+            },
+            {
+                key: 'mdph',
+                label: 'MDPH',
+                sortable: true,
+                formatter: (mdph) => renderProgressColumn(mdph, 'mdph')
+            },
+            {
+                key: 'agefiph',
+                label: 'AGEFIPH',
+                sortable: true,
+                formatter: (agefiph) => renderProgressColumn(agefiph, 'agefiph')
+            },
+            {
+                key: 'montant',
+                label: 'Montant',
+                sortable: true,
+                formatter: (value) => config.HTML_TEMPLATES.montant(value)
+            },
+            {
+                key: 'dateCreation',
+                label: 'Créé le',
+                sortable: true,
+                formatter: (value) => formatDate(value)
+            },
+            {
+                key: 'actions',
+                label: 'Actions',
+                sortable: false,
+                resizable: false,
+                exportable: false,
+                formatter: (_, row) => `
+                    <button class="btn-icon" onclick="voirDetailDossier('${row.id}')">
+                        👁️
+                    </button>
+                `
+            }
+        ],
+        
+        onPageChange: (page) => {
+            state.currentPage = page;
+        }
+    });
     
-    async init() {
-        // Charger les données
-        await this.loadData();
-        
-        // Rendre les composants
-        this.renderPage();
-        
-        // Attacher les événements
-        this.attachEvents();
-        
-        // Rafraîchir toutes les 5 minutes
-        this.refreshInterval = setInterval(() => {
-            this.refreshAlertes();
-        }, 5 * 60 * 1000);
+    console.log('📊 DataTable créée avec config locale');
+}
+
+// ========================================
+// INITIALISATION FILTRES
+// ========================================
+
+function initFiltres() {
+    const filtresConfig = Object.values(FILTERS_CONFIG);
+    
+    const filtresContainer = document.querySelector('.subventions-filters');
+    if (!filtresContainer) {
+        console.error('❌ Container .subventions-filters introuvable !');
+        return;
+    }
+
+    filtresDossiers = config.createSubventionsFilters(
+        filtresContainer,
+        filtresConfig,
+        (filters) => handleFilterChange(filters)
+    );
+    
+    console.log('🔍 Filtres créés avec config locale');
+}
+
+// ========================================
+// INITIALISATION STATS CARDS
+// ========================================
+
+function initStatsCards() {
+    const statsContainer = document.querySelector('.subventions-stats');
+    if (!statsContainer) {
+        console.error('❌ Container .subventions-stats introuvable !');
+        return;
     }
     
-    async loadData() {
-        try {
-            // Charger les dossiers
-            this.dossiers = await subventionsFirestore.getDossiers({
-                orderBy: ['dates.modification', 'desc']
-            });
-            
-            // Calculer les alertes
-            this.alertes = await subventionsService.calculateAlertes(this.dossiers);
-            
-            // Calculer la timeline
-            this.timelineEvents = await subventionsService.getWeeklyEvents(this.dossiers);
-            
-        } catch (error) {
-            console.error('Erreur chargement données:', error);
+    const cardsConfig = STATS_CARDS_CONFIG.cartes.map(carte => ({
+        id: carte.id,
+        label: carte.label,
+        value: carte.special && carte.id === 'montant_total' ? '0 €' : 0,
+        icon: carte.icon,
+        color: carte.color
+    }));
+    
+    statsCards = config.createSubventionsStatsCards(
+        statsContainer,
+        cardsConfig,
+        (cardId) => handleStatsCardClick(cardId)
+    );
+    
+    console.log('📈 StatsCards créées avec config locale');
+}
+
+// ========================================
+// CONNEXION DES COMPOSANTS
+// ========================================
+
+function connectComponents() {
+    console.log('🔗 Composants connectés via callbacks');
+}
+
+// ========================================
+// GESTION DES INTERACTIONS
+// ========================================
+
+function handleFilterChange(filters) {
+    state.filtres = {
+        ...state.filtres,
+        recherche: filters.recherche || '',
+        statutMDPH: filters.statutMDPH || '',
+        statutAGEFIPH: filters.statutAGEFIPH || '',
+        technicien: filters.technicien || '',
+        periode: filters.periode || 'all'
+    };
+    
+    afficherDossiers();
+}
+
+function handleStatsCardClick(cardId) {
+    console.log('🎯 Clic sur carte:', cardId);
+    
+    // Les cartes spéciales ne filtrent pas
+    if (cardId === 'montant_total') return;
+    
+    // Toggle le filtre
+    const index = state.filtres.statutsActifs.indexOf(cardId);
+    
+    if (index > -1) {
+        state.filtres.statutsActifs.splice(index, 1);
+        if (statsCards.elements.cards[cardId]) {
+            statsCards.elements.cards[cardId].classList.remove('active');
+        }
+    } else {
+        state.filtres.statutsActifs.push(cardId);
+        if (statsCards.elements.cards[cardId]) {
+            statsCards.elements.cards[cardId].classList.add('active');
         }
     }
     
-    // ========================================
-    // RENDU DE LA PAGE
-    // ========================================
-    
-    renderPage() {
-        const container = document.getElementById('subventions-list-container');
-        if (!container) return;
-        
-        container.innerHTML = `
-            <div class="subventions-list-page">
-                <!-- Header avec actions -->
-                <div class="page-header">
-                    <h1>📋 Dossiers de Subvention</h1>
-                    <div class="header-actions">
-                        <button class="btn btn-success" id="btn-nouveau-dossier">
-                            <i class="icon-plus"></i> Nouveau dossier
-                        </button>
-                        <button class="btn btn-ghost" id="btn-export">
-                            <i class="icon-download"></i> Exporter
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Widgets du haut -->
-                <div class="top-widgets">
-                    <div id="alerts-widget" class="widget"></div>
-                    <div id="timeline-widget" class="widget"></div>
-                </div>
-                
-                <!-- Filtres -->
-                <div class="filters-section">
-                    <div class="search-box">
-                        <input type="text" 
-                               id="search-input" 
-                               placeholder="Rechercher un patient, n° dossier..."
-                               class="form-input">
-                    </div>
-                    <div class="filters">
-                        <select id="filter-status" class="form-select">
-                            <option value="all">Tous les statuts</option>
-                            <option value="en_cours">En cours</option>
-                            <option value="attente">En attente</option>
-                            <option value="retard">En retard</option>
-                            <option value="termine">Terminé</option>
-                        </select>
-                        <select id="filter-technicien" class="form-select">
-                            <option value="all">Tous les techniciens</option>
-                            ${this.getTechniciensOptions()}
-                        </select>
-                        <select id="filter-periode" class="form-select">
-                            <option value="all">Toute période</option>
-                            <option value="today">Aujourd'hui</option>
-                            <option value="week">Cette semaine</option>
-                            <option value="month">Ce mois</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <!-- Tableau principal -->
-                <div id="table-container" class="table-section"></div>
-            </div>
-        `;
-        
-        // Rendre chaque composant
-        this.renderAlertsWidget();
-        this.renderWeeklyTimeline();
-        this.renderDossiersTable();
-    }
-    
-    // ========================================
-    // WIDGET ALERTES
-    // ========================================
-    
-    renderAlertsWidget() {
-        const container = document.getElementById('alerts-widget');
-        if (!container) return;
-        
-        // Séparer les alertes par priorité
-        const urgent = this.alertes.filter(a => a.niveau === 'urgent');
-        const aVenir = this.alertes.filter(a => a.niveau === 'warning');
-        
-        container.innerHTML = `
-            <div class="alerts-widget">
-                <div class="alerts-header">
-                    <h3>⏰ ALERTES DU JOUR</h3>
-                    <div class="alerts-line"></div>
-                </div>
-                
-                ${urgent.length > 0 ? `
-                    <div class="alerts-section urgent">
-                        <h4>🔴 URGENT (${urgent.length})</h4>
-                        <ul class="alerts-list">
-                            ${urgent.map(alerte => `
-                                <li class="alert-item" data-dossier-id="${alerte.dossierId}">
-                                    <span class="alert-patient">${alerte.patient}</span> : 
-                                    <span class="alert-message">${alerte.message}</span>
-                                    <button class="alert-action" data-action="${alerte.action}">
-                                        ${alerte.actionLabel || '→'}
-                                    </button>
-                                </li>
-                            `).join('')}
-                        </ul>
-                    </div>
-                ` : ''}
-                
-                ${aVenir.length > 0 ? `
-                    <div class="alerts-section warning">
-                        <h4>🟡 À VENIR (${aVenir.length})</h4>
-                        <ul class="alerts-list">
-                            ${aVenir.map(alerte => `
-                                <li class="alert-item" data-dossier-id="${alerte.dossierId}">
-                                    <span class="alert-patient">${alerte.patient}</span> : 
-                                    <span class="alert-message">${alerte.message}</span>
-                                </li>
-                            `).join('')}
-                        </ul>
-                    </div>
-                ` : ''}
-                
-                ${urgent.length === 0 && aVenir.length === 0 ? `
-                    <div class="no-alerts">
-                        <p>✅ Aucune alerte pour aujourd'hui</p>
-                    </div>
-                ` : ''}
-            </div>
-        `;
-        
-        // Attacher les événements des alertes
-        container.querySelectorAll('.alert-item').forEach(item => {
-            item.addEventListener('click', (e) => {
-                if (!e.target.classList.contains('alert-action')) {
-                    const dossierId = item.dataset.dossierId;
-                    this.openDossier(dossierId);
-                }
-            });
-        });
-        
-        container.querySelectorAll('.alert-action').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const action = btn.dataset.action;
-                const dossierId = btn.closest('.alert-item').dataset.dossierId;
-                this.handleAlertAction(action, dossierId);
-            });
-        });
-    }
-    
-    // ========================================
-    // TIMELINE HEBDOMADAIRE
-    // ========================================
-    
-    renderWeeklyTimeline() {
-        const container = document.getElementById('timeline-widget');
-        if (!container) return;
-        
-        const days = this.getWeekDays();
-        
-        container.innerHTML = `
-            <div class="weekly-timeline">
-                <div class="timeline-header">
-                    <h3>📅 TIMELINE CETTE SEMAINE</h3>
-                    <div class="timeline-line"></div>
-                </div>
-                
-                <div class="timeline-grid">
-                    <div class="timeline-days">
-                        ${days.map(day => `
-                            <div class="timeline-day ${day.isToday ? 'today' : ''}">
-                                <div class="day-name">${day.name}</div>
-                                <div class="day-number">${day.isToday ? '[' + day.number + ']' : day.number}</div>
-                                <div class="day-events">
-                                    ${this.getEventsForDay(day.date).map(event => `
-                                        <div class="event-icon" 
-                                             title="${event.title}"
-                                             data-dossier-id="${event.dossierId}">
-                                            ${event.icon}
-                                        </div>
-                                    `).join('')}
-                                </div>
-                                <div class="day-label">
-                                    ${day.isToday ? 'TODAY' : this.getEventLabelForDay(day.date)}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // Événements timeline
-        container.querySelectorAll('.event-icon').forEach(icon => {
-            icon.addEventListener('click', () => {
-                const dossierId = icon.dataset.dossierId;
-                this.openDossier(dossierId);
-            });
-        });
-    }
-    
-    // ========================================
-    // TABLEAU PRINCIPAL
-    // ========================================
-    
-    renderDossiersTable() {
-        const container = document.getElementById('table-container');
-        if (!container) return;
-        
-        // Configuration du tableau
-        const tableConfig = {
-            data: this.getFilteredDossiers(),
-            columns: [
-                {
-                    key: 'patient',
-                    label: 'Patient',
-                    sortable: true,
-                    render: (row) => `
-                        <div class="patient-cell">
-                            <div class="patient-name">${row.patient.nom} ${row.patient.prenom}</div>
-                            <div class="patient-info">${row.patient.telephone}</div>
-                        </div>
-                    `
-                },
-                {
-                    key: 'numeroDossier',
-                    label: 'N° Dossier',
-                    sortable: true,
-                    width: '120px'
-                },
-                {
-                    key: 'statut',
-                    label: 'Statut Global',
-                    width: '300px',
-                    render: (row) => this.renderStatutGlobal(row)
-                },
-                {
-                    key: 'technicien',
-                    label: 'Technicien',
-                    sortable: true,
-                    width: '150px',
-                    render: (row) => row.organisation.technicien.nom
-                },
-                {
-                    key: 'montant',
-                    label: 'Montant',
-                    sortable: true,
-                    width: '100px',
-                    render: (row) => `${(row.montants.appareil / 100).toFixed(0)}€`
-                },
-                {
-                    key: 'actions',
-                    label: '',
-                    width: '80px',
-                    render: (row) => `
-                        <div class="table-actions">
-                            <button class="btn-icon" data-action="view" data-id="${row.id}">
-                                <i class="icon-eye"></i>
-                            </button>
-                            <button class="btn-icon" data-action="edit" data-id="${row.id}">
-                                <i class="icon-edit"></i>
-                            </button>
-                        </div>
-                    `
-                }
-            ],
-            striped: true,
-            hover: true,
-            emptyText: 'Aucun dossier trouvé',
-            onRowClick: (row) => this.openDossier(row.id)
-        };
-        
-        // Créer le tableau
-        this.table = new DataTable(tableConfig);
-        container.appendChild(this.table.getElement());
-        
-        // Attacher les événements des actions
-        this.attachTableEvents();
-    }
-    
-    renderStatutGlobal(dossier) {
-        const mdph = dossier.workflow.mdph;
-        const agefiph = dossier.workflow.agefiph;
-        
-        // Calculer les classes et icônes
-        const mdphClass = this.getStatutClass(mdph.statut);
-        const agefiClass = this.getStatutClass(agefiph.statut);
-        const globalProgress = Math.round((mdph.progression + agefiph.progression) / 2);
-        
-        return `
-            <div class="statut-global-cell">
-                <div class="statut-header">
-                    <div class="statut-mdph ${mdphClass}">
-                        MDPH: ${this.getStatutLabel(mdph.statut)}
-                    </div>
-                    <div class="statut-separator">|</div>
-                    <div class="statut-agefiph ${agefiClass}">
-                        AGEF: ${this.getStatutLabel(agefiph.statut)}
-                    </div>
-                </div>
-                <div class="statut-progress">
-                    <div class="progress-bar-container">
-                        <div class="progress-bar-dual">
-                            <div class="progress-fill mdph" 
-                                 style="width: ${mdph.progression}%"
-                                 title="MDPH: ${mdph.progression}%">
-                            </div>
-                            <div class="progress-fill agefiph" 
-                                 style="width: ${agefiph.progression}%"
-                                 title="AGEFIPH: ${agefiph.progression}%">
-                            </div>
-                        </div>
-                    </div>
-                    <span class="progress-text">${globalProgress}%</span>
-                </div>
-                ${this.hasAlert(dossier) ? '<span class="status-alert">⚠️</span>' : ''}
-            </div>
-        `;
-    }
-    
-    // ========================================
-    // INTERACTIONS
-    // ========================================
-    
-    attachEvents() {
-        // Nouveau dossier
-        document.getElementById('btn-nouveau-dossier')?.addEventListener('click', () => {
-            window.subventionsCreate.openCreateModal();
-        });
-        
-        // Export
-        document.getElementById('btn-export')?.addEventListener('click', () => {
-            this.exportDossiers();
-        });
-        
-        // Filtres
-        document.getElementById('search-input')?.addEventListener('input', (e) => {
-            this.filters.search = e.target.value;
-            this.applyFilters();
-        });
-        
-        document.getElementById('filter-status')?.addEventListener('change', (e) => {
-            this.filters.status = e.target.value;
-            this.applyFilters();
-        });
-        
-        document.getElementById('filter-technicien')?.addEventListener('change', (e) => {
-            this.filters.technicien = e.target.value;
-            this.applyFilters();
-        });
-        
-        document.getElementById('filter-periode')?.addEventListener('change', (e) => {
-            this.filters.periode = e.target.value;
-            this.applyFilters();
-        });
-    }
-    
-    attachTableEvents() {
-        // Actions dans le tableau
-        document.querySelectorAll('.table-actions button').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const action = btn.dataset.action;
-                const id = btn.dataset.id;
-                
-                if (action === 'view') {
-                    this.openDossier(id);
-                } else if (action === 'edit') {
-                    this.editDossier(id);
-                }
-            });
-        });
-    }
-    
-    // ========================================
-    // MÉTHODES UTILITAIRES
-    // ========================================
-    
-    getFilteredDossiers() {
-        let filtered = [...this.dossiers];
-        
-        // Recherche
-        if (this.filters.search) {
-            const search = this.filters.search.toLowerCase();
-            filtered = filtered.filter(d => 
-                d.patient.nom.toLowerCase().includes(search) ||
-                d.patient.prenom.toLowerCase().includes(search) ||
-                d.numeroDossier.toLowerCase().includes(search)
-            );
+    afficherDossiers();
+}
+
+// ========================================
+// CHARGEMENT DES DONNÉES
+// ========================================
+
+export async function chargerDonnees() {
+    try {
+        if (tableDossiers) {
+            tableDossiers.state.loading = true;
+            tableDossiers.refresh();
         }
         
-        // Statut
-        if (this.filters.status !== 'all') {
-            filtered = filtered.filter(d => {
-                if (this.filters.status === 'retard') {
-                    return this.hasRetard(d);
-                }
-                return this.getGlobalStatus(d) === this.filters.status;
-            });
-        }
+        // TODO: Charger depuis Firebase
+        state.dossiersData = getMockData();
         
-        // Technicien
-        if (this.filters.technicien !== 'all') {
-            filtered = filtered.filter(d => 
-                d.organisation.technicien.id === this.filters.technicien
-            );
-        }
+        // Calculer les statistiques
+        const stats = calculerStatistiques();
+        afficherStatistiques(stats);
         
-        // Période
-        if (this.filters.periode !== 'all') {
-            filtered = filtered.filter(d => 
-                this.isInPeriod(d, this.filters.periode)
-            );
-        }
+        // Afficher les dossiers
+        afficherDossiers();
         
-        return filtered;
-    }
-    
-    applyFilters() {
-        this.renderDossiersTable();
-    }
-    
-    getWeekDays() {
-        const today = new Date();
-        const monday = new Date(today);
-        monday.setDate(today.getDate() - today.getDay() + 1);
-        
-        const days = [];
-        for (let i = 0; i < 7; i++) {
-            const date = new Date(monday);
-            date.setDate(monday.getDate() + i);
-            
-            days.push({
-                name: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'][i],
-                number: date.getDate(),
-                date: date,
-                isToday: date.toDateString() === today.toDateString()
-            });
-        }
-        
-        return days;
-    }
-    
-    getEventsForDay(date) {
-        return this.timelineEvents.filter(event => 
-            event.date.toDateString() === date.toDateString()
-        );
-    }
-    
-    getEventLabelForDay(date) {
-        const events = this.getEventsForDay(date);
-        if (events.length === 0) return '';
-        
-        // Prendre l'événement le plus important
-        const mainEvent = events.find(e => e.priority === 'high') || events[0];
-        return mainEvent.shortLabel || '';
-    }
-    
-    getStatutClass(statut) {
-        const classes = {
-            'nouveau': 'status-new',
-            'documents': 'status-docs',
-            'formulaire': 'status-form',
-            'depot': 'status-submitted',
-            'recepisse': 'status-receipt',
-            'accord': 'status-approved',
-            'attente': 'status-waiting',
-            'finalisation': 'status-finalizing',
-            'soumis': 'status-sent',
-            'decision': 'status-decision'
-        };
-        
-        return classes[statut] || 'status-default';
-    }
-    
-    getStatutLabel(statut) {
-        const labels = {
-            'nouveau': '📝',
-            'documents': '📄',
-            'formulaire': '✍️',
-            'depot': '📮',
-            'recepisse': '📋',
-            'accord': '✅',
-            'attente': '⏸️',
-            'finalisation': '📋',
-            'soumis': '📮',
-            'decision': '✅'
-        };
-        
-        return labels[statut] || statut;
-    }
-    
-    hasAlert(dossier) {
-        return this.alertes.some(a => a.dossierId === dossier.id);
-    }
-    
-    hasRetard(dossier) {
-        // Logique pour déterminer si le dossier est en retard
-        const delaisDepartement = subventionsService.getDelaisDepartement(
-            dossier.patient.adresse.departement
-        );
-        
-        if (dossier.workflow.mdph.dates.depot) {
-            const joursEcoules = subventionsService.getJoursEcoules(
-                dossier.workflow.mdph.dates.depot
-            );
-            return joursEcoules > delaisDepartement.delai;
-        }
-        
-        return false;
-    }
-    
-    openDossier(dossierId) {
-        window.location.hash = `#subventions/detail/${dossierId}`;
-    }
-    
-    editDossier(dossierId) {
-        window.location.hash = `#subventions/edit/${dossierId}`;
-    }
-    
-    handleAlertAction(action, dossierId) {
-        switch(action) {
-            case 'call':
-                this.openCallModal(dossierId);
-                break;
-            case 'email':
-                this.openEmailModal(dossierId);
-                break;
-            case 'requestAttestation':
-                this.requestAttestation(dossierId);
-                break;
-            default:
-                this.openDossier(dossierId);
-        }
-    }
-    
-    getTechniciensOptions() {
-        const techniciens = [...new Set(this.dossiers.map(d => 
-            JSON.stringify({
-                id: d.organisation.technicien.id,
-                nom: d.organisation.technicien.nom
-            })
-        ))].map(t => JSON.parse(t));
-        
-        return techniciens.map(t => 
-            `<option value="${t.id}">${t.nom}</option>`
-        ).join('');
-    }
-    
-    destroy() {
-        if (this.refreshInterval) {
-            clearInterval(this.refreshInterval);
-        }
-        if (this.table) {
-            this.table.destroy();
+    } catch (error) {
+        console.error('Erreur chargement données:', error);
+        state.dossiersData = [];
+        afficherDossiers();
+    } finally {
+        if (tableDossiers) {
+            tableDossiers.state.loading = false;
         }
     }
 }
 
-// Export de l'instance
-export const subventionsList = new SubventionsList();
-export const subventionsCreate = new SubventionsCreate();
+// ========================================
+// AFFICHAGE DES DONNÉES
+// ========================================
+
+function afficherStatistiques(stats) {
+    if (statsCards) {
+        statsCards.updateAll({
+            nouveau: stats.nouveau || 0,
+            en_cours: stats.en_cours || 0,
+            en_retard: stats.en_retard || 0,
+            termine: stats.termine || 0,
+            bloque: stats.bloque || 0,
+            montant_total: formatMontant(stats.montant_total || 0)
+        });
+    }
+}
+
+export function afficherDossiers() {
+    if (!tableDossiers) {
+        console.error('DataTable non initialisée');
+        return;
+    }
+    
+    const dossiersFiltres = filtrerDossiersLocalement();
+    tableDossiers.setData(dossiersFiltres);
+}
+
+// ========================================
+// FILTRAGE LOCAL
+// ========================================
+
+function filtrerDossiersLocalement() {
+    return state.dossiersData.filter(dossier => {
+        // Filtre recherche
+        if (state.filtres.recherche) {
+            const recherche = state.filtres.recherche.toLowerCase();
+            const patientNom = `${dossier.patient?.nom} ${dossier.patient?.prenom}`.toLowerCase();
+            const numero = dossier.numero?.toLowerCase() || '';
+            const telephone = dossier.patient?.telephone || '';
+            
+            if (!patientNom.includes(recherche) && 
+                !numero.includes(recherche) && 
+                !telephone.includes(recherche)) {
+                return false;
+            }
+        }
+        
+        // Filtre statut MDPH
+        if (state.filtres.statutMDPH && dossier.mdph?.statut !== state.filtres.statutMDPH) {
+            return false;
+        }
+        
+        // Filtre statut AGEFIPH
+        if (state.filtres.statutAGEFIPH && dossier.agefiph?.statut !== state.filtres.statutAGEFIPH) {
+            return false;
+        }
+        
+        // Filtre technicien
+        if (state.filtres.technicien && dossier.technicien !== state.filtres.technicien) {
+            return false;
+        }
+        
+        // Filtre statuts actifs (depuis cartes)
+        if (state.filtres.statutsActifs && state.filtres.statutsActifs.length > 0) {
+            if (!state.filtres.statutsActifs.includes(dossier.statutGlobal)) {
+                return false;
+            }
+        }
+        
+        return true;
+    });
+}
+
+// ========================================
+// FONCTIONS UTILITAIRES
+// ========================================
+
+function renderProgressColumn(data, type) {
+    if (!data) return '-';
+    
+    const statusClass = getStatusClass(data.statut);
+    const barClass = type === 'agefiph' ? 'agefiph' : '';
+    
+    return `
+        <div class="progress-column">
+            <span class="badge badge-${statusClass}">
+                ${data.statut}
+            </span>
+            <div class="progress-bar mini">
+                <div class="progress-fill ${barClass}" style="width: ${data.progression}%"></div>
+            </div>
+            <span class="progress-text">${data.progression}%</span>
+        </div>
+    `;
+}
+
+function getStatusClass(statut) {
+    const classes = {
+        'nouveau': 'primary',
+        'documents': 'info',
+        'depot': 'warning',
+        'accord': 'success',
+        'refuse': 'danger'
+    };
+    return classes[statut] || 'secondary';
+}
+
+function formatDate(date) {
+    if (!date) return '-';
+    const d = date instanceof Date ? date : new Date(date);
+    return d.toLocaleDateString('fr-FR');
+}
+
+function formatMontant(montant) {
+    return montant.toLocaleString('fr-FR', { 
+        style: 'currency', 
+        currency: 'EUR' 
+    });
+}
+
+function calculerStatistiques() {
+    const stats = {
+        nouveau: 0,
+        en_cours: 0,
+        en_retard: 0,
+        termine: 0,
+        bloque: 0,
+        montant_total: 0
+    };
+    
+    state.dossiersData.forEach(dossier => {
+        // Calculer le statut global
+        if (dossier.statutGlobal === 'nouveau') stats.nouveau++;
+        else if (dossier.statutGlobal === 'en_cours') stats.en_cours++;
+        else if (dossier.statutGlobal === 'en_retard') stats.en_retard++;
+        else if (dossier.statutGlobal === 'termine') stats.termine++;
+        else if (dossier.statutGlobal === 'bloque') stats.bloque++;
+        
+        stats.montant_total += dossier.montant || 0;
+    });
+    
+    return stats;
+}
+
+// ========================================
+// DONNÉES MOCK
+// ========================================
+
+function getMockData() {
+    return [
+        {
+            id: '1',
+            numero: 'SUB-2024-0001',
+            patient: {
+                nom: 'MARTIN',
+                prenom: 'Jean',
+                telephone: '06 12 34 56 78'
+            },
+            mdph: {
+                statut: 'depot',
+                progression: 60
+            },
+            agefiph: {
+                statut: 'documents',
+                progression: 40
+            },
+            montant: 3500,
+            dateCreation: '2024-01-15',
+            technicien: 'jean',
+            statutGlobal: 'en_cours'
+        },
+        {
+            id: '2',
+            numero: 'SUB-2024-0002',
+            patient: {
+                nom: 'DURAND',
+                prenom: 'Marie',
+                telephone: '06 98 76 54 32'
+            },
+            mdph: {
+                statut: 'accord',
+                progression: 100
+            },
+            agefiph: {
+                statut: 'depot',
+                progression: 80
+            },
+            montant: 4200,
+            dateCreation: '2024-01-20',
+            technicien: 'marie',
+            statutGlobal: 'en_cours'
+        },
+        {
+            id: '3',
+            numero: 'SUB-2024-0003',
+            patient: {
+                nom: 'BERNARD',
+                prenom: 'Paul',
+                telephone: '06 45 67 89 12'
+            },
+            mdph: {
+                statut: 'nouveau',
+                progression: 0
+            },
+            agefiph: {
+                statut: 'nouveau',
+                progression: 0
+            },
+            montant: 2800,
+            dateCreation: '2024-02-01',
+            technicien: 'pierre',
+            statutGlobal: 'nouveau'
+        }
+    ];
+}
+
+// ========================================
+// EXPORTS
+// ========================================
+
+export function resetFiltres() {
+    if (filtresDossiers) {
+        filtresDossiers.reset();
+    }
+    
+    state.filtres.statutsActifs = [];
+    
+    if (statsCards && statsCards.elements.cards) {
+        Object.values(statsCards.elements.cards).forEach(card => {
+            card.classList.remove('active');
+        });
+    }
+    
+    afficherDossiers();
+}
