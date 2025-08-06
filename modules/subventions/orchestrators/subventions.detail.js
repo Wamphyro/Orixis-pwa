@@ -239,33 +239,33 @@ render() {
     // COMPOSANTS VISUELS
     // ========================================
     
-    initComponents() {
-        // Progress Timeline
-        this.components.timeline = config.createProgressTimeline({
-            container: '#progress-timeline-container',
-            title: 'PROGRESSION GLOBALE',
-            items: this.getTimelineItems(),
-            onItemClick: (item, index) => {
-                console.log('Timeline item clicked:', item);
+initComponents() {
+    // Progress Timeline
+    this.components.timeline = config.createProgressTimeline({
+        container: '#progress-timeline-container',
+        title: 'PROGRESSION GLOBALE',
+        items: this.getTimelineItems(),
+        onItemClick: (item, index) => {
+            console.log('Timeline item clicked:', item);
+        }
+    });
+    
+    // Progress Overview
+    this.components.overview = config.createProgressOverview({
+        container: '#progress-overview-container',
+        title: 'VUE D\'ENSEMBLE DU PARCOURS',
+        items: this.getOverviewItems(),
+        onItemClick: (item) => {
+            if (item.id === 'mdph') {
+                this.switchTab('workflow');
             }
-        });
-        
-        // Progress Overview
-        this.components.overview = config.createProgressOverview({
-            container: '#progress-overview-container',
-            title: 'VUE D\'ENSEMBLE DU PARCOURS',
-            items: this.getOverviewItems(),
-            onItemClick: (item) => {
-                if (item.id === 'mdph') {
-                    this.switchTab('workflow');
-                }
-            }
-        });
-        
-        // Delay Tracker (si retard)
-        if (this.hasDelay()) {
-            document.getElementById('delay-tracker-card').style.display = 'block';
-            
+        }
+    });
+    
+    // Delay Tracker (si retard ET si le container existe)
+    if (this.hasDelay()) {
+        const delayContainer = document.getElementById('delay-tracker-container');
+        if (delayContainer) {
             this.components.delayTracker = config.createDelayTracker({
                 container: '#delay-tracker-container',
                 title: this.getDelayTitle(),
@@ -278,6 +278,7 @@ render() {
             });
         }
     }
+}
     
     getTimelineItems() {
         const items = [];
