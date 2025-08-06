@@ -128,212 +128,99 @@ class SubventionsDetail {
     // RENDU
     // ========================================
     
-    render() {
-    // Créer le container s'il n'existe pas
-    let container = document.getElementById('subventions-detail-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'subventions-detail-container';
-        document.body.appendChild(container);
+render() {
+    // Créer ou récupérer la modal
+    let modal = document.getElementById('modalDetailSubvention');
+    
+    if (!modal) {
+        // Créer la modal si elle n'existe pas
+        modal = document.createElement('div');
+        modal.id = 'modalDetailSubvention';
+        modal.className = 'modal';
+        modal.style.display = 'none';
+        document.body.appendChild(modal);
     }
     
-    container.innerHTML = `
-        <div class="detail-dossier">
-                <!-- Header avec infos patient et actions -->
-                <div class="detail-header">
-                    <div class="patient-header">
-                        <div class="patient-avatar">
-                            ${this.getInitials()}
-                        </div>
-                        <div class="patient-info">
-                            <h2>${this.dossier.patient.nom} ${this.dossier.patient.prenom}</h2>
-                            <p class="patient-meta">
-                                ${this.dossier.patient.dateNaissance ? `Né(e) le ${this.formatDate(this.dossier.patient.dateNaissance)} • ` : ''}
-                                ${this.dossier.patient.telephone || 'Pas de téléphone'} 
-                                ${this.dossier.patient.email ? ` • ${this.dossier.patient.email}` : ''}
-                            </p>
-                            <div class="dossier-meta">
-                                <span class="badge badge-primary">${this.dossier.numeroDossier}</span>
-                                <span class="badge badge-${this.getTypeClass()}">${this.getTypeLabel()}</span>
-                                <span class="badge badge-info">${this.getSituationLabel()}</span>
-                            </div>
-                        </div>
+    // Contenu de la modal
+    modal.innerHTML = `
+        <div class="modal-content modal-extra-large" style="width: 90%; max-width: 1400px;">
+            <div class="modal-header">
+                <h2>
+                    ${this.dossier.patient.nom} ${this.dossier.patient.prenom} - 
+                    <span class="badge badge-primary">${this.dossier.numeroDossier}</span>
+                </h2>
+                <button class="modal-close" onclick="window.modalManager.close('modalDetailSubvention')">&times;</button>
+            </div>
+            <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
+                <!-- Les 3 composants visuels -->
+                <div class="components-grid" style="display: grid; gap: 20px; margin-bottom: 20px;">
+                    <div class="component-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <div id="progress-timeline-container"></div>
                     </div>
                     
-                    <div class="header-actions">
-                        ${this.permissions.canEdit ? `
-                            <button class="btn btn-secondary" id="btn-edit">
-                                <i class="icon-edit"></i>
-                                ${this.editMode ? 'Annuler' : 'Modifier'}
-                            </button>
-                        ` : ''}
-                        <button class="btn btn-primary" id="btn-documents">
-                            <i class="icon-folder"></i>
-                            Documents
-                        </button>
-                        <div class="dropdown">
-                            <button class="btn btn-ghost" id="btn-more">
-                                <i class="icon-more-vertical"></i>
-                            </button>
-                            <div class="dropdown-menu" id="dropdown-menu">
-                                <a href="#" class="dropdown-item" data-action="print">
-                                    <i class="icon-printer"></i> Imprimer
-                                </a>
-                                <a href="#" class="dropdown-item" data-action="export">
-                                    <i class="icon-download"></i> Exporter
-                                </a>
-                                <a href="#" class="dropdown-item" data-action="email">
-                                    <i class="icon-mail"></i> Envoyer par email
-                                </a>
-                                ${this.permissions.canDelete ? `
-                                    <hr>
-                                    <a href="#" class="dropdown-item text-danger" data-action="delete">
-                                        <i class="icon-trash"></i> Supprimer
-                                    </a>
-                                ` : ''}
-                            </div>
-                        </div>
+                    <div class="component-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <div id="progress-overview-container"></div>
                     </div>
+                    
+                    ${this.hasDelay() ? `
+                    <div class="component-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <div id="delay-tracker-container"></div>
+                    </div>
+                    ` : ''}
                 </div>
                 
-                <!-- Onglets -->
-                <div class="detail-tabs">
-                    <nav class="tabs-nav">
-                        <button class="tab-link active" data-tab="overview">
-                            <i class="icon-dashboard"></i>
-                            Vue d'ensemble
-                        </button>
-                        <button class="tab-link" data-tab="documents">
-                            <i class="icon-folder"></i>
-                            Documents
-                            <span class="tab-badge">${this.countDocuments()}</span>
-                        </button>
-                        <button class="tab-link" data-tab="workflow">
-                            <i class="icon-git-branch"></i>
-                            Workflow
-                        </button>
-                        <button class="tab-link" data-tab="history">
-                            <i class="icon-clock"></i>
-                            Historique
-                        </button>
-                        <button class="tab-link" data-tab="finances">
-                            <i class="icon-euro"></i>
-                            Financements
-                        </button>
-                    </nav>
-                </div>
-                
-                <!-- Contenu des onglets -->
-                <div class="detail-content">
-                    <!-- Vue d'ensemble -->
-                    <div class="tab-content active" id="tab-overview">
-                        <!-- Les 3 composants visuels -->
-                        <div class="components-grid">
-                            <div class="component-card">
-                                <div id="progress-timeline-container"></div>
-                            </div>
-                            
-                            <div class="component-card">
-                                <div id="progress-overview-container"></div>
-                            </div>
-                            
-                            <div class="component-card" id="delay-tracker-card" style="display: none;">
-                                <div id="delay-tracker-container"></div>
-                            </div>
-                        </div>
-                        
-                        <!-- Informations rapides -->
-                        <div class="quick-info-grid">
-                            <div class="info-card">
-                                <h4>Montants</h4>
-                                <div class="info-content">
-                                    <div class="info-item">
-                                        <span class="info-label">Appareil :</span>
-                                        <span class="info-value">${this.formatMontant(this.dossier.montants.appareil)}</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <span class="info-label">MDPH :</span>
-                                        <span class="info-value">${this.formatMontant(this.dossier.montants.accordeMDPH)}</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <span class="info-label">AGEFIPH :</span>
-                                        <span class="info-value">${this.formatMontant(this.dossier.montants.accordeAGEFIPH)}</span>
-                                    </div>
-                                    <div class="info-item highlight">
-                                        <span class="info-label">Reste à charge :</span>
-                                        <span class="info-value">${this.formatMontant(this.dossier.montants.resteACharge)}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="info-card">
-                                <h4>Accès patient</h4>
-                                <div class="info-content">
-                                    <div class="access-code">
-                                        <span class="code-label">Code d'accès :</span>
-                                        <span class="code-value">${this.dossier.acces.code}</span>
-                                        <button class="btn-copy" data-copy="${this.dossier.acces.code}">
-                                            <i class="icon-copy"></i>
-                                        </button>
-                                    </div>
-                                    <div class="info-item">
-                                        <span class="info-label">Statut :</span>
-                                        <span class="info-value">
-                                            ${this.dossier.acces.actif ? 
-                                                '<span class="text-success">Actif</span>' : 
-                                                '<span class="text-danger">Inactif</span>'
-                                            }
-                                        </span>
-                                    </div>
-                                    ${this.dossier.acces.derniereConnexion ? `
-                                        <div class="info-item">
-                                            <span class="info-label">Dernière connexion :</span>
-                                            <span class="info-value">${this.formatDateTime(this.dossier.acces.derniereConnexion)}</span>
-                                        </div>
-                                    ` : ''}
-                                </div>
-                            </div>
-                            
-                            <div class="info-card">
-                                <h4>Prochaines actions</h4>
-                                <div class="info-content">
-                                    ${this.getNextActions()}
-                                </div>
-                            </div>
-                        </div>
+                <!-- Informations patient -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                    <div class="info-card" style="background: white; padding: 15px; border-radius: 8px;">
+                        <h4>👤 Patient</h4>
+                        <p><strong>Tél:</strong> ${this.dossier.patient.telephone}</p>
+                        <p><strong>Email:</strong> ${this.dossier.patient.email || 'Non renseigné'}</p>
+                        <p><strong>Département:</strong> ${this.dossier.patient.departement}</p>
+                        <p><strong>Situation:</strong> ${this.dossier.patient.situation}</p>
                     </div>
                     
-                    <!-- Documents -->
-                    <div class="tab-content" id="tab-documents">
-                        <div class="documents-container">
-                            <!-- Sera rempli par subventions.documents.js -->
-                        </div>
+                    <div class="info-card" style="background: white; padding: 15px; border-radius: 8px;">
+                        <h4>💰 Montants</h4>
+                        <p><strong>Appareil:</strong> ${this.formatMontant(this.dossier.montants.appareil)}</p>
+                        <p><strong>MDPH:</strong> ${this.formatMontant(this.dossier.montants.accordeMDPH)}</p>
+                        <p><strong>AGEFIPH:</strong> ${this.formatMontant(this.dossier.montants.accordeAGEFIPH)}</p>
+                        <p style="color: #e74c3c;"><strong>Reste à charge:</strong> ${this.formatMontant(this.dossier.montants.resteACharge)}</p>
                     </div>
                     
-                    <!-- Workflow -->
-                    <div class="tab-content" id="tab-workflow">
-                        <div class="workflow-container">
-                            <!-- Sera rempli par subventions.workflow.js -->
-                        </div>
-                    </div>
-                    
-                    <!-- Historique -->
-                    <div class="tab-content" id="tab-history">
-                        <div class="history-container">
-                            ${this.renderHistory()}
-                        </div>
-                    </div>
-                    
-                    <!-- Financements -->
-                    <div class="tab-content" id="tab-finances">
-                        <div class="finances-container">
-                            ${this.renderFinances()}
-                        </div>
+                    <div class="info-card" style="background: white; padding: 15px; border-radius: 8px;">
+                        <h4>🔑 Accès Patient</h4>
+                        <p><strong>Code:</strong> <code style="background: #f4f4f4; padding: 5px;">${this.dossier.acces.code}</code></p>
+                        <p><strong>Statut:</strong> ${this.dossier.acces.actif ? '✅ Actif' : '❌ Inactif'}</p>
                     </div>
                 </div>
             </div>
-        `;
+            <div class="modal-footer">
+                <button class="btn btn-ghost btn-pill" onclick="window.modalManager.close('modalDetailSubvention')">
+                    Fermer
+                </button>
+                <button class="btn btn-primary btn-pill" onclick="alert('Édition à venir')">
+                    ✏️ Modifier
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Enregistrer et ouvrir la modal
+    if (!config.modalManager.modals.has('modalDetailSubvention')) {
+        config.modalManager.register('modalDetailSubvention', {
+            closeOnOverlayClick: false,
+            closeOnEscape: true
+        });
     }
+    
+    // Ouvrir la modal
+    config.modalManager.open('modalDetailSubvention');
+    
+    // Initialiser les composants APRÈS l'ouverture
+    setTimeout(() => {
+        this.initComponents();
+    }, 100);
+}
     
     // ========================================
     // COMPOSANTS VISUELS
