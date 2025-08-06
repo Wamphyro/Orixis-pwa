@@ -1,16 +1,15 @@
 // ========================================
 // SUBVENTIONS.CREATE.JS - Création de dossier
-// Chemin: modules/subventions/subventions.create.js
+// Chemin: modules/subventions/orchestrators/subventions.create.js
 //
 // DESCRIPTION:
 // Orchestrateur pour la création de nouveaux dossiers
 // Gère le formulaire, la recherche patient et la validation
 // ========================================
 
-import { subventionsConfig } from '../core/subventions.config.js';
-import { subventionsFirestore } from '../core/subventions.firestore.js';
-import { subventionsService } from '../core/subventions.service.js';
-// Essayer l'import par défaut si l'export nommé ne fonctionne pas
+import config from '../core/subventions.config.js';
+// TODO: import { subventionsFirestore } from '../core/subventions.firestore.js';
+// TODO: import { subventionsService } from '../core/subventions.service.js';
 import { ClientsService } from '../../../src/services/clients.service.js';
 
 class SubventionsCreate {
@@ -19,7 +18,7 @@ class SubventionsCreate {
         this.selectedPatient = null;
         this.formData = {
             type: 'mdph_agefiph',
-            montantAppareil: subventionsConfig.business.montantAppareilDefaut,
+            montantAppareil: 350000, // 3500€ en centimes
             notes: ''
         };
         
@@ -255,7 +254,7 @@ class SubventionsCreate {
     // ========================================
     
     initSearchDropdown() {
-        const searchDropdown = subventionsConfig.factories.SearchDropdown({
+        const searchDropdown = config.createSearchDropdown({
             container: this.elements.searchContainer,
             placeholder: 'Rechercher un patient par nom, prénom ou téléphone...',
             searchFunction: async (term) => {
@@ -324,31 +323,27 @@ class SubventionsCreate {
     }
     
     async loadPatientSituation(patient) {
-        // Si le patient vient de ClientsService, il pourrait manquer certaines propriétés
-        // Assurer la compatibilité
         if (!patient.adresse) {
-            patient.adresse = {
-                departement: '75' // Valeur par défaut Paris
-            };
+            patient.adresse = { departement: '75' };
         }
-        // Récupérer les dossiers existants du patient
-        const dossiers = await subventionsFirestore.getDossiers({
-            patientId: patient.id,
-            limit: 1,
-            orderBy: ['dates.creation', 'desc']
-        });
+        
+        // TODO: Récupérer depuis Firebase plus tard
+        // const dossiers = await subventionsFirestore.getDossiers({...});
         
         let situation = patient.situation || '';
         
-        // Si dossier existant, récupérer la situation
-        if (dossiers.length > 0) {
-            situation = dossiers[0].patient.situation || '';
-        }
+        // Options de situation en dur pour l'instant
+        const situations = [
+            { value: 'salarie', label: 'Salarié' },
+            { value: 'independant', label: 'Indépendant' },
+            { value: 'demandeur_emploi', label: 'Demandeur d\'emploi' },
+            { value: 'retraite', label: 'Retraité' },
+            { value: 'etudiant', label: 'Étudiant' }
+        ];
         
-        // Remplir le select
         this.elements.situationSelect.innerHTML = `
             <option value="">-- Sélectionner --</option>
-            ${subventionsConfig.forms.options.situation.map(opt => `
+            ${situations.map(opt => `
                 <option value="${opt.value}" ${situation === opt.value ? 'selected' : ''}>
                     ${opt.label}
                 </option>
@@ -357,7 +352,6 @@ class SubventionsCreate {
         
         this.elements.situationSelect.disabled = false;
         
-        // Si situation pré-remplie, vérifier l'éligibilité
         if (situation) {
             this.checkEligibilite();
         }
@@ -370,7 +364,11 @@ class SubventionsCreate {
             return;
         }
         
-        const eligibilite = subventionsService.checkEligibilite(situation);
+        const eligibilite = {
+            eligible: situation === 'salarie' || situation === 'independant',
+            raison: situation === 'retraite' ? 'Retraité depuis plus de 2 ans' : null,
+            conditions: situation === 'demandeur_emploi' ? ['Inscription < 2 ans'] : null
+        };
         
         if (!eligibilite.eligible) {
             this.elements.patientAlert.innerHTML = `
@@ -452,11 +450,7 @@ class SubventionsCreate {
     
     openCreatePatient() {
         // TODO: Ouvrir modal création patient
-        const modal = subventionsConfig.factories.Modal({
-            title: 'Créer un nouveau patient',
-            content: '<p>Fonctionnalité à venir...</p>'
-        });
-        modal.open();
+        config.notify.info('Création patient à venir');
     }
     
     // ========================================
@@ -556,29 +550,30 @@ class SubventionsCreate {
                 notes: this.elements.notesTextarea.value
             };
             
-            // Créer le dossier
-            const dossier = await subventionsFirestore.createDossier(data);
+            // TODO: Créer le dossier dans Firebase
+            // const dossier = await subventionsFirestore.createDossier(data);
+            
+            // MOCK pour tester
+            const dossier = {
+                id: 'test-' + Date.now(),
+                numeroDossier: 'SUB-2025-' + Math.floor(Math.random() * 1000),
+                ...data
+            };
+            console.log('📋 Dossier créé (MOCK):', dossier);
             
             // Afficher le succès
-            const toast = subventionsConfig.factories.Toast({
-                type: 'success',
-                message: `Dossier ${dossier.numeroDossier} créé avec succès`
-            });
-            toast.show();
+            config.notify.success(`Dossier ${dossier.numeroDossier} créé avec succès`);
             
-            // Rediriger vers le détail
+            // Fermer la modal après succès
             setTimeout(() => {
-                window.location.hash = `#subventions/detail/${dossier.id}`;
-            }, 1000);
+                config.modalManager.close('modalCreateSubvention');
+                // Recharger la liste
+                window.location.reload();
+            }, 1500);
             
         } catch (error) {
             console.error('Erreur création dossier:', error);
-            
-            const toast = subventionsConfig.factories.Toast({
-                type: 'error',
-                message: error.message || 'Erreur lors de la création du dossier'
-            });
-            toast.show();
+            config.notify.error(error.message || 'Erreur lors de la création du dossier');
             
         } finally {
             this.isSubmitting = false;
@@ -604,11 +599,7 @@ class SubventionsCreate {
         }
         
         if (errors.length > 0) {
-            const toast = subventionsConfig.factories.Toast({
-                type: 'error',
-                message: errors.join('<br>')
-            });
-            toast.show();
+            config.notify.error(errors.join('<br>'));
             return false;
         }
         
@@ -643,10 +634,14 @@ class SubventionsCreate {
     }
     
     getSituationLabel(value) {
-        const option = subventionsConfig.forms.options.situation.find(
-            opt => opt.value === value
-        );
-        return option ? option.label : value;
+        const labels = {
+            'salarie': 'Salarié',
+            'independant': 'Indépendant',
+            'demandeur_emploi': 'Demandeur d\'emploi',
+            'retraite': 'Retraité',
+            'etudiant': 'Étudiant'
+        };
+        return labels[value] || value;
     }
     
     // ========================================
