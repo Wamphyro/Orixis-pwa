@@ -11,6 +11,51 @@
 // ========================================
 
 export const subventionsData = {
+
+    // ========================================
+    // CONFIGURATION DES STATISTIQUES
+    // ========================================
+    
+    statsCards: {
+        nouveau: {
+            label: 'Nouveaux',
+            icon: '📄',
+            color: 'primary',
+            description: 'Dossiers créés récemment'
+        },
+        en_cours: {
+            label: 'En cours',
+            icon: '⏳',
+            color: 'warning',
+            description: 'Dossiers en traitement'
+        },
+        en_retard: {
+            label: 'En retard',
+            icon: '⚠️',
+            color: 'danger',
+            description: 'Délais dépassés'
+        },
+        termine: {
+            label: 'Terminés',
+            icon: '✅',
+            color: 'success',
+            description: 'Dossiers finalisés'
+        },
+        bloque: {
+            label: 'Bloqués',
+            icon: '🔴',
+            color: 'error',
+            description: 'Action requise'
+        },
+        montant_total: {
+            label: 'Montant total',
+            icon: '💰',
+            color: 'info',
+            special: true,
+            description: 'Somme totale des subventions'
+        }
+    },
+
     // ========================================
     // WORKFLOW MDPH
     // ========================================

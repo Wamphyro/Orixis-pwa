@@ -5,57 +5,74 @@
 
 import config from '../core/subventions.config.js';
 import { state } from './subventions.main.js';
+import { subventionsData } from '../subventions.data.js'; // VOTRE FICHIER DATA
 
 // ========================================
-// CONFIGURATION UI (L'ORCHESTRATEUR DÉCIDE)
+// CONFIGURATION UI (adaptée à votre data.js)
 // ========================================
 
-// Configuration des filtres
+// Configuration des filtres - UTILISE VOTRE DATA
 const FILTERS_CONFIG = {
     recherche: {
         type: 'search',
         key: 'recherche',
         placeholder: 'Patient, n° dossier, téléphone...'
     },
-    statutMDPH: {
+    etapeMDPH: {
         type: 'select',
-        key: 'statutMDPH',
-        label: 'Statut MDPH',
+        key: 'etapeMDPH',
+        label: 'Étape MDPH',
         keepPlaceholder: true,
         options: [
-            { value: '', label: 'Tous' },
-            { value: 'nouveau', label: 'Nouveau' },
-            { value: 'documents', label: 'Documents' },
-            { value: 'depot', label: 'Dépôt' },
-            { value: 'accord', label: 'Accord' },
-            { value: 'refuse', label: 'Refusé' }
+            { value: '', label: 'Toutes' },
+            ...subventionsData.workflowMDPH.etapes.map(etape => ({
+                value: etape.id,
+                label: `${etape.icon} ${etape.label}`
+            }))
         ]
     },
-    statutAGEFIPH: {
+    etapeAGEFIPH: {
         type: 'select',
-        key: 'statutAGEFIPH',
-        label: 'Statut AGEFIPH',
+        key: 'etapeAGEFIPH',
+        label: 'Étape AGEFIPH',
         keepPlaceholder: true,
         options: [
-            { value: '', label: 'Tous' },
-            { value: 'nouveau', label: 'Nouveau' },
-            { value: 'documents', label: 'Documents' },
-            { value: 'depot', label: 'Dépôt' },
-            { value: 'accord', label: 'Accord' },
-            { value: 'refuse', label: 'Refusé' }
+            { value: '', label: 'Toutes' },
+            ...subventionsData.workflowAGEFIPH.etapes.map(etape => ({
+                value: etape.id,
+                label: `${etape.icon} ${etape.label}`
+            }))
         ]
     },
-    technicien: {
+    casParticulier: {
         type: 'select',
-        key: 'technicien',
-        label: 'Technicien',
+        key: 'casParticulier',
+        label: 'Situation',
+        keepPlaceholder: true,
+        searchable: true,
+        options: [
+            { value: '', label: 'Toutes' },
+            ...Object.entries(subventionsData.casParticuliers).map(([key, cas]) => ({
+                value: key,
+                label: cas.label,
+                disabled: cas.eligible === false
+            }))
+        ]
+    },
+    departement: {
+        type: 'select',
+        key: 'departement',
+        label: 'Département',
         keepPlaceholder: true,
         searchable: true,
         options: [
             { value: '', label: 'Tous' },
-            { value: 'jean', label: 'Jean Dupont' },
-            { value: 'marie', label: 'Marie Martin' },
-            { value: 'pierre', label: 'Pierre Durand' }
+            ...Object.entries(subventionsData.delaisMDPH)
+                .filter(([key]) => key !== 'default')
+                .map(([code, dept]) => ({
+                    value: code,
+                    label: `${code} - ${dept.nom} (${dept.delai}j)`
+                }))
         ]
     },
     periode: {
@@ -72,18 +89,6 @@ const FILTERS_CONFIG = {
             { value: 'quarter', label: 'Ce trimestre' }
         ]
     }
-};
-
-// Configuration des stats cards
-const STATS_CARDS_CONFIG = {
-    cartes: [
-        { id: 'nouveau', label: 'Nouveaux', icon: '📄', color: 'primary' },
-        { id: 'en_cours', label: 'En cours', icon: '⏳', color: 'warning' },
-        { id: 'en_retard', label: 'En retard', icon: '⚠️', color: 'danger' },
-        { id: 'termine', label: 'Terminés', icon: '✅', color: 'success' },
-        { id: 'bloque', label: 'Bloqués', icon: '🔴', color: 'error' },
-        { id: 'montant_total', label: 'Montant total', icon: '💰', color: 'info', special: true }
-    ]
 };
 
 // ========================================
@@ -240,12 +245,13 @@ function initStatsCards() {
         return;
     }
     
-    const cardsConfig = STATS_CARDS_CONFIG.cartes.map(carte => ({
-        id: carte.id,
-        label: carte.label,
-        value: carte.special && carte.id === 'montant_total' ? '0 €' : 0,
-        icon: carte.icon,
-        color: carte.color
+    // Utiliser les données depuis subventions.data.js
+    const cardsConfig = Object.entries(subventionsData.statsCards).map(([id, config]) => ({
+        id,
+        label: config.label,
+        value: config.special && id === 'montant_total' ? '0 €' : 0,
+        icon: config.icon,
+        color: config.color
     }));
     
     statsCards = config.createSubventionsStatsCards(
@@ -418,68 +424,55 @@ function filtrerDossiersLocalement() {
 function renderProgressColumn(data, type) {
     if (!data) return '-';
     
-    const statusClass = getStatusClass(data.statut);
-    const barClass = type === 'agefiph' ? 'agefiph' : '';
+    // Trouver l'étape dans le workflow
+    const workflow = type === 'mdph' ? 
+        subventionsData.workflowMDPH : 
+        subventionsData.workflowAGEFIPH;
+    
+    const etape = workflow.etapes.find(e => e.id === data.etape);
+    if (!etape) return '-';
+    
+    // Déterminer la classe de couleur
+    let statusClass = 'info';
+    if (etape.progression === 100) statusClass = 'success';
+    else if (etape.progression >= 60) statusClass = 'warning';
+    else if (etape.progression <= 20) statusClass = 'primary';
+    
+    // Si bloqué
+    if (type === 'agefiph' && etape.bloquePar) {
+        statusClass = 'danger';
+    }
     
     return `
         <div class="progress-column">
             <span class="badge badge-${statusClass}">
-                ${data.statut}
+                ${etape.icon} ${etape.label}
             </span>
             <div class="progress-bar mini">
-                <div class="progress-fill ${barClass}" style="width: ${data.progression}%"></div>
+                <div class="progress-fill ${type === 'agefiph' ? 'agefiph' : ''}" 
+                     style="width: ${etape.progression}%"></div>
             </div>
-            <span class="progress-text">${data.progression}%</span>
+            <span class="progress-text">${etape.progression}%</span>
+            ${etape.bloquePar ? `
+                <small class="text-danger">
+                    Bloqué par ${etape.bloquePar}
+                </small>
+            ` : ''}
         </div>
     `;
 }
 
-function getStatusClass(statut) {
-    const classes = {
-        'nouveau': 'primary',
-        'documents': 'info',
-        'depot': 'warning',
-        'accord': 'success',
-        'refuse': 'danger'
-    };
-    return classes[statut] || 'secondary';
-}
-
-function formatDate(date) {
-    if (!date) return '-';
-    const d = date instanceof Date ? date : new Date(date);
-    return d.toLocaleDateString('fr-FR');
-}
-
-function formatMontant(montant) {
-    return montant.toLocaleString('fr-FR', { 
-        style: 'currency', 
-        currency: 'EUR' 
-    });
-}
-
-function calculerStatistiques() {
-    const stats = {
-        nouveau: 0,
-        en_cours: 0,
-        en_retard: 0,
-        termine: 0,
-        bloque: 0,
-        montant_total: 0
-    };
+function calculerRetardMDPH(dossier) {
+    if (!dossier.mdph?.dateDepot) return false;
     
-    state.dossiersData.forEach(dossier => {
-        // Calculer le statut global
-        if (dossier.statutGlobal === 'nouveau') stats.nouveau++;
-        else if (dossier.statutGlobal === 'en_cours') stats.en_cours++;
-        else if (dossier.statutGlobal === 'en_retard') stats.en_retard++;
-        else if (dossier.statutGlobal === 'termine') stats.termine++;
-        else if (dossier.statutGlobal === 'bloque') stats.bloque++;
-        
-        stats.montant_total += dossier.montant || 0;
-    });
+    const departement = dossier.patient?.departement || 'default';
+    const delaiConfig = subventionsData.delaisMDPH[departement] || 
+                       subventionsData.delaisMDPH.default;
     
-    return stats;
+    const dateDepot = new Date(dossier.mdph.dateDepot);
+    const joursEcoules = Math.floor((new Date() - dateDepot) / (1000 * 60 * 60 * 24));
+    
+    return joursEcoules > delaiConfig.alerte;
 }
 
 // ========================================
@@ -494,19 +487,20 @@ function getMockData() {
             patient: {
                 nom: 'MARTIN',
                 prenom: 'Jean',
-                telephone: '06 12 34 56 78'
+                telephone: '06 12 34 56 78',
+                departement: '75'
             },
             mdph: {
-                statut: 'depot',
-                progression: 60
+                etape: 'depot',
+                dateDepot: '2024-01-25'
             },
             agefiph: {
-                statut: 'documents',
-                progression: 40
+                etape: 'documents',
+                bloquePar: null
             },
             montant: 3500,
             dateCreation: '2024-01-15',
-            technicien: 'jean',
+            casParticulier: 'salarie',
             statutGlobal: 'en_cours'
         },
         {
@@ -515,20 +509,21 @@ function getMockData() {
             patient: {
                 nom: 'DURAND',
                 prenom: 'Marie',
-                telephone: '06 98 76 54 32'
+                telephone: '06 98 76 54 32',
+                departement: '93'
             },
             mdph: {
-                statut: 'accord',
-                progression: 100
+                etape: 'recepisse',
+                dateDepot: '2023-12-01'
             },
             agefiph: {
-                statut: 'depot',
-                progression: 80
+                etape: 'attente_recepisse',
+                bloquePar: 'mdph.recepisse'
             },
             montant: 4200,
-            dateCreation: '2024-01-20',
-            technicien: 'marie',
-            statutGlobal: 'en_cours'
+            dateCreation: '2023-11-20',
+            casParticulier: 'independant',
+            statutGlobal: 'en_retard' // 93 = 150 jours de délai
         },
         {
             id: '3',
@@ -536,19 +531,20 @@ function getMockData() {
             patient: {
                 nom: 'BERNARD',
                 prenom: 'Paul',
-                telephone: '06 45 67 89 12'
+                telephone: '06 45 67 89 12',
+                departement: '78'
             },
             mdph: {
-                statut: 'nouveau',
-                progression: 0
+                etape: 'nouveau',
+                dateDepot: null
             },
             agefiph: {
-                statut: 'nouveau',
-                progression: 0
+                etape: 'attente',
+                bloquePar: null
             },
             montant: 2800,
             dateCreation: '2024-02-01',
-            technicien: 'pierre',
+            casParticulier: 'demandeur_emploi',
             statutGlobal: 'nouveau'
         }
     ];
