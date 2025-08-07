@@ -1,0 +1,717 @@
+/* ========================================
+   MODAL-BASE.CSS - Styles de base pour tous les modals
+   Chemin: /src/css/components/modal-base.css
+   
+   DESCRIPTION:
+   Styles réutilisables pour créer des modals cohérents dans toute l'application.
+   Basé sur le design du PdfUploader avec bords arrondis et animations fluides.
+   
+   STRUCTURE:
+   1. VARIABLES
+   2. OVERLAY
+   3. CONTAINER MODAL
+   4. HEADER
+   5. BODY
+   6. FOOTER
+   7. BOUTONS MODAL
+   8. TAILLES
+   9. ANIMATIONS
+   10. THÈMES
+   11. UTILITAIRES
+   12. RESPONSIVE
+   
+   UTILISATION:
+   @import url('/src/css/components/modal-base.css');
+   
+   CLASSES:
+   - .modal-overlay : Fond sombre avec blur
+   - .modal-container : Container principal du modal
+   - .modal-header, .modal-body, .modal-footer : Sections
+   - .modal-small, .modal-medium, .modal-large, .modal-xlarge : Tailles
+   - .modal-theme-purple, .modal-theme-blue, etc : Thèmes
+   
+   AUTEUR: Assistant Claude
+   DATE: 08/02/2025
+   VERSION: 1.0.0
+   ======================================== */
+
+/* ========================================
+   SECTION 1 : VARIABLES
+   ======================================== */
+
+:root {
+    /* Couleurs principales */
+    --modal-primary: #8b5cf6;
+    --modal-primary-light: #a78bfa;
+    --modal-primary-dark: #7c3aed;
+    
+    /* Couleurs neutres */
+    --modal-bg: #ffffff;
+    --modal-overlay-bg: rgba(17, 24, 39, 0.5);
+    --modal-text: #1f2937;
+    --modal-text-secondary: #6b7280;
+    --modal-border: #e5e7eb;
+    --modal-hover: #f9fafb;
+    
+    /* Espacements */
+    --modal-padding: 24px;
+    --modal-padding-sm: 16px;
+    --modal-padding-lg: 32px;
+    --modal-radius: 20px;
+    --modal-radius-sm: 12px;
+    
+    /* Ombres */
+    --modal-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.2);
+    --modal-shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    --modal-shadow-sm: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    
+    /* Transitions */
+    --modal-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --modal-transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Z-index */
+    --modal-z-overlay: 9998;
+    --modal-z-container: 9999;
+}
+
+/* ========================================
+   SECTION 2 : OVERLAY
+   ======================================== */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--modal-overlay-bg);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: var(--modal-z-overlay);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+/* État actif */
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Animation d'entrée pour le contenu */
+.modal-overlay.active .modal-container {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+}
+
+/* ========================================
+   SECTION 3 : CONTAINER MODAL
+   ======================================== */
+
+.modal-container {
+    background: var(--modal-bg);
+    border-radius: var(--modal-radius);
+    box-shadow: var(--modal-shadow);
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    width: 100%;
+    max-width: 800px;
+    position: relative;
+    z-index: var(--modal-z-container);
+    opacity: 0;
+    transform: scale(0.95) translateY(20px);
+    transition: var(--modal-transition);
+    overflow: hidden;
+}
+
+/* Effet de brillance subtil */
+.modal-container::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(
+        circle at 30% 30%,
+        rgba(139, 92, 246, 0.03) 0%,
+        transparent 70%
+    );
+    pointer-events: none;
+}
+
+/* ========================================
+   SECTION 4 : HEADER
+   ======================================== */
+
+.modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: var(--modal-padding);
+    padding-bottom: var(--modal-padding);
+    position: relative;
+    border-bottom: 1px solid var(--modal-border);
+    margin-bottom: 0;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+}
+
+/* Container pour titre et sous-titre */
+.modal-header-content {
+    flex: 1;
+    padding-right: 16px;
+}
+
+.modal-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--modal-text);
+    line-height: 1.3;
+}
+
+.modal-subtitle {
+    margin: 4px 0 0 0;
+    font-size: 14px;
+    color: var(--modal-text-secondary);
+    line-height: 1.4;
+}
+
+/* Bouton fermeture */
+.modal-close {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--modal-text-secondary);
+    border-radius: 10px;
+    transition: var(--modal-transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.modal-close:hover {
+    background: var(--modal-hover);
+    color: var(--modal-text);
+    transform: rotate(90deg);
+}
+
+.modal-close svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* ========================================
+   SECTION 5 : BODY
+   ======================================== */
+
+.modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--modal-padding);
+    position: relative;
+}
+
+/* Scrollbar personnalisée */
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: var(--modal-border);
+    border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: var(--modal-text-secondary);
+}
+
+/* Sections dans le body */
+.modal-section {
+    margin-bottom: 24px;
+}
+
+.modal-section:last-child {
+    margin-bottom: 0;
+}
+
+.modal-section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--modal-text);
+    margin: 0 0 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ========================================
+   SECTION 6 : FOOTER
+   ======================================== */
+
+.modal-footer {
+    padding: var(--modal-padding);
+    padding-top: 16px;
+    border-top: 1px solid var(--modal-border);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    background: linear-gradient(to top, var(--modal-hover), transparent);
+}
+
+/* Footer aligné à gauche */
+.modal-footer.align-left {
+    justify-content: flex-start;
+}
+
+/* Footer centré */
+.modal-footer.align-center {
+    justify-content: center;
+}
+
+/* Footer space-between */
+.modal-footer.align-between {
+    justify-content: space-between;
+}
+
+/* ========================================
+   SECTION 7 : BOUTONS MODAL
+   ======================================== */
+
+.modal-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--modal-transition-fast);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Effet ripple au clic */
+.modal-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s;
+}
+
+.modal-btn:active::after {
+    width: 300px;
+    height: 300px;
+}
+
+/* Bouton primaire */
+.modal-btn-primary {
+    background: linear-gradient(135deg, var(--modal-primary) 0%, var(--modal-primary-dark) 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.modal-btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+}
+
+.modal-btn-primary:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+/* Bouton secondaire */
+.modal-btn-secondary {
+    background: var(--modal-hover);
+    color: var(--modal-text);
+    border: 1px solid var(--modal-border);
+}
+
+.modal-btn-secondary:hover:not(:disabled) {
+    background: var(--modal-border);
+}
+
+/* Bouton danger */
+.modal-btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.modal-btn-danger:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+
+/* Bouton success */
+.modal-btn-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.modal-btn-success:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+/* Bouton ghost */
+.modal-btn-ghost {
+    background: transparent;
+    color: var(--modal-primary);
+    border: 2px solid var(--modal-primary);
+}
+
+.modal-btn-ghost:hover:not(:disabled) {
+    background: rgba(139, 92, 246, 0.1);
+}
+
+/* État désactivé */
+.modal-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* État loading */
+.modal-btn.loading {
+    color: transparent;
+    pointer-events: none;
+}
+
+.modal-btn.loading::before {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin: -8px 0 0 -8px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: modal-spin 0.6s linear infinite;
+}
+
+/* ========================================
+   SECTION 8 : TAILLES
+   ======================================== */
+
+.modal-small {
+    max-width: 400px;
+}
+
+.modal-medium {
+    max-width: 600px;
+}
+
+.modal-large {
+    max-width: 800px;
+}
+
+.modal-xlarge {
+    max-width: 1000px;
+}
+
+.modal-fullscreen {
+    max-width: 100%;
+    max-height: 100%;
+    height: 100vh;
+    border-radius: 0;
+}
+
+/* ========================================
+   SECTION 9 : ANIMATIONS
+   ======================================== */
+
+/* Fade in */
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Slide up */
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Scale in */
+@keyframes modalScaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Spin */
+@keyframes modal-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Classes d'animation */
+.modal-animate-fade .modal-container {
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+.modal-animate-slide .modal-container {
+    animation: modalSlideUp 0.3s ease-out;
+}
+
+.modal-animate-scale .modal-container {
+    animation: modalScaleIn 0.3s ease-out;
+}
+
+/* ========================================
+   SECTION 10 : THÈMES
+   ======================================== */
+
+/* Thème violet (défaut) */
+.modal-theme-purple {
+    --modal-primary: #8b5cf6;
+    --modal-primary-light: #a78bfa;
+    --modal-primary-dark: #7c3aed;
+}
+
+/* Thème bleu */
+.modal-theme-blue {
+    --modal-primary: #3b82f6;
+    --modal-primary-light: #60a5fa;
+    --modal-primary-dark: #2563eb;
+}
+
+/* Thème vert */
+.modal-theme-green {
+    --modal-primary: #10b981;
+    --modal-primary-light: #34d399;
+    --modal-primary-dark: #059669;
+}
+
+/* Thème rouge */
+.modal-theme-red {
+    --modal-primary: #ef4444;
+    --modal-primary-light: #f87171;
+    --modal-primary-dark: #dc2626;
+}
+
+/* Thème sombre */
+.modal-theme-dark {
+    --modal-bg: #1f2937;
+    --modal-text: #f9fafb;
+    --modal-text-secondary: #d1d5db;
+    --modal-border: #374151;
+    --modal-hover: #111827;
+    --modal-overlay-bg: rgba(0, 0, 0, 0.8);
+}
+
+.modal-theme-dark .modal-container {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* Thème minimal */
+.modal-theme-minimal {
+    --modal-radius: 12px;
+    --modal-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.modal-theme-minimal .modal-container::before {
+    display: none;
+}
+
+.modal-theme-minimal .modal-header {
+    padding-bottom: 16px;
+}
+
+.modal-theme-minimal .modal-footer {
+    background: transparent;
+}
+
+/* ========================================
+   SECTION 11 : UTILITAIRES
+   ======================================== */
+
+/* Désactiver le scroll du body quand modal ouvert */
+body.modal-open {
+    overflow: hidden;
+}
+
+/* Zone de contenu scrollable dans modal */
+.modal-scrollable {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+/* Grille dans modal */
+.modal-grid {
+    display: grid;
+    gap: 16px;
+}
+
+.modal-grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.modal-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+/* Champ dans modal */
+.modal-field {
+    margin-bottom: 16px;
+}
+
+.modal-field-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--modal-text-secondary);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.modal-field-value {
+    font-size: 14px;
+    color: var(--modal-text);
+}
+
+/* Badges dans modal */
+.modal-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 20px;
+    background: var(--modal-hover);
+    color: var(--modal-text);
+}
+
+.modal-badge-primary {
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--modal-primary);
+}
+
+.modal-badge-success {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.modal-badge-danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.modal-badge-warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+/* ========================================
+   SECTION 12 : RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+    .modal-overlay {
+        padding: 0;
+    }
+    
+    .modal-container {
+        max-width: 100%;
+        max-height: 100%;
+        height: 100vh;
+        border-radius: 0;
+    }
+    
+    .modal-header {
+        padding: 20px;
+        padding-bottom: 0;
+    }
+    
+    .modal-body {
+        padding: 20px;
+    }
+    
+    .modal-footer {
+        padding: 20px;
+        padding-top: 16px;
+    }
+    
+    /* Boutons en colonne sur mobile */
+    .modal-footer {
+        flex-direction: column;
+    }
+    
+    .modal-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-title {
+        font-size: 18px;
+    }
+    
+    .modal-subtitle {
+        font-size: 13px;
+    }
+    
+    .modal-grid-2,
+    .modal-grid-3 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Support du mode paysage mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+    .modal-container {
+        max-height: 100vh;
+    }
+    
+    .modal-body {
+        padding: 12px 20px;
+    }
+}
+
+/* ========================================
+   FIN DU FICHIER
+   ======================================== */

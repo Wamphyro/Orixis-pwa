@@ -1,248 +1,147 @@
 /* ========================================
    HEADER.WIDGET.CSS - Styles du widget Header
-   Chemin: widgets/header/header.widget.css
    ======================================== */
 
-:root {
-    --header-height: 70px;
-    --header-bg: white;
-    --header-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    --header-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-/* ========================================
-   STRUCTURE PRINCIPALE
-   ======================================== */
-
+/* Reset et structure principale */
 .header-widget {
-    position: relative;
-    width: 100%;
-    height: var(--header-height);
-    background: var(--header-bg);
-    box-shadow: var(--header-shadow);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-}
-
-.header-widget.sticky {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-}
-
-/* ========================================
-   THÈMES
-   ======================================== */
-
-/* Thème Gradient */
-.header-widget.gradient {
-    background: var(--header-gradient);
+    min-height: 70px;
+    height: auto;
+    padding: 15px 0;  /* AJOUT : padding vertical */
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
+    box-shadow: 0 2px 20px rgba(102, 126, 234, 0.4);
+    z-index: 1000;
 }
-
-.header-gradient-bg {
-    position: absolute;
-    inset: 0;
-    background: var(--header-gradient);
-    opacity: 0.95;
-    z-index: -1;
-}
-
-.header-widget.gradient .header-back-btn,
-.header-widget.gradient .header-logout-btn {
-    color: white;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.header-widget.gradient .header-back-btn:hover,
-.header-widget.gradient .header-logout-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-
-/* Thème Glass */
-.header-widget.glass {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-/* Thème Solid */
-.header-widget.solid {
-    background: white;
-    border-bottom: 1px solid #e5e7eb;
-}
-
-/* ========================================
-   LAYOUT
-   ======================================== */
 
 .header-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 20px;
-    height: 100%;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;  /* Centre tout verticalement */
+    padding: 0 30px;
+    min-height: 70px;  /* Hauteur minimum */
 }
 
+/* Partie gauche */
 .header-left {
+    justify-self: start;
     display: flex;
     align-items: center;
     gap: 20px;
-    flex: 1;
 }
 
-.header-center {
-    flex: 0 0 auto;
+/* Partie droite */
+.header-right {
+    grid-column: 3;
+    justify-self: end;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* GROUPE TITRE */
+.header-title-group {
+    position: absolute;
+    left: 50%;
+    top: 50%;  /* ← AJOUTE ÇA */
+    transform: translate(-50%, -50%);  /* ← CHANGE ÇA */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
     text-align: center;
 }
 
-.header-right {
+/* NOUVEAU : Ligne titre + icône */
+.header-title-line {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    gap: 20px;
-    flex: 1;
-}
-
-/* ========================================
-   ÉLÉMENTS
-   ======================================== */
-
-/* Bouton retour */
-.header-back-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    background: rgba(0, 0, 0, 0.05);
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    color: inherit;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.header-back-btn:hover {
-    background: rgba(0, 0, 0, 0.1);
-    transform: translateX(-2px);
-}
-
-/* Titre */
-.header-title-group {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    gap: 10px;  /* Espace entre icône et titre */
 }
 
 .header-icon {
     font-size: 28px;
     line-height: 1;
+    /* PAS de margin-bottom */
 }
 
 .header-title {
     margin: 0;
     font-size: 22px;
     font-weight: 600;
+    color: white;
+    line-height: 1.2;
 }
 
 .header-subtitle {
-    font-size: 14px;
-    opacity: 0.8;
+    font-size: 13px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: 0.3px;
+    margin: 0;
 }
 
-/* Section utilisateur */
+/* ========================================
+   SECTION UTILISATEUR
+   ======================================== */
 .header-user-section {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 15px;
 }
 
 .header-user-info {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 8px 12px;
-    border-radius: 8px;
-    transition: all 0.2s ease;
+    gap: 10px;
+    padding: 7px 14px 7px 7px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 25px;
+    height: 46px;
 }
 
-.header-user-info.clickable {
-    cursor: pointer;
-}
-
-.header-user-info.clickable:hover {
-    background: rgba(0, 0, 0, 0.05);
-}
-
-/* Avatar */
-.header-avatar,
 .header-avatar-placeholder {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
+    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
     flex-shrink: 0;
 }
 
-.header-avatar {
-    object-fit: cover;
-}
-
-.header-avatar-placeholder {
-    background: rgba(0, 0, 0, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    font-size: 14px;
-}
-
-/* Détails utilisateur */
 .header-user-details {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    justify-content: center;
 }
 
 .header-user-name {
-    font-weight: 500;
-    font-size: 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+    line-height: 1;
+    margin: 0;
+    margin-bottom: 3px;
 }
 
 .header-user-magasin {
-    font-size: 12px;
-    opacity: 0.7;
+    font-size: 11px;
+    opacity: 0.85;
+    line-height: 1;
+    margin: 0;
 }
 
-/* Bouton déconnexion */
-.header-logout-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    background: rgba(0, 0, 0, 0.05);
-    border: none;
-    color: inherit;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-}
-
-.header-logout-btn:hover {
-    background: rgba(220, 53, 69, 0.1);
-    color: #dc3545;
-    transform: scale(1.05);
-}
-
-/* Barre de progression */
+/* ========================================
+   BARRE DE PROGRESSION
+   ======================================== */
 .header-progress {
     position: absolute;
     bottom: 0;
@@ -254,15 +153,21 @@
 
 .header-progress-bar {
     height: 100%;
-    background: var(--header-gradient);
+    background: linear-gradient(90deg, #00d2ff 0%, #3a7bd5 100%);
     width: 0;
     transition: width 0.3s ease;
 }
 
 /* ========================================
+   BODY PADDING
+   ======================================== */
+body {
+    padding-top: 100px;  /* Plus d'espace car header plus haut */
+}
+
+/* ========================================
    RESPONSIVE
    ======================================== */
-
 @media (max-width: 768px) {
     .header-content {
         padding: 0 15px;
@@ -272,42 +177,11 @@
         font-size: 18px;
     }
     
-    .header-center {
-        display: none;
+    .header-subtitle {
+        font-size: 11px;
     }
     
-    .header-user-details {
+    .header-user-magasin {
         display: none;
     }
-    
-    .header-back-btn span {
-        display: none;
-    }
-}
-
-@media (max-width: 480px) {
-    .header-icon {
-        display: none;
-    }
-    
-    .header-user-info {
-        padding: 8px;
-    }
-}
-
-/* ========================================
-   ANIMATIONS
-   ======================================== */
-
-@keyframes slideDown {
-    from {
-        transform: translateY(-100%);
-    }
-    to {
-        transform: translateY(0);
-    }
-}
-
-.header-widget {
-    animation: slideDown 0.3s ease;
 }

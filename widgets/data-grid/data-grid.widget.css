@@ -1,0 +1,669 @@
+/* ========================================
+   DATA-GRID.WIDGET.CSS - Styles pour DataGridWidget
+   Chemin: /widgets/data-grid/data-grid.widget.css
+   
+   DESCRIPTION:
+   Styles pour le widget de tableau de données.
+   Importe buttons.css pour réutiliser les styles existants.
+   
+   STRUCTURE:
+   1. IMPORTS
+   2. CONTAINER ET WRAPPER
+   3. TABLE ET HEADER
+   4. LIGNES ET CELLULES
+   5. PAGINATION
+   6. EXPORT
+   7. SÉLECTION
+   8. RESIZE
+   9. RESPONSIVE
+   
+   MODIFICATIONS:
+   - 08/02/2025 : Création initiale
+   
+   AUTEUR: Assistant Claude
+   VERSION: 1.0.0
+   ======================================== */
+
+/* ========================================
+   SECTION 1 : IMPORTS
+   ======================================== */
+
+@import url('../../src/css/components/buttons.css');
+
+/* ========================================
+   SECTION 2 : CONTAINER ET WRAPPER
+   ======================================== */
+
+/* Container englobant optionnel */
+.data-grid-container {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.data-grid-container.loaded {
+    opacity: 1;
+}
+
+/* Style carte - Harmonisé avec SearchFiltersWidget */
+.data-grid-container.wrapper-card {
+    background: white;
+    border-radius: 16px;
+    padding: 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    margin-bottom: 24px;
+    overflow: hidden;
+}
+
+/* Style minimal */
+.data-grid-container.wrapper-minimal {
+    background: white;
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px solid #e9ecef;
+}
+
+/* Style bordé */
+.data-grid-container.wrapper-bordered {
+    background: white;
+    padding: 20px;
+    border: 2px solid #667eea;
+    border-radius: 12px;
+}
+
+/* Titre du container - Caché si vide */
+.data-grid-container-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2d3748;
+    padding: 16px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    margin: 0;
+}
+
+.data-grid-container-title:empty {
+    display: none;
+}
+
+/* Wrapper principal du widget - Exactement comme SearchFiltersWidget */
+.data-grid-wrapper {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Sans animation */
+.data-grid-wrapper.no-animation {
+    transition: none;
+}
+
+/* ========================================
+   SECTION 3 : TABLE ET HEADER
+   ======================================== */
+
+/* Container de la table */
+.data-grid-table-container {
+    overflow-x: auto;
+    padding: 0;  /* Pas de padding supplémentaire */
+}
+
+/* Table principale */
+.data-grid-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+/* Suppression des bordures verticales */
+.data-grid-table th,
+.data-grid-table td {
+    border-left: none !important;
+    border-right: none !important;
+}
+
+/* Header avec gradient */
+.data-grid-table.gradient-header thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+/* Cellules header */
+.data-grid-header {
+    padding: 10px 16px;
+    height: 32px;
+    max-height: 32px;      /* NOUVEAU */
+    overflow: hidden;      /* NOUVEAU */
+    line-height: 24px;
+    font-size: 11px;
+    text-align: left;
+    font-weight: 600;
+    white-space: nowrap;
+    position: relative;
+    user-select: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-right: none;
+}
+
+/* Header triable */
+.data-grid-header.sortable {
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.gradient-header .data-grid-header.sortable:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.data-grid-header.sortable:not(.gradient-header):hover {
+    background: #e9ecef;
+}
+
+/* Contenu header */
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    height: 100%;          /* NOUVEAU */
+    overflow: hidden;      /* NOUVEAU */
+}
+
+/* Force la hauteur du TR du thead */
+.data-grid-table thead tr {
+    height: 32px;
+    max-height: 32px;
+}
+
+/* Icônes de tri */
+.sort-icon {
+    font-size: 11px;
+    opacity: 0.4;
+    transition: all 0.2s;
+    margin-left: 4px;
+}
+
+.sortable:hover .sort-icon {
+    opacity: 0.7;
+}
+
+.sortable.sort-asc .sort-icon,
+.sortable.sort-desc .sort-icon {
+    opacity: 1;
+    color: #ffd700;
+}
+
+.gradient-header .sortable.sort-asc .sort-icon,
+.gradient-header .sortable.sort-desc .sort-icon {
+    color: #ffd700;
+    opacity: 1;
+}
+
+/* ========================================
+   SECTION 4 : LIGNES ET CELLULES
+   ======================================== */
+
+/* Lignes du body */
+.data-grid-table tbody tr {
+    border: none !important;
+}
+
+/* Hover sur lignes */
+.table-hover tbody tr:hover {
+    background: #f8f9fa;  /* Gris très léger */
+}
+
+/* Lignes alternées */
+.table-striped tbody tr:nth-child(even) {
+    background: #f8f9fa;
+}
+
+/* Cellules */
+.data-grid-table td {
+    padding: 10px 16px;  /* Réduit de 14px à 10px */
+    color: #495057;
+    font-size: 13px;
+    vertical-align: middle;
+    border-right: none;  /* Pas de bordure verticale */
+}
+
+/* Badges de statut */
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 20px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.badge-success {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.badge-danger {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.badge-info {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.badge-primary {
+    background: #d6d8ff;
+    color: #2e3192;
+}
+
+/* Bouton action simple */
+.btn-action-round {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid #dee2e6;
+    background: white;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.btn-action-round:hover {
+    background: #f8f9fa;
+    border-color: #667eea;
+}
+
+/* Cellule d'actions - Centrage horizontal */
+.col-actions {
+    text-align: center !important;
+    vertical-align: middle !important;
+}
+
+/* Groupe de boutons d'action dans une cellule */
+.col-actions .btn-action-group {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Table SANS bordures */
+.table-bordered {
+    border: none;
+}
+
+.table-bordered td,
+.table-bordered th {
+    border: none !important;  /* SUPPRIME TOUT */
+}
+
+/* Ligne "Aucune donnée" */
+.no-data td {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    padding: 48px 20px;
+    background: #f8f9fa;
+}
+
+/* ========================================
+   SECTION 5 : PAGINATION
+   ======================================== */
+
+.data-grid-pagination {
+    padding: 10px 16px;
+    background: white;  /* Blanc comme le reste */
+    border-top: 1px solid #e9ecef;
+}
+
+.pagination-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: nowrap;  /* Tout sur une ligne */
+}
+
+/* Sélecteur de taille - Toujours visible avec style compact */
+.pagination-size {
+    display: flex !important;
+    visibility: visible !important;
+    align-items: center;
+    gap: 6px;
+    background: white;
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+    flex-shrink: 0;
+    min-width: fit-content;
+}
+
+.pagination-size label {
+    margin: 0;
+    font-weight: 500;
+    color: #6c757d;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.page-size-select {
+    padding: 2px 6px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    background: white;
+    transition: all 0.2s;
+    min-width: 50px;
+}
+
+.page-size-select:hover {
+    border-color: #667eea;
+}
+
+.page-size-select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+/* Info pagination */
+.pagination-info {
+    font-size: 12px;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+/* Contrôles pagination */
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Numéros de pages */
+.pagination-numbers {
+    display: flex;
+    gap: 4px;
+    margin: 0 8px;
+}
+
+/* Ellipsis */
+.pagination-ellipsis {
+    padding: 0 8px;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+}
+
+/* ========================================
+   SECTION 6 : EXPORT
+   ======================================== */
+
+.data-grid-export-buttons {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px 8px;  /* Plus d'espace en haut, moins en bas */
+    justify-content: flex-end;
+    background: white;
+    border-bottom: none;
+}
+
+/* Styles spécifiques pour les boutons d'export */
+.data-grid-export-buttons .btn-success {
+    background: #28a745;
+    border-color: #28a745;
+    color: white;
+    padding: 6px 12px;  /* Plus petit */
+    font-size: 12px;
+}
+
+.data-grid-export-buttons .btn-success:hover {
+    background: #218838;
+    border-color: #1e7e34;
+}
+
+.data-grid-export-buttons .btn-info {
+    background: #17a2b8;
+    border-color: #17a2b8;
+    color: white;
+    padding: 6px 12px;  /* Plus petit */
+    font-size: 12px;
+}
+
+.data-grid-export-buttons .btn-info:hover {
+    background: #138496;
+    border-color: #117a8b;
+}
+
+/* ========================================
+   SECTION 7 : SÉLECTION
+   ======================================== */
+
+.col-select {
+    width: 40px;
+    text-align: center;
+    padding: 8px !important;
+    border: none !important;  /* Pas de bordures */
+}
+
+.select-all-checkbox,
+.row-select {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+}
+
+/* ========================================
+   SECTION 8 : RESIZE
+   ======================================== */
+
+/* Poignée de redimensionnement */
+.resize-handle {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    cursor: col-resize;
+    background: transparent;
+    transition: background 0.2s;
+}
+
+.resize-handle:hover {
+    background: rgba(102, 126, 234, 0.3);
+}
+
+.gradient-header .resize-handle:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* État de redimensionnement */
+.data-grid-header.resizing {
+    background: rgba(102, 126, 234, 0.1) !important;
+}
+
+body.grid-resizing {
+    cursor: col-resize !important;
+    user-select: none !important;
+}
+
+body.grid-resizing * {
+    cursor: col-resize !important;
+}
+
+/* ========================================
+   SECTION 9 : RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+    /* Container */
+    .data-grid-container.wrapper-card {
+        padding: 0;
+        border-radius: 12px;
+    }
+    
+    /* Table scrollable horizontalement */
+    .data-grid-table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .data-grid-table {
+        min-width: 600px;
+    }
+    
+    /* Pagination responsive */
+    .pagination-wrapper {
+        justify-content: space-between;  /* Garder l'espacement */
+        text-align: left;
+    }
+    
+    /* IMPORTANT : Toujours afficher le sélecteur */
+    .pagination-size {
+        display: flex !important;  /* Force l'affichage */
+        visibility: visible !important;
+        opacity: 1 !important;
+        flex-shrink: 0;  /* Empêche la compression */
+    }
+    
+    .pagination-info {
+        font-size: 11px;  /* Plus petit sur mobile */
+    }
+    
+    .pagination-controls {
+        flex-wrap: nowrap;  /* Garde sur une ligne */
+    }
+    
+    /* Masquer resize sur mobile */
+    .resize-handle {
+        display: none;
+    }
+    
+    /* Export responsive */
+    .data-grid-export-buttons {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Réduire les paddings */
+    .data-grid-header,
+    .data-grid-table td {
+        padding: 8px 12px;
+    }
+    
+    /* Petits boutons sur mobile */
+    .pagination-controls .btn {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+    
+    /* Sélecteur toujours visible même sur très petit écran */
+    .pagination-size {
+        display: flex !important;
+        font-size: 11px;
+    }
+    
+    .page-size-select {
+        font-size: 11px;
+        min-width: 45px;
+    }
+    
+    /* Masquer première/dernière sur très petit écran */
+    .pagination-controls .btn:first-child,
+    .pagination-controls .btn:last-child {
+        display: none;
+    }
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.data-grid-wrapper {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* ========================================
+   UTILITAIRES
+   ======================================== */
+
+/* Bouton outline pour pagination */
+.btn-outline {
+    background: white;
+    border: 1px solid #dee2e6;
+    color: #495057;
+}
+
+.btn-outline:hover:not(:disabled) {
+    background: #f8f9fa;
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.btn-outline:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.font-bold {
+    font-weight: 600;
+}
+
+.text-muted {
+    color: #6c757d;
+}
+
+.text-danger {
+    color: #dc3545;
+}
+
+.text-success {
+    color: #28a745;
+}
+
+.text-warning {
+    color: #ffc107;
+}
+
+.text-info {
+    color: #17a2b8;
+}

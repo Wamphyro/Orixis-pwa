@@ -1,0 +1,729 @@
+/* ========================================
+   BUTTONS.CSS - Styles des boutons
+   Chemin: /src/css/components/buttons.css
+   
+   DESCRIPTION:
+   Définit tous les styles de boutons réutilisables dans l'application.
+   Ces classes CSS remplacent progressivement le composant Button.js
+   pour les cas simples (80% des usages).
+   
+   STRUCTURE DU FICHIER:
+   1. VARIABLES BOUTONS
+   2. CLASSE DE BASE (.btn)
+   3. VARIANTES DE COULEUR (.btn-primary, .btn-danger...)
+   4. VARIANTES DE TAILLE (.btn-sm, .btn-lg...)
+   5. VARIANTES DE STYLE (.btn-pill, .btn-ghost...)
+   6. ÉTATS (.loading, .success...)
+   7. GROUPES DE BOUTONS (.btn-group)
+   
+   UTILISATION:
+   <button class="btn btn-primary">Texte</button>
+   <button class="btn btn-danger btn-sm">Petit bouton rouge</button>
+   <button class="btn btn-ghost btn-pill">Bouton fantôme arrondi</button>
+   
+   CONVENTIONS:
+   - Classe de base : .btn (obligatoire)
+   - Modificateurs : .btn-[variant] (optionnel)
+   - Combinaisons : .btn.btn-primary.btn-lg (multiples classes)
+   
+   DÉPENDANCES:
+   - Variables CSS définies dans :root (main.css)
+   - Peut être surchargé dans les CSS spécifiques des widgets
+   
+   AUTEUR: Assistant Claude & [Ton nom]
+   DATE CRÉATION: 08/02/2025
+   VERSION: 1.0.0
+   ======================================== */
+
+/* ========================================
+   SECTION 1 : VARIABLES LOCALES BOUTONS
+   Variables spécifiques aux boutons
+   ======================================== */
+
+.btn {
+    /* Variables personnalisables par bouton */
+    --btn-bg: #e0e0e0;
+    --btn-color: #333;
+    --btn-border: none;
+    --btn-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --btn-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --btn-radius: 8px;
+    --btn-padding-x: 20px;
+    --btn-padding-y: 10px;
+}
+
+/* ========================================
+   SECTION 2 : CLASSE DE BASE
+   Style par défaut pour tous les boutons
+   ======================================== */
+
+.btn {
+    /* ----------------
+       Positionnement
+       ---------------- */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+    
+    /* ----------------
+       Dimensions
+       ---------------- */
+    padding: var(--btn-padding-y) var(--btn-padding-x);
+    min-height: 36px;
+    
+    /* ----------------
+       Apparence
+       ---------------- */
+    background: var(--btn-bg);
+    color: var(--btn-color);
+    border: var(--btn-border);
+    border-radius: var(--btn-radius);
+    box-shadow: var(--btn-shadow);
+    
+    /* ----------------
+       Typographie
+       ---------------- */
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    line-height: 1.2;
+    text-decoration: none;
+    white-space: nowrap;
+    
+    /* ----------------
+       Comportement
+       ---------------- */
+    cursor: pointer;
+    user-select: none;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+/* ----------------
+   États de base
+   ---------------- */
+
+.btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--btn-shadow-hover);
+}
+
+.btn:active:not(:disabled) {
+    transform: translateY(0) scale(0.98);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.btn:focus-visible {
+    outline: 3px solid rgba(102, 126, 234, 0.5);
+    outline-offset: 2px;
+}
+
+/* ========================================
+   SECTION 3 : VARIANTES DE COULEUR
+   Different styles de boutons
+   ======================================== */
+
+/* ----------------
+   Primary (gradient violet)
+   ---------------- */
+.btn-primary {
+    --btn-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --btn-color: white;
+    --btn-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    --btn-shadow-hover: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* ----------------
+   Danger (rouge)
+   ---------------- */
+.btn-danger {
+    --btn-bg: linear-gradient(135deg, #ff512f 0%, #dd2476 100%);
+    --btn-color: white;
+    --btn-shadow: 0 4px 15px rgba(221, 36, 118, 0.3);
+    --btn-shadow-hover: 0 6px 20px rgba(221, 36, 118, 0.4);
+}
+
+/* ----------------
+   Success (vert)
+   ---------------- */
+.btn-success {
+    --btn-bg: linear-gradient(135deg, #00d954 0%, #00b349 100%);
+    --btn-color: white;
+    --btn-shadow: 0 4px 15px rgba(0, 217, 84, 0.3);
+}
+
+/* ----------------
+   Info (bleu)
+   ---------------- */
+.btn-info {
+    --btn-bg: linear-gradient(135deg, #54a0ff 0%, #0984e3 100%);
+    --btn-color: white;
+    --btn-shadow: 0 4px 15px rgba(84, 160, 255, 0.3);
+}
+
+/* ----------------
+   Warning (orange)
+   ---------------- */
+.btn-warning {
+    --btn-bg: linear-gradient(135deg, #ffa502 0%, #ff7606 100%);
+    --btn-color: white;
+    --btn-shadow: 0 4px 15px rgba(255, 165, 2, 0.3);
+}
+
+/* ----------------
+   Ghost (transparent)
+   ---------------- */
+.btn-ghost {
+    --btn-bg: transparent;
+    --btn-color: #667eea;
+    --btn-border: 2px solid currentColor;
+    --btn-shadow: none;
+}
+
+.btn-ghost:hover:not(:disabled) {
+    --btn-bg: rgba(102, 126, 234, 0.1);
+}
+
+/* ========================================
+   GHOST VARIANTS (Transparents colorés)
+   Tous identiques, seule la couleur change
+   ======================================== */
+
+/* Base commune pour tous les ghost colorés */
+.btn-ghost-colored {
+    --btn-opacity: 0.15;
+    --btn-opacity-hover: 0.25;
+    --btn-bg: rgba(var(--btn-rgb), var(--btn-opacity));
+    --btn-color: white;
+    --btn-border: 1px solid rgba(var(--btn-rgb), 0.3);
+    --btn-shadow: none;
+}
+
+.btn-ghost-colored:hover:not(:disabled) {
+    --btn-bg: rgba(var(--btn-rgb), var(--btn-opacity-hover));
+    --btn-border: 1px solid rgba(var(--btn-rgb), 0.5);
+}
+
+/* Variantes de couleur */
+.btn-ghost-danger {
+    --btn-rgb: 255, 71, 87;  /* Rouge */
+}
+
+.btn-ghost-success {
+    --btn-rgb: 0, 217, 84;   /* Vert */
+}
+
+.btn-ghost-warning {
+    --btn-rgb: 255, 165, 2;   /* Orange */
+}
+
+.btn-ghost-info {
+    --btn-rgb: 84, 160, 255;  /* Bleu */
+}
+
+.btn-ghost-purple {
+    --btn-rgb: 102, 126, 234; /* Violet */
+}
+
+.btn-ghost-pink {
+    --btn-rgb: 255, 107, 107; /* Rose */
+}
+
+.btn-ghost-cyan {
+    --btn-rgb: 0, 210, 255;   /* Cyan */
+}
+
+.btn-ghost-yellow {
+    --btn-rgb: 255, 234, 0;   /* Jaune */
+}
+
+.btn-ghost-light {
+    --btn-rgb: 255, 255, 255; /* Blanc */
+}
+
+.btn-ghost-dark {
+    --btn-rgb: 0, 0, 0;       /* Noir */
+}
+
+/* ----------------
+   Secondary (gris)
+   ---------------- */
+.btn-secondary {
+    --btn-bg: #f0f0f0;
+    --btn-color: #666;
+    --btn-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* ----------------
+   Glassmorphisme (effet verre dépoli)
+   ---------------- */
+.btn-glass {
+    --btn-bg: rgba(255, 255, 255, 0.1);
+    --btn-color: #2c3e50;  /* Gris foncé */
+    --btn-border: 1px solid rgba(255, 255, 255, 0.2);
+    --btn-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+    --btn-shadow-hover: 0 8px 32px rgba(31, 38, 135, 0.25);
+    
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.1),
+        rgba(255, 255, 255, 0.05)
+    );
+}
+
+.btn-glass:hover:not(:disabled) {
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.2),
+        rgba(255, 255, 255, 0.1)
+    );
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Variante large pour "Suivant" */
+.btn-glass.btn-lg {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* ----------------
+   Glassmorphisme Bleu
+   ---------------- */
+.btn-glass-blue {
+    --btn-bg: rgba(59, 130, 246, 0.15);  /* Bleu transparent */
+    --btn-color: #1e3a8a;  /* Bleu foncé pour le texte */
+    --btn-border: none
+    --btn-shadow: 0 8px 32px rgba(59, 130, 246, 0.2);
+    --btn-shadow-hover: 0 8px 32px rgba(59, 130, 246, 0.35);
+    
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    background: linear-gradient(
+        135deg,
+        rgba(59, 130, 246, 0.15),
+        rgba(59, 130, 246, 0.05)
+    );
+}
+
+.btn-glass-blue:hover:not(:disabled) {
+    background: linear-gradient(
+        135deg,
+        rgba(59, 130, 246, 0.25),
+        rgba(59, 130, 246, 0.15)
+    );
+    border: 1px solid rgba(59, 130, 246, 0.5);
+    transform: translateY(-2px);
+}
+
+/* Variante large */
+.btn-glass-blue.btn-lg {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* ========================================
+   SECTION 4 : VARIANTES DE TAILLE
+   Différentes tailles de boutons
+   ======================================== */
+
+/* ----------------
+   Extra Small
+   ---------------- */
+.btn-xs {
+    --btn-padding-x: 8px;
+    --btn-padding-y: 4px;
+    font-size: 11px;
+    min-height: 24px;
+    gap: 4px;
+}
+
+/* ----------------
+   Small
+   ---------------- */
+.btn-sm {
+    --btn-padding-x: 12px;
+    --btn-padding-y: 6px;
+    font-size: 13px;
+    min-height: 30px;
+    gap: 6px;
+}
+
+/* ----------------
+   Large
+   ---------------- */
+.btn-lg {
+    --btn-padding-x: 28px;
+    --btn-padding-y: 12px;
+    font-size: 16px;
+    min-height: 44px;
+    gap: 10px;
+}
+
+/* ----------------
+   Extra Large
+   ---------------- */
+.btn-xl {
+    --btn-padding-x: 36px;
+    --btn-padding-y: 16px;
+    font-size: 18px;
+    min-height: 52px;
+    gap: 12px;
+}
+
+/* ========================================
+   SECTION 5 : VARIANTES DE STYLE
+   Formes et styles spéciaux
+   ======================================== */
+
+/* ----------------
+   Pill (arrondi complet)
+   ---------------- */
+.btn-pill {
+    --btn-radius: 50px;
+}
+
+/* ----------------
+   Square (carré)
+   ---------------- */
+.btn-square {
+    --btn-radius: 0;
+}
+
+/* ----------------
+   Circle (rond)
+   ---------------- */
+.btn-circle {
+    --btn-padding-x: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.btn-circle.btn-sm {
+    width: 30px;
+    height: 30px;
+}
+
+.btn-circle.btn-lg {
+    width: 50px;
+    height: 50px;
+}
+
+/* ----------------
+   Full width
+   ---------------- */
+.btn-block {
+    width: 100%;
+}
+
+/* ----------------
+   Icon only (sans texte)
+   ---------------- */
+.btn-icon {
+    --btn-padding-x: var(--btn-padding-y);
+}
+
+/* ========================================
+   SECTION 6 : ÉTATS SPÉCIAUX
+   Loading, success, error...
+   ======================================== */
+
+/* ----------------
+   Loading state
+   ---------------- */
+.btn.loading {
+    pointer-events: none;
+    color: transparent;
+}
+
+.btn.loading::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin: -8px 0 0 -8px;
+    border: 2px solid white;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: btn-spin 0.6s linear infinite;
+}
+
+@keyframes btn-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ----------------
+   Success state
+   ---------------- */
+.btn.success {
+    --btn-bg: #00d954;
+    --btn-color: white;
+    pointer-events: none;
+}
+
+.btn.success::before {
+    content: "✓";
+    margin-right: 4px;
+}
+
+/* ----------------
+   Error state
+   ---------------- */
+.btn.error {
+    --btn-bg: #ff4757;
+    --btn-color: white;
+    animation: btn-shake 0.5s;
+}
+
+@keyframes btn-shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* ========================================
+   SECTION 7 : GROUPES DE BOUTONS
+   Boutons groupés ensemble
+   ======================================== */
+
+.btn-group {
+    display: inline-flex;
+    gap: 1px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: var(--btn-radius);
+    padding: 1px;
+}
+
+.btn-group .btn {
+    --btn-radius: 0;
+    --btn-shadow: none;
+}
+
+.btn-group .btn:first-child {
+    border-radius: var(--btn-radius) 0 0 var(--btn-radius);
+}
+
+.btn-group .btn:last-child {
+    border-radius: 0 var(--btn-radius) var(--btn-radius) 0;
+}
+
+.btn-group .btn:hover {
+    z-index: 1;
+}
+
+/* ========================================
+   SECTION 8 : BOUTONS SPÉCIAUX
+   Boutons avec styles prédéfinis spécifiques
+   ======================================== */
+
+/* ----------------
+   Bouton Poubelle/Delete
+   Cercle transparent avec icône rouge
+   ---------------- */
+.btn-delete-icon {
+    --btn-bg: transparent;
+    --btn-color: #ff4757;
+    --btn-border: none;
+    --btn-shadow: none;
+    width: 24px;
+    height: 24px;
+    min-height: 24px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 0; /* Cache le texte */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Icône poubelle automatique */
+.btn-delete-icon::before {
+    content: '';
+    width: 14px;
+    height: 14px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ff4757'%3E%3Cpath d='M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.btn-delete-icon:hover:not(:disabled) {
+    --btn-bg: rgba(255, 71, 87, 0.1);  /* Fond rouge léger au survol */
+    --btn-border: none;  /* TOUJOURS PAS DE BORDURE */
+    transform: scale(1.1);
+}
+
+.btn-delete-icon:active:not(:disabled) {
+    transform: scale(0.95);
+}
+
+/* Variante small */
+.btn-delete-icon.btn-sm {
+    width: 20px;
+    height: 20px;
+    min-height: 20px;
+    font-size: 10px;
+}
+
+/* Variante large */
+.btn-delete-icon.btn-lg {
+    width: 32px;
+    height: 32px;
+    min-height: 32px;
+    font-size: 16px;
+}
+
+/* ----------------
+   Bouton View/Œil
+   Cercle transparent avec icône verte
+   ---------------- */
+.btn-view-icon {
+    --btn-bg: transparent;
+    --btn-color: #00d954;
+    --btn-border: none;
+    --btn-shadow: none;
+    width: 24px;
+    height: 24px;
+    min-height: 24px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 0; /* Cache le texte */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Icône œil automatique */
+.btn-view-icon::before {
+    content: '';
+    width: 14px;
+    height: 14px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300d954'%3E%3Cpath d='M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.btn-view-icon:hover:not(:disabled) {
+    --btn-bg: rgba(0, 217, 84, 0.1);  /* Fond vert léger au survol */
+    transform: scale(1.1);
+}
+
+.btn-view-icon:active:not(:disabled) {
+    transform: scale(0.95);
+}
+
+/* Variante small */
+.btn-view-icon.btn-sm {
+    width: 20px;
+    height: 20px;
+    min-height: 20px;
+}
+
+.btn-view-icon.btn-sm::before {
+    width: 12px;
+    height: 12px;
+}
+
+/* Variante large */
+.btn-view-icon.btn-lg {
+    width: 32px;
+    height: 32px;
+    min-height: 32px;
+}
+
+.btn-view-icon.btn-lg::before {
+    width: 18px;
+    height: 18px;
+}
+
+/* ----------------
+   Bouton Edit/Crayon
+   Cercle transparent avec icône bleue
+   ---------------- */
+.btn-edit-icon {
+    --btn-bg: transparent;
+    --btn-color: #667eea;
+    --btn-border: none;
+    --btn-shadow: none;
+    width: 24px;
+    height: 24px;
+    min-height: 24px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 0; /* Cache le texte */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Icône crayon automatique */
+.btn-edit-icon::before {
+    content: '';
+    width: 14px;
+    height: 14px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23667eea'%3E%3Cpath d='M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.btn-edit-icon:hover:not(:disabled) {
+    --btn-bg: rgba(102, 126, 234, 0.1);  /* Fond bleu léger au survol */
+    transform: scale(1.1);
+}
+
+.btn-edit-icon:active:not(:disabled) {
+    transform: scale(0.95);
+}
+
+/* Variante small */
+.btn-edit-icon.btn-sm {
+    width: 20px;
+    height: 20px;
+    min-height: 20px;
+}
+
+.btn-edit-icon.btn-sm::before {
+    width: 12px;
+    height: 12px;
+}
+
+/* Variante large */
+.btn-edit-icon.btn-lg {
+    width: 32px;
+    height: 32px;
+    min-height: 32px;
+}
+
+.btn-edit-icon.btn-lg::before {
+    width: 18px;
+    height: 18px;
+}
+
+/* ----------------
+   Groupe d'actions (pour plusieurs boutons alignés)
+   ---------------- */
+.btn-action-group {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ========================================
+   FIN DU FICHIER
+   ======================================== */

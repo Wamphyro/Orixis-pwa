@@ -1,0 +1,769 @@
+/* ========================================
+   PDF-UPLOADER.WIDGET.CSS - Styles du widget PdfUploader
+   Chemin: /widgets/pdf-uploader/pdf-uploader.widget.css
+   
+   DESCRIPTION:
+   Styles pour le widget d'upload de PDF avec design moderne violet.
+   Thème IA/futuriste avec animations fluides.
+   
+   STRUCTURE:
+   1. VARIABLES ET THÈMES
+   2. OVERLAY ET MODAL
+   3. HEADER
+   4. ZONES
+   5. ZONE DESCRIPTION
+   6. ZONE DROPZONE
+   7. ZONE SÉLECTION
+   8. ZONE RÉSUMÉ
+   9. FOOTER
+   10. ANIMATIONS
+   11. RESPONSIVE
+   
+   MODIFICATIONS:
+   - 08/02/2025 : Création initiale
+   
+   AUTEUR: Assistant Claude
+   VERSION: 1.0.0
+   ======================================== */
+
+/* ========================================
+   SECTION 0 : IMPORTS
+   ======================================== */
+
+@import url('/src/css/components/modal-base.css');
+@import url('/src/css/components/buttons.css');
+
+/* ========================================
+   SECTION 1 : VARIABLES ET THÈMES
+   ======================================== */
+
+:root {
+    /* Thème violet (défaut) */
+    --pdf-primary: #8b5cf6;
+    --pdf-primary-light: #a78bfa;
+    --pdf-primary-dark: #7c3aed;
+    --pdf-primary-bg: #f5f3ff;
+    --pdf-primary-border: #ddd6fe;
+    
+    /* Couleurs neutres */
+    --pdf-bg: #ffffff;
+    --pdf-overlay: rgba(17, 24, 39, 0.5);
+    --pdf-text: #1f2937;
+    --pdf-text-secondary: #6b7280;
+    --pdf-border: #e5e7eb;
+    --pdf-hover: #f9fafb;
+    
+    /* Ombres */
+    --pdf-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --pdf-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --pdf-shadow-lg: 0 10px 25px -5px rgb(0 0 0 / 0.1);
+    --pdf-shadow-xl: 0 20px 40px -10px rgb(0 0 0 / 0.2);
+    
+    /* Animations */
+    --pdf-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Thème rouge */
+.pdf-uploader-theme-red {
+    --pdf-primary: #ef4444;
+    --pdf-primary-light: #f87171;
+    --pdf-primary-dark: #dc2626;
+    --pdf-primary-bg: #fef2f2;
+    --pdf-primary-border: #fecaca;
+}
+
+/* Thème bleu */
+.pdf-uploader-theme-blue {
+    --pdf-primary: #3b82f6;
+    --pdf-primary-light: #60a5fa;
+    --pdf-primary-dark: #2563eb;
+    --pdf-primary-bg: #eff6ff;
+    --pdf-primary-border: #bfdbfe;
+}
+
+/* ========================================
+   SECTION 2 : SURCHARGES MODAL
+   ======================================== */
+
+/* Adaptations spécifiques pour PdfUploader */
+.pdf-uploader-overlay {
+    /* Hérite de modal-overlay via modal-base.css */
+}
+
+.pdf-uploader-modal {
+    /* Hérite de modal-container via modal-base.css */
+}
+
+/* États actifs (nécessaires pour l'animation) */
+.pdf-uploader-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.pdf-uploader-overlay.active .pdf-uploader-modal {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+}
+
+/* Surcharges de tailles (remplacent les classes modal-base) */
+.modal-small.pdf-uploader-modal { 
+    max-width: 500px; 
+}
+
+.modal-medium.pdf-uploader-modal { 
+    max-width: 650px; 
+}
+
+.modal-large.pdf-uploader-modal { 
+    max-width: 800px; 
+}
+
+/* Thèmes de couleur pour l'overlay */
+.pdf-uploader-theme-red {
+    --pdf-primary: #ef4444;
+    --pdf-primary-light: #f87171;
+    --pdf-primary-dark: #dc2626;
+    --pdf-primary-bg: #fef2f2;
+    --pdf-primary-border: #fecaca;
+}
+
+.pdf-uploader-theme-blue {
+    --pdf-primary: #3b82f6;
+    --pdf-primary-light: #60a5fa;
+    --pdf-primary-dark: #2563eb;
+    --pdf-primary-bg: #eff6ff;
+    --pdf-primary-border: #bfdbfe;
+}
+
+/* ========================================
+   SECTION 3 : HEADER
+   ======================================== */
+
+.pdf-uploader-header {
+    /* Surcharge du modal-header */
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.pdf-uploader-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--pdf-text);
+}
+
+.pdf-uploader-close {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--pdf-text-secondary);
+    border-radius: 8px;
+    transition: var(--pdf-transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pdf-uploader-close:hover {
+    background: var(--pdf-hover);
+    color: var(--pdf-text);
+}
+
+/* ========================================
+   SECTION 4 : ZONES
+   ======================================== */
+
+.pdf-uploader-body {
+    /* Surcharge du modal-body */
+    background: #f8f9fa;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;  /* Espacement entre les cartes */
+    overflow-x: hidden;  /* Pas de scroll horizontal */
+    overflow-y: auto;    /* Scroll vertical seulement */
+}
+
+.pdf-uploader-zone {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    animation: fadeInUp 0.4s ease forwards;
+    opacity: 0;
+    transition: all 0.3s ease;
+    width: 100%;         /* Force la largeur 100% */
+    box-sizing: border-box;  /* Inclut padding dans la largeur */
+}
+
+.pdf-uploader-zone:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.pdf-uploader-zone:nth-child(1) { animation-delay: 0.1s; }
+.pdf-uploader-zone:nth-child(2) { animation-delay: 0.2s; }
+.pdf-uploader-zone:nth-child(3) { animation-delay: 0.3s; }
+.pdf-uploader-zone:nth-child(4) { animation-delay: 0.4s; }
+
+/* ========================================
+   SECTION 5 : ZONE DESCRIPTION
+   ======================================== */
+
+.pdf-uploader-description {
+    background: linear-gradient(135deg, var(--pdf-primary-bg) 0%, rgba(139, 92, 246, 0.05) 100%);
+    border: 1px solid var(--pdf-primary-border);
+    padding: 20px 24px;  /* Restaurer le padding spécifique */
+    /* Le reste vient de .pdf-uploader-zone */
+}
+
+/* Effet de lueur */
+.description-glow {
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, var(--pdf-primary-light) 0%, transparent 70%);
+    opacity: 0.1;
+    animation: pulse 4s ease-in-out infinite;
+}
+
+.description-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.description-icon {
+    flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--pdf-primary) 0%, var(--pdf-primary-dark) 100%);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: 0 8px 16px rgba(139, 92, 246, 0.3);
+}
+
+.icon-inner {
+    font-size: 28px;
+    filter: grayscale(0%) brightness(2);
+}
+
+/* Animation du pulse */
+.icon-pulse {
+    position: absolute;
+    inset: -8px;
+    background: linear-gradient(135deg, var(--pdf-primary) 0%, var(--pdf-primary-dark) 100%);
+    border-radius: 14px;
+    opacity: 0;
+    animation: iconPulse 2s ease-in-out infinite;
+}
+
+.description-text h4 {
+    margin: 0 0 6px 0;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--pdf-primary-dark);
+}
+
+.description-text p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--pdf-text-secondary);
+    line-height: 1.5;
+}
+
+/* ========================================
+   SECTION 6 : ZONE DROPZONE
+   ======================================== */
+
+.pdf-uploader-dropzone {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+}
+
+.dropzone-area {
+    background: linear-gradient(135deg, #fafbfc 0%, var(--pdf-primary-bg) 100%);
+    border: 2px dashed var(--pdf-primary-border);
+    border-radius: 12px;
+    min-height: 180px;
+    transition: var(--pdf-transition);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+/* Animation des bordures */
+.dropzone-area::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(90deg, var(--pdf-primary), var(--pdf-primary-light), var(--pdf-primary), var(--pdf-primary-light));
+    background-size: 200% 100%;
+    border-radius: 12px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    animation: borderMove 3s linear infinite;
+    z-index: -1;
+}
+
+.dropzone-area:hover::before {
+    opacity: 0.3;
+}
+
+.dropzone-area:hover {
+    background: linear-gradient(135deg, white 0%, var(--pdf-primary-bg) 100%);
+    border-color: var(--pdf-primary);
+    transform: scale(1.02);
+}
+
+.dropzone-area.dragover {
+    background: var(--pdf-primary-bg);
+    border-color: var(--pdf-primary);
+    border-style: solid;
+}
+
+.dropzone-content {
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.dropzone-icon {
+    color: var(--pdf-primary);
+    margin-bottom: 16px;
+    animation: float 3s ease-in-out infinite;
+}
+
+.dropzone-text {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.dropzone-main {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--pdf-text);
+    margin: 0 0 4px 0;
+}
+
+.dropzone-sub {
+    font-size: 14px;
+    color: var(--pdf-text-secondary);
+    margin: 0;
+}
+
+.dropzone-formats {
+    display: flex;
+    gap: 8px;
+}
+
+.format-badge {
+    padding: 4px 12px;
+    background: var(--pdf-primary-bg);
+    color: var(--pdf-primary);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid var(--pdf-primary-border);
+}
+
+/* ========================================
+   SECTION 7 : ZONE SÉLECTION
+   ======================================== */
+
+.pdf-uploader-selection {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+}
+
+.selection-content h5 {
+    margin: 0 0 20px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--pdf-text);
+}
+
+.selection-files {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.selection-file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--pdf-hover);
+    border-radius: 10px;
+    border: 1px solid var(--pdf-border);
+    transition: var(--pdf-transition);
+}
+
+.selection-file-item:hover {
+    border-color: var(--pdf-primary-border);
+    background: var(--pdf-primary-bg);
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.file-icon {
+    font-size: 20px;
+}
+
+.file-name {
+    font-size: 14px;
+    color: var(--pdf-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.selection-options {
+    display: flex;
+    gap: 12px;
+}
+
+.selection-option input[type="radio"] {
+    display: none;
+}
+
+.option-label {
+    padding: 6px 16px;
+    background: white;
+    border: 2px solid var(--pdf-border);
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--pdf-transition);
+}
+
+.selection-option input[type="radio"]:checked + .option-label {
+    background: var(--pdf-primary);
+    color: white;
+    border-color: var(--pdf-primary);
+}
+
+/* Styles spécifiques pour les options */
+.option-a_payer { border-color: #fbbf24; color: #92400e; }
+.option-deja_payee { border-color: #34d399; color: #065f46; }
+
+.selection-option input[type="radio"]:checked + .option-a_payer {
+    background: #fbbf24;
+    border-color: #fbbf24;
+}
+
+.selection-option input[type="radio"]:checked + .option-deja_payee {
+    background: #34d399;
+    border-color: #34d399;
+}
+
+/* ========================================
+   SECTION 8 : ZONE RÉSUMÉ
+   ======================================== */
+
+.pdf-uploader-summary {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid var(--pdf-border);
+}
+
+.summary-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.summary-header h5 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--pdf-text);
+}
+
+.summary-count {
+    padding: 4px 12px;
+    background: var(--pdf-primary-bg);
+    color: var(--pdf-primary);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.summary-empty {
+    text-align: center;
+    padding: 30px;
+}
+
+.empty-icon {
+    font-size: 32px;
+    opacity: 0.3;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.summary-empty p {
+    margin: 0;
+    color: var(--pdf-text-secondary);
+    font-size: 14px;
+}
+
+.summary-stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.stat-item {
+    flex: 1;
+    text-align: center;
+    padding: 12px;
+    background: var(--pdf-hover);
+    border-radius: 10px;
+}
+
+.stat-label {
+    display: block;
+    font-size: 12px;
+    color: var(--pdf-text-secondary);
+    margin-bottom: 4px;
+}
+
+.stat-value {
+    display: block;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--pdf-primary);
+}
+
+/* Stats colorées */
+.stat-a_payer { background: #fef3c7; }
+.stat-a_payer .stat-value { color: #f59e0b; }
+
+.stat-deja_payee { background: #d1fae5; }
+.stat-deja_payee .stat-value { color: #10b981; }
+
+.summary-files {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 150px;  /* Limite de hauteur */
+    overflow-y: auto;   /* Scroll vertical */
+    padding-right: 4px; /* Espace pour la scrollbar */
+}
+
+/* Scrollbar personnalisée */
+.summary-files::-webkit-scrollbar {
+    width: 4px;
+}
+
+.summary-files::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.summary-files::-webkit-scrollbar-thumb {
+    background: var(--pdf-primary-border);
+    border-radius: 2px;
+}
+
+.summary-files::-webkit-scrollbar-thumb:hover {
+    background: var(--pdf-primary);
+}
+
+.summary-file {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--pdf-hover);
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+.summary-file .file-name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--pdf-text);
+}
+
+.summary-file .file-size {
+    color: var(--pdf-text-secondary);
+    font-size: 12px;
+}
+
+/* Adaptation du bouton pour le contexte summary */
+.summary-file-remove {
+    margin-left: auto;
+    flex-shrink: 0;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+
+.summary-file:hover .summary-file-remove {
+    opacity: 1;
+}
+
+/* Override pour le btn-circle.btn-xs dans ce contexte */
+.summary-file .btn-circle.btn-xs {
+    width: 24px;
+    height: 24px;
+    min-height: 24px;
+    font-size: 12px;
+}
+
+.summary-more {
+    text-align: center;
+    color: var(--pdf-text-secondary);
+    font-size: 13px;
+    padding: 8px;
+}
+
+/* ========================================
+   SECTION 9 : FOOTER
+   ======================================== */
+
+.pdf-uploader-footer {
+    /* Surcharge du modal-footer */
+    background: #f8f9fa;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* Le bouton save utilise maintenant les classes de buttons.css */
+.pdf-uploader-save {
+    /* Styles spécifiques si besoin de surcharge */
+    min-width: 200px;  /* Largeur minimale */
+}
+
+/* Si on veut un style custom pour le bouton save avec gradient violet */
+.pdf-uploader-save.btn-primary {
+    --btn-bg: linear-gradient(135deg, var(--pdf-primary) 0%, var(--pdf-primary-dark) 100%);
+    --btn-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    --btn-shadow-hover: 0 8px 20px rgba(139, 92, 246, 0.4);
+}
+
+/* ========================================
+   SECTION 10 : ANIMATIONS
+   ======================================== */
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.1; }
+    50% { transform: scale(1.1); opacity: 0.2; }
+}
+
+@keyframes iconPulse {
+    0%, 100% { transform: scale(1); opacity: 0; }
+    50% { transform: scale(1.3); opacity: 0.3; }
+}
+
+@keyframes borderMove {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Animation d'apparition */
+.pdf-uploader-overlay.loaded {
+    opacity: 1;
+}
+
+/* ========================================
+   SECTION 11 : RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+    .pdf-uploader-modal {
+        max-width: 100%;
+        height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+    
+    .pdf-uploader-body {
+        padding: 16px;
+        gap: 16px;
+    }
+    
+    .description-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .selection-file-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .selection-options {
+        width: 100%;
+        justify-content: space-around;
+    }
+    
+    .summary-stats {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 480px) {
+    .pdf-uploader-header {
+        padding: 16px 20px;
+    }
+    
+    .pdf-uploader-title {
+        font-size: 18px;
+    }
+    
+    .pdf-uploader-footer {
+        padding: 16px 20px;
+    }
+    
+    .pdf-uploader-button {
+        width: 100%;
+    }
+}
+
+/* ========================================
+   FIN DU FICHIER
+   ======================================== */

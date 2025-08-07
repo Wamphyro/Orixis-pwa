@@ -7,21 +7,29 @@
 // Gère automatiquement auth, navigation, user info
 // ========================================
 
+// ========================================
+// HEADER.WIDGET.JS - Widget Header Intelligent
+// Chemin: widgets/header/header.widget.js
+// ========================================
+
 export class HeaderWidget {
     constructor(config = {}) {
-        // ========================================
-        // CONFIGURATION PAR DÉFAUT
-        // ========================================
+        // Charger le CSS automatiquement
+        this.loadCSS();
+        
+        // 🔴 ICI LA CONFIG COMPLÈTE !
         this.config = {
             // Apparence
             title: config.title || 'Application',
             subtitle: config.subtitle || '',
             icon: config.icon || '',
-            theme: config.theme || 'gradient', // gradient, solid, glass
+            theme: config.theme || 'gradient',
+            customClass: config.customClass || '',
+            height: config.height || '70px',
             
             // Navigation
             showBack: config.showBack !== false,
-            backUrl: config.backUrl || '/home',
+            backUrl: config.backUrl || '/modules/home/home.html',
             backText: config.backText || '',
             onBack: config.onBack || null,
             
@@ -32,31 +40,53 @@ export class HeaderWidget {
             
             // Container
             container: config.container || 'body',
-            position: config.position || 'prepend', // prepend, append, replace
+            position: config.position || 'prepend',
+            sticky: config.sticky !== false,
             
             // Callbacks
-            onLogout: config.onLogout || this.defaultLogout,
+            onLogout: config.onLogout || this.defaultLogout.bind(this),
             onUserClick: config.onUserClick || null,
             
             // Auto-features
             autoAuth: config.autoAuth !== false,
-            autoRefresh: config.autoRefresh !== false,
-            refreshInterval: config.refreshInterval || 60000, // 1 minute
-            
-            // Style personnalisé
-            customClass: config.customClass || '',
-            height: config.height || '70px',
-            sticky: config.sticky !== false
+            autoRefresh: config.autoRefresh || false,
+            refreshInterval: config.refreshInterval || 60000
         };
         
-        // État interne
+        // État
         this.userData = null;
         this.element = null;
         this.refreshTimer = null;
         
-        // Initialisation
+        // Initialiser
         this.init();
     }
+    
+    // Charge le CSS automatiquement
+    loadCSS() {
+            // Charger buttons.css EN PREMIER
+            const buttonsId = 'buttons-css';
+            if (!document.getElementById(buttonsId)) {
+                const buttonsLink = document.createElement('link');
+                buttonsLink.id = buttonsId;
+                buttonsLink.rel = 'stylesheet';
+                buttonsLink.href = '/src/css/components/buttons.css';
+                document.head.appendChild(buttonsLink);
+            }
+            
+            // Puis charger le CSS du widget
+            const cssId = 'header-widget-css';
+            const existing = document.getElementById(cssId);
+            if (existing) existing.remove();
+            
+            const link = document.createElement('link');
+            link.id = cssId;
+            link.rel = 'stylesheet';
+            link.href = `/widgets/header/header.widget.css?v=${Date.now()}`;
+            document.head.appendChild(link);
+            
+            console.log('✅ CSS chargés : buttons.css + header.widget.css');
+        }
     
     // ========================================
     // INITIALISATION
@@ -167,12 +197,15 @@ export class HeaderWidget {
                         ${this.createLeftSection()}
                     </div>
                     
-                    <!-- Partie centrale (optionnelle) -->
-                    ${this.config.subtitle ? `
-                        <div class="header-center">
-                            <span class="header-subtitle">${this.config.subtitle}</span>
+                    <div class="header-center">
+                        <div class="header-title-group">
+                            <div class="header-title-line">
+                                ${this.config.icon ? `<span class="header-icon">${this.config.icon}</span>` : ''}
+                                <h1 class="header-title">${this.config.title}</h1>
+                            </div>
+                            ${this.config.subtitle ? `<div class="header-subtitle">${this.config.subtitle}</div>` : ''}
                         </div>
-                    ` : ''}
+                    </div>
                     
                     <!-- Partie droite -->
                     <div class="header-right">
@@ -193,30 +226,19 @@ export class HeaderWidget {
         this.element = temp.firstElementChild;
     }
     
-    createLeftSection() {
-        let html = '';
-        
-        // Bouton retour
-        if (this.config.showBack) {
-            const backIcon = this.config.backText ? '' : '←';
-            html += `
-                <button class="header-back-btn" title="Retour">
-                    ${backIcon}
-                    ${this.config.backText ? `<span>${this.config.backText}</span>` : ''}
-                </button>
-            `;
+        createLeftSection() {
+            let html = '';
+            
+            if (this.config.showBack) {
+                html += `
+                    <button class="btn btn-ghost-colored btn-ghost-light btn-pill btn-sm">
+                        <<
+                    </button>
+                `;
+            }
+            
+            return html;
         }
-        
-        // Titre avec icône
-        html += `
-            <div class="header-title-group">
-                ${this.config.icon ? `<span class="header-icon">${this.config.icon}</span>` : ''}
-                <h1 class="header-title">${this.config.title}</h1>
-            </div>
-        `;
-        
-        return html;
-    }
     
     createRightSection() {
         if (!this.config.showUser && !this.config.showLogout) {
@@ -249,19 +271,15 @@ export class HeaderWidget {
         // Bouton déconnexion
         if (this.config.showLogout) {
             html += `
-                <button class="header-logout-btn" title="Déconnexion">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                        <polyline points="16 17 21 12 16 7"></polyline>
-                        <line x1="21" y1="12" x2="9" y2="12"></line>
-                    </svg>
+                <button class="btn btn-ghost-colored btn-ghost-danger btn-pill btn-sm">
+                    Déconnexion
                 </button>
             `;
         }
-        
-        html += '</div>';
-        return html;
-    }
+            
+            html += '</div>';
+            return html;
+        }
     
     // ========================================
     // INJECTION DANS LE DOM
@@ -302,7 +320,7 @@ export class HeaderWidget {
     
     attachEvents() {
         // Bouton retour
-        const backBtn = this.element.querySelector('.header-back-btn');
+        const backBtn = this.element.querySelector('.header-left .btn');
         if (backBtn) {
             backBtn.addEventListener('click', () => {
                 if (this.config.onBack) {
@@ -322,7 +340,7 @@ export class HeaderWidget {
         }
         
         // Bouton déconnexion
-        const logoutBtn = this.element.querySelector('.header-logout-btn');
+        const logoutBtn = this.element.querySelector('.header-right .btn-danger');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
                 this.config.onLogout();
