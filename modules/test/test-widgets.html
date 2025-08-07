@@ -3,339 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test - Widgets</title>
+    <title>Test - Décomptes Mutuelles</title>
     <link rel="stylesheet" href="../../src/css/main.css">
+    
+    <!-- PDF.js pour conversion PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        // Configuration PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+    
+    <!-- CSS page -->
+    <style>
+        .page-loading {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .page-loading.hidden { display: none; }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px; height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .error-message, .success-message {
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .error-message { color: #dc2626; background: #fee2e2; }
+        .success-message { color: #059669; background: #d1fae5; }
+    </style>
 </head>
 <body>
-    <!-- Container pour les stats -->
+    <!-- Loader -->
+    <div class="page-loading" id="pageLoader">
+        <div class="loader"></div>
+    </div>
+    
+    <!-- Messages -->
+    <div id="messagesContainer" style="position: fixed; top: 10px; right: 10px; z-index: 1000; max-width: 400px;"></div>
+    
+    <!-- Container pour progress bar PDF (optionnel) -->
+    <div id="pdf-conversion-progress" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10000;"></div>
+    
+    <!-- Containers pour widgets -->
     <div class="stats-container" style="margin: 100px 20px 20px 20px;"></div>
-    
-    <!-- Container pour les filtres -->
     <div class="filters-container" style="margin: 20px;"></div>
-    
-    <!-- Container pour la table -->
     <div class="table-container" style="margin: 20px;"></div>
     
     <script type="module">
-        import { HeaderWidget } from '../../widgets/header/header.widget.js';
-        import { StatsCardsWidget } from '../../widgets/stats-cards/stats-cards.widget.js';
-        import { SearchFiltersWidget } from '../../widgets/search-filters/search-filters.widget.js';
-        import { DataGridWidget } from '../../widgets/data-grid/data-grid.widget.js';
-        import { PdfUploaderWidget } from '../../widgets/pdf-uploader/pdf-uploader.widget.js';
-
-        // Au début, ajoute l'import du DetailViewerWidget
-        import { DetailViewerWidget } from '../../widgets/detail-viewer/detail-viewer.widget.js';
-
+        // Import de l'orchestrateur qui gère TOUT
+        import orchestrator from './decompte-mutuelle.orchestrator.js';
         
-        // Header avec titre
-        const header = new HeaderWidget({
-            title: 'Gestion des Commandes',
-            icon: '📦',
-            subtitle: "Commandes d'appareils et accessoires",
-            showBack: true,
-            showUser: true,
-            showLogout: true
+        // Lancement de l'application
+        window.addEventListener('load', async () => {
+            console.log('🎯 Initialisation de l\'application...');
+            await orchestrator.init();
         });
         
-        // Stats cards AVEC le wrapper intégré
-        const stats = new StatsCardsWidget({
-            container: '.stats-container',
-            showWrapper: true,
-            wrapperStyle: 'card',
-            wrapperTitle: '',
-            size: 'md',
-            selectionMode: 'multiple',
-            animated: true,
-            cards: [
-                { id: 'nouvelle', label: 'Nouvelle', icon: '📋', value: 6, color: 'info' },
-                { id: 'preparation', label: 'En préparation', icon: '🔧', value: 1, color: 'warning' },
-                { id: 'preparee', label: 'Préparée', icon: '📦', value: 5, color: 'danger' },
-                { id: 'expediee', label: 'Expédiée', icon: '🚚', value: 9, color: 'primary' },
-                { id: 'receptionnee', label: 'Réceptionnée', icon: '📬', value: 4, color: 'info' },
-                { id: 'livree', label: 'Livrée', icon: '✅', value: 11, color: 'success' }
-            ],
-            onSelect: (selectedIds) => {
-                console.log('Cartes sélectionnées:', selectedIds);
-            }
-        });
-        
-        // Filtres de recherche AVEC le wrapper intégré
-        const filters = new SearchFiltersWidget({
-            container: '.filters-container',
-            showWrapper: true,
-            wrapperStyle: 'card',
-            wrapperTitle: 'Filtres',
-            filters: [
-                { 
-                    type: 'search', 
-                    key: 'search', 
-                    placeholder: 'Rechercher une commande...' 
-                },
-                { 
-                    type: 'select', 
-                    key: 'status', 
-                    label: 'Statut',
-                    options: [
-                        { value: 'nouvelle', label: 'Nouvelle', icon: '📋' },
-                        { value: 'preparation', label: 'En préparation', icon: '🔧' },
-                        { value: 'preparee', label: 'Préparée', icon: '📦' },
-                        { value: 'expediee', label: 'Expédiée', icon: '🚚' },
-                        { value: 'livree', label: 'Livrée', icon: '✅' }
-                    ],
-                    searchable: true
-                },
-                { 
-                    type: 'select', 
-                    key: 'magasin', 
-                    label: 'Magasin',
-                    options: [
-                        { value: 'paris', label: 'Paris', icon: '🏪' },
-                        { value: 'lyon', label: 'Lyon', icon: '🏬' },
-                        { value: 'marseille', label: 'Marseille', icon: '🏢' }
-                    ],
-                    searchable: true,
-                    multiple: true
-                },
-                { 
-                    type: 'date', 
-                    key: 'date', 
-                    label: 'Date commande' 
-                }
-            ],
-            onFilter: (values) => {
-                console.log('Filtres appliqués:', values);
-            }
-        });
-        
-        // DataGrid AVEC données de test
-        const grid = new DataGridWidget({
-            container: '.table-container',
-            showWrapper: true,
-            wrapperStyle: 'card',
-            wrapperTitle: '',  // Pas de titre
-            columns: [
-                { key: 'date', label: 'Date', sortable: true, width: 100 },
-                { key: 'magasin', label: 'Magasin', sortable: true, width: 100 },
-                { key: 'client', label: 'Client', sortable: true, width: 200 },
-                { key: 'type', label: 'Type de préparation', sortable: true, width: 180 },
-                { key: 'urgence', label: 'Urgence', sortable: true, width: 120 },
-                { 
-                    key: 'statut', 
-                    label: 'Statut', 
-                    sortable: true,
-                    width: 120,
-                    formatter: (v) => {
-                        const badges = {
-                            'Nouvelle': 'badge-info',
-                            'Préparée': 'badge-warning',
-                            'Expédiée': 'badge-primary',
-                            'Livrée': 'badge-success',
-                            'Annulée': 'badge-danger'
-                        };
-                        return `<span class="badge ${badges[v] || 'badge-secondary'}">${v}</span>`;
-                    }
-                },
-                { 
-                    type: 'actions',
-                    label: 'Actions',
-                    width: 60,
-                    actions: [
-                        { 
-                            type: 'view',
-                            title: 'Voir les détails',
-                            onClick: (row, index) => {
-                                // Ouvrir le modal DetailViewer avec les données de la ligne
-                                new DetailViewerWidget({
-                                    title: `Commande du ${row.date}`,
-                                    subtitle: `${row.client} - ${row.magasin}`,
-                                    data: row,
-                                    
-                                    // Timeline optionnelle pour montrer le statut
-                                    timeline: {
-                                        enabled: true,
-                                        orientation: 'horizontal',
-                                        items: [
-                                            { 
-                                                label: 'Nouvelle', 
-                                                status: row.statut === 'Nouvelle' ? 'active' : 'completed',
-                                                icon: '📋'
-                                            },
-                                            { 
-                                                label: 'Préparée', 
-                                                status: row.statut === 'Préparée' ? 'active' : 
-                                                        row.statut === 'Nouvelle' ? 'pending' : 'completed',
-                                                icon: '📦'
-                                            },
-                                            { 
-                                                label: 'Expédiée', 
-                                                status: row.statut === 'Expédiée' ? 'active' : 
-                                                        ['Nouvelle', 'Préparée'].includes(row.statut) ? 'pending' : 'completed',
-                                                icon: '🚚'
-                                            },
-                                            { 
-                                                label: 'Livrée', 
-                                                status: row.statut === 'Livrée' ? 'completed' : 
-                                                        row.statut === 'Annulée' ? 'error' : 'pending',
-                                                icon: row.statut === 'Annulée' ? '❌' : '✅'
-                                            }
-                                        ],
-                                        theme: 'colorful',
-                                        size: 'small'
-                                    },
-                                    
-                                    // Sections avec les détails
-                                    sections: [
-                                        {
-                                            id: 'client',
-                                            title: '👤 Informations Client',
-                                            fields: [
-                                                { label: 'Client', key: 'client', bold: true },
-                                                { label: 'Magasin', key: 'magasin' },
-                                                { label: 'Date commande', key: 'date' }
-                                            ]
-                                        },
-                                        {
-                                            id: 'commande',
-                                            title: '📦 Détails Commande',
-                                            fields: [
-                                                { label: 'Type', key: 'type' },
-                                                { label: 'Urgence', key: 'urgence' },
-                                                { 
-                                                    label: 'Statut', 
-                                                    key: 'statut',
-                                                    formatter: (value) => {
-                                                        const badges = {
-                                                            'Nouvelle': 'badge-info',
-                                                            'Préparée': 'badge-warning',
-                                                            'Expédiée': 'badge-primary',
-                                                            'Livrée': 'badge-success',
-                                                            'Annulée': 'badge-danger'
-                                                        };
-                                                        return `<span class="badge ${badges[value] || 'badge-secondary'}">${value}</span>`;
-                                                    },
-                                                    html: true
-                                                }
-                                            ]
-                                        }
-                                    ],
-                                    
-                                    // Actions du modal
-                                    actions: [
-                                        {
-                                            label: 'Suivant',
-                                            class: 'btn btn-glass-blue btn-lg',
-                                            icon: '→',
-                                            onClick: (data) => {
-                                                console.log('Suivant:', data);
-                                                // Votre logique ici
-                                                // Par exemple : passer à la commande suivante
-                                            },
-                                            closeOnClick: true  // Ferme après le clic
-                                        }
-                                    ],
-                                    
-                                    // Options
-                                    size: 'large',
-                                    theme: 'default',
-                                    destroyOnClose: true
-                                });
-                            }
-                        }
-                    ]
-                }
-            ],
-            data: [
-                { date: '05/08/2025', magasin: '9AVA', client: 'FATIMA ABDI ESSABER', type: '📦 Livraison première paire', urgence: '🕐 Normal (3-5 jours)', statut: 'Préparée' },
-                { date: '05/08/2025', magasin: '9AVA', client: 'FATIMA ABDI ESSABER', type: '📦 Livraison première paire', urgence: '⚡ Urgent (48h)', statut: 'Livrée' },
-                { date: '03/08/2025', magasin: '9AVA', client: 'MARIA FELICIANA ACACIO', type: '📦 Livraison deuxième paire', urgence: '🕐 Normal (3-5 jours)', statut: 'Livrée' },
-                { date: '03/08/2025', magasin: '9BEA', client: 'MARTINE AUREAU', type: '🔧 Livraison accessoire', urgence: '🕐 Normal (3-5 jours)', statut: 'Nouvelle' },
-                { date: '03/08/2025', magasin: '9CHE', client: 'GASTON ALHELY', type: '📦 Livraison première paire', urgence: '🕐 Normal (3-5 jours)', statut: 'Nouvelle' },
-                { date: '03/08/2025', magasin: '9BOM', client: 'FATIMA ABDI ESSABER', type: '📦 Livraison première paire', urgence: '🕐 Normal (3-5 jours)', statut: 'Nouvelle' },
-                { date: '01/08/2025', magasin: '9BEA', client: 'AHMED ARAB', type: '📦 Livraison première paire', urgence: '🕐 Normal (3-5 jours)', statut: 'Annulée' },
-                { date: '31/07/2025', magasin: '9BEA', client: 'ALAIN AFFLELOU ACOUSTICIEN', type: '📦 Livraison deuxième paire', urgence: '🕐 Normal (3-5 jours)', statut: 'Livrée' },
-                { date: '31/07/2025', magasin: '9AVA', client: 'MARGUERITE ACQUART', type: '📦 Livraison deuxième paire', urgence: '🕐 Normal (3-5 jours)', statut: 'Expédiée' }
-            ],
-            features: {
-                sort: true,
-                export: true,
-                selection: false,  // Pas de checkboxes comme dans l'image
-                pagination: true,
-                resize: false      // Pas de resize dans l'image
-            },
-            pagination: {
-                itemsPerPage: 10,   // Nombre par défaut
-                pageSizeOptions: [10, 20, 50, 100],  // Options disponibles
-                showPageInfo: true  // Afficher l'info
-            },
-            onRowClick: (row) => {
-                console.log('Ligne cliquée:', row);
-            }
-        });
-
-        setTimeout(() => {
-            const actionsZone = document.querySelector('.data-grid-export-buttons');
-            if (actionsZone) {
-                // Créer les boutons
-                const buttons = [
-                    { 
-                        text: '➕ Nouveau document', 
-                        class: 'btn-ghost-success', 
-                        action: () => {
-                            new PdfUploaderWidget({
-                                title: 'Nouveau Document',
-                                theme: 'purple',
-                                mode: 'simple',
-                                description: {
-                                    icon: '📄',
-                                    title: 'Upload de documents',
-                                    text: 'Déposez vos fichiers PDF ou images. Notre système les analysera automatiquement.'
-                                },
-                                saveButtonText: '💾 Enregistrer',
-                                onSave: async (data) => {
-                                    console.log('📁 Fichiers à traiter:', data.files);
-                                    
-                                    // Simuler un traitement
-                                    await new Promise(resolve => setTimeout(resolve, 1000));
-                                    
-                                    // Afficher un message de succès (optionnel)
-                                    alert(`✅ ${data.files.length} document(s) enregistré(s) !`);
-                                    
-                                    // Rafraîchir la grid (optionnel)
-                                    // grid.refresh();
-                                    
-                                    return true;
-                                },
-                                onClose: () => {
-                                    console.log('Modal fermé');
-                                }
-                            });
-                        }
-                    },
-                    { text: '📄 Export CSV', class: 'btn-ghost-info', action: () => grid.export('csv') },
-                    { text: '📊 Export Excel', class: 'btn-ghost-purple', action: () => grid.export('excel') }
-                ];
-                
-                buttons.forEach(btn => {
-                    const button = document.createElement('button');
-                    button.className = `btn btn-ghost-colored ${btn.class} btn-sm`;
-                    button.innerHTML = btn.text;
-                    button.onclick = btn.action;
-                    actionsZone.appendChild(button);
-                });
-            }
-        }, 100);
-        
-        // Test de mise à jour des stats après 3 secondes
-        setTimeout(() => {
-            stats.updateAll({
-                nouvelle: 10,
-                preparation: 3,
-                preparee: 7,
-                expediee: 12,
-                receptionnee: 6,
-                livree: 15
-            });
-        }, 3000);
+        // Export pour debug uniquement
+        window.orchestrator = orchestrator;
     </script>
 </body>
 </html>

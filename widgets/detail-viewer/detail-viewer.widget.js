@@ -327,8 +327,11 @@ export class DetailViewerWidget {
                     ${showLabels && item.label ? `
                         <div class="timeline-label">${this.escapeHtml(item.label)}</div>
                     ` : ''}
-                    ${showDates ? `
-                        <div class="timeline-date">${item.date || '\u00A0'}</div>
+                    ${showDates && item.date ? `
+                        <div class="timeline-date">${item.date}</div>
+                    ` : ''}
+                    ${item.description ? `
+                        <div class="timeline-description">${this.escapeHtml(item.description)}</div>
                     ` : ''}
                 </div>
             </div>

@@ -178,104 +178,97 @@ export class HeaderWidget {
         }
     }
     
-    // ========================================
-    // CRÉATION DU HTML
-    // ========================================
-    
-    createElement() {
-        const html = `
-            <header class="header-widget ${this.config.theme} ${this.config.customClass} ${this.config.sticky ? 'sticky' : ''}"
-                    style="--header-height: ${this.config.height};">
-                
-                <!-- Fond animé pour theme gradient -->
-                ${this.config.theme === 'gradient' ? '<div class="header-gradient-bg"></div>' : ''}
-                
-                <!-- Contenu principal -->
-                <div class="header-content">
-                    <!-- Partie gauche -->
-                    <div class="header-left">
-                        ${this.createLeftSection()}
-                    </div>
+        // ========================================
+        // CRÉATION DU HTML
+        // ========================================
+
+        createElement() {
+            const html = `
+                <header class="header-widget ${this.config.theme} ${this.config.customClass} ${this.config.sticky ? 'sticky' : ''}"
+                        style="--header-height: ${this.config.height};">
                     
-                    <div class="header-center">
-                        <div class="header-title-group">
-                            <div class="header-title-line">
-                                ${this.config.icon ? `<span class="header-icon">${this.config.icon}</span>` : ''}
-                                <h1 class="header-title">${this.config.title}</h1>
+                    <!-- Fond animé pour theme gradient -->
+                    ${this.config.theme === 'gradient' ? '<div class="header-gradient-bg"></div>' : ''}
+                    
+                    <!-- Contenu principal -->
+                    <div class="header-content">
+                        <!-- Partie gauche -->
+                        <div class="header-left">
+                            ${this.createLeftSection()}
+                        </div>
+                        
+                        <div class="header-center">
+                            <div class="header-title-group">
+                                <div class="header-title-line">
+                                    ${this.config.icon ? `<span class="header-icon">${this.config.icon}</span>` : ''}
+                                    <h1 class="header-title">${this.config.title}</h1>
+                                </div>
+                                ${this.config.subtitle ? `<div class="header-subtitle">${this.config.subtitle}</div>` : ''}
                             </div>
-                            ${this.config.subtitle ? `<div class="header-subtitle">${this.config.subtitle}</div>` : ''}
+                        </div>
+                        
+                        <!-- Partie droite -->
+                        <div class="header-right">
+                            ${this.createRightSection()}
                         </div>
                     </div>
                     
-                    <!-- Partie droite -->
-                    <div class="header-right">
-                        ${this.createRightSection()}
+                    <!-- Barre de progression (optionnelle) -->
+                    <div class="header-progress" style="display: none;">
+                        <div class="header-progress-bar"></div>
                     </div>
-                </div>
-                
-                <!-- Barre de progression (optionnelle) -->
-                <div class="header-progress" style="display: none;">
-                    <div class="header-progress-bar"></div>
-                </div>
-            </header>
-        `;
-        
-        // Créer l'élément
-        const temp = document.createElement('div');
-        temp.innerHTML = html;
-        this.element = temp.firstElementChild;
-    }
-    
+                </header>
+            `;
+            
+            // Créer l'élément
+            const temp = document.createElement('div');
+            temp.innerHTML = html;
+            this.element = temp.firstElementChild;
+        }
+
         createLeftSection() {
             let html = '';
             
             if (this.config.showBack) {
-                html += `
-                    <button class="btn btn-ghost-colored btn-ghost-light btn-pill btn-sm">
-                        <<
-                    </button>
-                `;
+                // CONTAINER VIDE pour que l'orchestrateur y mette le bouton
+                html += `<div class="header-back-container" id="header-back-${this.id}"></div>`;
             }
             
             return html;
         }
-    
-    createRightSection() {
-        if (!this.config.showUser && !this.config.showLogout) {
-            return '';
-        }
-        
-        let html = '<div class="header-user-section">';
-        
-        // Info utilisateur
-        if (this.config.showUser && this.userData) {
-            html += `
-                <div class="header-user-info ${this.config.onUserClick ? 'clickable' : ''}">
-                    ${this.userData.avatar ? `
-                        <img class="header-avatar" src="${this.userData.avatar}" alt="${this.userData.nomComplet}">
-                    ` : `
-                        <div class="header-avatar-placeholder">
-                            ${this.userData.prenom?.[0] || 'U'}${this.userData.nom?.[0] || ''}
+
+        createRightSection() {
+            if (!this.config.showUser && !this.config.showLogout) {
+                return '';
+            }
+            
+            let html = '<div class="header-user-section">';
+            
+            // Info utilisateur
+            if (this.config.showUser && this.userData) {
+                html += `
+                    <div class="header-user-info ${this.config.onUserClick ? 'clickable' : ''}">
+                        ${this.userData.avatar ? `
+                            <img class="header-avatar" src="${this.userData.avatar}" alt="${this.userData.nomComplet}">
+                        ` : `
+                            <div class="header-avatar-placeholder">
+                                ${this.userData.prenom?.[0] || 'U'}${this.userData.nom?.[0] || ''}
+                            </div>
+                        `}
+                        <div class="header-user-details">
+                            <span class="header-user-name">${this.userData.nomComplet}</span>
+                            ${this.config.showMagasin ? `
+                                <span class="header-user-magasin">${this.userData.magasin}</span>
+                            ` : ''}
                         </div>
-                    `}
-                    <div class="header-user-details">
-                        <span class="header-user-name">${this.userData.nomComplet}</span>
-                        ${this.config.showMagasin ? `
-                            <span class="header-user-magasin">${this.userData.magasin}</span>
-                        ` : ''}
                     </div>
-                </div>
-            `;
-        }
-        
-        // Bouton déconnexion
-        if (this.config.showLogout) {
-            html += `
-                <button class="btn btn-ghost-colored btn-ghost-danger btn-pill btn-sm">
-                    Déconnexion
-                </button>
-            `;
-        }
+                `;
+            }
+            
+            // Bouton déconnexion - CONTAINER VIDE
+            if (this.config.showLogout) {
+                html += `<div class="header-logout-container" id="header-logout-${this.id}"></div>`;
+            }
             
             html += '</div>';
             return html;

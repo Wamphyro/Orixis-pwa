@@ -123,217 +123,314 @@
 }
 
 .btn:focus-visible {
-    outline: 3px solid rgba(102, 126, 234, 0.5);
-    outline-offset: 2px;
+    outline: none;  /* Pas de cerclage */
 }
 
 /* ========================================
-   SECTION 3 : VARIANTES DE COULEUR
-   Different styles de boutons
+   SECTION 3 : SYSTÈME GLASSMORPHISME FOND CLAIR
+   Style unique avec déclinaisons de couleurs
    ======================================== */
 
-/* ----------------
-   Primary (gradient violet)
-   ---------------- */
-.btn-primary {
-    --btn-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --btn-color: white;
-    --btn-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-    --btn-shadow-hover: 0 6px 20px rgba(102, 126, 234, 0.4);
-}
-
-/* ----------------
-   Danger (rouge)
-   ---------------- */
-.btn-danger {
-    --btn-bg: linear-gradient(135deg, #ff512f 0%, #dd2476 100%);
-    --btn-color: white;
-    --btn-shadow: 0 4px 15px rgba(221, 36, 118, 0.3);
-    --btn-shadow-hover: 0 6px 20px rgba(221, 36, 118, 0.4);
-}
-
-/* ----------------
-   Success (vert)
-   ---------------- */
-.btn-success {
-    --btn-bg: linear-gradient(135deg, #00d954 0%, #00b349 100%);
-    --btn-color: white;
-    --btn-shadow: 0 4px 15px rgba(0, 217, 84, 0.3);
-}
-
-/* ----------------
-   Info (bleu)
-   ---------------- */
-.btn-info {
-    --btn-bg: linear-gradient(135deg, #54a0ff 0%, #0984e3 100%);
-    --btn-color: white;
-    --btn-shadow: 0 4px 15px rgba(84, 160, 255, 0.3);
-}
-
-/* ----------------
-   Warning (orange)
-   ---------------- */
-.btn-warning {
-    --btn-bg: linear-gradient(135deg, #ffa502 0%, #ff7606 100%);
-    --btn-color: white;
-    --btn-shadow: 0 4px 15px rgba(255, 165, 2, 0.3);
-}
-
-/* ----------------
-   Ghost (transparent)
-   ---------------- */
-.btn-ghost {
-    --btn-bg: transparent;
-    --btn-color: #667eea;
-    --btn-border: 2px solid currentColor;
-    --btn-shadow: none;
-}
-
-.btn-ghost:hover:not(:disabled) {
-    --btn-bg: rgba(102, 126, 234, 0.1);
-}
-
-/* ========================================
-   GHOST VARIANTS (Transparents colorés)
-   Tous identiques, seule la couleur change
-   ======================================== */
-
-/* Base commune pour tous les ghost colorés */
-.btn-ghost-colored {
-    --btn-opacity: 0.15;
-    --btn-opacity-hover: 0.25;
-    --btn-bg: rgba(var(--btn-rgb), var(--btn-opacity));
-    --btn-color: white;
-    --btn-border: 1px solid rgba(var(--btn-rgb), 0.3);
-    --btn-shadow: none;
-}
-
-.btn-ghost-colored:hover:not(:disabled) {
-    --btn-bg: rgba(var(--btn-rgb), var(--btn-opacity-hover));
-    --btn-border: 1px solid rgba(var(--btn-rgb), 0.5);
-}
-
-/* Variantes de couleur */
-.btn-ghost-danger {
-    --btn-rgb: 255, 71, 87;  /* Rouge */
-}
-
-.btn-ghost-success {
-    --btn-rgb: 0, 217, 84;   /* Vert */
-}
-
-.btn-ghost-warning {
-    --btn-rgb: 255, 165, 2;   /* Orange */
-}
-
-.btn-ghost-info {
-    --btn-rgb: 84, 160, 255;  /* Bleu */
-}
-
-.btn-ghost-purple {
-    --btn-rgb: 102, 126, 234; /* Violet */
-}
-
-.btn-ghost-pink {
-    --btn-rgb: 255, 107, 107; /* Rose */
-}
-
-.btn-ghost-cyan {
-    --btn-rgb: 0, 210, 255;   /* Cyan */
-}
-
-.btn-ghost-yellow {
-    --btn-rgb: 255, 234, 0;   /* Jaune */
-}
-
-.btn-ghost-light {
-    --btn-rgb: 255, 255, 255; /* Blanc */
-}
-
-.btn-ghost-dark {
-    --btn-rgb: 0, 0, 0;       /* Noir */
-}
-
-/* ----------------
-   Secondary (gris)
-   ---------------- */
-.btn-secondary {
-    --btn-bg: #f0f0f0;
-    --btn-color: #666;
-    --btn-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-/* ----------------
-   Glassmorphisme (effet verre dépoli)
-   ---------------- */
-.btn-glass {
-    --btn-bg: rgba(255, 255, 255, 0.1);
-    --btn-color: #2c3e50;  /* Gris foncé */
-    --btn-border: 1px solid rgba(255, 255, 255, 0.2);
-    --btn-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
-    --btn-shadow-hover: 0 8px 32px rgba(31, 38, 135, 0.25);
-    
+/* Base glassmorphisme (appliqué à tous) */
+.btn {
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    background: linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.1),
-        rgba(255, 255, 255, 0.05)
-    );
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    border: none;
 }
 
-.btn-glass:hover:not(:disabled) {
-    background: linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.2),
-        rgba(255, 255, 255, 0.1)
-    );
+/* ----------------
+   Glass Neutre (défaut)
+   ---------------- */
+.btn-glass,
+.btn-glass-white {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    color: #2c3e50;
+}
+
+/* ----------------
+   Glass Bleu
+   ---------------- */
+.btn-glass-blue {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));
+    color: #1e3a8a;
+}
+
+/* ----------------
+   Glass Violet
+   ---------------- */
+.btn-glass-purple {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));
+    color: #5b21b6;
+}
+
+/* ----------------
+   Glass Vert
+   ---------------- */
+.btn-glass-green {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+    color: #064e3b;
+}
+
+/* ----------------
+   Glass Rouge
+   ---------------- */
+.btn-glass-red {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
+    color: #7f1d1d;
+}
+
+/* ----------------
+   Glass Orange
+   ---------------- */
+.btn-glass-orange {
+    background: linear-gradient(135deg, rgba(251, 146, 60, 0.15), rgba(251, 146, 60, 0.05));
+    color: #7c2d12;
+}
+
+/* ----------------
+   Glass Rose
+   ---------------- */
+.btn-glass-pink {
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(236, 72, 153, 0.05));
+    color: #831843;
+}
+
+/* ----------------
+   Glass Cyan
+   ---------------- */
+.btn-glass-cyan {
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(6, 182, 212, 0.05));
+    color: #164e63;
+}
+
+/* ----------------
+   Glass Jaune
+   ---------------- */
+.btn-glass-yellow {
+    background: linear-gradient(135deg, rgba(250, 204, 21, 0.15), rgba(250, 204, 21, 0.05));
+    color: #713f12;
+}
+
+/* ----------------
+   Glass Sombre
+   ---------------- */
+.btn-glass-dark {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.1));
+    color: #ffffff;
+}
+
+/* États hover universels pour glass */
+.btn[class*="btn-glass"]:hover:not(:disabled) {
+    transform: translateY(-2px);
+    filter: brightness(1.2);
+}
+
+.btn[class*="btn-glass"]:active:not(:disabled) {
+    transform: translateY(0);
+    filter: brightness(0.95);
+}
+
+/* ========================================
+   SECTION 4 : GLASSMORPHISME FOND SOMBRE
+   Versions plus vives pour contraste sur fond foncé
+   ======================================== */
+
+/* ----------------
+   Glass Dark Bleu
+   ---------------- */
+.btn-glass-dark-blue {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(59, 130, 246, 0.2));
+    color: #93c5fd;
+    border: 1px solid rgba(59, 130, 246, 0.4);
+}
+
+.btn-glass-solid-blue {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(59, 130, 246, 0.6));
+    color: #ffffff;
+    border: 1px solid rgba(59, 130, 246, 0.9);
+    backdrop-filter: blur(4px);
+}
+
+/* ----------------
+   Glass Dark Violet
+   ---------------- */
+.btn-glass-dark-purple {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(139, 92, 246, 0.2));
+    color: #c4b5fd;
+    border: 1px solid rgba(139, 92, 246, 0.4);
+}
+
+.btn-glass-solid-purple {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.8), rgba(139, 92, 246, 0.6));
+    color: #ffffff;
+    border: 1px solid rgba(139, 92, 246, 0.9);
+    backdrop-filter: blur(4px);
+}
+
+/* ----------------
+   Glass Dark Vert
+   ---------------- */
+.btn-glass-dark-green {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(16, 185, 129, 0.2));
+    color: #86efac;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.btn-glass-solid-green {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.8), rgba(16, 185, 129, 0.6));
+    color: #ffffff;
+    border: 1px solid rgba(16, 185, 129, 0.9);
+    backdrop-filter: blur(4px);
+}
+
+/* ----------------
+   Glass Dark Rouge
+   ---------------- */
+.btn-glass-dark-red {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(239, 68, 68, 0.2));
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.btn-glass-solid-red {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.8), rgba(239, 68, 68, 0.6));
+    color: #ffffff;
+    border: 1px solid rgba(239, 68, 68, 0.9);
+    backdrop-filter: blur(4px);
+}
+
+/* ----------------
+   Glass Dark Orange
+   ---------------- */
+.btn-glass-dark-orange {
+    background: linear-gradient(135deg, rgba(251, 146, 60, 0.3), rgba(251, 146, 60, 0.2));
+    color: #fed7aa;
+    border: 1px solid rgba(251, 146, 60, 0.4);
+}
+
+.btn-glass-solid-orange {
+    background: linear-gradient(135deg, rgba(251, 146, 60, 0.8), rgba(251, 146, 60, 0.6));
+    color: #ffffff;
+    border: 1px solid rgba(251, 146, 60, 0.9);
+    backdrop-filter: blur(4px);
+}
+
+/* ----------------
+   Glass Dark Rose
+   ---------------- */
+.btn-glass-dark-pink {
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.3), rgba(236, 72, 153, 0.2));
+    color: #fbcfe8;
+    border: 1px solid rgba(236, 72, 153, 0.4);
+}
+
+.btn-glass-solid-pink {
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.8), rgba(236, 72, 153, 0.6));
+    color: #ffffff;
+    border: 1px solid rgba(236, 72, 153, 0.9);
+    backdrop-filter: blur(4px);
+}
+
+/* ----------------
+   Glass Dark Cyan
+   ---------------- */
+.btn-glass-dark-cyan {
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.3), rgba(6, 182, 212, 0.2));
+    color: #a5f3fc;
+    border: 1px solid rgba(6, 182, 212, 0.4);
+}
+
+.btn-glass-solid-cyan {
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.8), rgba(6, 182, 212, 0.6));
+    color: #ffffff;
+    border: 1px solid rgba(6, 182, 212, 0.9);
+    backdrop-filter: blur(4px);
+}
+
+/* ----------------
+   Glass Ice (Bleu glacial)
+   ---------------- */
+.btn-glass-ice {
+    background: linear-gradient(135deg, rgba(179, 229, 252, 0.3), rgba(129, 212, 250, 0.2));
+    color: #0277bd;
+    border: 1px solid rgba(179, 229, 252, 0.5);
+    backdrop-filter: blur(10px);
+}
+
+.btn-glass-solid-ice {
+    background: linear-gradient(135deg, rgba(179, 229, 252, 0.8), rgba(129, 212, 250, 0.6));
+    color: #ffffff;
+    border: 1px solid rgba(179, 229, 252, 0.9);
+    backdrop-filter: blur(4px);
+}
+
+/* ----------------
+   Glass Frost Red (Rouge glacial)
+   ---------------- */
+.btn-glass-frost-red {
+    background: linear-gradient(135deg, rgba(255, 182, 193, 0.3), rgba(255, 105, 135, 0.2));
+    color: #c2185b;  /* Rouge framboise foncé */
+    border: 1px solid rgba(255, 182, 193, 0.5);
+    backdrop-filter: blur(10px);
+}
+
+.btn-glass-solid-frost-red {
+    background: linear-gradient(135deg, rgba(255, 182, 193, 0.8), rgba(255, 105, 135, 0.6));
+    color: #ffffff;
+    border: 1px solid rgba(255, 182, 193, 0.9);
+    backdrop-filter: blur(4px);
+}
+
+/* ----------------
+   Glass Dark Jaune
+   ---------------- */
+.btn-glass-dark-yellow {
+    background: linear-gradient(135deg, rgba(250, 204, 21, 0.3), rgba(250, 204, 21, 0.2));
+    color: #fef3c7;
+    border: 1px solid rgba(250, 204, 21, 0.4);
+}
+
+.btn-glass-solid-yellow {
+    background: linear-gradient(135deg, rgba(250, 204, 21, 0.8), rgba(250, 204, 21, 0.6));
+    color: #1f2937;  /* Texte foncé sur jaune */
+    border: 1px solid rgba(250, 204, 21, 0.9);
+    backdrop-filter: blur(4px);
+}
+
+/* ----------------
+   Glass Dark Blanc
+   ---------------- */
+.btn-glass-dark-white {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+    color: #ffffff;
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-/* Variante large pour "Suivant" */
-.btn-glass.btn-lg {
-    font-weight: 600;
-    letter-spacing: 0.5px;
+.btn-glass-solid-white {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.8));
+    color: #1f2937;  /* Texte foncé sur blanc */
+    border: 1px solid rgba(255, 255, 255, 1);
+    backdrop-filter: blur(4px);
 }
 
-/* ----------------
-   Glassmorphisme Bleu
-   ---------------- */
-.btn-glass-blue {
-    --btn-bg: rgba(59, 130, 246, 0.15);  /* Bleu transparent */
-    --btn-color: #1e3a8a;  /* Bleu foncé pour le texte */
-    --btn-border: none
-    --btn-shadow: 0 8px 32px rgba(59, 130, 246, 0.2);
-    --btn-shadow-hover: 0 8px 32px rgba(59, 130, 246, 0.35);
-    
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    background: linear-gradient(
-        135deg,
-        rgba(59, 130, 246, 0.15),
-        rgba(59, 130, 246, 0.05)
-    );
-}
-
-.btn-glass-blue:hover:not(:disabled) {
-    background: linear-gradient(
-        135deg,
-        rgba(59, 130, 246, 0.25),
-        rgba(59, 130, 246, 0.15)
-    );
-    border: 1px solid rgba(59, 130, 246, 0.5);
+/* États hover pour dark et solid */
+.btn[class*="btn-glass-dark"]:hover:not(:disabled),
+.btn[class*="btn-glass-solid"]:hover:not(:disabled) {
     transform: translateY(-2px);
+    filter: brightness(1.3);
+    /* PAS de changement de bordure */
 }
 
-/* Variante large */
-.btn-glass-blue.btn-lg {
-    font-weight: 600;
-    letter-spacing: 0.5px;
+.btn[class*="btn-glass-dark"]:active:not(:disabled),
+.btn[class*="btn-glass-solid"]:active:not(:disabled) {
+    transform: translateY(0);
+    filter: brightness(0.9);
 }
 
 /* ========================================
-   SECTION 4 : VARIANTES DE TAILLE
+   SECTION 5 : VARIANTES DE TAILLE
    Différentes tailles de boutons
    ======================================== */
 
@@ -382,7 +479,7 @@
 }
 
 /* ========================================
-   SECTION 5 : VARIANTES DE STYLE
+   SECTION 6 : VARIANTES DE STYLE
    Formes et styles spéciaux
    ======================================== */
 
@@ -435,7 +532,7 @@
 }
 
 /* ========================================
-   SECTION 6 : ÉTATS SPÉCIAUX
+   SECTION 7 : ÉTATS SPÉCIAUX
    Loading, success, error...
    ======================================== */
 
@@ -495,7 +592,7 @@
 }
 
 /* ========================================
-   SECTION 7 : GROUPES DE BOUTONS
+   SECTION 8 : GROUPES DE BOUTONS
    Boutons groupés ensemble
    ======================================== */
 
@@ -525,7 +622,7 @@
 }
 
 /* ========================================
-   SECTION 8 : BOUTONS SPÉCIAUX
+   SECTION 9 : BOUTONS SPÉCIAUX
    Boutons avec styles prédéfinis spécifiques
    ======================================== */
 
@@ -722,6 +819,68 @@
     gap: 4px;
     align-items: center;
     justify-content: center;
+}
+
+
+/* ----------------
+   Bouton Déconnexion Style User Section avec SVG
+   Icône SVG au-dessus, texte en dessous, même style que header-user-info
+   ---------------- */
+.btn-logout-user {
+    background: rgba(255, 255, 255, 0.15);  /* Exactement comme header-user-info */
+    color: #ff4757;  /* Rouge */
+    border: none;
+    border-radius: 25px;  /* Arrondi comme header-user-info */
+    padding: 8px 14px;
+    height: 46px;  /* Même hauteur que header-user-info */
+    min-height: 46px;
+    min-width: 70px;  /* Largeur minimum pour bien afficher */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    
+    /* Disposition verticale */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+}
+
+/* Icône SVG de sortie */
+.btn-logout-user::before {
+    content: '';
+    width: 18px;
+    height: 18px;
+    display: block;
+    /* Icône sortie/logout en SVG rouge */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff4757' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4'%3E%3C/path%3E%3Cpolyline points='16 17 21 12 16 7'%3E%3C/polyline%3E%3Cline x1='21' y1='12' x2='9' y2='12'%3E%3C/line%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* Texte */
+.btn-logout-user .text {
+    font-size: 10px;  /* Texte plus petit */
+    font-weight: 600;
+    line-height: 1;
+    display: block;
+    letter-spacing: 0.3px;
+}
+
+.btn-logout-user:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+}
+
+.btn-logout-user:hover:not(:disabled)::before {
+    /* Icône devient rouge plus vif au hover */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff3838' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4'%3E%3C/path%3E%3Cpolyline points='16 17 21 12 16 7'%3E%3C/polyline%3E%3Cline x1='21' y1='12' x2='9' y2='12'%3E%3C/line%3E%3C/svg%3E");
+}
+
+.btn-logout-user:active:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(0);
 }
 
 /* ========================================

@@ -181,17 +181,18 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Timeline horizontale */
+/* Timeline horizontale CORRIGÉE */
 .detail-timeline.timeline-horizontal {
     display: flex;
-    align-items: center;
+    align-items: flex-start;  /* ✅ Alignement en haut */
     justify-content: center;
     min-height: 140px;
+    padding: 30px 20px 20px;  /* ✅ Padding ajusté */
 }
 
 .detail-timeline.timeline-horizontal .timeline-connector {
     position: absolute;
-    top: 50%;
+    top: 58px;  /* ✅ Position fixe au centre de l'icône */
     left: 10%;
     right: 10%;
     height: 3px;
@@ -202,7 +203,7 @@
         #e2e8f0 90%,
         transparent 100%
     );
-    transform: translateY(-50%);
+    /* ❌ Supprimer transform: translateY(-50%); */
     z-index: 0;
 }
 
@@ -225,7 +226,7 @@
 .detail-timeline.timeline-horizontal .timeline-items {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;  /* ✅ Alignement en haut */
     width: 100%;
     position: relative;
     z-index: 1;
@@ -302,10 +303,15 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Contenu */
+/* Contenu avec hauteurs fixes */
 .timeline-content {
     text-align: center;
     max-width: 120px;
+    min-height: 70px;  /* ✅ Hauteur minimale fixe */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 2px;
 }
 
 .timeline-label {
@@ -314,6 +320,7 @@
     color: #475569;
     margin-bottom: 4px;
     line-height: 1.2;
+    min-height: 18px;  /* ✅ Hauteur minimale */
 }
 
 .timeline-date {
@@ -322,6 +329,27 @@
     line-height: 1.2;
     min-height: 14px;
     display: block;
+}
+
+.timeline-description {
+    font-size: 10px;
+    color: #cbd5e1;
+    line-height: 1.2;
+    font-style: italic;
+    margin-top: 2px;
+    opacity: 0.8;
+    min-height: 14px;  /* ✅ Hauteur minimale même si vide */
+}
+
+/* Description plus visible sur les items actifs */
+.timeline-item-active .timeline-description,
+.timeline-item-current .timeline-description {
+    color: #60a5fa;
+    opacity: 1;
+}
+
+.timeline-item-completed .timeline-description {
+    color: #6ee7b7;
 }
 
 /* États des items */

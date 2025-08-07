@@ -75,6 +75,8 @@ export class SearchFiltersWidget {
             autoSubmit: config.autoSubmit !== false,
             debounceDelay: config.debounceDelay || 300,
             resetButton: config.resetButton !== false,
+            resetButtonText: config.resetButtonText || '↺ Réinitialiser',
+            resetButtonClass: config.resetButtonClass || 'btn btn-ghost-purple',
             animated: config.animated !== false,
             
             // Classes boutons (pour personnalisation externe)
@@ -278,9 +280,16 @@ export class SearchFiltersWidget {
         if (this.config.resetButton && this.config.filters.length > 0) {
             const resetBtn = document.createElement('button');
             resetBtn.type = 'button';
-            resetBtn.className = 'btn btn-ghost-purple';  // Retiré btn-sm
+            resetBtn.className = 'btn btn-ghost-purple';
             resetBtn.innerHTML = '<span class="reset-icon">↺</span> Réinitialiser';
-            resetBtn.onclick = () => this.reset();
+            resetBtn.onclick = () => {
+                // D'abord reset les champs du widget
+                this.reset();
+                // Puis appeler le callback onReset s'il existe
+                if (this.config.onReset) {
+                    this.config.onReset();
+                }
+            };
             
             filtersRow.appendChild(resetBtn);
             this.elements.resetButton = resetBtn;
