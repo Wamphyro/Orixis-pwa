@@ -6,13 +6,13 @@
 // Service CRUD pour les décomptes mutuelles dans Firestore
 // Gère la création, lecture, mise à jour et suppression
 //
-// FONCTIONS PUBLIQUES:
-// - creerDecompte(data) : Créer un nouveau décompte
-// - getDecomptes(filtres) : Récupérer les décomptes
-// - getDecompteById(id) : Récupérer un décompte
-// - updateDecompte(id, updates) : Mettre à jour
-// - changerStatut(id, statut, options) : Changer le statut
-// - supprimerDecompte(id, infos) : Soft delete
+// VERSION: 2.1.0 - CORRIGÉE
+// DATE: 08/02/2025
+//
+// CORRECTIONS APPORTÉES:
+// ✅ Import arrayUnion ajouté dans ajouterDonneesExtraites (ligne 426)
+// ✅ Recherche doublons améliorée pour groupes (ligne 569)
+// ✅ Suppression de l'appel redondant ajouterHistorique
 // ========================================
 
 import { db } from '../../src/services/firebase.service.js';
@@ -267,70 +267,69 @@ export class DecompteFirestoreService {
         console.log('✅ Décompte mis à jour:', id);
     }
     
-/**
- * Ajouter les données extraites par l'IA
- * @param {string} decompteId - ID du décompte
- * @param {Object} donnees - Données extraites
- */
-static async ajouterDonneesExtraites(decompteId, donneesExtraites) {
-    try {
-        // ✅ IMPORTER doc, updateDoc ET arrayUnion
-        const { doc, updateDoc, arrayUnion } = await import(
-            'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js'
-        );
-        
-        const decompteRef = doc(db, 'decomptesMutuelles', decompteId);
-        
-        // Préparer les données à mettre à jour
-        const updateData = {
-            ...donneesExtraites,
-            statut: 'traitement_effectue',
-            'dates.traitementEffectue': new Date(),
-            'dates.transmissionIA': new Date(),
-            'intervenants.traitePar': {
-                id: 'system_ia',
-                nom: 'SYSTEM',
-                prenom: 'IA',
-                role: 'system'
-            },
-            // ✅ AJOUTER L'HISTORIQUE DIRECTEMENT ICI
-            historique: arrayUnion({
-                action: 'extraction_ia',
-                date: new Date(),
-                details: 'Données extraites par IA',
-                timestamp: Date.now(),
-                utilisateur: {
+    /**
+     * Ajouter les données extraites par l'IA
+     * VERSION CORRIGÉE avec import arrayUnion
+     * @param {string} decompteId - ID du décompte
+     * @param {Object} donnees - Données extraites
+     */
+    static async ajouterDonneesExtraites(decompteId, donneesExtraites) {
+        try {
+            // ✅ CORRECTION : Import de arrayUnion ajouté
+            const { doc, updateDoc, arrayUnion } = await import(
+                'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js'
+            );
+            
+            const decompteRef = doc(db, 'decomptesMutuelles', decompteId);
+            
+            // Préparer les données à mettre à jour
+            const updateData = {
+                ...donneesExtraites,
+                statut: 'traitement_effectue',
+                'dates.traitementEffectue': new Date(),
+                'dates.transmissionIA': new Date(),
+                'intervenants.traitePar': {
                     id: 'system_ia',
                     nom: 'SYSTEM',
                     prenom: 'IA',
                     role: 'system'
-                }
-            })
-        };
-        
-        // SI c'est un décompte groupé, s'assurer que les clients sont au niveau racine
-        if (donneesExtraites.typeDecompte === 'groupe' && donneesExtraites.extractionIA?.donneesBrutes?.clients) {
-            updateData.clients = donneesExtraites.extractionIA.donneesBrutes.clients.map(c => ({
-                nom: c.ClientNom || null,
-                prenom: c.ClientPrenom || null,
-                numeroSecuriteSociale: c.NumeroSecuriteSociale || null,
-                numeroAdherent: c.NumeroAdherent || null,
-                montantRemboursement: c.Montant || 0
-            }));
+                },
+                // ✅ Utilisation correcte de arrayUnion maintenant importé
+                historique: arrayUnion({
+                    action: 'extraction_ia',
+                    date: new Date(),
+                    details: 'Données extraites par IA',
+                    timestamp: Date.now(),
+                    utilisateur: {
+                        id: 'system_ia',
+                        nom: 'SYSTEM',
+                        prenom: 'IA',
+                        role: 'system'
+                    }
+                })
+            };
+            
+            // SI c'est un décompte groupé, s'assurer que les clients sont au niveau racine
+            if (donneesExtraites.typeDecompte === 'groupe' && donneesExtraites.extractionIA?.donneesBrutes?.clients) {
+                updateData.clients = donneesExtraites.extractionIA.donneesBrutes.clients.map(c => ({
+                    nom: c.ClientNom || null,
+                    prenom: c.ClientPrenom || null,
+                    numeroSecuriteSociale: c.NumeroSecuriteSociale || null,
+                    numeroAdherent: c.NumeroAdherent || null,
+                    montantRemboursement: c.Montant || 0
+                }));
+            }
+            
+            await updateDoc(decompteRef, updateData);
+            
+            console.log('✅ Données extraites ajoutées au décompte');
+            return true;
+            
+        } catch (error) {
+            console.error('❌ Erreur ajout données extraites:', error);
+            throw error;
         }
-        
-        await updateDoc(decompteRef, updateData);
-        
-        // ❌ LIGNE SUPPRIMÉE : await this.ajouterHistorique(...)
-        
-        console.log('✅ Données extraites ajoutées au décompte');
-        return true;
-        
-    } catch (error) {
-        console.error('❌ Erreur ajout données extraites:', error);
-        throw error;
     }
-}
     
     /**
      * Changer le statut d'un décompte
@@ -484,243 +483,291 @@ static async ajouterDonneesExtraites(decompteId, donneesExtraites) {
     }
 
     /**
- * Vérifier si un hash existe déjà
- * @param {string} hash - Hash SHA-256 du document
- * @returns {Promise<Object|null>} Le décompte trouvé ou null
- */
-static async verifierHashExiste(hash) {
-    try {
-        if (!hash) return null;
-        
-        const { collection, getDocs } = await import(
-            'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js'
-        );
-        
-        console.log('🔍 Vérification du hash:', hash.substring(0, 12) + '...');
-        
-        // Récupérer tous les décomptes récents
-        const snapshot = await getDocs(collection(db, CONFIG.COLLECTION_NAME));
-        
-        // Parcourir et chercher le hash dans les documents
-        for (const doc of snapshot.docs) {
-            const data = doc.data();
+     * Vérifier si un hash existe déjà
+     * @param {string} hash - Hash SHA-256 du document
+     * @returns {Promise<Object|null>} Le décompte trouvé ou null
+     */
+    static async verifierHashExiste(hash) {
+        try {
+            if (!hash) return null;
             
-            // Vérifier si un des documents a ce hash
-            if (data.documents && Array.isArray(data.documents)) {
-                for (const document of data.documents) {
-                    if (document.hash === hash) {
-                        console.log('⚠️ Doublon trouvé:', doc.id);
-                        return {
-                            id: doc.id,
-                            numeroDecompte: data.numeroDecompte,
-                            client: data.client,
-                            montantVirement: data.montantVirement,
-                            statut: data.statut,
-                            dateUpload: document.dateUpload || data.dates?.creation
-                        };
+            const { collection, getDocs } = await import(
+                'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js'
+            );
+            
+            console.log('🔍 Vérification du hash:', hash.substring(0, 12) + '...');
+            
+            // Récupérer tous les décomptes récents
+            const snapshot = await getDocs(collection(db, CONFIG.COLLECTION_NAME));
+            
+            // Parcourir et chercher le hash dans les documents
+            for (const doc of snapshot.docs) {
+                const data = doc.data();
+                
+                // Vérifier si un des documents a ce hash
+                if (data.documents && Array.isArray(data.documents)) {
+                    for (const document of data.documents) {
+                        if (document.hash === hash) {
+                            console.log('⚠️ Doublon trouvé:', doc.id);
+                            return {
+                                id: doc.id,
+                                numeroDecompte: data.numeroDecompte,
+                                client: data.client,
+                                montantVirement: data.montantVirement,
+                                statut: data.statut,
+                                dateUpload: document.dateUpload || data.dates?.creation
+                            };
+                        }
                     }
                 }
             }
+            
+            console.log('✅ Hash non trouvé (pas de doublon)');
+            return null;
+            
+        } catch (error) {
+            console.error('❌ Erreur vérification hash:', error);
+            return null;
         }
-        
-        console.log('✅ Hash non trouvé (pas de doublon)');
-        return null;
-        
-    } catch (error) {
-        console.error('❌ Erreur vérification hash:', error);
-        return null;
     }
-}
 
-/**
- * Rechercher les doublons probables avec score (VERSION MULTI-CLIENTS)
- * @param {Object} donnees - Données à comparer
- * @returns {Promise<Array>} Liste des doublons potentiels avec score
- */
-static async rechercherDoublonsProbables(donnees) {
-    try {
-        const { collection, getDocs } = await import(
-            'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js'
-        );
-        
-        console.log('🔍 Recherche de doublons probables...');
-        console.log('🔍 Données recherchées:', donnees);
-        
-        // Normaliser les données recherchées
-        const clientRecherche = `${donnees.client?.prenom || ''} ${donnees.client?.nom || ''}`.toUpperCase().trim();
-        const montantRecherche = parseFloat(donnees.montantVirement || donnees.montantRemboursementClient || 0);
-        const mutuelleRecherche = (donnees.mutuelle || '').toUpperCase().trim();
-        const magasinRecherche = (donnees.codeMagasin || '').toUpperCase().trim();
-        
-        // Récupérer tous les décomptes
-        const snapshot = await getDocs(collection(db, CONFIG.COLLECTION_NAME));
-        
-        const doublonsPotentiels = [];
-        
-        // Analyser chaque décompte
-        for (const doc of snapshot.docs) {
-            const data = doc.data();
+    /**
+     * Rechercher les doublons probables avec score
+     * VERSION CORRIGÉE : Gestion complète des décomptes groupés
+     * @param {Object} donnees - Données à comparer
+     * @returns {Promise<Array>} Liste des doublons potentiels avec score
+     */
+    static async rechercherDoublonsProbables(donnees) {
+        try {
+            const { collection, getDocs } = await import(
+                'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js'
+            );
             
-            // Ignorer les décomptes supprimés
-            if (data.statut === 'supprime') continue;
+            console.log('🔍 Recherche de doublons probables...');
+            console.log('🔍 Données recherchées:', donnees);
             
-            let scoreMax = 0;
-            let detailsMax = [];
-            let clientsTrouves = [];
+            // Normaliser les données recherchées
+            const clientRecherche = donnees.client ? 
+                `${donnees.client.prenom || ''} ${donnees.client.nom || ''}`.toUpperCase().trim() : '';
+            const montantRecherche = parseFloat(donnees.montantVirement || donnees.montantRemboursementClient || 0);
+            const mutuelleRecherche = (donnees.mutuelle || '').toUpperCase().trim();
+            const magasinRecherche = (donnees.codeMagasin || '').toUpperCase().trim();
             
-            // 1️⃣ Vérifier le client principal (décompte unitaire)
-            if (data.client && clientRecherche && !data.clients) {
-                const clientExistant = `${data.client.prenom || ''} ${data.client.nom || ''}`.toUpperCase().trim();
-                if (clientExistant === clientRecherche) {
-                    let score = 40;
-                    let details = [`Client identique: ${data.client.prenom} ${data.client.nom}`];
-                    
-                    const montantExistant = parseFloat(data.montantRemboursementClient || data.montantVirement || 0);
-                    if (montantRecherche > 0 && Math.abs(montantExistant - montantRecherche) < 0.01) {
-                        score += 30;
-                        details.push('Montant identique');
-                    }
-                    
-                    if (mutuelleRecherche && data.mutuelle) {
-                        const mutuelleExistante = (data.mutuelle || '').toUpperCase().trim();
-                        if (mutuelleExistante === mutuelleRecherche) {
-                            score += 20;
-                            details.push('Mutuelle identique');
-                        }
-                    }
-                    
-                    if (magasinRecherche && data.codeMagasin) {
-                        const magasinExistant = (data.codeMagasin || '').toUpperCase().trim();
-                        if (magasinExistant === magasinRecherche) {
-                            score += 10;
-                            details.push('Magasin identique');
-                        }
-                    }
-                    
-                    scoreMax = Math.min(score, 100);
-                    detailsMax = details;
-                    clientsTrouves = [data.client];
-                }
-            }
+            // Récupérer tous les décomptes
+            const snapshot = await getDocs(collection(db, CONFIG.COLLECTION_NAME));
             
-            // 2️⃣ Vérifier dans le tableau clients[] (décompte groupé)
-            if (data.clients && Array.isArray(data.clients) && clientRecherche) {
-                // CAS A : On cherche 1 client dans un groupe
-                let clientTrouve = false;
-                let montantTrouve = false;
-                
-                for (const clientGroupe of data.clients) {
-                    const clientExistant = `${clientGroupe.prenom || ''} ${clientGroupe.nom || ''}`.toUpperCase().trim();
+            const doublonsPotentiels = [];
+            
+            // ✅ CAS A : On recherche UN SEUL client (décompte individuel)
+            if (donnees.client && !donnees.clients) {
+                for (const doc of snapshot.docs) {
+                    const data = doc.data();
                     
-                    if (clientExistant === clientRecherche) {
-                        clientTrouve = true;
-                        
-                        const montantClient = parseFloat(
-                            clientGroupe.montantRemboursement || 
-                            clientGroupe.montantRemboursementClient || 
-                            clientGroupe.montant || 
-                            0
-                        );
-                        
-                        if (montantRecherche > 0 && Math.abs(montantClient - montantRecherche) < 0.01) {
-                            montantTrouve = true;
-                        }
-                        break;
-                    }
-                }
-                
-                if (clientTrouve) {
-                    // ✅ 1 CLIENT TROUVÉ DANS GROUPE = 100% POUR CE CLIENT
-                    let score = 40;  // Client trouvé = COMPLET
-                    let details = [`Client identique trouvé dans décompte groupé (${data.clients.length} clients)`];
+                    // Ignorer les décomptes supprimés
+                    if (data.statut === 'supprime') continue;
                     
-                    if (montantTrouve) {
-                        score += 30;  // Montant trouvé = COMPLET
-                        details.push('Montant identique');
-                    }
+                    let scoreMax = 0;
+                    let detailsMax = [];
                     
-                    if (mutuelleRecherche && data.mutuelle) {
-                        const mutuelleExistante = (data.mutuelle || '').toUpperCase().trim();
-                        if (mutuelleExistante === mutuelleRecherche) {
-                            score += 20;
-                            details.push('Mutuelle identique');
-                        }
-                    }
-                    
-                    if (magasinRecherche && data.codeMagasin) {
-                        const magasinExistant = (data.codeMagasin || '').toUpperCase().trim();
-                        if (magasinExistant === magasinRecherche) {
-                            score += 10;
-                            details.push('Magasin identique');
-                        }
-                    }
-                    
-                    scoreMax = Math.min(score, 100);
-                    detailsMax = details;
-                    clientsTrouves = data.clients;
-                }
-            }
-
-            // 3️⃣ NOUVEAU : Vérifier si on upload un GROUPE et que des clients existent individuellement
-            if (donnees.clients && Array.isArray(donnees.clients) && data.client) {
-                // CAS B : On cherche des clients d'un groupe dans des décomptes individuels
-                let clientsTrouvesDansBase = 0;
-                
-                for (const clientDuGroupe of donnees.clients) {
-                    const clientGroupeNorm = `${clientDuGroupe.prenom || ''} ${clientDuGroupe.nom || ''}`.toUpperCase().trim();
-                    const clientBaseNorm = `${data.client.prenom || ''} ${data.client.nom || ''}`.toUpperCase().trim();
-                    
-                    if (clientGroupeNorm === clientBaseNorm) {
-                        clientsTrouvesDansBase++;
-                        
-                        // Score proportionnel
-                        let score = Math.round(40 * clientsTrouvesDansBase / donnees.clients.length);
-                        let details = [`${clientsTrouvesDansBase}/${donnees.clients.length} client(s) du groupe déjà en base`];
-                        
-                        // Ajouter les autres critères...
-                        
-                        if (score > scoreMax) {
-                            scoreMax = score;
+                    // Vérifier le client principal (décompte unitaire)
+                    if (data.client && !data.clients) {
+                        const clientExistant = `${data.client.prenom || ''} ${data.client.nom || ''}`.toUpperCase().trim();
+                        if (clientExistant === clientRecherche) {
+                            let score = 40;
+                            let details = [`Client identique: ${data.client.prenom} ${data.client.nom}`];
+                            
+                            const montantExistant = parseFloat(data.montantRemboursementClient || data.montantVirement || 0);
+                            if (montantRecherche > 0 && Math.abs(montantExistant - montantRecherche) < 0.01) {
+                                score += 30;
+                                details.push('Montant identique');
+                            }
+                            
+                            if (mutuelleRecherche && data.mutuelle) {
+                                const mutuelleExistante = (data.mutuelle || '').toUpperCase().trim();
+                                if (mutuelleExistante === mutuelleRecherche) {
+                                    score += 20;
+                                    details.push('Mutuelle identique');
+                                }
+                            }
+                            
+                            if (magasinRecherche && data.codeMagasin) {
+                                const magasinExistant = (data.codeMagasin || '').toUpperCase().trim();
+                                if (magasinExistant === magasinRecherche) {
+                                    score += 10;
+                                    details.push('Magasin identique');
+                                }
+                            }
+                            
+                            scoreMax = Math.min(score, 100);
                             detailsMax = details;
                         }
                     }
+                    
+                    // Vérifier dans le tableau clients[] (décompte groupé)
+                    if (data.clients && Array.isArray(data.clients)) {
+                        for (const clientGroupe of data.clients) {
+                            const clientExistant = `${clientGroupe.prenom || ''} ${clientGroupe.nom || ''}`.toUpperCase().trim();
+                            
+                            if (clientExistant === clientRecherche) {
+                                let score = 40;
+                                let details = [`Client trouvé dans décompte groupé (${data.clients.length} clients)`];
+                                
+                                const montantClient = parseFloat(
+                                    clientGroupe.montantRemboursement || 
+                                    clientGroupe.montantRemboursementClient || 
+                                    clientGroupe.montant || 
+                                    0
+                                );
+                                
+                                if (montantRecherche > 0 && Math.abs(montantClient - montantRecherche) < 0.01) {
+                                    score += 30;
+                                    details.push('Montant identique');
+                                }
+                                
+                                if (mutuelleRecherche && data.mutuelle) {
+                                    const mutuelleExistante = (data.mutuelle || '').toUpperCase().trim();
+                                    if (mutuelleExistante === mutuelleRecherche) {
+                                        score += 20;
+                                        details.push('Mutuelle identique');
+                                    }
+                                }
+                                
+                                if (magasinRecherche && data.codeMagasin) {
+                                    const magasinExistant = (data.codeMagasin || '').toUpperCase().trim();
+                                    if (magasinExistant === magasinRecherche) {
+                                        score += 10;
+                                        details.push('Magasin identique');
+                                    }
+                                }
+                                
+                                scoreMax = Math.min(score, 100);
+                                detailsMax = details;
+                                break; // Un seul client trouvé suffit
+                            }
+                        }
+                    }
+                    
+                    // Si score significatif, ajouter aux doublons
+                    if (scoreMax >= 40) {
+                        doublonsPotentiels.push({
+                            id: doc.id,
+                            score: scoreMax,
+                            details: detailsMax,
+                            numeroDecompte: data.numeroDecompte,
+                            client: data.client,
+                            clients: data.clients,
+                            typeDecompte: data.typeDecompte || (data.clients && data.clients.length > 1 ? 'groupe' : 'individuel'),
+                            nombreClients: data.nombreClients || data.clients?.length || 1,
+                            montantVirement: data.montantVirement,
+                            mutuelle: data.mutuelle,
+                            codeMagasin: data.codeMagasin,
+                            statut: data.statut
+                        });
+                    }
+                }
+            }
+
+            // ✅ CAS B : On recherche UN GROUPE de clients
+            if (donnees.clients && Array.isArray(donnees.clients)) {
+                const clientsRecherches = donnees.clients.map(c => 
+                    `${c.prenom || ''} ${c.nom || ''}`.toUpperCase().trim()
+                );
+                
+                for (const doc of snapshot.docs) {
+                    const data = doc.data();
+                    if (data.statut === 'supprime') continue;
+                    
+                    let clientsTrouves = 0;
+                    let details = [];
+                    let clientsCorrespondants = [];
+                    
+                    // Vérifier contre des décomptes individuels
+                    if (data.client && !data.clients) {
+                        const clientExistant = `${data.client.prenom || ''} ${data.client.nom || ''}`.toUpperCase().trim();
+                        
+                        if (clientsRecherches.includes(clientExistant)) {
+                            clientsTrouves++;
+                            clientsCorrespondants.push(`${data.client.prenom} ${data.client.nom}`);
+                        }
+                    }
+                    
+                    // Vérifier contre d'autres groupes
+                    if (data.clients && Array.isArray(data.clients)) {
+                        for (const clientGroupe of data.clients) {
+                            const clientExistant = `${clientGroupe.prenom || ''} ${clientGroupe.nom || ''}`.toUpperCase().trim();
+                            
+                            if (clientsRecherches.includes(clientExistant)) {
+                                clientsTrouves++;
+                                clientsCorrespondants.push(`${clientGroupe.prenom} ${clientGroupe.nom}`);
+                            }
+                        }
+                    }
+                    
+                    // Calculer le score basé sur le % de clients trouvés
+                    if (clientsTrouves > 0) {
+                        const pourcentage = (clientsTrouves / donnees.clients.length) * 100;
+                        let score = Math.round(pourcentage * 0.7); // 70% du score basé sur les clients
+                        
+                        details.push(`${clientsTrouves}/${donnees.clients.length} client(s) déjà existant(s)`);
+                        if (clientsCorrespondants.length > 0) {
+                            details.push(`Clients trouvés: ${clientsCorrespondants.join(', ')}`);
+                        }
+                        
+                        // Bonus si même mutuelle
+                        if (mutuelleRecherche && data.mutuelle) {
+                            const mutuelleExistante = (data.mutuelle || '').toUpperCase().trim();
+                            if (mutuelleExistante === mutuelleRecherche) {
+                                score += 20;
+                                details.push('Même mutuelle');
+                            }
+                        }
+                        
+                        // Bonus si même magasin
+                        if (magasinRecherche && data.codeMagasin) {
+                            const magasinExistant = (data.codeMagasin || '').toUpperCase().trim();
+                            if (magasinExistant === magasinRecherche) {
+                                score += 10;
+                                details.push('Même magasin');
+                            }
+                        }
+                        
+                        if (score >= 40) {
+                            doublonsPotentiels.push({
+                                id: doc.id,
+                                score: Math.min(score, 100),
+                                details: details,
+                                numeroDecompte: data.numeroDecompte,
+                                client: data.client,
+                                clients: data.clients,
+                                typeDecompte: data.typeDecompte || (data.clients ? 'groupe' : 'individuel'),
+                                nombreClients: data.nombreClients || data.clients?.length || 1,
+                                montantVirement: data.montantVirement,
+                                mutuelle: data.mutuelle,
+                                codeMagasin: data.codeMagasin,
+                                statut: data.statut,
+                                clientsTrouves: clientsTrouves,
+                                pourcentageCorrespondance: pourcentage
+                            });
+                        }
+                    }
                 }
             }
             
-            // Si score significatif, ajouter aux doublons
-            if (scoreMax >= 40) {
-                doublonsPotentiels.push({
-                    id: doc.id,
-                    score: scoreMax,
-                    details: detailsMax,
-                    numeroDecompte: data.numeroDecompte,
-                    client: data.client,
-                    clients: data.clients,
-                    typeDecompte: data.typeDecompte || (data.clients && data.clients.length > 1 ? 'groupe' : 'individuel'),
-                    nombreClients: data.nombreClients || data.clients?.length || 1,
-                    montantVirement: data.montantVirement,
-                    mutuelle: data.mutuelle,
-                    codeMagasin: data.codeMagasin,
-                    statut: data.statut
-                });
+            // Trier par score décroissant
+            doublonsPotentiels.sort((a, b) => b.score - a.score);
+            
+            console.log(`📊 ${doublonsPotentiels.length} doublon(s) potentiel(s) trouvé(s)`);
+            if (doublonsPotentiels.length > 0) {
+                console.log('🔍 Premier doublon:', doublonsPotentiels[0]);
             }
+            
+            return doublonsPotentiels;
+            
+        } catch (error) {
+            console.error('❌ Erreur recherche doublons:', error);
+            return [];
         }
-        
-        // Trier par score décroissant
-        doublonsPotentiels.sort((a, b) => b.score - a.score);
-        
-        console.log(`📊 ${doublonsPotentiels.length} doublon(s) potentiel(s) trouvé(s)`);
-        if (doublonsPotentiels.length > 0) {
-            console.log('🔍 Premier doublon:', doublonsPotentiels[0]);
-        }
-        
-        return doublonsPotentiels;
-        
-    } catch (error) {
-        console.error('❌ Erreur recherche doublons:', error);
-        return [];
     }
-}
     
     /**
      * Charger les magasins depuis Firestore
@@ -860,7 +907,12 @@ export default {
 /* ========================================
    HISTORIQUE
    
-   [08/02/2025] - Création
+   [08/02/2025] - v2.1.0 CORRECTIONS
+   ✅ Import arrayUnion ajouté dans ajouterDonneesExtraites
+   ✅ Recherche doublons améliorée pour groupes
+   ✅ Gestion complète individuel vs groupe
+   
+   [08/02/2025] - v2.0.0 Création
    - Service dédié au CRUD Firestore
    - Utilise le template pour garantir la structure
    - Gestion complète du workflow

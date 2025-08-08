@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Décomptes Sécurité Sociale - Audioprothèse</title>
+    <link rel="stylesheet" href="../../src/css/main.css">
+    
+    <!-- PDF.js pour conversion PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        // Configuration PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+    
+    <!-- Papa Parse pour lecture CSV -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    
+    <!-- CSS page -->
+    <style>
+        .page-loading {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .page-loading.hidden { display: none; }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #0066cc;
+            border-radius: 50%;
+            width: 40px; height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Styles spécifiques sécu */
+        .secu-primary { color: #0066cc; }
+        .secu-secondary { color: #00a0e3; }
+        
+        /* Conteneurs principaux */
+        .stats-container { 
+            margin: 100px 20px 20px 20px; 
+        }
+        .filters-container { 
+            margin: 20px; 
+        }
+        .table-container { 
+            margin: 20px; 
+        }
+        
+        /* Badge virement */
+        .badge-virement {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        /* Progress bar conversion PDF */
+        #pdf-conversion-progress {
+            display: none; 
+            position: fixed; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            z-index: 10000;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Loader -->
+    <div class="page-loading" id="pageLoader">
+        <div class="loader"></div>
+    </div>
+    
+    <!-- Messages -->
+    <div id="messagesContainer" style="position: fixed; top: 10px; right: 10px; z-index: 1000; max-width: 400px;"></div>
+    
+    <!-- Container pour progress bar PDF -->
+    <div id="pdf-conversion-progress"></div>
+    
+    <!-- Containers pour widgets -->
+    <div class="stats-container"></div>
+    <div class="filters-container"></div>
+    <div class="table-container"></div>
+    
+    <script type="module">
+        // Import de l'orchestrateur qui gère TOUT
+        import orchestrator from './decompte-secu.orchestrator.js';
+        
+        // Lancement de l'application
+        window.addEventListener('load', async () => {
+            console.log('🎯 Initialisation Décomptes Sécurité Sociale Audioprothèse...');
+            await orchestrator.init();
+        });
+        
+        // Export pour debug uniquement
+        window.orchestrator = orchestrator;
+    </script>
+</body>
+</html>

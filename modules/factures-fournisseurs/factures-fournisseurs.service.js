@@ -27,6 +27,37 @@ export const FACTURES_CONFIG = {
     DELAI_RECHERCHE: 300,
     DELAI_PAIEMENT_DEFAUT: 30,
     
+    // Comptes PCG avec libellés utilisateurs
+    COMPTES_PCG: {
+        // CLASSE 60 - Achats
+        '6061': { libelle: '⚡ Électricité, Gaz, Eau', classe: '60' },
+        '6063': { libelle: '🔧 Petit équipement', classe: '60' },
+        '6064': { libelle: '📎 Fournitures bureau', classe: '60' },
+        '6068': { libelle: '📦 Autres fournitures', classe: '60' },
+        
+        // CLASSE 61 - Services extérieurs
+        '6132': { libelle: '🏢 Locations immobilières', classe: '61' },
+        '6135': { libelle: '🚗 Locations mobilières', classe: '61' },
+        '6155': { libelle: '🔨 Entretien/Réparations', classe: '61' },
+        '6156': { libelle: '🛠️ Maintenance', classe: '61' },
+        '616':  { libelle: '🛡️ Assurances', classe: '61' },
+        
+        // CLASSE 62 - Autres services
+        '6221': { libelle: '⛽ Carburants', classe: '62' },
+        '6226': { libelle: '⚖️ Honoraires', classe: '62' },
+        '6228': { libelle: '🎓 Formation', classe: '62' },
+        '6241': { libelle: '🚚 Transport/Livraison', classe: '62' },
+        '6251': { libelle: '✈️ Voyages et déplacements', classe: '62' },
+        '6256': { libelle: '🍽️ Missions/Réceptions', classe: '62' },
+        '6262': { libelle: '📱 Télécommunications', classe: '62' },
+        '6265': { libelle: '💿 Logiciels/Abonnements', classe: '62' },
+        '627':  { libelle: '🏦 Services bancaires', classe: '62' },
+        
+        // CLASSE 21 - Immobilisations
+        '2183': { libelle: '💻 Matériel informatique (immo)', classe: '21' },
+        '2184': { libelle: '🪑 Mobilier (immo)', classe: '21' }
+    },
+    
     // Statuts de facture
     STATUTS: {
         nouvelle: {

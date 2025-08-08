@@ -1,6 +1,6 @@
 // ========================================
 // TEMPLATE FIRESTORE - DÉCOMPTES SÉCURITÉ SOCIALE
-// Collection: decomptes_secu
+// Collection: decomptesSecu
 // ========================================
 
 export const DECOMPTE_SECU_TEMPLATE = {

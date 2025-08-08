@@ -1,18 +1,14 @@
 // ========================================
-// DECOMPTE-MUTUELLE.ORCHESTRATOR.JS - 🎯 ORCHESTRATEUR PRINCIPAL
-// Chemin: modules/test/decompte-mutuelle.orchestrator.js
+// DECOMPTE-SECU.ORCHESTRATOR.JS - 🎯 ORCHESTRATEUR PRINCIPAL
+// Chemin: modules/decompte-secu/decompte-secu.orchestrator.js
 //
 // DESCRIPTION:
-// Orchestre toute la logique métier et coordonne les widgets
-// Centralise les workflows, la gestion d'état et les interactions
+// Orchestrateur unique pour décomptes sécurité sociale audioprothèse
+// Basé sur l'architecture des décomptes mutuelles
+// Gère les virements CPAM avec multiples bénéficiaires
 //
-// VERSION: 2.1.0 - CORRIGÉE
-// DATE: 08/02/2025
-//
-// CORRECTIONS APPORTÉES:
-// ✅ Utilisation de analyserAvecFichier() au lieu de analyserDocument() (évite CORS)
-// ✅ Meilleure gestion des décomptes groupés dans l'affichage
-// ✅ Amélioration de la détection de doublons
+// VERSION: 1.0.0
+// DATE: 08/01/2025
 // ========================================
 
 // Import des widgets
@@ -22,21 +18,59 @@ import { SearchFiltersWidget } from '../../widgets/search-filters/search-filters
 import { DataGridWidget } from '../../widgets/data-grid/data-grid.widget.js';
 import { PdfUploaderWidget } from '../../widgets/pdf-uploader/pdf-uploader.widget.js';
 import { DetailViewerWidget } from '../../widgets/detail-viewer/detail-viewer.widget.js';
+import { ProgressBar } from '../../src/components/ui/progress-bar/progress-bar.component.js';
 import toast from '../../widgets/toast/toast.widget.js';
 
 // Import des services
-import uploadService from './decompte-mutuelle.upload.service.js';
-import firestoreService from './decompte-mutuelle.firestore.service.js';
-import openaiService from './decompte-mutuelle.openai.service.js';
+import uploadService from './decompte-secu.upload.service.js';
+import firestoreService from './decompte-secu.firestore.service.js';
+import openaiService from './decompte-secu.openai.service.js';
 
 // Import Firebase
 import { initFirebase } from '../../src/services/firebase.service.js';
 
 // ========================================
+// CONFIGURATION
+// ========================================
+
+const CONFIG = {
+    STATUTS: {
+        NOUVEAU: 'nouveau',
+        TRAITEMENT_IA: 'traitement_ia',
+        TRAITEMENT_EFFECTUE: 'traitement_effectue',
+        RAPPROCHEMENT_BANCAIRE: 'rapprochement_bancaire',
+        SUPPRIME: 'supprime'
+    },
+    
+    STATUTS_INFO: {
+        nouveau: {
+            label: 'Nouveau',
+            suivant: 'traitement_ia'
+        },
+        traitement_ia: {
+            label: 'Analyse IA',
+            suivant: 'traitement_effectue'
+        },
+        traitement_effectue: {
+            label: 'Traité',
+            suivant: 'rapprochement_bancaire'
+        },
+        rapprochement_bancaire: {
+            label: 'Rapproché',
+            suivant: null
+        },
+        supprime: {
+            label: 'Supprimé',
+            suivant: null
+        }
+    }
+};
+
+// ========================================
 // CLASSE ORCHESTRATEUR
 // ========================================
 
-class DecompteOrchestrator {
+class DecompteSecuOrchestrator {
     constructor() {
         // Widgets
         this.header = null;
@@ -52,34 +86,30 @@ class DecompteOrchestrator {
         // État des filtres
         this.currentFilters = {
             search: '',
-            statuts: [],  // Tableau pour multi-sélection
-            mutuelle: '',
+            statuts: [],
+            caisse: '',
             magasin: '',
             periode: 'all'
         };
         
-        // Mutuelles et réseaux dynamiques
-        this.mutuellesDynamiques = new Set();
-        this.reseauxTPDynamiques = new Set();
+        // Caisses dynamiques extraites des données
+        this.caissesDynamiques = new Set();
+        
+        // Cache des magasins
+        this.magasinsCache = null;
         
         // État de l'application
         this.isLoading = false;
-        
-        // Cache des magasins pour éviter de recharger
-        this.magasinsCache = null;
     }
     
     // ========================================
     // INITIALISATION
     // ========================================
     
-    /**
-     * Initialiser l'application complète
-     */
     async init() {
         try {
             this.showLoader();
-            console.log('🚀 Initialisation de l\'orchestrateur...');
+            console.log('🚀 Initialisation orchestrateur décomptes sécu audio...');
             
             // Vérifier l'authentification
             if (!this.checkAuth()) {
@@ -95,10 +125,10 @@ class DecompteOrchestrator {
             await initFirebase();
             console.log('✅ Firebase initialisé');
             
-            // Charger les magasins une fois et les mettre en cache
+            // Charger les magasins
             console.log('🏪 Chargement des magasins...');
             this.magasinsCache = await firestoreService.chargerMagasins();
-            console.log(`✅ ${this.magasinsCache.length} magasins chargés et mis en cache`);
+            console.log(`✅ ${this.magasinsCache.length} magasins chargés`);
             
             // Créer les widgets
             await this.createWidgets();
@@ -116,9 +146,6 @@ class DecompteOrchestrator {
         }
     }
     
-    /**
-     * Vérifier l'authentification
-     */
     checkAuth() {
         const auth = localStorage.getItem('sav_auth');
         return !!auth;
@@ -128,9 +155,6 @@ class DecompteOrchestrator {
     // CRÉATION DES WIDGETS
     // ========================================
     
-    /**
-     * Créer tous les widgets
-     */
     async createWidgets() {
         console.log('🎨 Création des widgets...');
         
@@ -152,16 +176,13 @@ class DecompteOrchestrator {
         console.log('✅ Widgets créés');
     }
     
-    /**
-     * Créer le header
-     */
     createHeader() {
         const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
         
         this.header = new HeaderWidget({
-            title: 'Décomptes Mutuelles',
-            icon: '📋',
-            subtitle: 'Gestion des remboursements mutuelles',
+            title: 'Décomptes Sécurité Sociale',
+            icon: '🏥',
+            subtitle: 'Gestion des remboursements régime obligatoire',
             showBack: true,
             showUser: true,
             showLogout: true
@@ -175,7 +196,6 @@ class DecompteOrchestrator {
                 backBtn.className = 'btn btn-glass-solid-ice btn-sm';
                 backBtn.innerHTML = '<<';
                 backBtn.onclick = () => {
-                    console.log('Retour cliqué');
                     window.location.href = '/modules/home/home.html';
                 };
                 backContainer.appendChild(backBtn);
@@ -194,9 +214,6 @@ class DecompteOrchestrator {
         }, 100);
     }
     
-    /**
-     * Créer les cartes de statistiques
-     */
     createStatsCards() {
         this.stats = new StatsCardsWidget({
             container: '.stats-container',
@@ -208,24 +225,19 @@ class DecompteOrchestrator {
             animated: true,
             cards: [
                 { id: 'nouveau', label: 'Nouveau', icon: '📋', value: 0, color: 'secondary' },
-                { id: 'traitement_ia', label: 'Traitement IA', icon: '🤖', value: 0, color: 'info' },
+                { id: 'traitement_ia', label: 'Analyse IA', icon: '🤖', value: 0, color: 'info' },
                 { id: 'traitement_effectue', label: 'Traité', icon: '✅', value: 0, color: 'success' },
-                { id: 'traitement_manuel', label: 'Manuel', icon: '✏️', value: 0, color: 'warning' },
                 { id: 'rapprochement_bancaire', label: 'Rapproché', icon: '🔗', value: 0, color: 'primary' },
                 { id: 'total', label: 'Total virements', icon: '💰', value: '0 €', color: 'success' }
             ],
             onSelect: (selectedIds) => {
                 console.log('Filtres par statuts:', selectedIds);
-                // Exclure 'total' qui n'est pas un statut
                 this.currentFilters.statuts = selectedIds.filter(id => id !== 'total');
                 this.applyFilters();
             }
         });
     }
     
-    /**
-     * Créer les filtres de recherche
-     */
     createFilters() {
         this.filters = new SearchFiltersWidget({
             container: '.filters-container',
@@ -238,14 +250,14 @@ class DecompteOrchestrator {
                 { 
                     type: 'search', 
                     key: 'search', 
-                    placeholder: 'Rechercher (client, NSS, n° décompte)...' 
+                    placeholder: 'Rechercher (bénéficiaire, n° virement, caisse)...' 
                 },
                 { 
                     type: 'select', 
-                    key: 'mutuelle', 
-                    label: 'Mutuelle',
+                    key: 'caisse', 
+                    label: 'Caisse CPAM',
                     options: [
-                        { value: '', label: 'Toutes les mutuelles' }
+                        { value: '', label: 'Toutes les caisses' }
                     ],
                     searchable: true
                 },
@@ -276,37 +288,33 @@ class DecompteOrchestrator {
                 this.currentFilters = { 
                     ...this.currentFilters, 
                     search: values.search || '',
-                    mutuelle: values.mutuelle || '',
+                    caisse: values.caisse || '',
                     magasin: values.magasin || '',
                     periode: values.periode || 'all',
-                    statuts: this.currentFilters.statuts  // Préserver les statuts des cartes
+                    statuts: this.currentFilters.statuts
                 };
                 
                 this.applyFilters();
             },
             onReset: () => {
-                console.log('Réinitialisation de tous les filtres');
-                // Réinitialiser tout
+                console.log('Réinitialisation des filtres');
                 this.currentFilters = {
                     search: '',
                     statuts: [],
-                    mutuelle: '',
+                    caisse: '',
                     magasin: '',
                     periode: 'all'
                 };
-                // Désélectionner toutes les cartes
+                
                 if (this.stats) {
                     this.stats.deselectAll();
                 }
-                // Réappliquer les filtres (afficher tout)
+                
                 this.applyFilters();
             }
         });
     }
     
-    /**
-     * Créer le tableau de données
-     */
     createDataGrid() {
         this.grid = new DataGridWidget({
             container: '.table-container',
@@ -333,51 +341,41 @@ class DecompteOrchestrator {
                     }
                 },
                 { 
+                    key: 'nombreBeneficiaires', 
+                    label: 'Nb patients', 
+                    sortable: true, 
+                    width: 100,
+                    formatter: (v) => {
+                        if (!v || v === 0) return '-';
+                        return `<span class="badge badge-virement">${v} patient${v > 1 ? 's' : ''}</span>`;
+                    }
+                },
+                { 
+                    key: 'montantVirement', 
+                    label: 'Montant virement', 
+                    sortable: true, 
+                    width: 140,
+                    formatter: (v) => {
+                        const montant = new Intl.NumberFormat('fr-FR', { 
+                            style: 'currency', 
+                            currency: 'EUR' 
+                        }).format(v || 0);
+                        return `<strong>${montant}</strong>`;
+                    }
+                },
+                { 
+                    key: 'caissePrimaire', 
+                    label: 'Caisse', 
+                    sortable: true, 
+                    width: 120,
+                    formatter: (v) => v || '-'
+                },
+                { 
                     key: 'codeMagasin', 
                     label: 'Magasin', 
                     sortable: true, 
                     width: 80,
                     formatter: (v) => v || '-'
-                },
-                { 
-                    key: 'client', 
-                    label: 'Client(s)', 
-                    sortable: true, 
-                    width: 200,
-                    formatter: (client, row) => {
-                        // Si décompte groupé, afficher le nombre de clients
-                        if (row && row.typeDecompte === 'groupe' && row.nombreClients > 1) {
-                            const nomPrincipal = client ? `${client.prenom || ''} ${client.nom || ''}`.trim() : 'Clients multiples';
-                            return `<strong>${nomPrincipal}</strong><br><small>+ ${row.nombreClients - 1} autre(s)</small>`;
-                        }
-                        // Sinon affichage normal
-                        if (!client || (!client.nom && !client.prenom)) return '-';
-                        return `${client.prenom || ''} ${client.nom || ''}`.trim() || '-';
-                    }
-                },
-                { 
-                    key: 'mutuelle', 
-                    label: 'Mutuelle', 
-                    sortable: true, 
-                    width: 150,
-                    formatter: (v) => v || '-'
-                },
-                { 
-                    key: 'montantVirement', 
-                    label: 'Montant', 
-                    sortable: true, 
-                    width: 100,
-                    formatter: (v, row) => {
-                        const montant = new Intl.NumberFormat('fr-FR', { 
-                            style: 'currency', 
-                            currency: 'EUR' 
-                        }).format(v || 0);
-                        // Ajouter une icône pour les décomptes groupés
-                        if (row && row.typeDecompte === 'groupe' && row.nombreClients > 1) {
-                            return `${montant} <span title="${row.nombreClients} clients">👥</span>`;
-                        }
-                        return montant;
-                    }
                 },
                 { 
                     key: 'statut', 
@@ -389,7 +387,6 @@ class DecompteOrchestrator {
                             'nouveau': { label: 'Nouveau', class: 'badge-secondary' },
                             'traitement_ia': { label: 'IA', class: 'badge-info' },
                             'traitement_effectue': { label: 'Traité', class: 'badge-success' },
-                            'traitement_manuel': { label: 'Manuel', class: 'badge-warning' },
                             'rapprochement_bancaire': { label: 'Rapproché', class: 'badge-primary' },
                             'supprime': { label: 'Supprimé', class: 'badge-danger' }
                         };
@@ -426,16 +423,13 @@ class DecompteOrchestrator {
         });
     }
     
-    /**
-     * Ajouter les boutons d'action
-     */
     addActionButtons() {
         setTimeout(() => {
             const actionsZone = document.querySelector('.data-grid-export-buttons');
             if (actionsZone) {
                 const buttons = [
                     { 
-                        text: '➕ Nouveaux décomptes', 
+                        text: '➕ Nouveau décompte', 
                         class: 'btn btn-glass-blue btn-lg', 
                         action: () => this.openCreateModal()
                     },
@@ -466,9 +460,6 @@ class DecompteOrchestrator {
     // CHARGEMENT DES DONNÉES
     // ========================================
     
-    /**
-     * Charger toutes les données
-     */
     async loadData() {
         try {
             this.showLoader();
@@ -480,14 +471,13 @@ class DecompteOrchestrator {
             // Filtrer les supprimés
             this.decomptesData = tousLesDecomptes.filter(d => d.statut !== 'supprime');
             
-            console.log(`📊 ${tousLesDecomptes.length} décomptes totaux`);
-            console.log(`✅ ${this.decomptesData.length} décomptes actifs (supprimés exclus)`);
+            console.log(`✅ ${this.decomptesData.length} décomptes actifs`);
             
-            // Charger les stats (déjà filtrées dans getStatistiques)
+            // Charger les stats
             this.statsData = await firestoreService.getStatistiques();
             console.log('✅ Statistiques chargées:', this.statsData);
             
-            // Mettre à jour les mutuelles dynamiques
+            // Mettre à jour les caisses dynamiques
             this.updateDynamicLists();
             
             // Mettre à jour les options de filtres
@@ -506,61 +496,52 @@ class DecompteOrchestrator {
         }
     }
     
-    /**
-     * Mettre à jour les listes dynamiques
-     */
     updateDynamicLists() {
-        this.mutuellesDynamiques.clear();
-        this.reseauxTPDynamiques.clear();
+        this.caissesDynamiques.clear();
         
         this.decomptesData.forEach(decompte => {
-            if (decompte.mutuelle) {
-                this.mutuellesDynamiques.add(decompte.mutuelle);
-            }
-            if (decompte.prestataireTP) {
-                this.reseauxTPDynamiques.add(decompte.prestataireTP);
+            if (decompte.caissePrimaire) {
+                this.caissesDynamiques.add(decompte.caissePrimaire);
             }
         });
         
-        console.log('📊 Mutuelles:', Array.from(this.mutuellesDynamiques));
-        console.log('📊 Réseaux TP:', Array.from(this.reseauxTPDynamiques));
+        console.log('📊 Caisses:', Array.from(this.caissesDynamiques));
     }
     
     // ========================================
-    // CRÉATION DE DÉCOMPTE (CORRIGÉE)
+    // CRÉATION DE DÉCOMPTE
     // ========================================
     
-    /**
-     * Ouvrir le modal de création
-     */
     openCreateModal() {
         const uploader = new PdfUploaderWidget({
-            title: 'Nouveaux Décomptes',
-            theme: 'purple',
+            title: 'Nouveau Décompte Sécurité Sociale',
+            theme: 'blue',
             mode: 'simple',
             maxFiles: 100,
+            acceptedTypes: ['application/pdf', 'image/jpeg', 'image/png', 'text/csv', '.csv'],
             
             // Détection de doublons par hash
             checkDuplicate: async (file, hash) => {
-                return await firestoreService.verifierHashExiste(hash);
+                const result = await firestoreService.verifierHashExiste(hash);
+                // PdfUploader attend false ou un objet doublon
+                if (result && result.existe === true) {
+                    return result; // Retourner l'objet si doublon
+                }
+                return false; // Retourner false si pas de doublon
             },
             description: {
-                icon: '📄',
-                title: 'Upload de décomptes mutuelles',
-                text: 'Déposez vos fichiers PDF ou images. Chaque fichier créera un décompte séparé et sera analysé automatiquement.'
+                icon: '🦻',
+                title: 'Upload de décomptes CPAM audioprothèse',
+                text: 'Déposez vos fichiers PDF ou CSV. Chaque fichier sera analysé automatiquement pour extraire les virements et bénéficiaires.'
             },
             saveButtonText: '💾 Créer les décomptes',
             onSave: async (data) => this.handleCreateDecompte(data),
             onClose: () => {
-                console.log('Modal création fermé');
+                console.log('Modal création fermée');
             }
         });
     }
     
-    /**
-     * Gérer la création d'un décompte (VERSION CORRIGÉE)
-     * ✅ Utilise analyserAvecFichier() au lieu de analyserDocument()
-     */
     async handleCreateDecompte(data) {
         try {
             console.log('📁 Création de', data.files.length, 'décompte(s)...');
@@ -575,7 +556,7 @@ class DecompteOrchestrator {
             // Utiliser le cache des magasins
             const magasins = this.magasinsCache || await firestoreService.chargerMagasins();
             
-            // TRAITER CHAQUE FICHIER INDIVIDUELLEMENT
+            // Traiter chaque fichier
             for (let i = 0; i < data.files.length; i++) {
                 const file = data.files[i];
                 const numero = i + 1;
@@ -583,7 +564,7 @@ class DecompteOrchestrator {
                 try {
                     console.log(`\n📄 Traitement fichier ${numero}/${data.files.length}: ${file.name}`);
                     
-                    // ÉTAPE 1 : Upload du document
+                    // Upload du document
                     this.showMessage(`Upload du document ${numero}/${data.files.length}...`);
                     const resultatsUpload = await uploadService.uploadDocuments([file]);
                     
@@ -591,13 +572,9 @@ class DecompteOrchestrator {
                         throw new Error(resultatsUpload.erreurs[0].erreur);
                     }
                     
-                    if (resultatsUpload.reussis.length === 0) {
-                        throw new Error('Upload échoué');
-                    }
-                    
                     console.log('✅ Document uploadé:', resultatsUpload.reussis[0]);
                     
-                    // ÉTAPE 2 : Créer un décompte pour CE document
+                    // Créer le décompte
                     this.showMessage(`Création du décompte ${numero}/${data.files.length}...`);
                     const decompteId = await firestoreService.creerDecompte({
                         documents: resultatsUpload.reussis
@@ -609,39 +586,26 @@ class DecompteOrchestrator {
                         fichier: file.name
                     });
                     
-                    // ÉTAPE 3 : Analyse IA automatique
+                    // Analyse IA automatique
                     this.showMessage(`Analyse IA ${numero}/${data.files.length}...`);
                     try {
-                        // ✅ CORRECTION : Utiliser analyserAvecFichier qui passe le fichier directement
                         const donneesExtraites = await openaiService.analyserAvecFichier(
-                            file,     // Fichier original (évite CORS)
-                            magasins  // Magasins pour FINESS
+                            file,
+                            magasins
                         );
                         
-                        // Recherche intelligente de doublons après IA
-                        const montantPourRecherche = donneesExtraites.montantRemboursementClient || 
-                                                    donneesExtraites.client?.montantRemboursement || 
-                                                    donneesExtraites.montantVirement;
-
-                        console.log('🔍 Montants pour recherche doublons:', {
-                            montantRemboursementClient: donneesExtraites.montantRemboursementClient,
-                            montantVirement: donneesExtraites.montantVirement,
-                            montantUtilise: montantPourRecherche
-                        });
-
+                        // Recherche de doublons
                         const doublonsPotentiels = await firestoreService.rechercherDoublonsProbables({
-                            client: donneesExtraites.client,
-                            clients: donneesExtraites.clients,  // Pour décomptes groupés
-                            montantVirement: montantPourRecherche,
-                            mutuelle: donneesExtraites.mutuelle,
-                            codeMagasin: donneesExtraites.codeMagasin
+                            montantVirement: donneesExtraites.montantVirement,
+                            dateVirement: donneesExtraites.dateVirement,
+                            beneficiaires: donneesExtraites.beneficiaires,
+                            caissePrimaire: donneesExtraites.caissePrimaire
                         });
-
+                        
                         // Si doublon probable trouvé
                         if (doublonsPotentiels.length > 0 && doublonsPotentiels[0].id !== decompteId) {
                             const doublon = doublonsPotentiels[0];
                             
-                            // Déterminer le niveau d'alerte
                             let emoji = '🟡';
                             let niveau = 'POSSIBLE';
                             if (doublon.score >= 80) {
@@ -652,52 +616,25 @@ class DecompteOrchestrator {
                                 niveau = 'PROBABLE';
                             }
                             
-                            // Afficher les informations de doublon
-                            let clientInfo = '';
-                            if (doublon.typeDecompte === 'groupe' && doublon.clients && doublon.clients.length > 0) {
-                                // Décompte groupé : afficher TOUS les clients
-                                const nomsClients = doublon.clients
-                                    .map(c => `${c.prenom || ''} ${c.nom || ''}`.trim())
-                                    .filter(n => n)
-                                    .join(', ');
-                                clientInfo = nomsClients || 'Clients multiples';
-                            } else if (doublon.client) {
-                                // Décompte unitaire
-                                clientInfo = `${doublon.client.prenom || ''} ${doublon.client.nom || ''}`.trim();
-                            } else {
-                                clientInfo = 'Client non défini';
-                            }
-
                             const garder = confirm(
                                 `${emoji} DOUBLON ${niveau} DÉTECTÉ ! (${doublon.score}%)\n\n` +
                                 `Un décompte similaire existe déjà :\n` +
                                 `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-                                `📄 N° Décompte : ${doublon.numeroDecompte || 'Sans numéro'}\n` +
-                                `👤 Client(s) : ${clientInfo}\n` +
-                                `${doublon.typeDecompte === 'groupe' ? `👥 Type : Décompte groupé (${doublon.nombreClients || doublon.clients?.length || 2} clients)\n` : ''}` +
-                                `🏥 Mutuelle : ${doublon.mutuelle || 'Non définie'}\n` +
-                                `💰 Montant : ${this.formaterMontant(doublon.montantVirement || 0)}\n` +
-                                `\n` +
-                                `🔍 Critères correspondants :\n` +
-                                doublon.details.map(d => `   ✓ ${d}`).join('\n') +
+                                `📄 N° Décompte : ${doublon.numeroDecompte}\n` +
+                                `💰 Montant : ${this.formaterMontant(doublon.montantVirement)}\n` +
+                                `📅 Date : ${this.formaterDate(doublon.dateVirement)}\n` +
+                                `👥 Patients : ${doublon.nombreBeneficiaires}\n` +
+                                `🏥 Caisse : ${doublon.caissePrimaire || 'Non définie'}\n` +
                                 `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
                                 `Garder quand même ce décompte ?`
                             );
                             
                             if (!garder) {
-                                // Supprimer le décompte créé
-                                console.log('🗑️ Suppression du décompte doublon');
                                 await firestoreService.supprimerDecompte(decompteId, {
                                     motif: `Doublon probable (${doublon.score}%) de ${doublon.numeroDecompte}`
                                 });
                                 
                                 this.showWarning(`Décompte ${file.name} supprimé (doublon ${doublon.score}%)`);
-                                
-                                // Retirer des créés car supprimé
-                                const indexCree = resultats.crees.findIndex(c => c.id === decompteId);
-                                if (indexCree !== -1) {
-                                    resultats.crees.splice(indexCree, 1);
-                                }
                                 
                                 resultats.erreurs.push({
                                     fichier: file.name,
@@ -706,15 +643,13 @@ class DecompteOrchestrator {
                                     score: doublon.score
                                 });
                                 
-                                continue; // Passer au fichier suivant
+                                continue;
                             }
-                            
-                            console.log(`⚠️ Doublon ${doublon.score}% confirmé, création forcée`);
                         }
-
-                        // Ajouter les données extraites au décompte
+                        
+                        // Ajouter les données extraites
                         await firestoreService.ajouterDonneesExtraites(decompteId, donneesExtraites);
-
+                        
                         console.log('✅ Analyse IA terminée:', donneesExtraites);
                         resultats.analyses.push({
                             id: decompteId,
@@ -724,7 +659,6 @@ class DecompteOrchestrator {
                         
                     } catch (errorIA) {
                         console.warn('⚠️ Analyse IA échouée:', errorIA);
-                        // Le décompte est créé mais l'analyse a échoué
                         resultats.erreurs.push({
                             fichier: file.name,
                             erreur: `Analyse IA échouée: ${errorIA.message}`,
@@ -741,7 +675,7 @@ class DecompteOrchestrator {
                 }
             }
             
-            // ÉTAPE 4 : Afficher le résumé
+            // Afficher le résumé
             console.log('📊 Résumé du traitement:', resultats);
             
             if (resultats.crees.length > 0) {
@@ -749,35 +683,31 @@ class DecompteOrchestrator {
             }
             
             if (resultats.analyses.length > 0) {
-                this.showSuccess(`🤖 ${resultats.analyses.length} décompte(s) analysé(s) avec succès`);
+                this.showSuccess(`🤖 ${resultats.analyses.length} décompte(s) analysé(s)`);
             }
             
             if (resultats.erreurs.length > 0) {
                 resultats.erreurs.forEach(err => {
-                    // Message différent selon le type d'erreur
                     if (err.type === 'doublon_intelligent') {
-                        // Orange pour les doublons (c'est un choix, pas une erreur)
                         this.showWarning(`⚠️ ${err.fichier}: ${err.erreur}`);
                     } else {
-                        // Rouge pour les vraies erreurs
                         this.showError(`❌ ${err.fichier}: ${err.erreur}`);
                     }
                 });
             }
             
-            // ÉTAPE 5 : Rafraîchir les données
+            // Rafraîchir les données
             await this.loadData();
             
             this.hideLoader();
             
-            // Retourner true si au moins un décompte créé
             return resultats.crees.length > 0;
             
         } catch (error) {
             this.hideLoader();
             this.showError('Erreur création : ' + error.message);
             console.error('Erreur complète:', error);
-            throw error; // Empêche la fermeture du modal
+            throw error;
         }
     }
     
@@ -785,48 +715,10 @@ class DecompteOrchestrator {
     // AFFICHAGE DÉTAIL
     // ========================================
     
-    /**
-     * Ouvrir le modal de détail (VERSION AMÉLIORÉE)
-     */
     openDetailModal(row) {
         const self = this;
         
         // Timeline
-        const formatDate = (date) => {
-            if (!date) return '';
-            try {
-                let d;
-                
-                // Si c'est un Timestamp Firestore
-                if (date.seconds !== undefined) {
-                    d = new Date(date.seconds * 1000);
-                }
-                // Si c'est déjà une Date
-                else if (date instanceof Date) {
-                    d = date;
-                }
-                // Si c'est une string ou number
-                else {
-                    d = new Date(date);
-                }
-                
-                // Vérifier que la date est valide
-                if (isNaN(d.getTime())) return '';
-                
-                // Formater
-                return d.toLocaleDateString('fr-FR', { 
-                    day: '2-digit', 
-                    month: 'short', 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                }).replace(',', ' à');
-                
-            } catch (error) {
-                console.error('Erreur formatDate:', error);
-                return '';
-            }
-        };
-
         const timeline = {
             enabled: true,
             orientation: 'horizontal',
@@ -835,15 +727,15 @@ class DecompteOrchestrator {
                     label: 'Nouveau', 
                     status: row.statut === 'nouveau' ? 'active' : 'completed',
                     icon: '📋',
-                    date: formatDate(row.dates?.creation),
+                    date: this.formaterDate(row.dates?.creation),
                     description: 'Création du décompte'
                 },
                 { 
-                    label: 'Traitement IA', 
+                    label: 'Analyse IA', 
                     status: row.statut === 'traitement_ia' ? 'active' : 
-                            ['nouveau'].includes(row.statut) ? 'pending' : 'completed',
+                            row.statut === 'nouveau' ? 'pending' : 'completed',
                     icon: '🤖',
-                    date: formatDate(row.dates?.transmissionIA),
+                    date: this.formaterDate(row.dates?.transmissionIA),
                     description: 'Analyse automatique'
                 },
                 { 
@@ -851,14 +743,14 @@ class DecompteOrchestrator {
                     status: row.statut === 'traitement_effectue' ? 'active' : 
                             ['nouveau', 'traitement_ia'].includes(row.statut) ? 'pending' : 'completed',
                     icon: '✅',
-                    date: formatDate(row.dates?.traitementEffectue),
+                    date: this.formaterDate(row.dates?.traitementEffectue),
                     description: 'Validation des données'
                 },
                 { 
                     label: 'Rapproché', 
                     status: row.statut === 'rapprochement_bancaire' ? 'completed' : 'pending',
                     icon: '🔗',
-                    date: formatDate(row.dates?.rapprochementBancaire),
+                    date: this.formaterDate(row.dates?.rapprochementBancaire),
                     description: 'Virement confirmé'
                 }
             ],
@@ -868,75 +760,34 @@ class DecompteOrchestrator {
             showLabels: true
         };
         
-        // Sections dynamiques
+        // Sections
         let sections = [];
         
-        // Si décompte groupé avec plusieurs clients
-        if (row.typeDecompte === 'groupe' && row.clients && row.clients.length > 1) {
-            // Section récapitulatif
-            sections.push({
-                id: 'recap',
-                title: `👥 Décompte Groupé - ${row.clients.length} clients`,
-                fields: [
-                    { label: 'Type', value: 'Décompte groupé' },
-                    { label: 'Nombre de clients', value: row.clients.length },
-                    { label: 'Magasin', key: 'codeMagasin' },
-                    { 
-                        label: 'Montant total virement', 
-                        value: self.formaterMontant(row.montantVirement || 0),
-                        bold: true
-                    }
-                ]
-            });
-            
-            // Section pour CHAQUE client
-            row.clients.forEach((client, index) => {
-                sections.push({
-                    id: `client-${index}`,
-                    title: `👤 Client ${index + 1}: ${client.prenom || ''} ${client.nom || ''}`,
-                    fields: [
-                        { label: 'Nom', value: client.nom || '-' },
-                        { label: 'Prénom', value: client.prenom || '-' },
-                        { label: 'NSS', value: self.formaterNSS(client.numeroSecuriteSociale) },
-                        { label: 'N° Adhérent', value: client.numeroAdherent || '-' },
-                        { 
-                            label: 'Montant remboursement', 
-                            value: self.formaterMontant(client.montantRemboursement || 0),
-                            bold: true
-                        }
-                    ]
-                });
-            });
-            
-        } else {
-            // Décompte simple (1 seul client)
-            sections.push({
-                id: 'client',
-                title: '👤 Informations Client',
-                fields: [
-                    { label: 'Client', value: `${row.client?.prenom || ''} ${row.client?.nom || ''}`.trim() || '-' },
-                    { label: 'NSS', value: self.formaterNSS(row.client?.numeroSecuriteSociale) },
-                    { label: 'N° Adhérent', value: row.client?.numeroAdherent || '-' },
-                    { label: 'Magasin', key: 'codeMagasin' }
-                ]
-            });
-        }
-        
-        // Section financière (commune)
+        // Section virement
         sections.push({
-            id: 'financier',
-            title: '💰 Données Financières',
+            id: 'virement',
+            title: '💰 Informations du virement',
             fields: [
-                { label: 'Mutuelle', key: 'mutuelle' },
-                { label: 'Prestataire TP', key: 'prestataireTP' },
-                { 
-                    label: row.typeDecompte === 'groupe' ? 'Montant total virement' : 'Montant virement',
-                    key: 'montantVirement',
-                    formatter: (v) => self.formaterMontant(v || 0),
-                    bold: true
-                }
+                { label: 'Montant total', value: self.formaterMontant(row.montantVirement || 0), bold: true },
+                { label: 'Date virement', value: self.formaterDate(row.dateVirement) },
+                { label: 'N° virement', value: row.numeroVirement || '-' },
+                { label: 'Nombre de bénéficiaires', value: row.nombreBeneficiaires || 0 },
+                { label: 'Caisse CPAM', value: row.caissePrimaire || '-' },
+                { label: 'Société', value: row.societe || 'Non détectée', bold: true },
+                { label: 'Magasin', value: row.codeMagasin || 'Non détecté' }
             ]
         });
+        
+        // Section bénéficiaires
+        if (row.beneficiaires && row.beneficiaires.length > 0) {
+            sections.push({
+                id: 'beneficiaires',
+                title: `👥 Bénéficiaires (${row.beneficiaires.length})`,
+                fields: [],
+                html: true,
+                content: self.genererHtmlBeneficiaires(row.beneficiaires)
+            });
+        }
         
         // Section documents
         sections.push({
@@ -960,7 +811,6 @@ class DecompteOrchestrator {
                                     <a href="${d.url}" target="_blank" class="btn btn-view-icon btn-sm" title="Voir le document">
                                     </a>
                                 </div>
-                                ${d.hash ? `<div style="font-size: 0.8em; color: #9ca3af; margin-top: 4px;">Hash: ${d.hash.substring(0, 12)}...</div>` : ''}
                             </div>
                         `).join('');
                     },
@@ -969,77 +819,58 @@ class DecompteOrchestrator {
             ]
         });
         
-        // Créer le viewer ET GARDER LA RÉFÉRENCE
+        // Section rapprochement bancaire
+        if (row.rapprochement) {
+            sections.push({
+                id: 'rapprochement',
+                title: '🏦 Rapprochement bancaire',
+                fields: [
+                    { label: 'Statut', value: row.rapprochement.effectue ? '✅ Rapproché' : '⏳ En attente' },
+                    { label: 'Date rapprochement', value: self.formaterDate(row.rapprochement.dateRapprochement) || '-' },
+                    { label: 'Libellé bancaire', value: row.rapprochement.libelleCompteBancaire || '-' },
+                    { label: 'Date compte', value: self.formaterDate(row.rapprochement.dateCompteBancaire) || '-' }
+                ]
+            });
+        }
+        
+        // Créer le viewer
         const viewer = new DetailViewerWidget({
             title: `Décompte ${row.numeroDecompte}`,
-            subtitle: row.typeDecompte === 'groupe' 
-                ? `👥 ${row.clients?.length || row.nombreClients} clients - ${row.codeMagasin}`
-                : `${row.client?.prenom || ''} ${row.client?.nom || ''} - ${row.codeMagasin}`,
+            subtitle: `Virement ${self.formaterMontant(row.montantVirement)} - ${row.nombreBeneficiaires} patient(s)`,
             data: row,
             timeline: timeline,
             sections: sections,
             actions: [
                 {
-                    label: '🚧 Analyser avec IA - En travaux',
-                    class: 'btn btn-glass-purple btn-lg',
-                    onClick: (data) => {
-                        self.showWarning('Fonction en cours de développement');
-                        return false;
-                    },
-                    closeOnClick: false,
-                    show: (data) => data.statut === 'nouveau'
-                },
-                {
-                    label: '🚧 Valider - En travaux',
-                    class: 'btn btn-glass-green btn-lg',
-                    onClick: (data) => {
-                        self.showWarning('Fonction en cours de développement');
-                        return false;
-                    },
-                    closeOnClick: false,
-                    show: (data) => data.statut === 'traitement_effectue'
-                },
-                {
                     label: '🗑️ Supprimer',
                     class: 'btn btn-glass-red btn-lg',
                     onClick: async (data) => {
-                        // Confirmation simple
                         const confirmation = confirm(
                             `⚠️ Voulez-vous vraiment supprimer le décompte ${data.numeroDecompte} ?\n\n` +
                             `Cette action est irréversible.`
                         );
                         
                         if (!confirmation) {
-                            return false; // Ne pas fermer
+                            return false;
                         }
                         
                         try {
                             self.showLoader();
-                            
-                            // Supprimer
                             await firestoreService.supprimerDecompte(data.id, {
                                 motif: 'Suppression manuelle'
                             });
-                            
                             self.showSuccess('✅ Décompte supprimé');
-                            
-                            // Rafraîchir les données
                             await self.loadData();
-                            
                             self.hideLoader();
-                            
-                            // Fermer le modal manuellement
                             viewer.close();
-                            
                             return true;
-                            
                         } catch (error) {
                             self.hideLoader();
                             self.showError('❌ Erreur : ' + error.message);
                             return false;
                         }
                     },
-                    closeOnClick: false  // On gère manuellement
+                    closeOnClick: false
                 }
             ],
             size: 'large',
@@ -1048,54 +879,87 @@ class DecompteOrchestrator {
         });
     }
     
+    genererHtmlBeneficiaires(beneficiaires) {
+        return beneficiaires.map((b, index) => `
+            <div style="margin: 15px 0; padding: 15px; background: #f0f7ff; border-radius: 8px; border-left: 4px solid #0066cc;">
+                <div style="margin-bottom: 10px;">
+                    <strong style="font-size: 16px;">👤 ${b.prenom || ''} ${b.nom || ''}</strong>
+                </div>
+                ${b.numeroSecuriteSociale ? `
+                    <div style="margin: 5px 0; color: #666;">
+                        NSS : <span style="font-family: monospace;">${this.formaterNSS(b.numeroSecuriteSociale)}</span>
+                    </div>
+                ` : ''}
+                <div style="margin: 10px 0;">
+                    <strong>Montant remboursé : ${this.formaterMontant(b.montantRemboursement || 0)}</strong>
+                </div>
+                ${b.appareils && b.appareils.length > 0 ? `
+                    <div style="margin-top: 10px;">
+                        <table style="width: 100%; font-size: 14px;">
+                            <thead>
+                                <tr style="background: #e3f2fd;">
+                                    <th style="padding: 5px; text-align: left;">Oreille</th>
+                                    <th style="padding: 5px; text-align: left;">Code</th>
+                                    <th style="padding: 5px; text-align: right;">Montant</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${b.appareils.map(a => `
+                                    <tr>
+                                        <td style="padding: 5px;">${a.oreille === 'droite' ? '👂 Droite' : '👂 Gauche'}</td>
+                                        <td style="padding: 5px; font-family: monospace;">${a.codeActe || '-'}</td>
+                                        <td style="padding: 5px; text-align: right;">${this.formaterMontant(a.montant || 0)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                ` : ''}
+            </div>
+        `).join('');
+    }
+    
     // ========================================
     // FILTRAGE ET MISE À JOUR
     // ========================================
     
-    /**
-     * Appliquer les filtres
-     */
     applyFilters() {
-        console.log('🔍 Application des filtres:', {
-            ...this.currentFilters,
-            nbStatutsSelectionnes: this.currentFilters.statuts.length
-        });
+        console.log('🔍 Application des filtres:', this.currentFilters);
         
         this.filteredData = this.decomptesData.filter(decompte => {
             // Filtre recherche
             if (this.currentFilters.search) {
                 const search = this.currentFilters.search.toLowerCase();
-                const clientNom = `${decompte.client?.prenom || ''} ${decompte.client?.nom || ''}`.toLowerCase();
                 const numero = (decompte.numeroDecompte || '').toLowerCase();
-                const nss = (decompte.client?.numeroSecuriteSociale || '').replace(/\s/g, '');
+                const numeroVirement = (decompte.numeroVirement || '').toLowerCase();
+                const caisse = (decompte.caissePrimaire || '').toLowerCase();
                 
-                // Recherche aussi dans les clients pour décomptes groupés
-                let foundInClients = false;
-                if (decompte.clients && Array.isArray(decompte.clients)) {
-                    foundInClients = decompte.clients.some(c => {
-                        const nom = `${c.prenom || ''} ${c.nom || ''}`.toLowerCase();
-                        const nssClient = (c.numeroSecuriteSociale || '').replace(/\s/g, '');
-                        return nom.includes(search) || nssClient.includes(search.replace(/\s/g, ''));
+                // Recherche dans les bénéficiaires
+                let foundInBeneficiaires = false;
+                if (decompte.beneficiaires && Array.isArray(decompte.beneficiaires)) {
+                    foundInBeneficiaires = decompte.beneficiaires.some(b => {
+                        const nom = `${b.prenom || ''} ${b.nom || ''}`.toLowerCase();
+                        return nom.includes(search);
                     });
                 }
                 
-                if (!clientNom.includes(search) && 
-                    !numero.includes(search) && 
-                    !nss.includes(search.replace(/\s/g, '')) &&
-                    !foundInClients) {
+                if (!numero.includes(search) && 
+                    !numeroVirement.includes(search) && 
+                    !caisse.includes(search) &&
+                    !foundInBeneficiaires) {
                     return false;
                 }
             }
             
-            // Filtre statuts (multiple)
+            // Filtre statuts
             if (this.currentFilters.statuts && this.currentFilters.statuts.length > 0) {
                 if (!this.currentFilters.statuts.includes(decompte.statut)) {
                     return false;
                 }
             }
             
-            // Filtre mutuelle
-            if (this.currentFilters.mutuelle && decompte.mutuelle !== this.currentFilters.mutuelle) {
+            // Filtre caisse
+            if (this.currentFilters.caisse && decompte.caissePrimaire !== this.currentFilters.caisse) {
                 return false;
             }
             
@@ -1138,18 +1002,13 @@ class DecompteOrchestrator {
         }
     }
     
-    /**
-     * Mettre à jour les statistiques
-     */
     updateStats() {
         if (!this.stats || !this.statsData) return;
         
-        // Préparer les données pour les cartes
         const cardsData = {
             nouveau: this.statsData.parStatut?.nouveau || 0,
             traitement_ia: this.statsData.parStatut?.traitement_ia || 0,
             traitement_effectue: this.statsData.parStatut?.traitement_effectue || 0,
-            traitement_manuel: this.statsData.parStatut?.traitement_manuel || 0,
             rapprochement_bancaire: this.statsData.parStatut?.rapprochement_bancaire || 0,
             total: this.formaterMontant(this.statsData.montantTotal || 0)
         };
@@ -1158,47 +1017,30 @@ class DecompteOrchestrator {
         console.log('📊 Stats mises à jour:', cardsData);
     }
     
-    /**
-     * Mettre à jour les options de filtres dynamiquement
-     */
     updateFilterOptions() {
-        const mutuelles = Array.from(this.mutuellesDynamiques).sort();
+        const caisses = Array.from(this.caissesDynamiques).sort();
         const magasins = [...new Set(this.decomptesData.map(d => d.codeMagasin).filter(Boolean))].sort();
         
-        console.log('🔧 Mise à jour des options:', { mutuelles, magasins });
-        
-        // Mettre à jour le dropdown MUTUELLE
-        if (this.filters && this.filters.state.dropdowns.mutuelle) {
-            const mutuelleDropdown = this.filters.state.dropdowns.mutuelle;
-            
-            // Créer les nouvelles options
-            mutuelleDropdown.config.options = [
-                { value: '', label: 'Toutes les mutuelles' },
-                ...mutuelles.map(m => ({ value: m, label: m }))
+        // Mettre à jour le dropdown caisse
+        if (this.filters && this.filters.state.dropdowns.caisse) {
+            const caisseDropdown = this.filters.state.dropdowns.caisse;
+            caisseDropdown.config.options = [
+                { value: '', label: 'Toutes les caisses' },
+                ...caisses.map(c => ({ value: c, label: c }))
             ];
-            
-            // Re-filtrer et re-render
-            mutuelleDropdown.filteredOptions = [...mutuelleDropdown.config.options];
-            this.filters.renderDropdownOptions(mutuelleDropdown);
-            
-            console.log('✅ Dropdown mutuelle mis à jour avec', mutuelles.length, 'options');
+            caisseDropdown.filteredOptions = [...caisseDropdown.config.options];
+            this.filters.renderDropdownOptions(caisseDropdown);
         }
         
-        // Mettre à jour le dropdown MAGASIN
+        // Mettre à jour le dropdown magasin
         if (this.filters && this.filters.state.dropdowns.magasin) {
             const magasinDropdown = this.filters.state.dropdowns.magasin;
-            
-            // Créer les nouvelles options
             magasinDropdown.config.options = [
                 { value: '', label: 'Tous les magasins' },
                 ...magasins.map(m => ({ value: m, label: m }))
             ];
-            
-            // Re-filtrer et re-render
             magasinDropdown.filteredOptions = [...magasinDropdown.config.options];
             this.filters.renderDropdownOptions(magasinDropdown);
-            
-            console.log('✅ Dropdown magasin mis à jour avec', magasins.length, 'options');
         }
     }
     
@@ -1206,19 +1048,13 @@ class DecompteOrchestrator {
     // FORMATTERS
     // ========================================
     
-    /**
-     * Formater la taille d'un fichier
-     */
     formatFileSize(bytes) {
         if (!bytes) return '0 B';
         const sizes = ['B', 'KB', 'MB', 'GB'];
         const i = Math.floor(Math.log(bytes) / Math.log(1024));
         return parseFloat((bytes / Math.pow(1024, i)).toFixed(1)) + ' ' + sizes[i];
     }
-
-    /**
-     * Formater un montant
-     */
+    
     formaterMontant(montant) {
         return new Intl.NumberFormat('fr-FR', {
             style: 'currency',
@@ -1226,43 +1062,46 @@ class DecompteOrchestrator {
         }).format(montant);
     }
     
-    /**
-     * Formater un NSS
-     */
     formaterNSS(nss) {
         if (!nss) return '-';
-        
-        // Retirer tous les espaces existants
         const nssClean = nss.replace(/\s/g, '');
-        
-        // Formater : 1 85 05 78 006 048 22
         if (nssClean.length === 13) {
             return `${nssClean[0]} ${nssClean.slice(1,3)} ${nssClean.slice(3,5)} ${nssClean.slice(5,7)} ${nssClean.slice(7,10)} ${nssClean.slice(10,13)}`;
         }
-        
         if (nssClean.length === 15) {
             return `${nssClean[0]} ${nssClean.slice(1,3)} ${nssClean.slice(3,5)} ${nssClean.slice(5,7)} ${nssClean.slice(7,10)} ${nssClean.slice(10,13)} ${nssClean.slice(13)}`;
         }
-        
-        return nss; // Retourner tel quel si format incorrect
+        return nss;
+    }
+    
+    formaterDate(date) {
+        if (!date) return '-';
+        const d = date.toDate ? date.toDate() : new Date(date);
+        if (isNaN(d.getTime())) return '-';
+        return d.toLocaleDateString('fr-FR', { 
+            day: '2-digit', 
+            month: 'short', 
+            year: 'numeric',
+            hour: '2-digit', 
+            minute: '2-digit' 
+        }).replace(',', ' à');
     }
     
     // ========================================
     // UI HELPERS
     // ========================================
-
+    
     showLoader() {
         const loader = document.getElementById('pageLoader');
         if (loader) loader.classList.remove('hidden');
     }
-
+    
     hideLoader() {
         const loader = document.getElementById('pageLoader');
         if (loader) loader.classList.add('hidden');
     }
-
+    
     showMessage(message, type = 'info') {
-        // Utiliser le ToastWidget selon le type
         switch(type) {
             case 'error':
                 toast.error(message);
@@ -1277,25 +1116,20 @@ class DecompteOrchestrator {
                 toast.info(message);
         }
     }
-
+    
     showError(message) {
         toast.error(message);
         console.error('❌', message);
     }
-
+    
     showSuccess(message) {
         toast.success(message);
         console.log('✅', message);
     }
-
+    
     showWarning(message) {
         toast.warning(message);
-        console.log('🚧', message);
-    }
-
-    showInfo(message) {
-        toast.info(message);
-        console.log('ℹ️', message);
+        console.log('⚠️', message);
     }
 }
 
@@ -1303,21 +1137,16 @@ class DecompteOrchestrator {
 // EXPORT SINGLETON
 // ========================================
 
-const orchestrator = new DecompteOrchestrator();
+const orchestrator = new DecompteSecuOrchestrator();
 export default orchestrator;
 
 /* ========================================
    HISTORIQUE
    
-   [08/02/2025] - v2.1.0 CORRECTIONS
-   ✅ Utilisation de analyserAvecFichier() au lieu d'URL
-   ✅ Cache des magasins pour performance
-   ✅ Meilleure gestion des décomptes groupés
-   ✅ Recherche améliorée dans filtres
-   
-   [08/02/2025] - v2.0.0 Création
-   - Orchestrateur principal
-   - Centralise toute la logique métier
-   - Coordonne les widgets et services
-   - Gère l'état de l'application
+   [08/01/2025] - v1.0.0
+   - Création basée sur décomptes mutuelles
+   - Adaptation pour audioprothèse
+   - Support CSV et PDF
+   - Vue par virement
+   - Détection doublons intelligente
    ======================================== */

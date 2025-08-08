@@ -28,7 +28,7 @@ import toast from '../../widgets/toast/toast.widget.js';
 import uploadService from './factures-fournisseurs.upload.service.js';
 import firestoreService from './factures-fournisseurs.firestore.service.js';
 import openaiService from './factures-fournisseurs.openai.service.js';
-import { FacturesFournisseursService } from './factures-fournisseurs.service.js';
+import { FacturesFournisseursService, FACTURES_CONFIG } from './factures-fournisseurs.service.js';
 
 // Import Firebase
 import { initFirebase } from '../../src/services/firebase.service.js';
@@ -246,17 +246,18 @@ class FactureOrchestrator {
                 },
                 { 
                     type: 'select', 
-                    key: 'categorie', 
-                    label: 'Catégorie',
+                    key: 'compteComptable', 
+                    label: 'Type de dépense',
                     options: [
-                        { value: '', label: 'Toutes les catégories' },
-                        { value: 'telecom', label: 'Télécom' },
-                        { value: 'energie', label: 'Énergie' },
-                        { value: 'services', label: 'Services' },
-                        { value: 'informatique', label: 'Informatique' },
-                        { value: 'fournitures', label: 'Fournitures' },
-                        { value: 'autre', label: 'Autre' }
-                    ]
+                        { value: '', label: 'Tous les types' },
+                        ...Object.entries(FACTURES_CONFIG.COMPTES_PCG)
+                            .sort((a, b) => a[1].libelle.localeCompare(b[1].libelle))
+                            .map(([compte, data]) => ({
+                                value: compte,
+                                label: data.libelle
+                            }))
+                    ],
+                    searchable: true
                 },
                 { 
                     type: 'select', 
@@ -286,7 +287,7 @@ class FactureOrchestrator {
                     ...this.currentFilters, 
                     search: values.search || '',
                     fournisseur: values.fournisseur || '',
-                    categorie: values.categorie || '',
+                    compteComptable: values.compteComptable || '',
                     magasin: values.magasin || '',
                     periode: values.periode || 'all',
                     statuts: this.currentFilters.statuts  // Préserver les statuts des cartes
@@ -300,7 +301,7 @@ class FactureOrchestrator {
                     search: '',
                     statuts: [],
                     fournisseur: '',
-                    categorie: '',
+                    compteComptable: '',
                     magasin: '',
                     periode: 'all'
                 };
@@ -369,16 +370,22 @@ class FactureOrchestrator {
                     }
                 },
                 { 
-                    key: 'montantTTC', 
-                    label: 'Montant TTC', 
+                    key: 'comptabilite.compteComptable', 
+                    label: 'Type', 
                     sortable: true, 
-                    width: 120,
-                    formatter: (v) => {
-                        return new Intl.NumberFormat('fr-FR', { 
-                            style: 'currency', 
-                            currency: 'EUR' 
-                        }).format(v || 0);
-                    }
+                    width: 200,
+                    formatter: (v, row) => {
+                        const compte = row.comptabilite?.compteComptable;
+                        if (!compte) return '<span class="text-muted">Non défini</span>';
+                        
+                        const data = FACTURES_CONFIG.COMPTES_PCG[compte];
+                        if (data) {
+                            return `<span title="Compte ${compte}">${data.libelle}</span>`;
+                        }
+                        // Si compte non référencé dans notre dictionnaire
+                        return `<span class="text-muted" title="Compte non référencé">📊 ${compte}</span>`;
+                    },
+                    html: true
                 },
                 { 
                     key: 'statut', 
@@ -2218,8 +2225,8 @@ genererCompteFournisseurSimple(nomFournisseur) {
                 return false;
             }
             
-            // Filtre catégorie
-            if (this.currentFilters.categorie && facture.fournisseur?.categorie !== this.currentFilters.categorie) {
+            // Filtre compte comptable (type de dépense)
+            if (this.currentFilters.compteComptable && facture.comptabilite?.compteComptable !== this.currentFilters.compteComptable) {
                 return false;
             }
             
