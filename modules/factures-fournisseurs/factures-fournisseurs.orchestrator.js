@@ -360,20 +360,10 @@ class FactureOrchestrator {
                     }
                 },
                 { 
-                    key: 'categorie', 
-                    label: 'Catégorie', 
-                    sortable: true, 
-                    width: 120,
-                    formatter: (v, row) => {
-                        const cat = row.fournisseur?.categorie || '-';
-                        return cat.charAt(0).toUpperCase() + cat.slice(1);
-                    }
-                },
-                { 
                     key: 'comptabilite.compteComptable', 
-                    label: 'Type', 
+                    label: 'Type de dépense',  // ← CHANGÉ
                     sortable: true, 
-                    width: 200,
+                    width: 220,  // Un peu plus large pour le titre
                     formatter: (v, row) => {
                         const compte = row.comptabilite?.compteComptable;
                         if (!compte) return '<span class="text-muted">Non défini</span>';

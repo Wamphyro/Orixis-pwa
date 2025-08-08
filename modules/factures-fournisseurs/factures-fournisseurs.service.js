@@ -34,6 +34,10 @@ export const FACTURES_CONFIG = {
         '6063': { libelle: '🔧 Petit équipement', classe: '60' },
         '6064': { libelle: '📎 Fournitures bureau', classe: '60' },
         '6068': { libelle: '📦 Autres fournitures', classe: '60' },
+        '6181': { libelle: '📚 Documentation générale', classe: '61' },
+        '6183': { libelle: '📖 Documentation technique', classe: '61' },
+        '6257': { libelle: '🥂 Réceptions', classe: '62' },
+        '6285': { libelle: '🏛️ Cotisations professionnelles', classe: '62' },
         
         // CLASSE 61 - Services extérieurs
         '6132': { libelle: '🏢 Locations immobilières', classe: '61' },
@@ -46,6 +50,9 @@ export const FACTURES_CONFIG = {
         '6221': { libelle: '⛽ Carburants', classe: '62' },
         '6226': { libelle: '⚖️ Honoraires', classe: '62' },
         '6228': { libelle: '🎓 Formation', classe: '62' },
+        '6231': { libelle: '📢 Annonces et publicités', classe: '62' },
+        '6234': { libelle: '🎁 Cadeaux clientèle', classe: '62' },
+        '6236': { libelle: '📰 Catalogues et imprimés', classe: '62' },
         '6241': { libelle: '🚚 Transport/Livraison', classe: '62' },
         '6251': { libelle: '✈️ Voyages et déplacements', classe: '62' },
         '6256': { libelle: '🍽️ Missions/Réceptions', classe: '62' },

@@ -2,7 +2,7 @@ const {onRequest} = require("firebase-functions/v2/https");
 const cors = require("cors")({origin: true});
 require("dotenv").config();
 
-// ========== ANALYSE D'IMAGES GÉNÉRIQUE ==========
+// ========== ANALYSE D'IMAGES ET TEXTE ==========
 exports.analyzeDocument = onRequest(
   {
     region: "europe-west1",
@@ -12,13 +12,49 @@ exports.analyzeDocument = onRequest(
   (request, response) => {
     cors(request, response, async () => {
       try {
-        const { images, prompt, type } = request.body;
+        const { images, text, prompt, type } = request.body;
         
-        if (!images || images.length === 0) {
-          return response.status(400).json({ error: "Images requises" });
+        // Accepter SOIT images SOIT texte
+        if (!images && !text) {
+          return response.status(400).json({ error: "Images ou texte requis" });
         }
         
-        // FONCTION OPENAI INLINE
+        // Préparer les messages selon le type de contenu
+        let messages;
+        
+        if (text) {
+          // Pour CSV/texte
+          messages = [
+            {
+              role: "system",
+              content: "Tu es un expert en extraction de données. Réponds UNIQUEMENT avec du JSON valide, sans aucun texte, sans backticks, sans markdown."
+            },
+            {
+              role: "user",
+              content: prompt + "\n\nDOCUMENT À ANALYSER:\n" + text + "\n\nRÉPONDS UNIQUEMENT EN JSON VALIDE."
+            }
+          ];
+        } else {
+          // Pour images (PDF, JPG, etc.)
+          messages = [
+            {
+              role: "system",
+              content: "Tu es un expert en extraction de données. Réponds UNIQUEMENT avec du JSON valide, sans aucun texte, sans backticks, sans markdown."
+            },
+            {
+              role: "user",
+              content: [
+                { type: "text", text: prompt + "\n\nRÉPONDS UNIQUEMENT EN JSON VALIDE." },
+                ...images.map(img => ({
+                  type: "image_url",
+                  image_url: { url: `data:image/jpeg;base64,${img}` }
+                }))
+              ]
+            }
+          ];
+        }
+        
+        // Appel OpenAI
         const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
           method: "POST",
           headers: {
@@ -26,23 +62,8 @@ exports.analyzeDocument = onRequest(
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            model: "gpt-4.1-mini",
-            messages: [
-              {
-                role: "system",
-                content: "Tu es un expert en extraction de données. Réponds UNIQUEMENT avec du JSON valide, sans aucun texte, sans backticks, sans markdown."
-              },
-              {
-                role: "user",
-                content: [
-                  { type: "text", text: prompt + "\n\nRÉPONDS UNIQUEMENT EN JSON VALIDE." },
-                  ...images.map(img => ({
-                    type: "image_url",
-                    image_url: { url: `data:image/jpeg;base64,${img}` }
-                  }))
-                ]
-              }
-            ],
+            model: "gpt-4.1-mini",  // ← Modèle correct
+            messages: messages,
             temperature: 0.1,
             max_tokens: 4000,
             response_format: { type: "json_object" }
