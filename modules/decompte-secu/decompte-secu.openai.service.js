@@ -56,7 +56,25 @@ class DecompteSecuOpenAIService {
             const resultat = await this.callOpenAI(contenuPourIA, magasins, file.type);
             
             console.log('✅ Analyse IA terminée');
-            return resultat;
+// LIGNE 58 : console.log('✅ Analyse IA terminée');
+
+// 🔍 AJOUTEZ CE BLOC DE DEBUG ICI (ligne 59+)
+console.log('🔍 === DEBUG ANALYSE IA ===');
+console.log('📤 Données reçues de GPT:', JSON.stringify(resultat, null, 2));
+
+// Vérifier spécifiquement les appareils
+if (resultat.virements) {
+    resultat.virements.forEach((vir, idx) => {
+        console.log(`\n📊 VIREMENT ${idx + 1}:`);
+        vir.beneficiaires?.forEach(b => {
+            console.log(`  👤 ${b.prenom} ${b.nom}: ${b.montantRemboursement}€`);
+            console.log(`     Appareils:`, b.appareils);
+        });
+    });
+}
+console.log('🔍 === FIN DEBUG IA ===\n');
+
+return resultat;  // Cette ligne existe déjà
             
         } catch (error) {
             console.error('❌ Erreur analyse IA:', error);
@@ -212,174 +230,289 @@ class DecompteSecuOpenAIService {
         }
     }
     
-    /**
-     * Générer le prompt pour l'IA
-     */
-    generatePrompt(magasins, fileType) {
-        // Préparer la liste ENRICHIE des magasins pour la détection FINESS
-        const magasinsJSON = JSON.stringify(
-            magasins.map(m => ({
-                code: m.code,
-                finess: m.finess,
-                nom: m.nom,
-                societe: m.societe  // Important pour le mapping
-            })),
-            null,
-            2
-        );
-        
-        const formatInfo = fileType === 'text/csv' ? 
-            'un fichier CSV de décompte CPAM' : 
-            'un document PDF de décompte CPAM';
-        
-        return `Tu es un expert en analyse de décomptes CPAM pour audioprothèse.
-Tu analyses ${formatInfo} et tu dois extraire TOUTES les informations.
+/**
+ * Générer le prompt pour l'IA - VERSION MULTI-VIREMENTS
+ */
+generatePrompt(magasins, fileType) {
+    const magasinsJSON = JSON.stringify(
+        magasins.map(m => ({
+            code: m.code,
+            finess: m.finess,
+            nom: m.nom,
+            societe: m.societe
+        })),
+        null,
+        2
+    );
+    
+    const formatInfo = fileType === 'text/csv' ? 
+        'un fichier CSV de décompte CPAM' : 
+        'un document PDF de décompte CPAM';
+    
+    return `Tu es un expert en analyse de décomptes CPAM pour audioprothèse.
+Tu analyses ${formatInfo} qui contient PLUSIEURS VIREMENTS BANCAIRES à des dates différentes.
 
-CONTEXTE IMPORTANT:
-- Ce sont des remboursements d'appareils auditifs
-- Un virement peut contenir plusieurs patients
-- Chaque patient peut avoir 1 ou 2 appareils (oreille droite et/ou gauche)
-- Les montants standards sont souvent autour de 199,71€ par appareil
+⚠️ STRUCTURE CRITIQUE - MULTI-VIREMENTS:
+Un décompte CPAM contient généralement PLUSIEURS virements bancaires distincts.
+Chaque virement a sa propre date, référence et liste de bénéficiaires.
+NE PAS fusionner tous les virements en un seul !
 
-EXTRACTION OBLIGATOIRE:
+FORMAT JSON OBLIGATOIRE:
 {
-    "montantVirement": number, // Montant total du virement
-    "dateVirement": "YYYY-MM-DD", // Date du virement
-    "numeroVirement": "string", // Référence du virement
-    "caissePrimaire": "string", // Ex: "CAMIEG", "CPAM PARIS"
-    "beneficiaires": [
+    "informationsGenerales": {
+        "caissePrimaire": "string",        // Ex: "CAMIEG", "CPAM PARIS"
+        "numeroFINESS": "string",          // 9 chiffres trouvés sur le document
+        "codeMagasin": "string ou null",   // Via mapping FINESS
+        "societe": "string ou null",       // Société correspondante
+        "periodeTraitement": "YYYY-MM",    // Période du décompte
+        "numeroDecompte": "string"         // Si présent sur le document
+    },
+    
+    "virements": [                         // ⚠️ TABLEAU de virements
         {
-            "nom": "string",
-            "prenom": "string",
-            "numeroSecuriteSociale": "string", // Si disponible
-            "montantRemboursement": number, // Total pour ce patient
-            "appareils": [
+            "dateVirement": "YYYY-MM-DD",  // Date de CE virement
+            "numeroVirement": "string",     // Référence de CE virement
+            "montantVirement": number,      // Montant de CE virement
+            "nombreBeneficiaires": number,  // Nombre de patients dans CE virement
+            "beneficiaires": [
                 {
-                    "oreille": "droite" ou "gauche",
-                    "codeActe": "string", // Code CCAM si disponible
-                    "montant": number
+                    "nom": "string",
+                    "prenom": "string",
+                    "numeroSecuriteSociale": "string",
+                    "dateNaissance": "YYYY-MM-DD",
+                    "montantRemboursement": number,  // Total pour ce patient
+                    "nombreAppareils": number,       // 1 ou 2
+                    "appareils": [
+                        {
+                            "oreille": "droite" ou "gauche" ou "bilateral",
+                            "dateFacture": "YYYY-MM-DD",
+                            "numeroFacture": "string",
+                            "codeActe": "string",    // Ex: "P1D", "P2G"
+                            "montantBase": number,   // Prix de base
+                            "montantRembourse": number  // Remboursement
+                        }
+                    ]
                 }
             ]
         }
     ],
-    "finessDetecte": "string", // FINESS du professionnel trouvé sur le document
-    "codeMagasin": "string", // Code magasin correspondant au FINESS
-    "societe": "string" // ⚠️ IMPORTANT: Société correspondante au magasin
+    
+    "totaux": {
+        "nombreTotalVirements": number,     // Nombre de virements distincts
+        "montantTotalVirements": number,    // Somme de tous les virements
+        "nombreTotalBeneficiaires": number, // Total patients uniques
+        "nombreTotalAppareils": number      // Total appareils
+    }
 }
 
-RECHERCHE DU MAGASIN ET SOCIÉTÉ:
-⚠️ TRÈS IMPORTANT - Tu dois OBLIGATOIREMENT:
-1. Chercher le numéro FINESS (9 chiffres) sur le document
-2. Le comparer avec cette liste de magasins:
+IDENTIFICATION DES VIREMENTS MULTIPLES:
+
+Pour un CSV, les indices de virements distincts:
+1. Changement de DATE DE PAIEMENT/VIREMENT
+2. Lignes contenant "VIREMENT", "PAIEMENT", "TOTAL VIREMENT"
+3. Références différentes (numéros de virement)
+4. Séparations visuelles (lignes vides, tirets)
+5. Sous-totaux intermédiaires
+
+⚠️ EXTRACTION CRITIQUE DES MONTANTS PAR APPAREIL:
+
+RÈGLES IMPORTANTES POUR LES MONTANTS:
+1. Le montant total par patient est souvent divisé en 2 appareils (droite + gauche)
+2. Les montants standards CPAM pour l'audioprothèse sont:
+   - 199,71€ par appareil (classe I)
+   - 240,00€ par appareil (certains tarifs)
+   - 480,00€ pour 2 appareils (2 x 240€)
+3. Les codes d'actes contiennent souvent l'indication de l'oreille:
+   - P1D, P2D, etc. = Droite
+   - P1G, P2G, etc. = Gauche
+   - Ou "D" pour droite, "G" pour gauche
+
+LOGIQUE D'EXTRACTION DES MONTANTS:
+- Si tu trouves un montant total pour un patient SANS détail par appareil:
+  * Et qu'il y a 2 codes (comme P1D et P1G) → divise le montant par 2
+  * Exemple: 480€ total avec P1D et P1G → 240€ pour droite, 240€ pour gauche
+- Si un seul montant global et 2 appareils mentionnés → divise par 2
+- Si tu ne trouves pas les montants détaillés, CALCULE-LES en divisant équitablement
+
+EXEMPLE CONCRET pour un patient:
+Si tu vois dans le CSV:
+- Patient: Bernadette LAMALLE  
+- Montant total: 480,00€
+- Codes: P2D et P2G
+- Pas de montant détaillé par code
+
+Tu DOIS retourner:
+"beneficiaires": [{
+    "nom": "LAMALLE",
+    "prenom": "Bernadette",
+    "numeroSecuriteSociale": "2381021253001",
+    "montantRemboursement": 480.00,
+    "nombreAppareils": 2,
+    "appareils": [
+        {
+            "oreille": "droite",
+            "codeActe": "P2D",
+            "montantRembourse": 240.00  // ← CALCULÉ: 480 / 2
+        },
+        {
+            "oreille": "gauche",
+            "codeActe": "P2G",
+            "montantRembourse": 240.00  // ← CALCULÉ: 480 / 2
+        }
+    ]
+}]
+
+RÈGLES D'EXTRACTION:
+
+1. VIREMENTS:
+   - Identifier CHAQUE virement distinct
+   - Chercher les dates de paiement différentes
+   - Ne PAS additionner les virements ensemble
+   - Chaque virement a ses propres bénéficiaires
+
+2. BÉNÉFICIAIRES ET APPAREILS:
+   - Un patient peut apparaître dans UN SEUL virement
+   - NSS format: [1-2] AA MM DD DDD CCC [CC] (13 ou 15 chiffres)
+   - TOUJOURS calculer les montants par appareil si non détaillés
+   - Si 2 appareils et 1 montant total → diviser par 2
+   - Identifier l'oreille par le code (D=droite, G=gauche)
+
+3. RECHERCHE MAGASIN ET SOCIÉTÉ:
+   Chercher le FINESS (9 chiffres) et le comparer avec:
 ${magasinsJSON}
-3. Si le FINESS est trouvé dans la liste:
-   - finessDetecte = le FINESS trouvé sur le document
-   - codeMagasin = le "code" correspondant dans la liste
-   - societe = la "societe" correspondante dans la liste ⚠️ NE PAS OUBLIER
-4. Si le FINESS n'est PAS trouvé dans la liste:
-   - finessDetecte = le FINESS trouvé sur le document (s'il existe)
+   
+   Si trouvé:
+   - codeMagasin = le code correspondant
+   - societe = la société correspondante ⚠️ OBLIGATOIRE
+   
+   Si non trouvé:
    - codeMagasin = null
    - societe = null
 
-EXEMPLE:
-Si tu trouves FINESS "130044759" sur le document et qu'il correspond à:
-{ "code": "9MAR", "finess": "130044759", "nom": "Marseille", "societe": "BA" }
-Tu dois retourner:
-"finessDetecte": "130044759",
-"codeMagasin": "9MAR",
-"societe": "BA"
+4. TOTAUX:
+   - nombreTotalVirements = nombre de virements distincts
+   - montantTotalVirements = somme de TOUS les virements
+   - nombreTotalBeneficiaires = patients uniques (sans doublons)
+   - nombreTotalAppareils = somme de tous les appareils (compter vraiment les appareils)
 
-RÈGLES IMPORTANTES:
-- TOUJOURS extraire TOUS les bénéficiaires
-- Calculer le montant total du virement
-- Identifier chaque appareil (droite/gauche)
-- Le NSS a 13 ou 15 chiffres
-- Les dates au format YYYY-MM-DD
-- La société doit venir du mapping, PAS du document
+VALIDATION FINALE:
+- Vérifier que chaque appareil a un montantRembourse (jamais 0 si le patient a un remboursement)
+- Si montantTotalVirements = 2880€, tu dois avoir PLUSIEURS virements qui totalisent 2880€
+- Ne JAMAIS retourner un seul virement avec le montant total
+- Vérifier que la somme des virements = montant total
 
-Pour un CSV:
-- Les colonnes peuvent varier
-- Chercher les montants, noms, prénoms
-- Regrouper par patient si nécessaire
-
-RETOURNE UNIQUEMENT LE JSON, sans commentaire.`;
-    }
+RETOURNE UNIQUEMENT LE JSON VALIDE, sans commentaire ni explication.`;
+}
     
     /**
-     * Formater la réponse de l'IA
+     * Formater la réponse de l'IA - VERSION MULTI-VIREMENTS
      */
     formatIAResponse(data) {
-        // S'assurer que les données sont complètes
-        const formatted = {
-            montantVirement: data.montantVirement || 0,
-            dateVirement: data.dateVirement || null,
-            numeroVirement: data.numeroVirement || null,
-            caissePrimaire: data.caissePrimaire || null,
-            
-            beneficiaires: this.formatBeneficiaires(data.beneficiaires || []),
-            
-            // Détection magasin ET société
-            finessDetecte: data.finessDetecte || null,
-            codeMagasin: data.codeMagasin || null,
-            societe: data.societe || null,  // PAS de valeur par défaut !
-            
-            // Format source
-            formatSource: data.formatSource || 'pdf'
-        };
+        // Gérer l'ancienne et la nouvelle structure
+        let formatted;
         
-        // Vérifier la cohérence des montants
-        const totalBeneficiaires = formatted.beneficiaires.reduce(
-            (sum, b) => sum + (b.montantRemboursement || 0),
-            0
-        );
-        
-        // Si pas de montant virement, utiliser le total des bénéficiaires
-        if (!formatted.montantVirement && totalBeneficiaires > 0) {
-            formatted.montantVirement = totalBeneficiaires;
+        // Si nouvelle structure avec virements multiples
+        if (data.virements && Array.isArray(data.virements)) {
+            formatted = {
+                // Infos générales
+                caissePrimaire: data.informationsGenerales?.caissePrimaire || null,
+                numeroFINESS: data.informationsGenerales?.numeroFINESS || null,
+                codeMagasin: data.informationsGenerales?.codeMagasin || null,
+                societe: data.informationsGenerales?.societe || null,
+                periodeTraitement: data.informationsGenerales?.periodeTraitement || null,
+                
+                // Virements
+                virements: data.virements.map(v => ({
+                    dateVirement: v.dateVirement,
+                    numeroVirement: v.numeroVirement,
+                    montantVirement: v.montantVirement,
+                    nombreBeneficiaires: v.nombreBeneficiaires,
+                    beneficiaires: this.formatBeneficiaires(v.beneficiaires || [])
+                })),
+                
+                // Totaux
+                totaux: data.totaux || {
+                    nombreTotalVirements: data.virements.length,
+                    montantTotalVirements: data.virements.reduce((sum, v) => sum + v.montantVirement, 0),
+                    nombreTotalBeneficiaires: 0,
+                    nombreTotalAppareils: 0
+                }
+            };
+        } 
+        // Ancienne structure (compatibilité)
+        else {
+            formatted = {
+                caissePrimaire: data.caissePrimaire || null,
+                numeroFINESS: data.finessDetecte || null,
+                codeMagasin: data.codeMagasin || null,
+                societe: data.societe || null,
+                
+                // Convertir en tableau de virements
+                virements: [{
+                    dateVirement: data.dateVirement || null,
+                    numeroVirement: data.numeroVirement || null,
+                    montantVirement: data.montantVirement || 0,
+                    nombreBeneficiaires: data.beneficiaires?.length || 0,
+                    beneficiaires: this.formatBeneficiaires(data.beneficiaires || [])
+                }],
+                
+                totaux: {
+                    nombreTotalVirements: 1,
+                    montantTotalVirements: data.montantVirement || 0,
+                    nombreTotalBeneficiaires: data.beneficiaires?.length || 0,
+                    nombreTotalAppareils: 0
+                }
+            };
         }
         
         console.log('📊 Données formatées:', {
-            montant: formatted.montantVirement,
-            beneficiaires: formatted.beneficiaires.length,
+            virements: formatted.virements.length,
+            montantTotal: formatted.totaux.montantTotalVirements,
+            beneficiairesTotal: formatted.totaux.nombreTotalBeneficiaires,
             caisse: formatted.caissePrimaire,
             magasin: formatted.codeMagasin,
-            societe: formatted.societe  // Ajouter dans le log
+            societe: formatted.societe
         });
         
         return formatted;
     }
     
-    /**
-     * Formater les bénéficiaires
-     */
-    formatBeneficiaires(beneficiaires) {
-        if (!Array.isArray(beneficiaires)) {
-            return [];
+        /**
+         * Formater les bénéficiaires
+         */
+        formatBeneficiaires(beneficiaires) {
+            if (!Array.isArray(beneficiaires)) {
+                return [];
+            }
+            
+            return beneficiaires.map(b => ({
+                nom: (b.nom || '').toUpperCase(),
+                prenom: this.capitalizeFirstLetter(b.prenom || ''),
+                numeroSecuriteSociale: this.cleanNSS(b.numeroSecuriteSociale),
+                montantRemboursement: b.montantRemboursement || 0,
+                nombreAppareils: b.appareils?.length || b.nombreAppareils || 0,  // ⚡ AJOUT
+                appareils: this.formatAppareils(b.appareils || [])
+            }));
         }
-        
-        return beneficiaires.map(b => ({
-            nom: (b.nom || '').toUpperCase(),
-            prenom: this.capitalizeFirstLetter(b.prenom || ''),
-            numeroSecuriteSociale: this.cleanNSS(b.numeroSecuriteSociale),
-            montantRemboursement: b.montantRemboursement || 0,
-            appareils: this.formatAppareils(b.appareils || [])
-        }));
-    }
     
-    /**
-     * Formater les appareils
-     */
-    formatAppareils(appareils) {
-        if (!Array.isArray(appareils)) {
-            return [];
+        /**
+         * Formater les appareils
+         */
+        formatAppareils(appareils) {
+            if (!Array.isArray(appareils)) {
+                return [];
+            }
+            
+            return appareils.map(a => ({
+                oreille: (a.oreille || '').toLowerCase(),
+                codeActe: a.codeActe || null,
+                montantRembourse: a.montantRembourse || a.montant || 0,  // ⚡ IMPORTANT
+                // Ajouter les autres champs si présents
+                dateFacture: a.dateFacture || null,
+                numeroFacture: a.numeroFacture || null,
+                montantBase: a.montantBase || null
+            }));
         }
-        
-        return appareils.map(a => ({
-            oreille: (a.oreille || '').toLowerCase(),
-            codeActe: a.codeActe || null,
-            montant: a.montant || 0
-        }));
-    }
     
     /**
      * Nettoyer un NSS

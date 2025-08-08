@@ -324,85 +324,101 @@ class DecompteSecuOrchestrator {
             columns: [
                 { 
                     key: 'numeroDecompte', 
-                    label: 'N° Décompte', 
-                    sortable: true, 
-                    width: 140,
+                    label: 'N° Décompte',
+                    sortable: true,
+                    width: 140
+                },
+                { 
+                    key: 'numeroVirement', 
+                    label: 'Réf. Virement',
+                    width: 120,
                     formatter: (v) => v || '-'
                 },
                 { 
                     key: 'dateVirement', 
-                    label: 'Date virement', 
-                    sortable: true, 
+                    label: 'Date Virement',
+                    sortable: true,
                     width: 110,
-                    formatter: (v) => {
-                        if (!v) return '-';
-                        const date = v.toDate ? v.toDate() : new Date(v);
-                        return date.toLocaleDateString('fr-FR');
+                    formatter: (date) => {
+                        if (!date) return '-';
+                        const d = date.toDate ? date.toDate() : new Date(date);
+                        return d.toLocaleDateString('fr-FR');
                     }
                 },
                 { 
                     key: 'nombreBeneficiaires', 
-                    label: 'Nb patients', 
-                    sortable: true, 
-                    width: 100,
-                    formatter: (v) => {
-                        if (!v || v === 0) return '-';
-                        return `<span class="badge badge-virement">${v} patient${v > 1 ? 's' : ''}</span>`;
+                    label: 'Patients',
+                    width: 80,
+                    formatter: (nb) => {
+                        if (!nb || nb === 0) return '-';
+                        return `<span class="badge badge-primary">${nb}</span>`;
                     }
                 },
                 { 
                     key: 'montantVirement', 
-                    label: 'Montant virement', 
-                    sortable: true, 
-                    width: 140,
+                    label: 'Montant',
+                    sortable: true,
+                    width: 120,
                     formatter: (v) => {
-                        const montant = new Intl.NumberFormat('fr-FR', { 
-                            style: 'currency', 
-                            currency: 'EUR' 
+                        return new Intl.NumberFormat('fr-FR', {
+                            style: 'currency',
+                            currency: 'EUR'
                         }).format(v || 0);
-                        return `<strong>${montant}</strong>`;
                     }
                 },
                 { 
                     key: 'caissePrimaire', 
-                    label: 'Caisse', 
-                    sortable: true, 
-                    width: 120,
-                    formatter: (v) => v || '-'
+                    label: 'Caisse',
+                    sortable: true,
+                    width: 150
                 },
                 { 
                     key: 'codeMagasin', 
-                    label: 'Magasin', 
-                    sortable: true, 
-                    width: 80,
+                    label: 'Magasin',
+                    sortable: true,
+                    width: 80
+                },
+                { 
+                    key: 'societe', 
+                    label: 'Société',
+                    width: 150,
                     formatter: (v) => v || '-'
                 },
                 { 
-                    key: 'statut', 
-                    label: 'Statut', 
-                    sortable: true,
+                    key: 'statutRapprochement', 
+                    label: 'Rapprochement',
                     width: 120,
-                    formatter: (v) => {
+                    formatter: (statut) => {
                         const statuts = {
-                            'nouveau': { label: 'Nouveau', class: 'badge-secondary' },
-                            'traitement_ia': { label: 'IA', class: 'badge-info' },
-                            'traitement_effectue': { label: 'Traité', class: 'badge-success' },
-                            'rapprochement_bancaire': { label: 'Rapproché', class: 'badge-primary' },
-                            'supprime': { label: 'Supprimé', class: 'badge-danger' }
+                            'en_attente': { 
+                                label: 'En attente', 
+                                class: 'badge-warning',
+                                icon: '⏳'
+                            },
+                            'rapproche': { 
+                                label: 'Rapproché', 
+                                class: 'badge-success',
+                                icon: '✅'
+                            },
+                            'ecart': {
+                                label: 'Écart détecté',
+                                class: 'badge-danger',
+                                icon: '⚠️'
+                            }
                         };
-                        const statut = statuts[v] || { label: v, class: 'badge-secondary' };
-                        return `<span class="badge ${statut.class}">${statut.label}</span>`;
+                        const s = statuts[statut] || statuts['en_attente'];
+                        return `<span class="badge ${s.class}">${s.icon} ${s.label}</span>`;
                     }
                 },
                 { 
                     type: 'actions',
                     label: 'Actions',
-                    width: 80,
+                    width: 100,
                     actions: [
                         { 
                             type: 'view',
-                            title: 'Voir les détails',
-                            onClick: (row, index) => this.openDetailModal(row)
+                            title: 'Voir détails',
+                            onClick: (row) => this.openVirementDetailModal(row)
                         }
                     ]
                 }
@@ -468,10 +484,69 @@ class DecompteSecuOrchestrator {
             // Charger TOUS les décomptes
             const tousLesDecomptes = await firestoreService.getDecomptes({ limite: 100 });
             
-            // Filtrer les supprimés
-            this.decomptesData = tousLesDecomptes.filter(d => d.statut !== 'supprime');
+            // TRANSFORMATION : Aplatir les virements
+            const virementsAplatis = [];
             
-            console.log(`✅ ${this.decomptesData.length} décomptes actifs`);
+            tousLesDecomptes.forEach(decompte => {
+                if (decompte.statut === 'supprime') return;
+                
+                // Si le décompte a des virements multiples
+                if (decompte.virements && decompte.virements.length > 0) {
+                    decompte.virements.forEach((virement, index) => {
+                        virementsAplatis.push({
+                            // Infos du décompte parent
+                            id: `${decompte.id}_vir_${index}`,
+                            decompteId: decompte.id,
+                            numeroDecompte: decompte.numeroDecompte,
+                            caissePrimaire: decompte.caissePrimaire,
+                            codeMagasin: decompte.codeMagasin,
+                            societe: decompte.societe,
+                            statut: decompte.statut,
+                            
+                            // Infos spécifiques au virement
+                            virementId: virement.id || `vir-${String(index + 1).padStart(3, '0')}`,
+                            numeroVirement: virement.numeroVirement || `Vir. ${index + 1}`,
+                            dateVirement: virement.dateVirement,
+                            montantVirement: virement.montantVirement || 0,
+                            nombreBeneficiaires: virement.nombreBeneficiaires || virement.beneficiaires?.length || 0,
+                            beneficiaires: virement.beneficiaires || [],
+                            
+                            // ⚡ AJOUT : Statut de rapprochement
+                            statutRapprochement: virement.rapprochement?.statut || 'en_attente',
+                            dateRapprochement: virement.rapprochement?.dateRapprochement,
+                            ecartRapprochement: virement.rapprochement?.ecart,
+                            
+                            // Pour le détail
+                            _decompteComplet: decompte,
+                            _indexVirement: index
+                        });
+                    });
+                } 
+                // Compatibilité ancienne structure (1 seul virement)
+                else if (decompte.montantVirement) {
+                    virementsAplatis.push({
+                        id: `${decompte.id}_vir_0`,
+                        decompteId: decompte.id,
+                        numeroDecompte: decompte.numeroDecompte,
+                        caissePrimaire: decompte.caissePrimaire,
+                        codeMagasin: decompte.codeMagasin,
+                        societe: decompte.societe,
+                        statut: decompte.statut,
+                        
+                        numeroVirement: decompte.numeroVirement || 'Vir. 1',
+                        dateVirement: decompte.dateVirement,
+                        montantVirement: decompte.montantVirement || 0,
+                        nombreBeneficiaires: decompte.nombreBeneficiaires || 0,
+                        beneficiaires: decompte.beneficiaires || [],
+                        
+                        _decompteComplet: decompte,
+                        _indexVirement: 0
+                    });
+                }
+            });
+            
+            this.decomptesData = virementsAplatis;
+            console.log(`✅ ${this.decomptesData.length} virements chargés`);
             
             // Charger les stats
             this.statsData = await firestoreService.getStatistiques();
@@ -495,17 +570,20 @@ class DecompteSecuOrchestrator {
             console.error('Erreur complète:', error);
         }
     }
-    
+
+    /**
+     * Mettre à jour les listes dynamiques (caisses)
+     */
     updateDynamicLists() {
         this.caissesDynamiques.clear();
         
-        this.decomptesData.forEach(decompte => {
-            if (decompte.caissePrimaire) {
-                this.caissesDynamiques.add(decompte.caissePrimaire);
+        this.decomptesData.forEach(virement => {
+            if (virement.caissePrimaire) {
+                this.caissesDynamiques.add(virement.caissePrimaire);
             }
         });
         
-        console.log('📊 Caisses:', Array.from(this.caissesDynamiques));
+        console.log('📊 Caisses détectées:', Array.from(this.caissesDynamiques));
     }
     
     // ========================================
@@ -594,11 +672,9 @@ class DecompteSecuOrchestrator {
                             magasins
                         );
                         
-                        // Recherche de doublons
+                        // Recherche de doublons - Passer TOUS les virements
                         const doublonsPotentiels = await firestoreService.rechercherDoublonsProbables({
-                            montantVirement: donneesExtraites.montantVirement,
-                            dateVirement: donneesExtraites.dateVirement,
-                            beneficiaires: donneesExtraites.beneficiaires,
+                            virements: donneesExtraites.virements,
                             caissePrimaire: donneesExtraites.caissePrimaire
                         });
                         
@@ -630,9 +706,10 @@ class DecompteSecuOrchestrator {
                             );
                             
                             if (!garder) {
-                                await firestoreService.supprimerDecompte(decompteId, {
-                                    motif: `Doublon probable (${doublon.score}%) de ${doublon.numeroDecompte}`
-                                });
+                            await firestoreService.supprimerDecompte(decompteId, {
+                                motif: `Doublon probable (${doublon.score}%) de ${doublon.numeroDecompte}`,
+                                doublonDetecte: true  // ⚡ Flag pour suppression COMPLÈTE
+                            });
                                 
                                 this.showWarning(`Décompte ${file.name} supprimé (doublon ${doublon.score}%)`);
                                 
@@ -715,209 +792,440 @@ class DecompteSecuOrchestrator {
     // AFFICHAGE DÉTAIL
     // ========================================
     
-    openDetailModal(row) {
-        const self = this;
-        
-        // Timeline
-        const timeline = {
-            enabled: true,
-            orientation: 'horizontal',
-            items: [
-                { 
-                    label: 'Nouveau', 
-                    status: row.statut === 'nouveau' ? 'active' : 'completed',
-                    icon: '📋',
-                    date: this.formaterDate(row.dates?.creation),
-                    description: 'Création du décompte'
-                },
-                { 
-                    label: 'Analyse IA', 
-                    status: row.statut === 'traitement_ia' ? 'active' : 
-                            row.statut === 'nouveau' ? 'pending' : 'completed',
-                    icon: '🤖',
-                    date: this.formaterDate(row.dates?.transmissionIA),
-                    description: 'Analyse automatique'
-                },
-                { 
-                    label: 'Traité', 
-                    status: row.statut === 'traitement_effectue' ? 'active' : 
-                            ['nouveau', 'traitement_ia'].includes(row.statut) ? 'pending' : 'completed',
-                    icon: '✅',
-                    date: this.formaterDate(row.dates?.traitementEffectue),
-                    description: 'Validation des données'
-                },
-                { 
-                    label: 'Rapproché', 
-                    status: row.statut === 'rapprochement_bancaire' ? 'completed' : 'pending',
-                    icon: '🔗',
-                    date: this.formaterDate(row.dates?.rapprochementBancaire),
-                    description: 'Virement confirmé'
-                }
-            ],
-            theme: 'colorful',
-            size: 'medium',
-            showDates: true,
-            showLabels: true
-        };
-        
-        // Sections
-        let sections = [];
-        
-        // Section virement
-        sections.push({
-            id: 'virement',
-            title: '💰 Informations du virement',
-            fields: [
-                { label: 'Montant total', value: self.formaterMontant(row.montantVirement || 0), bold: true },
-                { label: 'Date virement', value: self.formaterDate(row.dateVirement) },
-                { label: 'N° virement', value: row.numeroVirement || '-' },
-                { label: 'Nombre de bénéficiaires', value: row.nombreBeneficiaires || 0 },
-                { label: 'Caisse CPAM', value: row.caissePrimaire || '-' },
-                { label: 'Société', value: row.societe || 'Non détectée', bold: true },
-                { label: 'Magasin', value: row.codeMagasin || 'Non détecté' }
-            ]
-        });
-        
-        // Section bénéficiaires
-        if (row.beneficiaires && row.beneficiaires.length > 0) {
+openDetailModal(row) {
+    const self = this;
+    
+    // Formater les montants
+    const formatMontant = (m) => new Intl.NumberFormat('fr-FR', {
+        style: 'currency',
+        currency: 'EUR'
+    }).format(m || 0);
+    
+    // Formater les dates
+    const formatDate = (date) => {
+        if (!date) return '-';
+        const d = date.toDate ? date.toDate() : new Date(date);
+        return d.toLocaleDateString('fr-FR');
+    };
+    
+    // Timeline
+    const timeline = {
+        enabled: true,
+        orientation: 'horizontal',
+        items: [
+            { 
+                label: 'Nouveau',
+                status: row.statut === 'nouveau' ? 'active' : 'completed',
+                icon: '📋',
+                date: formatDate(row.dates?.creation)
+            },
+            { 
+                label: 'Analyse IA',
+                status: row.statut === 'traitement_ia' ? 'active' : 'completed',
+                icon: '🤖',
+                date: formatDate(row.dates?.transmissionIA)
+            },
+            { 
+                label: 'Traité',
+                status: row.statut === 'traitement_effectue' ? 'active' : 'completed',
+                icon: '✅',
+                date: formatDate(row.dates?.traitementEffectue)
+            },
+            { 
+                label: 'Rapproché',
+                status: row.statut === 'rapprochement_bancaire' ? 'completed' : 'pending',
+                icon: '🔗',
+                date: formatDate(row.dates?.rapprochementBancaire)
+            }
+        ]
+    };
+    
+    // Sections
+    const sections = [];
+    
+    // Section 1 : Informations générales
+    sections.push({
+        id: 'general',
+        title: '📊 Informations générales',
+        fields: [
+            { label: 'N° Décompte', value: row.numeroDecompte },
+            { label: 'Caisse CPAM', value: row.caissePrimaire || '-' },
+            { label: 'Magasin', value: row.codeMagasin || '-' },
+            { label: 'Société', value: row.societe || '-', bold: true },
+            { label: 'FINESS détecté', value: row.extractionIA?.donneesBrutes?.informationsGenerales?.numeroFINESS || '-' },
+            { label: 'Période', value: row.extractionIA?.donneesBrutes?.informationsGenerales?.periodeTraitement || '-' }
+        ]
+    });
+    
+    // Section 2 : Totaux
+    sections.push({
+        id: 'totaux',
+        title: '💰 Totaux du décompte',
+        fields: [
+            { 
+                label: 'Nombre de virements', 
+                value: row.virements?.length || row.totaux?.nombreTotalVirements || 0,
+                bold: true
+            },
+            { 
+                label: 'Montant total', 
+                value: formatMontant(row.totaux?.montantTotalVirements || 0),
+                bold: true
+            },
+            { 
+                label: 'Nombre total de patients', 
+                value: row.totaux?.nombreTotalBeneficiaires || 0
+            },
+            { 
+                label: 'Nombre total d\'appareils', 
+                value: row.totaux?.nombreTotalAppareils || 0
+            }
+        ]
+    });
+    
+    // Section 3 : Détail de CHAQUE virement
+    if (row.virements && row.virements.length > 0) {
+        row.virements.forEach((virement, index) => {
+            // Section pour ce virement
             sections.push({
-                id: 'beneficiaires',
-                title: `👥 Bénéficiaires (${row.beneficiaires.length})`,
-                fields: [],
-                html: true,
-                content: self.genererHtmlBeneficiaires(row.beneficiaires)
-            });
-        }
-        
-        // Section documents
-        sections.push({
-            id: 'documents',
-            title: '📄 Documents',
-            fields: [
-                {
-                    label: 'Fichiers uploadés',
-                    key: 'documents',
-                    formatter: (docs) => {
-                        if (!docs || docs.length === 0) return 'Aucun document';
-                        return docs.map(d => `
-                            <div style="margin: 8px 0; padding: 8px; background: #f8f9fa; border-radius: 4px;">
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <div>
-                                        📎 <strong>${d.nom || d.nomOriginal}</strong>
-                                        <span style="color: #6b7280; font-size: 0.9em; margin-left: 10px;">
-                                            (${self.formatFileSize(d.taille)})
-                                        </span>
-                                    </div>
-                                    <a href="${d.url}" target="_blank" class="btn btn-view-icon btn-sm" title="Voir le document">
-                                    </a>
-                                </div>
-                            </div>
-                        `).join('');
-                    },
-                    html: true
-                }
-            ]
-        });
-        
-        // Section rapprochement bancaire
-        if (row.rapprochement) {
-            sections.push({
-                id: 'rapprochement',
-                title: '🏦 Rapprochement bancaire',
+                id: `virement-${index}`,
+                title: `💳 Virement ${index + 1} - ${formatDate(virement.dateVirement)}`,
                 fields: [
-                    { label: 'Statut', value: row.rapprochement.effectue ? '✅ Rapproché' : '⏳ En attente' },
-                    { label: 'Date rapprochement', value: self.formaterDate(row.rapprochement.dateRapprochement) || '-' },
-                    { label: 'Libellé bancaire', value: row.rapprochement.libelleCompteBancaire || '-' },
-                    { label: 'Date compte', value: self.formaterDate(row.rapprochement.dateCompteBancaire) || '-' }
+                    { 
+                        label: 'Date du virement', 
+                        value: formatDate(virement.dateVirement)
+                    },
+                    { 
+                        label: 'Référence', 
+                        value: virement.numeroVirement || '-'
+                    },
+                    { 
+                        label: 'Montant du virement', 
+                        value: formatMontant(virement.montantVirement),
+                        bold: true
+                    },
+                    { 
+                        label: 'Nombre de bénéficiaires', 
+                        value: virement.nombreBeneficiaires || virement.beneficiaires?.length || 0
+                    }
                 ]
             });
-        }
-        
-        // Créer le viewer
-        const viewer = new DetailViewerWidget({
-            title: `Décompte ${row.numeroDecompte}`,
-            subtitle: `Virement ${self.formaterMontant(row.montantVirement)} - ${row.nombreBeneficiaires} patient(s)`,
-            data: row,
-            timeline: timeline,
-            sections: sections,
-            actions: [
-                {
-                    label: '🗑️ Supprimer',
-                    class: 'btn btn-glass-red btn-lg',
-                    onClick: async (data) => {
-                        const confirmation = confirm(
-                            `⚠️ Voulez-vous vraiment supprimer le décompte ${data.numeroDecompte} ?\n\n` +
-                            `Cette action est irréversible.`
-                        );
-                        
-                        if (!confirmation) {
-                            return false;
-                        }
-                        
-                        try {
-                            self.showLoader();
-                            await firestoreService.supprimerDecompte(data.id, {
-                                motif: 'Suppression manuelle'
-                            });
-                            self.showSuccess('✅ Décompte supprimé');
-                            await self.loadData();
-                            self.hideLoader();
-                            viewer.close();
-                            return true;
-                        } catch (error) {
-                            self.hideLoader();
-                            self.showError('❌ Erreur : ' + error.message);
-                            return false;
-                        }
-                    },
-                    closeOnClick: false
-                }
-            ],
-            size: 'large',
-            theme: 'default',
-            destroyOnClose: true
+            
+            // Liste des bénéficiaires de ce virement
+            if (virement.beneficiaires && virement.beneficiaires.length > 0) {
+                const beneficiairesHtml = virement.beneficiaires.map((b, idx) => `
+                    <div style="margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>${idx + 1}. ${b.prenom || ''} ${b.nom || ''}</strong>
+                                ${b.numeroSecuriteSociale ? `<br><small>NSS: ${b.numeroSecuriteSociale}</small>` : ''}
+                            </div>
+                            <div style="text-align: right;">
+                                <strong>${formatMontant(b.montantRemboursement)}</strong>
+                                ${b.nombreAppareils ? `<br><small>${b.nombreAppareils} appareil(s)</small>` : ''}
+                            </div>
+                        </div>
+                        ${b.appareils && b.appareils.length > 0 ? `
+                            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #dee2e6;">
+                                ${b.appareils.map(a => `
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.9em; color: #6c757d;">
+                                        <span>👂 ${a.oreille || 'Oreille'} - ${a.codeActe || 'Acte'}</span>
+                                        <span>${formatMontant(a.montantRembourse)}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+                
+                sections.push({
+                    id: `beneficiaires-virement-${index}`,
+                    title: `👥 Bénéficiaires du virement ${index + 1}`,
+                    fields: [{
+                        label: '',
+                        value: beneficiairesHtml,
+                        html: true
+                    }]
+                });
+            }
         });
     }
     
-    genererHtmlBeneficiaires(beneficiaires) {
-        return beneficiaires.map((b, index) => `
-            <div style="margin: 15px 0; padding: 15px; background: #f0f7ff; border-radius: 8px; border-left: 4px solid #0066cc;">
-                <div style="margin-bottom: 10px;">
-                    <strong style="font-size: 16px;">👤 ${b.prenom || ''} ${b.nom || ''}</strong>
-                </div>
-                ${b.numeroSecuriteSociale ? `
-                    <div style="margin: 5px 0; color: #666;">
-                        NSS : <span style="font-family: monospace;">${this.formaterNSS(b.numeroSecuriteSociale)}</span>
+    // Section 4 : Documents
+    sections.push({
+        id: 'documents',
+        title: '📄 Documents',
+        fields: [{
+            label: 'Fichiers uploadés',
+            key: 'documents',
+            formatter: (docs) => {
+                if (!docs || docs.length === 0) return 'Aucun document';
+                return docs.map(d => `
+                    <div style="margin: 5px 0;">
+                        📎 <a href="${d.url}" target="_blank">${d.nomOriginal || d.nom}</a>
+                        <small>(${(d.taille / 1024).toFixed(1)} KB)</small>
                     </div>
-                ` : ''}
-                <div style="margin: 10px 0;">
-                    <strong>Montant remboursé : ${this.formaterMontant(b.montantRemboursement || 0)}</strong>
+                `).join('');
+            },
+            html: true
+        }]
+    });
+    
+    // Créer le viewer
+    const viewer = new DetailViewerWidget({
+        title: `Décompte ${row.numeroDecompte}`,
+        subtitle: `${row.virements?.length || 0} virements - ${formatMontant(row.totaux?.montantTotalVirements || 0)}`,
+        data: row,
+        timeline: timeline,
+        sections: sections,
+        actions: [
+            {
+                label: '🗑️ Supprimer',
+                class: 'btn btn-glass-red btn-lg',
+                onClick: async (data) => {
+                    if (!confirm(`Supprimer le décompte ${data.numeroDecompte} ?`)) {
+                        return false;
+                    }
+                    
+                    try {
+                        await firestoreService.supprimerDecompte(data.id);
+                        self.showSuccess('Décompte supprimé');
+                        await self.loadData();
+                        viewer.close();
+                        return true;
+                    } catch (error) {
+                        self.showError('Erreur: ' + error.message);
+                        return false;
+                    }
+                },
+                closeOnClick: false
+            }
+        ],
+        size: 'large',
+        theme: 'default'
+    });
+}
+
+/**
+ * Ouvrir le détail d'un virement spécifique
+ */
+openVirementDetailModal(virementRow) {
+    const self = this;
+    
+    // Récupérer le décompte complet et l'index du virement
+    const decompteComplet = virementRow._decompteComplet;
+    const indexVirement = virementRow._indexVirement;
+    
+    // Formater les montants
+    const formatMontant = (m) => new Intl.NumberFormat('fr-FR', {
+        style: 'currency',
+        currency: 'EUR'
+    }).format(m || 0);
+    
+    // Formater les dates
+    const formatDate = (date) => {
+        if (!date) return '-';
+        const d = date.toDate ? date.toDate() : new Date(date);
+        return d.toLocaleDateString('fr-FR');
+    };
+    
+    // Timeline simplifiée
+    const timeline = {
+        enabled: true,
+        orientation: 'horizontal',
+        items: [
+            { 
+                label: 'Créé',
+                status: 'completed',
+                icon: '📋',
+                date: formatDate(decompteComplet.dates?.creation)
+            },
+            { 
+                label: 'Analysé',
+                status: 'completed',
+                icon: '🤖',
+                date: formatDate(decompteComplet.dates?.traitementEffectue)
+            },
+            { 
+                label: 'À rapprocher',
+                status: virementRow.statut === 'rapprochement_bancaire' ? 'completed' : 'active',
+                icon: '🔗',
+                date: virementRow.statut === 'rapprochement_bancaire' ? 'En attente' : '-'
+            }
+        ]
+    };
+    
+    // Sections
+    const sections = [];
+    
+    // Section 1 : Informations du virement
+    sections.push({
+        id: 'virement',
+        title: '💳 Détails du virement',
+        fields: [
+            { 
+                label: 'Date du virement', 
+                value: formatDate(virementRow.dateVirement),
+                bold: true
+            },
+            { 
+                label: 'Référence', 
+                value: virementRow.numeroVirement || '-'
+            },
+            { 
+                label: 'Montant', 
+                value: formatMontant(virementRow.montantVirement),
+                bold: true
+            },
+            { 
+                label: 'Nombre de patients', 
+                value: virementRow.nombreBeneficiaires || 0
+            },
+            { 
+                label: 'N° Décompte', 
+                value: decompteComplet.numeroDecompte
+            },
+            { 
+                label: 'Caisse CPAM', 
+                value: decompteComplet.caissePrimaire || '-'
+            },
+            { 
+                label: 'Magasin', 
+                value: decompteComplet.codeMagasin || '-'
+            },
+            { 
+                label: 'Société', 
+                value: decompteComplet.societe || '-'
+            }
+        ]
+    });
+    
+    // Section 2 : Bénéficiaires
+    if (virementRow.beneficiaires && virementRow.beneficiaires.length > 0) {
+        const beneficiairesHtml = virementRow.beneficiaires.map((b, idx) => `
+            <div style="margin: 10px 0; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div>
+                        <h5 style="margin: 0 0 5px 0; color: #333;">
+                            ${idx + 1}. ${b.prenom || ''} ${b.nom || ''}
+                        </h5>
+                        ${b.numeroSecuriteSociale ? `<small style="color: #6c757d;">NSS: ${self.formaterNSS(b.numeroSecuriteSociale)}</small>` : ''}
+                    </div>
+                    <div style="text-align: right;">
+                        <h5 style="margin: 0; color: #28a745;">${formatMontant(b.montantRemboursement || 0)}</h5>
+                        ${b.nombreAppareils ? `<small style="color: #6c757d;">${b.nombreAppareils} appareil(s)</small>` : ''}
+                    </div>
                 </div>
                 ${b.appareils && b.appareils.length > 0 ? `
-                    <div style="margin-top: 10px;">
-                        <table style="width: 100%; font-size: 14px;">
-                            <thead>
-                                <tr style="background: #e3f2fd;">
-                                    <th style="padding: 5px; text-align: left;">Oreille</th>
-                                    <th style="padding: 5px; text-align: left;">Code</th>
-                                    <th style="padding: 5px; text-align: right;">Montant</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${b.appareils.map(a => `
-                                    <tr>
-                                        <td style="padding: 5px;">${a.oreille === 'droite' ? '👂 Droite' : '👂 Gauche'}</td>
-                                        <td style="padding: 5px; font-family: monospace;">${a.codeActe || '-'}</td>
-                                        <td style="padding: 5px; text-align: right;">${this.formaterMontant(a.montant || 0)}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
+                    <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #dee2e6;">
+                        ${b.appareils.map(a => `
+                            <div style="display: flex; justify-content: space-between; padding: 5px 0; font-size: 0.9em;">
+                                <span>
+                                    👂 <strong>${a.oreille || 'Oreille'}</strong>
+                                    ${a.codeActe ? ` - Code: ${a.codeActe}` : ''}
+                                </span>
+                                <span style="color: #28a745; font-weight: bold;">
+                                    ${formatMontant(a.montantRembourse || a.montant || 0)}
+                                </span>
+                            </div>
+                        `).join('')}
                     </div>
                 ` : ''}
             </div>
         `).join('');
+        
+        sections.push({
+            id: 'beneficiaires',
+            title: `👥 Bénéficiaires (${virementRow.beneficiaires.length})`,
+            fields: [{
+                label: '',
+                value: beneficiairesHtml,
+                html: true
+            }]
+        });
     }
+    
+    // Section 3 : Documents
+    if (decompteComplet.documents && decompteComplet.documents.length > 0) {
+        sections.push({
+            id: 'documents',
+            title: '📄 Documents',
+            fields: [{
+                label: '',
+                value: decompteComplet.documents.map(d => `
+                    <div style="margin: 5px 0;">
+                        📎 <a href="${d.url}" target="_blank" style="color: #007bff;">
+                            ${d.nomOriginal || d.nom}
+                        </a>
+                        <small style="color: #6c757d;">(${(d.taille / 1024).toFixed(1)} KB)</small>
+                    </div>
+                `).join(''),
+                html: true
+            }]
+        });
+    }
+    
+    // Créer le viewer
+    const viewer = new DetailViewerWidget({
+        title: `Virement ${virementRow.numeroVirement}`,
+        subtitle: `${formatDate(virementRow.dateVirement)} - ${formatMontant(virementRow.montantVirement)}`,
+        data: virementRow,
+        timeline: timeline,
+        sections: sections,
+        actions: [
+            {
+                label: '✅ Rapprocher ce virement',
+                class: 'btn btn-glass-green btn-lg',
+                onClick: async () => {
+                    if (confirm(`Marquer ce virement de ${formatMontant(virementRow.montantVirement)} comme rapproché ?`)) {
+                        try {
+                            await firestoreService.marquerRapproche(virementRow.decompteId, {
+                                libelle: `Virement ${virementRow.numeroVirement}`,
+                                date: new Date(),
+                                montant: virementRow.montantVirement
+                            });
+                            self.showSuccess('Virement rapproché');
+                            await self.loadData();
+                            viewer.close();
+                        } catch (error) {
+                            self.showError('Erreur: ' + error.message);
+                        }
+                    }
+                },
+                visible: virementRow.statut !== 'rapprochement_bancaire'
+            },
+            {
+                label: '📊 Voir le décompte complet',
+                class: 'btn btn-glass-blue btn-lg',
+                onClick: () => {
+                    viewer.close();
+                    self.openDetailModal(decompteComplet);
+                }
+            }
+        ],
+        size: 'large',
+        theme: 'default'
+    });
+}
+
+/**
+ * Action rapide de rapprochement depuis le tableau
+ */
+async rapprocher(row) {
+    if (confirm(`Rapprocher le virement ${row.numeroVirement} de ${this.formaterMontant(row.montantVirement)} ?`)) {
+        try {
+            await firestoreService.marquerRapproche(row.decompteId, {
+                libelle: `Virement ${row.numeroVirement}`,
+                date: new Date(),
+                montant: row.montantVirement
+            });
+            this.showSuccess('Virement rapproché');
+            await this.loadData();
+        } catch (error) {
+            this.showError('Erreur: ' + error.message);
+        }
+    }
+}
     
     // ========================================
     // FILTRAGE ET MISE À JOUR
@@ -1005,16 +1313,20 @@ class DecompteSecuOrchestrator {
     updateStats() {
         if (!this.stats || !this.statsData) return;
         
+        // Calculer le montant total depuis les décomptes
+        const montantTotal = this.decomptesData.reduce((sum, d) => {
+            return sum + (d.totaux?.montantTotalVirements || d.montantVirement || 0);
+        }, 0);
+        
         const cardsData = {
             nouveau: this.statsData.parStatut?.nouveau || 0,
             traitement_ia: this.statsData.parStatut?.traitement_ia || 0,
             traitement_effectue: this.statsData.parStatut?.traitement_effectue || 0,
             rapprochement_bancaire: this.statsData.parStatut?.rapprochement_bancaire || 0,
-            total: this.formaterMontant(this.statsData.montantTotal || 0)
+            total: this.formaterMontant(montantTotal)
         };
         
         this.stats.updateAll(cardsData);
-        console.log('📊 Stats mises à jour:', cardsData);
     }
     
     updateFilterOptions() {

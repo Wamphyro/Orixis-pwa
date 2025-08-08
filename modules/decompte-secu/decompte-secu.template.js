@@ -1,276 +1,240 @@
 // ========================================
-// DECOMPTE-SECU.TEMPLATE.JS - 📋 TEMPLATE FIRESTORE
+// DECOMPTE-SECU.TEMPLATE.JS - Template Firestore
 // Chemin: modules/decompte-secu/decompte-secu.template.js
 //
 // DESCRIPTION:
-// Template Firestore pour décomptes sécurité sociale audioprothèse
-// Structure adaptée pour les virements CPAM avec multiples bénéficiaires
-// Garantit la cohérence des données dans Firestore
+// Structure complète d'un décompte CPAM audioprothèse
+// Support multi-virements avec rapprochement individuel
 //
-// VERSION: 1.0.0
+// VERSION: 3.0.0 - RAPPROCHEMENT PAR VIREMENT
 // DATE: 08/01/2025
 // ========================================
 
-// ========================================
-// TEMPLATE PRINCIPAL - DÉCOMPTE SÉCU AUDIO
-// ========================================
-
 export const DECOMPTE_SECU_TEMPLATE = {
-    // ========== IDENTIFICATION ==========
-    numeroDecompte: null,           // String - Format: SECU-YYYYMMDD-XXXX
-    typeDecompte: 'virement',       // String - Toujours 'virement' pour sécu
+    // ========================================
+    // IDENTIFICATION
+    // ========================================
     
-    // ========== VIREMENT (élément principal) ==========
-    montantVirement: 0,             // number - Montant total du virement
-    dateVirement: null,             // Timestamp - Date du virement sur le décompte
-    numeroVirement: null,           // String - Référence du virement
+    numeroDecompte: null,              // String - Format: SECU-AAAAMMJJ-XXXX
+    typeDecompte: 'multi-virements',   // String - 'unique' ou 'multi-virements'
     
-    // ========== BÉNÉFICIAIRES ==========
-    beneficiaires: [],              // Array<Beneficiaire> - Liste des patients
-    nombreBeneficiaires: 0,         // number - Nombre de patients dans le virement
+    // ========================================
+    // ORGANISATION
+    // ========================================
     
-    // ========== ORGANISATION ==========
-    societe: null,                   // String - Société détectée via FINESS → magasin
-    codeMagasin: null,              // String - Code magasin détecté via FINESS
-    magasinUploadeur: null,         // String - Magasin de l'utilisateur qui upload
+    societe: null,                     // String - Société détectée via FINESS
+    codeMagasin: null,                 // String - Code magasin (ex: '9CHE')
+    numeroFINESS: null,                // String - FINESS du professionnel (9 chiffres)
     
-    // ========== CAISSE ==========
-    caissePrimaire: null,           // String - Ex: "CAMIEG", "CPAM PARIS"
-    regime: 'general',              // String - general|rsi|msa|special
+    // ========================================
+    // CAISSE ET PÉRIODE
+    // ========================================
     
-    // ========== RAPPROCHEMENT BANCAIRE ==========
-    rapprochement: {
-        effectue: false,            // boolean - Virement rapproché ?
-        dateRapprochement: null,    // Timestamp - Date du rapprochement
-        libelleCompteBancaire: null, // String - Libellé sur le relevé bancaire
-        dateCompteBancaire: null,   // Timestamp - Date réelle du virement bancaire
-        montantBancaire: null       // number - Montant vu sur le compte (peut différer)
+    caissePrimaire: null,              // String - Ex: "CAMIEG", "CPAM PARIS"
+    periodeTraitement: null,           // String - Format: YYYY-MM
+    numeroDecompteOriginal: null,      // String - Numéro sur le document si présent
+    
+    // ========================================
+    // VIREMENTS AVEC RAPPROCHEMENT INDIVIDUEL
+    // ========================================
+    
+    virements: [],                     // Array<Object> - Liste des virements
+    /* Structure d'un virement avec rapprochement:
+    {
+        id: 'vir-001',                // String - ID unique du virement
+        dateVirement: Date,           // Date - Date du virement
+        numeroVirement: 'REF123',     // String - Référence bancaire
+        montantVirement: 1500.00,     // Number - Montant en euros
+        nombreBeneficiaires: 2,       // Number - Nombre de patients
+        
+        // ⚡ RAPPROCHEMENT INDIVIDUEL
+        rapprochement: {
+            statut: 'en_attente',    // 'en_attente' | 'rapproche' | 'ecart'
+            dateRapprochement: null,  // Date - Quand rapproché
+            montantBancaire: null,    // Number - Montant sur relevé bancaire
+            ecart: null,              // Number - Différence (bancaire - virement)
+            rapprochePar: null,       // String - "Prénom NOM" de l'utilisateur
+            commentaire: null         // String - Note si écart ou précision
+        },
+        
+        beneficiaires: [              // Array - Liste des bénéficiaires
+            {
+                nom: 'DUPONT',
+                prenom: 'Jean',
+                numeroSecuriteSociale: '1850578006048',
+                dateNaissance: Date,
+                montantRemboursement: 480.00,
+                nombreAppareils: 2,
+                appareils: [
+                    {
+                        oreille: 'droite',
+                        dateFacture: Date,
+                        numeroFacture: 'FAC-001',
+                        codeActe: 'P1D',
+                        montantBase: 950.00,
+                        montantRembourse: 240.00
+                    },
+                    {
+                        oreille: 'gauche',
+                        dateFacture: Date,
+                        numeroFacture: 'FAC-002',
+                        codeActe: 'P1G',
+                        montantBase: 950.00,
+                        montantRembourse: 240.00
+                    }
+                ]
+            }
+        ]
+    }
+    */
+    
+    // ========================================
+    // TOTAUX GLOBAUX
+    // ========================================
+    
+    totaux: {
+        nombreTotalVirements: 0,       // Number - Nombre de virements
+        montantTotalVirements: 0,      // Number - Somme de tous les virements
+        nombreTotalBeneficiaires: 0,   // Number - Total patients uniques
+        nombreTotalAppareils: 0,       // Number - Total appareils
+        
+        // Rapprochement global
+        nombreVirementsRapproches: 0, // Number - Combien sont rapprochés
+        montantTotalRapproche: 0,     // Number - Total des montants rapprochés
+        ecartTotal: 0,                // Number - Somme des écarts
+        
+        // Détails par type
+        montantParCaisse: {},          // Object - Montants par caisse si multiple
+        montantParMois: {}             // Object - Montants par mois
     },
     
-    // ========== DOCUMENTS ==========
-    documents: [],                  // Array<Document> - Documents uploadés
+    // ========================================
+    // DATES DE WORKFLOW
+    // ========================================
     
-    // ========== DATES SYSTÈME ==========
     dates: {
-        creation: null,             // Timestamp - Date de création
-        transmissionIA: null,       // Timestamp - Date d'analyse IA
-        traitementEffectue: null,   // Timestamp - Date de validation
-        rapprochementBancaire: null // Timestamp - Date de rapprochement
+        creation: null,                // Timestamp - Date de création
+        transmissionIA: null,          // Timestamp - Envoi à l'IA
+        traitementEffectue: null,      // Timestamp - Traitement terminé
+        rapprochementComplet: null,    // Timestamp - TOUS les virements rapprochés
+        derniereModification: null     // Timestamp - Dernière modif
     },
     
-    // ========== WORKFLOW ==========
-    statut: 'nouveau',              // String - nouveau|traitement_ia|traitement_effectue|rapprochement_bancaire|supprime
+    // ========================================
+    // INTERVENANTS
+    // ========================================
     
-    // ========== INTERVENANTS ==========
     intervenants: {
         creePar: {
-            id: null,               // String - ID utilisateur
-            nom: null,              // String
-            prenom: null,           // String
-            role: null              // String - technicien|admin
+            id: null,                  // String - ID utilisateur
+            nom: null,                 // String - Nom
+            prenom: null,              // String - Prénom
+            role: null                 // String - Rôle
         },
-        traitePar: null,            // Object ou null - Qui a traité
-        rapprochePar: null          // Object ou null - Qui a rapproché
+        traitePar: null,               // Object ou null - Même structure
+        derniereModificationPar: null  // Object ou null - Dernier à modifier
     },
     
-    // ========== SUPPRESSION ==========
-    suppression: null,              // Object ou null - {date, par, motif}
+    // ========================================
+    // DOCUMENTS
+    // ========================================
     
-    // ========== HISTORIQUE ==========
-    historique: [],                 // Array<HistoriqueEntry> - Traçabilité complète
+    documents: [],                     // Array<Object> - Documents uploadés
+    documentHashes: [],                // Array<String> - Hashes pour détection doublons
+    /* Structure d'un document:
+    {
+        nom: 'DS_1754679116964_n0s6gx.csv',
+        nomOriginal: '2024-12-09 - CAMIEG.csv',
+        chemin: 'decomptes-secu/ORIXIS/inbox/2025/01/08/...',
+        url: 'https://storage.googleapis.com/...',
+        taille: 3952,
+        type: 'text/csv',
+        hash: 'd55d52f3...',
+        dateUpload: Date
+    }
+    */
     
-    // ========== MÉTADONNÉES IA ==========
-    extractionIA: null,             // Object ou null - Résultats de l'analyse IA
+    // ========================================
+    // WORKFLOW
+    // ========================================
     
-    // ========== HASH POUR DOUBLONS ==========
-    documentHashes: []              // Array<String> - Hash SHA-256 des documents
-};
-
-// ========================================
-// TEMPLATE BÉNÉFICIAIRE
-// ========================================
-
-export const BENEFICIAIRE_TEMPLATE = {
-    nom: null,                      // String - Nom du patient
-    prenom: null,                   // String - Prénom du patient
-    numeroSecuriteSociale: null,    // String - NSS (13 ou 15 chiffres)
+    statut: 'nouveau',                // String - Statut global
+    // Valeurs possibles:
+    // - nouveau : Créé mais pas analysé
+    // - traitement_ia : En cours d'analyse IA
+    // - traitement_effectue : Analysé, en attente rapprochement
+    // - rapprochement_partiel : Certains virements rapprochés
+    // - rapprochement_complet : TOUS les virements rapprochés
+    // - supprime : Soft delete
     
-    // Montants
-    montantRemboursement: 0,        // number - Montant total pour ce patient
+    // ========================================
+    // EXTRACTION IA
+    // ========================================
     
-    // Appareils auditifs
-    appareils: [],                  // Array<Appareil> - Liste des appareils
-    
-    // Informations complémentaires
-    dateNaissance: null,            // String ou null - Si disponible
-    numeroAffiliation: null         // String ou null - Si différent du NSS
-};
-
-// ========================================
-// TEMPLATE APPAREIL AUDITIF
-// ========================================
-
-export const APPAREIL_TEMPLATE = {
-    oreille: null,                  // String - 'droite' ou 'gauche'
-    codeActe: null,                 // String - Code CCAM (ex: CDQP010)
-    libelle: null,                  // String - Description de l'acte
-    montant: 0,                     // number - Montant remboursé pour cet appareil
-    dateActe: null,                 // Timestamp - Date de l'appareillage
-    
-    // Informations techniques (si disponibles)
-    marque: null,                   // String ou null
-    modele: null,                   // String ou null
-    numeroSerie: null               // String ou null
-};
-
-// ========================================
-// TEMPLATE DOCUMENT
-// ========================================
-
-export const DOCUMENT_TEMPLATE = {
-    nom: null,                      // String - Nom du fichier dans Storage
-    nomOriginal: null,              // String - Nom original du fichier
-    chemin: null,                   // String - Chemin complet dans Storage
-    url: null,                      // String - URL de téléchargement
-    taille: 0,                      // number - Taille en octets
-    type: null,                     // String - Type MIME
-    hash: null,                     // String - Hash SHA-256
-    dateUpload: null,               // Timestamp
-    
-    // Métadonnées
-    format: null,                   // String - 'pdf', 'csv', 'image'
-    nombrePages: null               // number ou null - Pour les PDF
-};
-
-// ========================================
-// TEMPLATE HISTORIQUE
-// ========================================
-
-export const HISTORIQUE_ENTRY_TEMPLATE = {
-    date: null,                     // Timestamp
-    action: null,                   // String - Type d'action
-    details: null,                  // String - Description
-    timestamp: null,                // number - Timestamp en millisecondes
-    utilisateur: {
-        id: null,                   // String
-        nom: null,                  // String
-        prenom: null,               // String
-        role: null                  // String
-    },
-    donnees: null                   // Object ou null - Données additionnelles
-};
-
-// ========================================
-// TEMPLATE EXTRACTION IA
-// ========================================
-
-export const EXTRACTION_IA_TEMPLATE = {
-    timestamp: null,                // Timestamp - Date de l'analyse
-    modele: 'gpt-4o-mini',         // String - Modèle utilisé
-    
-    // Données extraites
-    montantVirement: 0,             // number
-    dateVirement: null,             // String - Format YYYY-MM-DD
-    numeroVirement: null,           // String
-    caissePrimaire: null,           // String
-    
-    // Bénéficiaires extraits
-    beneficiaires: [],              // Array - Données brutes extraites
-    
-    // Détection magasin
-    finessDetecte: null,            // String - FINESS trouvé
-    codeMagasinDetecte: null,       // String - Code magasin correspondant
-    societeDetectee: null,          // String - Société correspondante
-    
-    // Statistiques
-    tempsAnalyse: 0,                // number - Durée en ms
-    confiance: 0,                   // number - Score de confiance 0-100
-    
-    // Format source
-    formatSource: null              // String - 'pdf', 'csv', 'image'
-};
-
-// ========================================
-// CONSTANTES MÉTIER
-// ========================================
-
-export const CONSTANTES_SECU_AUDIO = {
-    // Codes CCAM audioprothèse
-    CODES_CCAM: {
-        CDQP010: 'Appareillage stéréophonique de surdité par prothèse auditive',
-        CDQP011: 'Appareillage monophonique de surdité par prothèse auditive',
-        CDQP012: 'Réglage de prothèse auditive',
-        CDQP013: 'Contrôle de prothèse auditive'
+    extractionIA: {
+        timestamp: null,               // Timestamp - Date d'extraction
+        modele: 'gpt-4o-mini',        // String - Modèle utilisé
+        version: '3.0',               // String - Version du prompt
+        success: false,               // Boolean - Succès de l'extraction
+        
+        // Données brutes de l'IA (pour debug)
+        donneesBrutes: null,          // Object - Réponse complète de l'IA
+        
+        // Statistiques d'extraction
+        stats: {
+            virementsDetectes: 0,
+            beneficiairesDetectes: 0,
+            appareilsDetectes: 0,
+            montantTotalDetecte: 0
+        },
+        
+        // Erreurs éventuelles
+        erreurs: []                   // Array<String> - Erreurs d'extraction
     },
     
-    // Montants de remboursement standards
-    MONTANTS_STANDARDS: {
-        appareil_standard: 199.71,   // Montant de base par appareil
-        appareil_classe1: 240.00,    // Classe 1 (100% Santé)
-        appareil_classe2: 199.71     // Classe 2
-    },
+    // ========================================
+    // HISTORIQUE
+    // ========================================
     
-    // Taux de remboursement
-    TAUX: {
-        adulte: 60,                  // 60% du tarif de base
-        enfant: 60,                  // 60% aussi mais base différente
-        ald: 100,                    // 100% si ALD
-        cmu: 100                     // 100% si CMU
-    },
-    
-    // Oreilles
-    OREILLES: ['droite', 'gauche'],
-    
-    // Régimes
-    REGIMES: ['general', 'rsi', 'msa', 'special'],
-    
-    // Statuts workflow
-    STATUTS: [
-        'nouveau',
-        'traitement_ia',
-        'traitement_effectue',
-        'rapprochement_bancaire',
-        'supprime'
-    ]
+    historique: []                    // Array<Object> - Actions effectuées
+    /* Structure d'une entrée:
+    {
+        date: Date,
+        action: 'creation' | 'extraction_ia' | 'rapprochement_virement' | 'modification' | 'suppression',
+        details: 'Description de l'action',
+        timestamp: 1234567890,
+        virementId: 'vir-001',      // Si l'action concerne un virement spécifique
+        utilisateur: {
+            id: 'user-123',
+            nom: 'DUPONT',
+            prenom: 'Jean',
+            role: 'technicien'
+        }
+    }
+    */
 };
 
 // ========================================
-// FONCTIONS UTILITAIRES
+// HELPERS DE CRÉATION
 // ========================================
 
 /**
- * Créer un nouveau décompte avec les valeurs par défaut
+ * Créer un nouveau décompte vide
  */
-export function creerNouveauDecompte() {
+export function createNewDecompteSecu() {
     return JSON.parse(JSON.stringify(DECOMPTE_SECU_TEMPLATE));
 }
 
 /**
- * Créer un nouveau bénéficiaire
+ * Créer une entrée historique
  */
-export function creerNouveauBeneficiaire() {
-    return JSON.parse(JSON.stringify(BENEFICIAIRE_TEMPLATE));
-}
-
-/**
- * Créer un nouvel appareil
- */
-export function creerNouvelAppareil(oreille = null) {
-    const appareil = JSON.parse(JSON.stringify(APPAREIL_TEMPLATE));
-    if (oreille) appareil.oreille = oreille;
-    return appareil;
-}
-
-/**
- * Créer une nouvelle entrée historique
- */
-export function creerEntreeHistorique(action, details, utilisateur) {
+export function createHistoriqueEntry(action, details, utilisateur, virementId = null) {
     return {
-        ...HISTORIQUE_ENTRY_TEMPLATE,
         date: new Date(),
         action: action,
         details: details,
         timestamp: Date.now(),
+        virementId: virementId,
         utilisateur: utilisateur || {
             id: 'system',
             nom: 'SYSTEM',
@@ -281,54 +245,122 @@ export function creerEntreeHistorique(action, details, utilisateur) {
 }
 
 /**
- * Valider la structure d'un décompte
+ * Créer un virement vide avec structure de rapprochement
  */
-export function validerDecompte(decompte) {
-    const erreurs = [];
-    
-    // Vérifications obligatoires
-    if (!decompte.numeroDecompte) {
-        erreurs.push('Numéro de décompte manquant');
-    }
-    
-    if (typeof decompte.montantVirement !== 'number' || decompte.montantVirement < 0) {
-        erreurs.push('Montant virement invalide');
-    }
-    
-    if (!decompte.dateVirement) {
-        erreurs.push('Date virement manquante');
-    }
-    
-    if (!Array.isArray(decompte.beneficiaires)) {
-        erreurs.push('Liste bénéficiaires invalide');
-    }
-    
-    // Vérifier chaque bénéficiaire
-    decompte.beneficiaires.forEach((b, index) => {
-        if (!b.nom && !b.prenom) {
-            erreurs.push(`Bénéficiaire ${index + 1}: nom et prénom manquants`);
-        }
-        
-        if (typeof b.montantRemboursement !== 'number' || b.montantRemboursement < 0) {
-            erreurs.push(`Bénéficiaire ${index + 1}: montant invalide`);
-        }
-    });
-    
-    // Vérifier la cohérence des montants
-    const totalBeneficiaires = decompte.beneficiaires.reduce(
-        (sum, b) => sum + (b.montantRemboursement || 0), 
-        0
-    );
-    
-    if (Math.abs(totalBeneficiaires - decompte.montantVirement) > 0.01) {
-        erreurs.push(`Incohérence montants: virement=${decompte.montantVirement}, total bénéficiaires=${totalBeneficiaires}`);
-    }
-    
+export function createVirement() {
     return {
-        valide: erreurs.length === 0,
-        erreurs: erreurs
+        id: `vir-${Date.now()}`,
+        dateVirement: null,
+        numeroVirement: null,
+        montantVirement: 0,
+        nombreBeneficiaires: 0,
+        
+        // Structure de rapprochement par défaut
+        rapprochement: {
+            statut: 'en_attente',
+            dateRapprochement: null,
+            montantBancaire: null,
+            ecart: null,
+            rapprochePar: null,
+            commentaire: null
+        },
+        
+        beneficiaires: []
     };
 }
+
+/**
+ * Créer un bénéficiaire vide
+ */
+export function createBeneficiaire() {
+    return {
+        nom: null,
+        prenom: null,
+        numeroSecuriteSociale: null,
+        dateNaissance: null,
+        montantRemboursement: 0,
+        nombreAppareils: 0,
+        appareils: []
+    };
+}
+
+/**
+ * Créer un appareil vide
+ */
+export function createAppareil() {
+    return {
+        oreille: null,
+        dateFacture: null,
+        numeroFacture: null,
+        codeActe: null,
+        montantBase: 0,
+        montantRembourse: 0
+    };
+}
+
+/**
+ * Créer une structure de rapprochement vide
+ */
+export function createRapprochement() {
+    return {
+        statut: 'en_attente',
+        dateRapprochement: null,
+        montantBancaire: null,
+        ecart: null,
+        rapprochePar: null,
+        commentaire: null
+    };
+}
+
+// ========================================
+// RÈGLES DE VALIDATION
+// ========================================
+
+export const DECOMPTE_SECU_RULES = {
+    // Champs obligatoires
+    required: [
+        'numeroDecompte',
+        'statut',
+        'typeDecompte'
+    ],
+    
+    // Valeurs énumérées
+    enum: {
+        typeDecompte: ['unique', 'multi-virements'],
+        statut: [
+            'nouveau',
+            'traitement_ia',
+            'traitement_effectue',
+            'rapprochement_partiel',
+            'rapprochement_complet',
+            'supprime'
+        ],
+        statutRapprochement: [
+            'en_attente',
+            'rapproche',
+            'ecart'
+        ],
+        oreille: ['droite', 'gauche', 'bilateral']
+    },
+    
+    // Validations regex
+    validations: {
+        numeroDecompte: /^SECU-\d{8}-\d{4}$/,
+        numeroSecuriteSociale: /^[12]\d{12}(\d{2})?$/,
+        numeroFINESS: /^\d{9}$/,
+        codeMagasin: /^[89][A-Z]{3}$/
+    },
+    
+    // Limites
+    limits: {
+        maxVirements: 50,
+        maxBeneficiairesParVirement: 100,
+        maxAppareilsParBeneficiaire: 2,
+        maxDocuments: 10,
+        maxFileSize: 10 * 1024 * 1024,  // 10MB
+        ecartMaxAcceptable: 1.00        // Écart max en euros sans commentaire
+    }
+};
 
 // ========================================
 // EXPORT PAR DÉFAUT
@@ -336,27 +368,11 @@ export function validerDecompte(decompte) {
 
 export default {
     DECOMPTE_SECU_TEMPLATE,
-    BENEFICIAIRE_TEMPLATE,
-    APPAREIL_TEMPLATE,
-    DOCUMENT_TEMPLATE,
-    HISTORIQUE_ENTRY_TEMPLATE,
-    EXTRACTION_IA_TEMPLATE,
-    CONSTANTES_SECU_AUDIO,
-    
-    // Fonctions
-    creerNouveauDecompte,
-    creerNouveauBeneficiaire,
-    creerNouvelAppareil,
-    creerEntreeHistorique,
-    validerDecompte
+    DECOMPTE_SECU_RULES,
+    createNewDecompteSecu,
+    createHistoriqueEntry,
+    createVirement,
+    createBeneficiaire,
+    createAppareil,
+    createRapprochement
 };
-
-/* ========================================
-   HISTORIQUE
-   
-   [08/01/2025] - v1.0.0
-   - Création template adapté audioprothèse
-   - Structure virement avec multiples bénéficiaires
-   - Gestion des appareils par oreille
-   - Rapprochement bancaire intégré
-   ======================================== */
