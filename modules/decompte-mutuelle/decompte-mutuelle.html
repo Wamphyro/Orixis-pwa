@@ -3,182 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAV Audio - Décomptes Mutuelles</title>
-    
-    <!-- PWA Meta Tags -->
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="SAV Audio">
-    <link rel="manifest" href="../../manifest.json">
-    <meta name="theme-color" content="#667eea">
-    
-    <!-- ========================================
-         CSS - Ordre de chargement optimisé
-         ======================================== -->
-    
-    <!-- 1. Base et layout -->
+    <title>Décomptes Mutuelles</title>
     <link rel="stylesheet" href="../../src/css/main.css">
-
-    <!-- 2. CSS utilitaires partagés -->
-    <link rel="stylesheet" href="../../src/components/ui/common/animation.css">
-    <link rel="stylesheet" href="../../src/components/ui/common/form.css">
-
-    <!-- 4. CSS spécifique au module décomptes mutuelles -->
-    <link rel="stylesheet" href="./decompte-mutuelle.css">
+    
+    <!-- PDF.js pour conversion PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        // Configuration PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+    
+    <!-- CSS page -->
+    <style>
+        .page-loading {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .page-loading.hidden { display: none; }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px; height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .error-message, .success-message {
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .error-message { color: #dc2626; background: #fee2e2; }
+        .success-message { color: #059669; background: #d1fae5; }
+    </style>
 </head>
 <body>
-    <!-- Container pour le composant AppHeader -->
-    <!-- AppHeader sera injecté ici par JavaScript -->
+    <!-- Loader -->
+    <div class="page-loading" id="pageLoader">
+        <div class="loader"></div>
+    </div>
     
-    <div class="container">
-        <!-- Barre d'actions et statistiques -->
-        <div class="decomptes-header">
-            <div class="decomptes-stats">
-                <!-- StatsCards va générer le contenu ici -->
-            </div>
-            
-            <div class="decomptes-actions">
-                <button class="btn btn-primary btn-with-icon btn-lg pill" onclick="ouvrirNouveauDecompte()">
-                    <span>➕</span> Nouveau décompte
-                </button>
-            </div>
-        </div>
-
-        <!-- Filtres -->
-        <div class="decomptes-filters section">
-            <!-- DataTableFilters va générer le contenu ici -->
-        </div>
-
-        <!-- Container pour DataTable -->
-        <div class="decomptes-table-container section">
-            <!-- DataTable sera généré ici -->
-        </div>
-    </div>
-
-    <!-- Modal Nouveau Décompte (vide pour l'instant) -->
-    <div id="modalNouveauDecompte" class="modal" style="display: none;">
-        <div class="modal-content modal-large">
-            <div class="modal-header">
-                <h2>Nouveau Décompte Mutuelle</h2>
-                <button class="modal-close">&times;</button>
-            </div>
-            
-            <div class="modal-body">
-                <!-- Le contenu sera généré par decompte-mutuelle.create.js -->
-            </div>
-            
-            <div class="modal-footer">
-                <!-- Le bouton sera ajouté dynamiquement par JavaScript -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Détail Décompte -->
-    <div id="modalDetailDecompte" class="modal" style="display: none;">
-        <div class="modal-content modal-large">
-            <div class="modal-header">
-                <h2>Détail du décompte <span id="detailNumDecompte"></span></h2>
-                <button class="modal-close">&times;</button>
-            </div>
-            
-            <div class="modal-body">
-                <!-- Timeline du statut -->
-                <div class="timeline-container">
-                    <div class="timeline" id="timeline">
-                        <!-- Timeline générée dynamiquement -->
-                    </div>
-                </div>
-                
-                <!-- Sections détail -->
-                <div class="detail-sections">
-                    <!-- Colonne de gauche : Client + Montants -->
-                    <div class="detail-column-left">
-                        <!-- Section Client -->
-                        <div class="detail-section">
-                            <h3>Informations client</h3>
-                            <div id="detailClient">
-                                <!-- Contenu généré dynamiquement -->
-                            </div>
-                        </div>
-                        
-                        <!-- Section Montants -->
-                        <div class="detail-section">
-                            <h3>Montants</h3>
-                            <div id="detailMontants">
-                                <!-- Contenu généré dynamiquement -->
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Colonne de droite : Mutuelle + Informations -->
-                    <div class="detail-column-right">
-                        <!-- Section Mutuelle -->
-                        <div class="detail-section">
-                            <h3>Mutuelle et prestataire</h3>
-                            <div id="detailMutuelle">
-                                <!-- Contenu généré dynamiquement -->
-                            </div>
-                        </div>
-                        
-                        <!-- Section Informations -->
-                        <div class="detail-section">
-                            <h3>Informations décompte</h3>
-                            <div id="detailInformations">
-                                <!-- Contenu généré dynamiquement -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Nouvelle ligne pour Traçabilité et Documents -->
-                <div class="detail-sections" style="margin-top: 20px;">
-                    <!-- Colonne de gauche : Traçabilité -->
-                    <div class="detail-column-left">
-                        <div class="detail-section">
-                            <h3>📋 Traçabilité</h3>
-                            <div id="detailTracabilite">
-                                <!-- Contenu généré dynamiquement -->
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Colonne de droite : Documents -->
-                    <div class="detail-column-right">
-                        <div class="detail-section">
-                            <h3>📄 Documents</h3>
-                            <div id="detailDocuments">
-                                <!-- Contenu généré dynamiquement -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Section Historique en pleine largeur -->
-                <div class="detail-section" style="margin-top: 20px;">
-                    <h3>📜 Historique des actions</h3>
-                    <div id="detailHistorique" style="max-height: 300px; overflow-y: auto;">
-                        <!-- Contenu généré dynamiquement -->
-                    </div>
-                </div>
-                
-                <!-- Actions selon le statut -->
-                <div class="detail-actions" id="detailActions">
-                    <!-- Boutons d'action générés selon le statut -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Container pour les dialogs custom -->
-    <div id="dialog-container" class="dialog-container"></div>
-
-    <!-- Footer -->
-    <div class="footer">
-        <p>Orixis - © 2025</p>
-    </div>
-
-    <!-- JavaScript local au module -->
-    <script type="module" src="./decompte-mutuelle.main.js"></script>
+    <!-- Messages -->
+    <div id="messagesContainer" style="position: fixed; top: 10px; right: 10px; z-index: 1000; max-width: 400px;"></div>
+    
+    <!-- Container pour progress bar PDF (optionnel) -->
+    <div id="pdf-conversion-progress" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10000;"></div>
+    
+    <!-- Containers pour widgets -->
+    <div class="stats-container" style="margin: 100px 20px 20px 20px;"></div>
+    <div class="filters-container" style="margin: 20px;"></div>
+    <div class="table-container" style="margin: 20px;"></div>
+    
+    <script type="module">
+        // Import de l'orchestrateur qui gère TOUT
+        import orchestrator from './decompte-mutuelle.orchestrator.js';
+        
+        // Lancement de l'application
+        window.addEventListener('load', async () => {
+            console.log('🎯 Initialisation de l\'application...');
+            await orchestrator.init();
+        });
+        
+        // Export pour debug uniquement
+        window.orchestrator = orchestrator;
+    </script>
 </body>
 </html>

@@ -1,273 +1,120 @@
 // ========================================
-// FACTURES-FOURNISSEURS.OPENAI.SERVICE.JS - 🤖 EXTRACTION IA
-// Chemin: modules/factures-fournisseurs/factures-fournisseurs.openai.service.js
+// DECOMPTE-MUTUELLE.OPENAI.SERVICE.JS - 🤖 SERVICE ANALYSE IA
+// Chemin: modules/test/decompte-mutuelle.openai.service.js
 //
 // DESCRIPTION:
-// Service d'analyse des factures fournisseurs via OpenAI GPT-4
-// Adapté pour extraire les données spécifiques aux factures
+// Service d'analyse des décomptes mutuelles via OpenAI GPT-4
+// Conversion PDF → Images avec PDF.js
+// Extraction des données structurées
 //
 // FONCTIONS PUBLIQUES:
-// - analyserDocument(documentUrl, documentType) : Analyser une facture
-// - analyserDocumentExistant(factureId) : Analyser une facture existante
-// - extractFactureData(images) : Extraire les données via GPT-4
-//
-// DÉPENDANCES:
-// - OpenAI API (GPT-4.1-mini avec vision)
-// - Firebase Storage pour récupérer les documents
+// - analyserDocument(documentUrl, documentType, magasins) : Analyser un document
+// - extractDecompteData(images, magasins) : Extraire via GPT-4
+// - prepareDocumentImages(documentUrl, documentType) : Convertir en images
 // ========================================
 
-import { determinerCategorieFournisseur, calculerDateEcheance } from './factures-fournisseurs.data.js';
 import { ProgressBar } from '../../src/components/ui/progress-bar/progress-bar.component.js';
 
 // ========================================
 // CONFIGURATION
 // ========================================
 
-// Configuration de la Cloud Function
 const CLOUD_FUNCTION_URL = 'https://europe-west1-orixis-pwa.cloudfunctions.net/analyzeDocument';
 
 // ========================================
-// SERVICE PRINCIPAL
+// CLASSE DU SERVICE
 // ========================================
 
-export class FactureOpenAIService {
+export class DecompteOpenAIService {
     
     /**
-     * Analyser une facture fournisseur
+     * Analyser un document complet
      * @param {string} documentUrl - URL du document dans Firebase Storage
      * @param {string} documentType - Type MIME du document
-     * @returns {Promise<Object>} Données extraites formatées pour Firestore
+     * @param {Array} magasinsData - Données des magasins pour FINESS
+     * @returns {Promise<Object>} Données extraites formatées
      */
-    static async analyserDocument(documentUrl, documentType) {
+    static async analyserDocument(documentUrl, documentType, magasinsData = []) {
         try {
-            console.log('🤖 Début analyse IA de la facture...');
+            console.log('🤖 Début analyse document...');
+            
+            // Préparer le tableau des magasins au format attendu
+            let magasinsArray = [];
+            
+            if (!Array.isArray(magasinsData) && typeof magasinsData === 'object') {
+                magasinsArray = Object.entries(magasinsData).map(([code, data]) => ({
+                    "FINESS": data.numeroFINESS || data.finess || data.FINESS || '',
+                    "CODE MAGASIN": code,
+                    "SOCIETE": data.societe?.raisonSociale || data.societe || data.nom || '',
+                    "ADRESSE": `${data.adresse?.rue || ''} ${data.adresse?.codePostal || ''} ${data.adresse?.ville || ''}`.trim(),
+                    "VILLE": data.adresse?.ville || data.ville || ''
+                }));
+            } else if (Array.isArray(magasinsData)) {
+                magasinsArray = magasinsData;
+            }
             
             // Convertir le document en image(s) base64
             const images = await this.prepareDocumentImages(documentUrl, documentType);
             
             // Extraire les données via GPT-4
-            console.log('🚀 Appel extractFactureData');
-            const donneesExtraites = await FactureOpenAIService.extractFactureData(images);
+            const donneesExtraites = await this.extractDecompteData(images, magasinsArray);
             
             // Formater pour notre structure Firestore
-            const donneesFormatees = this.formaterPourFirestore(donneesExtraites);
+            const donneesFormatees = this.formaterDonneesIA(donneesExtraites);
             
-            console.log('✅ Analyse IA terminée avec succès');
             return donneesFormatees;
             
         } catch (error) {
-            console.error('❌ Erreur analyse IA:', error);
-            throw new Error(`Erreur analyse IA: ${error.message}`);
+            console.error('❌ Erreur analyse document:', error);
+            throw new Error(`Erreur analyse: ${error.message}`);
         }
     }
     
     /**
-     * Extraire les données via GPT-4 Vision
-     * @param {Array<string>} images - Images en base64
-     * @returns {Promise<Object>} Données brutes extraites
+     * Analyser avec un fichier direct (sans URL)
+     * @param {File} file - Fichier à analyser
+     * @param {Array} magasinsData - Données des magasins
+     * @returns {Promise<Object>} Données extraites
      */
-    static async extractFactureData(images) {
+    static async analyserAvecFichier(file, magasinsData = []) {
         try {
-            console.log(`🤖 Appel Cloud Function pour ${images.length} image(s)...`);
+            console.log('🤖 Analyse directe du fichier:', file.name);
             
-            // PROMPT SPÉCIFIQUE POUR FACTURES FOURNISSEURS
-            const prompt = `Tu es un expert en traitement de factures fournisseurs.
-Tu analyses ${images.length} ${images.length > 1 ? 'pages' : 'image'} d'une facture et tu dois retourner UNIQUEMENT un objet JSON valide, sans aucun texte ni balise.
-
-${images.length > 1 ? 'IMPORTANT : Ces images représentent les pages successives du MÊME document. Tu dois combiner les informations de toutes les pages pour extraire les données complètes de la facture.' : ''}
-
-FORMAT JSON OBLIGATOIRE :
-{
-    "timestamp_analyse": "yyyy-MM-ddTHH:mm:ss",
-    "fournisseur": {
-        "nom": "string",
-        "adresse": "string",
-        "siren": "string",
-        "numeroTVA": "string",
-        "telephone": "string",
-        "email": "string"
-    },
-    "client": {
-        "nom": "string",
-        "numeroClient": "string",
-        "adresse": "string"
-    },
-    "facture": {
-        "numeroFacture": "string",
-        "dateFacture": "yyyy-MM-dd",
-        "dateEcheance": "yyyy-MM-dd",
-        "periodeDebut": "yyyy-MM-dd",
-        "periodeFin": "yyyy-MM-dd",
-        "typeFacture": "string"
-    },
-    "montants": {
-        "montantHT": 0.00,
-        "tauxTVA": 20,
-        "montantTVA": 0.00,
-        "montantTTC": 0.00,
-        "details": [{
-            "description": "string",
-            "quantite": 0,
-            "prixUnitaire": 0.00,
-            "montant": 0.00
-        }]
-    },
-    "informations": {
-        "modePaiement": "string",
-        "iban": "string",
-        "bic": "string",
-        "referenceMandat": "string"
-    }
-}
-
-EXTRACTION DU FOURNISSEUR :
-- Nom : Rechercher en haut de la facture (logo, en-tête)
-- SIREN/SIRET : Format 9 ou 14 chiffres
-- N° TVA : Format FR + 11 caractères
-- Exemples : FREE, EDF, ORANGE, ENGIE, etc.
-
-EXTRACTION DU CLIENT :
-- C'est NOUS (le destinataire de la facture)
-- Chercher "Adressé à", "Client", "Titulaire"
-- IMPORTANT : Le numéro client est NOTRE numéro chez le fournisseur
-
-EXTRACTION DES DATES :
-- Date facture : "Date de facture", "Émise le", "Date"
-- Date échéance : "À payer avant le", "Échéance", "Date limite"
-- Si pas d'échéance : ajouter 30 jours à la date facture
-- Période : Pour abonnements (télécom, énergie), chercher "Période du X au Y"
-
-EXTRACTION DES MONTANTS :
-- Toujours extraire HT, TVA et TTC
-- Si seulement TTC visible : calculer HT = TTC / 1.20
-- Identifier le taux de TVA (20%, 10%, 5.5%, 2.1%)
-- Détails : lignes de facturation si visibles
-
-SPÉCIFICITÉS PAR TYPE :
-- TÉLÉCOM (Free, Orange, SFR) : 
-  * Numéro de ligne
-  * Période d'abonnement
-  * Détail consommations
-  
-- ÉNERGIE (EDF, Engie) :
-  * Point de livraison (PDL)
-  * Index de consommation
-  * Type de contrat
-  
-- SERVICES/CLOUD :
-  * Identifiant compte
-  * Période de service
-  * Détail des services
-
-INFORMATIONS PAIEMENT :
-- Mode : "Prélèvement", "Virement", "Chèque"
-- IBAN/BIC si virement demandé
-- Référence mandat si prélèvement
-
-IMPORTANT :
-- Dates au format ISO (yyyy-MM-dd)
-- Montants en décimal (pas de symbole €)
-- Textes sans accents dans le JSON
-- Si information manquante : null
-
-VALIDATION :
-- Le numéro de facture est OBLIGATOIRE
-- La date de facture est OBLIGATOIRE
-- Le montant TTC est OBLIGATOIRE
-- Le nom du fournisseur est OBLIGATOIRE`;
+            // Préparer les magasins
+            let magasinsArray = Array.isArray(magasinsData) ? magasinsData : [];
             
-            console.log('📤 Envoi à la Cloud Function');
+            // Convertir le fichier
+            const images = await this.convertirFichierEnImages(file);
             
-            // Préparer le body de la requête
-            const requestBody = {
-                images: images,
-                prompt: prompt,
-                type: 'facture'
-            };
+            // Extraire les données
+            const donneesExtraites = await this.extractDecompteData(images, magasinsArray);
             
-            // Appeler la Cloud Function
-            const response = await fetch(CLOUD_FUNCTION_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(requestBody)
-            });
-            
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Erreur Cloud Function');
-            }
-            
-            const result = await response.json();
-            
-            console.log('✅ Réponse Cloud Function:', result);
-            
-            // Retourner simplement les données sans ajouter de champs supplémentaires
-            return result.data || {};
+            // Formater
+            return this.formaterDonneesIA(donneesExtraites);
             
         } catch (error) {
-            console.error('❌ Erreur appel Cloud Function:', error);
+            console.error('❌ Erreur analyse fichier:', error);
             throw error;
         }
     }
     
     /**
-     * Analyser une facture déjà existante
-     * @param {string} factureId - ID de la facture
-     * @returns {Promise<Object>} Données mises à jour
-     */
-    static async analyserDocumentExistant(factureId) {
-        try {
-            // Récupérer la facture
-            const firestoreService = await import('./factures-fournisseurs.firestore.service.js');
-            const facture = await firestoreService.getFactureById(factureId);
-            
-            if (!facture) {
-                throw new Error('Facture introuvable');
-            }
-            
-            if (!facture.documents || facture.documents.length === 0) {
-                throw new Error('Aucun document à analyser');
-            }
-            
-            // Analyser le premier document
-            const document = facture.documents[0];
-            const donneesExtraites = await this.analyserDocument(
-                document.url,
-                document.type
-            );
-            
-            // Mettre à jour la facture
-            await firestoreService.ajouterDonneesExtraites(factureId, donneesExtraites);
-            
-            return {
-                factureId,
-                donneesExtraites,
-                documentAnalyse: document.nom
-            };
-            
-        } catch (error) {
-            console.error('❌ Erreur analyse facture existante:', error);
-            throw error;
-        }
-    }
-    
-    // ========================================
-    // MÉTHODES UTILITAIRES
-    // ========================================
-    
-    /**
-     * Préparer les images du document
-     * @private
+     * Préparer les images du document (avec conversion PDF si nécessaire)
+     * @param {string} documentUrl - URL du document
+     * @param {string} documentType - Type MIME
+     * @returns {Promise<Array<string>>} Images en base64
      */
     static async prepareDocumentImages(documentUrl, documentType) {
         console.log('📄 Type de document:', documentType);
+        console.log('🔗 URL document:', documentUrl);
         
         try {
             // Si c'est une image, traitement normal
             if (documentType.startsWith('image/')) {
                 const response = await fetch(documentUrl);
+                if (!response.ok) {
+                    throw new Error(`Erreur téléchargement: ${response.status}`);
+                }
                 const blob = await response.blob();
                 
                 const base64 = await new Promise((resolve, reject) => {
@@ -288,13 +135,29 @@ VALIDATION :
             if (documentType === 'application/pdf') {
                 console.log('📑 Conversion PDF vers images avec PDF.js...');
                 
+                // Vérifier que PDF.js est chargé
+                if (typeof pdfjsLib === 'undefined') {
+                    throw new Error('PDF.js non chargé. Ajoutez <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script> dans votre HTML');
+                }
+                
                 // Afficher un message d'attente
                 if (window.config && window.config.notify) {
                     window.config.notify.info('Conversion du PDF en cours...');
                 }
                 
-                // Charger le PDF
-                const loadingTask = pdfjsLib.getDocument(documentUrl);
+                // Télécharger le PDF d'abord pour éviter CORS
+                console.log('📥 Téléchargement du PDF...');
+                const response = await fetch(documentUrl);
+                if (!response.ok) {
+                    throw new Error(`Erreur téléchargement PDF: ${response.status}`);
+                }
+                
+                const pdfBlob = await response.blob();
+                const pdfArrayBuffer = await pdfBlob.arrayBuffer();
+                
+                // Charger le PDF depuis l'ArrayBuffer
+                console.log('📖 Chargement du PDF depuis ArrayBuffer...');
+                const loadingTask = pdfjsLib.getDocument({ data: pdfArrayBuffer });
                 const pdf = await loadingTask.promise;
                 
                 console.log(`📄 PDF chargé : ${pdf.numPages} pages`);
@@ -401,104 +264,285 @@ VALIDATION :
             
         } catch (error) {
             console.error('❌ Erreur conversion document:', error);
-            
-            // Fallback : essayer de traiter comme une image
-            if (documentType === 'application/pdf') {
-                console.warn('⚠️ Échec PDF.js, tentative de fallback...');
-                throw new Error('Impossible de convertir le PDF. Vérifiez qu\'il n\'est pas protégé.');
-            }
-            
             throw error;
         }
     }
     
     /**
-     * Formater les données pour Firestore
-     * @private
+     * Convertir un fichier File en images (pour analyse directe)
+     * @param {File} file - Fichier à convertir
+     * @returns {Promise<Array<string>>} Images en base64
      */
-    static formaterPourFirestore(donneesBrutes) {
-        // Déterminer la catégorie du fournisseur
-        const nomFournisseur = donneesBrutes.fournisseur?.nom || '';
-        const categorie = determinerCategorieFournisseur(nomFournisseur);
+    static async convertirFichierEnImages(file) {
+        console.log('📄 Conversion fichier:', file.name, file.type);
         
-        // Calculer la date d'échéance si manquante
-        let dateEcheance = donneesBrutes.facture?.dateEcheance;
-        if (!dateEcheance && donneesBrutes.facture?.dateFacture) {
-            const dateFacture = new Date(donneesBrutes.facture.dateFacture);
-            dateEcheance = calculerDateEcheance(dateFacture);
+        // Si c'est une image
+        if (file.type.startsWith('image/')) {
+            const base64 = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const base64 = reader.result.split(',')[1];
+                    resolve(base64);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+            return [base64];
         }
         
-        return {
-            // Fournisseur
-            fournisseur: {
-                nom: donneesBrutes.fournisseur?.nom || null,
-                categorie: categorie,
-                numeroClient: donneesBrutes.client?.numeroClient || null,
-                siren: this.nettoyerSiren(donneesBrutes.fournisseur?.siren)
-            },
-            
-            // Numéro de facture
-            numeroFacture: donneesBrutes.facture?.numeroFacture || null,
-            
-            // Montants
-            montantHT: donneesBrutes.montants?.montantHT || 0,
-            montantTVA: donneesBrutes.montants?.montantTVA || 0,
-            montantTTC: donneesBrutes.montants?.montantTTC || 0,
-            tauxTVA: donneesBrutes.montants?.tauxTVA || 20,
-            
-            // Dates
-            dateFacture: this.parseDate(donneesBrutes.facture?.dateFacture),
-            dateEcheance: this.parseDate(dateEcheance),
-            
-            // Période facturée (pour abonnements)
-            periodeDebut: this.parseDate(donneesBrutes.facture?.periodeDebut),
-            periodeFin: this.parseDate(donneesBrutes.facture?.periodeFin),
-            
-            // Informations de paiement
-            modePaiement: this.determinerModePaiement(donneesBrutes.informations?.modePaiement),
-            
-            // Métadonnées
-            extractionIA: {
-                timestamp: donneesBrutes.timestamp_analyse,
-                modele: 'gpt-4.1-mini',
-                fournisseurDetecte: donneesBrutes.fournisseur?.nom,
-                typeFacture: donneesBrutes.facture?.typeFacture,
-                // NOUVEAU : Inclure TOUTES les données brutes extraites
-                donneesBrutes: donneesBrutes
+        // Si c'est un PDF
+        if (file.type === 'application/pdf') {
+            if (typeof pdfjsLib === 'undefined') {
+                throw new Error('PDF.js non chargé');
             }
-        };
-    }
-    
-    /**
-     * Nettoyer un SIREN/SIRET
-     * @private
-     */
-    static nettoyerSiren(siren) {
-        if (!siren) return null;
-        const cleaned = String(siren).replace(/\D/g, '');
-        return (cleaned.length === 9 || cleaned.length === 14) ? cleaned : null;
-    }
-    
-    /**
-     * Déterminer le mode de paiement
-     * @private
-     */
-    static determinerModePaiement(modeBrut) {
-        if (!modeBrut) return null;
-        
-        const mode = modeBrut.toLowerCase();
-        
-        if (mode.includes('prelevement') || mode.includes('prélèvement')) {
-            return 'prelevement';
-        } else if (mode.includes('virement')) {
-            return 'virement';
-        } else if (mode.includes('cheque') || mode.includes('chèque')) {
-            return 'cheque';
-        } else if (mode.includes('carte') || mode.includes('cb')) {
-            return 'cb';
+            
+            // Créer une URL temporaire pour le fichier
+            const fileUrl = URL.createObjectURL(file);
+            
+            try {
+                // Utiliser la méthode existante
+                const images = await this.prepareDocumentImages(fileUrl, file.type);
+                return images;
+            } finally {
+                // Nettoyer l'URL temporaire
+                URL.revokeObjectURL(fileUrl);
+            }
         }
         
-        return null;
+        throw new Error(`Type de fichier non supporté: ${file.type}`);
+    }
+    
+    /**
+     * Extraire les données via GPT-4 Vision
+     * @param {Array<string>} images - Images en base64
+     * @param {Array} magasinsArray - Tableau des magasins
+     * @returns {Promise<Object>} Données brutes extraites
+     */
+    static async extractDecompteData(images, magasinsArray = []) {
+        try {
+            console.log(`🤖 Appel Cloud Function pour ${images.length} image(s)...`);
+            
+            // Préparer la chaîne JSON des magasins
+            const magasinsJSON = JSON.stringify(magasinsArray, null, 2);
+            
+            // PROMPT COMPLET pour décomptes mutuelles
+            const prompt = `Tu es un expert en traitement des relevés de remboursement des réseaux de soins et mutuelles.
+Tu analyses ${images.length} image(s) d'un document PDF et tu dois retourner UNIQUEMENT un objet JSON valide, sans aucun texte ni balise.
+
+FORMAT JSON OBLIGATOIRE :
+{
+  "timestamp_analyse": "yyyy-MM-ddTHH:mm:ss",
+  "societe": "string",
+  "centre": "string",
+  "periode": "yyyy-MM",
+  "MoisLettre": "string",
+  "Annee": 0,
+  "organisme_mutuelle": "string",
+  "reseau_soins": "string",
+  "virements": [{
+    "DateVirement": "yyyy-MM-dd",
+    "MoisLettre": "string",
+    "Annee": 0,
+    "MontantVirementGlobal": 0.0,
+    "VirementLibelle": "string",
+    "nb_clients": 0,
+    "clients": [{
+      "ClientNom": "string",
+      "ClientPrenom": "string",
+      "NumeroSecuriteSociale": "string",
+      "NumeroAdherent": "string",
+      "Montant": 0.0,
+      "typeVirement": "string"
+    }]
+  }]
+}
+
+EXTRACTION DU FINESS ET RECHERCHE SOCIÉTÉ :
+1. Chercher "Votre numéro AM :", "N° AM", "Numéro AMC" ou "FINESS"
+2. Extraire le nombre qui suit (exactement 9 chiffres)
+3. Supprimer tous les zéros initiaux
+4. Rechercher ce FINESS dans le tableau fourni
+5. Si trouvé : centre = "CODE MAGASIN", societe = "SOCIETE"
+6. Si non trouvé, chercher l'ADRESSE du destinataire et chercher une correspondance
+7. Si trouvé par adresse : centre = "CODE MAGASIN", societe = "SOCIETE"
+8. Sinon : centre = "INCONNU", societe = ""
+
+EXTRACTION DE LA MUTUELLE :
+- Chercher "AMC :", "Mutuelle :", "Assurance :", "Organisme complémentaire"
+- Si non trouvé, chercher dans l'en-tête du document
+- La mutuelle PEUT être la même entité que le réseau de soins
+- NE PAS prendre le destinataire (professionnel de santé)
+- organisme_mutuelle NE PEUT PAS être égal à societe (le destinataire)
+- En MAJUSCULES
+- Si aucune mutuelle distincte n'est mentionnée, la mutuelle est le réseau de soins
+
+EXTRACTION DU RÉSEAU DE SOINS :
+- Chercher dans l'EN-TÊTE du document (partie haute)
+- C'est l'organisme qui EXPÉDIE le document (logo, raison sociale)
+- JAMAIS le destinataire
+- Exemples : "ABEILLE", "ALMERYS", "HARMONIE", "SANTECLAIR"
+- IGNORER les noms de magasins/professionnels
+- reseau_soins NE PEUT JAMAIS être un nom de magasin
+- En MAJUSCULES
+
+EXTRACTION DES VIREMENTS :
+- Chercher les dates de virement/paiement
+- VirementLibelle : numéro ou référence du virement
+- MontantVirementGlobal : montant total du virement
+- nb_clients : nombre de bénéficiaires uniques
+
+EXTRACTION DES BÉNÉFICIAIRES :
+Pour chaque bénéficiaire visible dans le document :
+- ClientNom : nom en MAJUSCULES
+- ClientPrenom : prénom en MAJUSCULES
+- NumeroSecuriteSociale : numéro de sécurité sociale (13 ou 15 chiffres)
+  Chercher : "N° SS", "NSS", "N° Sécu", "Sécurité Sociale", "N° Assuré"
+  Format : 1 ou 2 + 12 ou 14 chiffres (ex: 1 85 05 78 006 048)
+- NumeroAdherent : numéro d'adhérent mutuelle si présent
+  Chercher : "N° Adhérent", "Adhérent", "N° Mutuelle"
+  Peut être vide si non trouvé
+- Montant : montant remboursé pour ce bénéficiaire
+- typeVirement : "Individuel" si 1 client, "Groupé" si plusieurs
+
+IMPORTANT pour les documents multi-pages :
+- Parcourir TOUTES les pages pour extraire TOUS les bénéficiaires
+- Ne pas dupliquer les informations si elles apparaissent sur plusieurs pages
+- Consolider les données de toutes les pages en un seul JSON
+
+DATES ET PÉRIODES :
+- timestamp_analyse : moment actuel (format ISO)
+- periode : mois des prestations (format yyyy-MM)
+- MoisLettre : mois en MAJUSCULES (JANVIER, FÉVRIER...)
+- Annee : année de la période
+
+Tableau des magasins pour la recherche FINESS :
+${magasinsJSON}
+
+VALIDATION NSS :
+- Le NSS doit avoir 13 chiffres (ou 15 avec la clé)
+- Commence par 1 (homme) ou 2 (femme)
+- Format : [1-2] AA MM DD DDD CCC [CC]
+- Si le NSS trouvé n'a pas le bon format, chercher ailleurs
+- Ne PAS confondre avec le numéro d'adhérent
+
+RAPPELS CRITIQUES :
+- RÉSEAU DE SOINS = EXPÉDITEUR du document (en-tête)
+- SOCIÉTÉ = DESTINATAIRE (professionnel qui reçoit)
+- MUTUELLE = organisme complémentaire payeur
+- Ne JAMAIS confondre ces trois entités
+- periode basée sur les dates de soins/prestations
+- Analyser TOUTES les pages fournies`;
+            
+            console.log('🤖 Prompt préparé, longueur:', prompt.length, 'caractères');
+            
+            // Préparer le body de la requête
+            const requestBody = {
+                images: images,
+                prompt: prompt,
+                type: 'mutuelle'
+            };
+            
+            // Appeler la Cloud Function
+            const response = await fetch(CLOUD_FUNCTION_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Erreur Cloud Function');
+            }
+            
+            const result = await response.json();
+            console.log('✅ Réponse Cloud Function reçue');
+            
+            return result.data || {};
+            
+        } catch (error) {
+            console.error('❌ Erreur appel Cloud Function:', error);
+            throw error;
+        }
+    }
+    
+    /**
+     * Formater les données extraites par l'IA pour Firestore
+     * @param {Object} donneesBrutes - Données brutes de l'IA
+     * @returns {Object} Données formatées
+     */
+ static formaterDonneesIA(donneesBrutes) {
+    const premierVirement = donneesBrutes.virements?.[0] || {};
+    const clientsExtraits = premierVirement.clients || [];
+    
+    // Calculer le type de décompte
+    const nombreClients = clientsExtraits.length || 1;
+    const typeDecompte = nombreClients > 1 ? 'groupe' : 'individuel';
+    
+    // Formater TOUS les clients
+    const clientsFormated = clientsExtraits.map(c => ({
+        nom: c.ClientNom || null,
+        prenom: c.ClientPrenom || null,
+        numeroSecuriteSociale: this.nettoyerNSS(c.NumeroSecuriteSociale),
+        numeroAdherent: c.NumeroAdherent || null,
+        montantRemboursement: c.Montant || 0,
+        typeVirement: c.typeVirement || 'individuel'
+    }));
+    
+    // Client principal pour compatibilité
+    const premierClient = clientsFormated[0] || {};
+    
+    return {
+        // Client principal (pour compatibilité)
+        client: premierClient,
+        
+        // TOUS les clients pour décompte groupé
+        clients: clientsFormated,
+        
+        // Mutuelle et prestataire
+        mutuelle: donneesBrutes.organisme_mutuelle || null,
+        prestataireTP: donneesBrutes.prestataireTP || donneesBrutes.reseau_soins || null,
+        
+        // Montants
+        montantRemboursementClient: premierClient.montantRemboursement || 0,
+        montantVirement: premierVirement.MontantVirementGlobal || 0,
+        
+        // Type et nombre
+        typeDecompte: typeDecompte,
+        nombreClients: nombreClients,
+        
+        // Références
+        virementId: premierVirement.VirementLibelle || null,
+        dateVirement: this.parseDate(premierVirement.DateVirement),
+        
+        // Magasin
+        codeMagasin: donneesBrutes.centre !== 'INCONNU' ? 
+            donneesBrutes.centre : null,
+        
+        // Métadonnées
+        extractionIA: {
+            timestamp: donneesBrutes.timestamp_analyse,
+            modele: 'gpt-4.1-mini',
+            societeDetectee: donneesBrutes.societe,
+            periode: donneesBrutes.periode,
+            donneesBrutes: premierVirement // Garder les données brutes pour debug
+        }
+    };
+}
+    
+    // ========================================
+    // MÉTHODES UTILITAIRES
+    // ========================================
+    
+    /**
+     * Nettoyer un NSS
+     * @private
+     */
+    static nettoyerNSS(nss) {
+        if (!nss) return null;
+        const cleaned = String(nss).replace(/\D/g, '');
+        return (cleaned.length === 13 || cleaned.length === 15) ? cleaned : nss;
     }
     
     /**
@@ -510,6 +554,32 @@ VALIDATION :
         const date = new Date(dateStr);
         return isNaN(date.getTime()) ? null : date;
     }
+    
+    /**
+     * Trouver le code magasin à partir du FINESS
+     * @private
+     */
+    static findCodeMagasinByFiness(finess) {
+        // Récupérer les magasins depuis le localStorage
+        const magasinsStored = localStorage.getItem('orixis_magasins');
+        if (!magasinsStored) return finess;
+        
+        try {
+            const magasins = JSON.parse(magasinsStored);
+            // Chercher le magasin par FINESS
+            for (const [code, data] of Object.entries(magasins)) {
+                if (data.numeroFINESS === finess) {
+                    console.log(`✅ FINESS ${finess} → Code magasin ${code}`);
+                    return code;
+                }
+            }
+        } catch (error) {
+            console.error('❌ Erreur recherche code magasin:', error);
+        }
+        
+        console.warn(`⚠️ Code magasin non trouvé pour FINESS ${finess}`);
+        return finess;
+    }
 }
 
 // ========================================
@@ -517,22 +587,20 @@ VALIDATION :
 // ========================================
 
 export default {
-    analyserDocument: FactureOpenAIService.analyserDocument.bind(FactureOpenAIService),
-    analyserDocumentExistant: FactureOpenAIService.analyserDocumentExistant.bind(FactureOpenAIService),
-    extractFactureData: FactureOpenAIService.extractFactureData.bind(FactureOpenAIService)
+    analyserDocument: DecompteOpenAIService.analyserDocument.bind(DecompteOpenAIService),
+    analyserAvecFichier: DecompteOpenAIService.analyserAvecFichier.bind(DecompteOpenAIService),
+    extractDecompteData: DecompteOpenAIService.extractDecompteData.bind(DecompteOpenAIService),
+    prepareDocumentImages: DecompteOpenAIService.prepareDocumentImages.bind(DecompteOpenAIService),
+    convertirFichierEnImages: DecompteOpenAIService.convertirFichierEnImages.bind(DecompteOpenAIService)
 };
 
 /* ========================================
-   HISTORIQUE DES DIFFICULTÉS
+   HISTORIQUE
    
-   [03/02/2025] - Création adaptée pour factures
-   - Prompt spécifique factures fournisseurs
-   - Extraction fournisseur, dates, montants
-   - Détection automatique de la catégorie
-   - Calcul échéance si manquante
-   
-   NOTES POUR REPRISES FUTURES:
-   - Le prompt est optimisé pour les factures FR
-   - Gestion des spécificités par type (télécom, énergie)
-   - La catégorie est déterminée automatiquement
+   [08/02/2025] - Création
+   - Service dédié à l'analyse IA
+   - Conversion PDF → Images avec PDF.js
+   - Support images et PDF
+   - Analyse directe de fichier File
+   - Prompt optimisé pour décomptes mutuelles
    ======================================== */

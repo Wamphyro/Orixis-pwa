@@ -3,39 +3,148 @@
 // Chemin: modules/factures-fournisseurs/factures-fournisseurs.service.js
 //
 // DESCRIPTION:
-// Service de gestion des factures fournisseurs avec Firebase
-// Logique business et workflow des factures
+// Service de gestion des factures fournisseurs
+// Logique métier et workflow des factures
+// Intègre les constantes de l'ancien data.js
 //
 // STRUCTURE:
-// 1. Imports et configuration
-// 2. Méthodes de lecture (getFactures, getFacture)
-// 3. Méthodes de statistiques
-// 4. Méthodes de changement de statut
-// 5. Helpers privés
-//
-// DÉPENDANCES:
-// - Firebase Firestore
-// - factures-fournisseurs.data.js (constantes métier)
+// 1. Configuration et constantes
+// 2. Méthodes de lecture
+// 3. Méthodes de changement de statut
+// 4. Méthodes de statistiques
+// 5. Helpers et formatters
 // ========================================
 
 import { db } from '../../src/services/firebase.service.js';
-import { 
-    FACTURES_CONFIG, 
-    genererNumeroInterne,
-    genererReferenceVirement,
-    getProchainStatut,
-    estEnRetard
-} from './factures-fournisseurs.data.js';
 
-/**
- * Service de gestion des factures fournisseurs
- */
+// ========================================
+// CONFIGURATION ET CONSTANTES (ancien data.js)
+// ========================================
+
+export const FACTURES_CONFIG = {
+    // Configuration générale
+    ITEMS_PAR_PAGE: 20,
+    DELAI_RECHERCHE: 300,
+    DELAI_PAIEMENT_DEFAUT: 30,
+    
+    // Statuts de facture
+    STATUTS: {
+        nouvelle: {
+            label: 'Nouvelle',
+            icon: '📄',
+            couleur: '#e0e0e0',
+            suivant: ['a_payer', 'deja_payee'],
+            description: 'Facture uploadée, en attente d\'analyse'
+        },
+        a_payer: {
+            label: 'À payer',
+            icon: '💳',
+            couleur: '#ff9800',
+            suivant: ['payee', 'en_retard'],
+            description: 'En attente de paiement'
+        },
+        deja_payee: {
+            label: 'Déjà payée',
+            icon: '✅',
+            couleur: '#4caf50',
+            suivant: ['a_pointer'],
+            description: 'Payée avant réception de la facture'
+        },
+        payee: {
+            label: 'Payée',
+            icon: '💰',
+            couleur: '#2196f3',
+            suivant: ['a_pointer'],
+            description: 'Paiement effectué'
+        },
+        a_pointer: {
+            label: 'À pointer',
+            icon: '🔍',
+            couleur: '#9c27b0',
+            suivant: ['pointee'],
+            description: 'En attente de rapprochement bancaire'
+        },
+        pointee: {
+            label: 'Pointée',
+            icon: '✓✓',
+            couleur: '#00796b',
+            suivant: null,
+            description: 'Rapprochement bancaire effectué'
+        },
+        en_retard: {
+            label: 'En retard',
+            icon: '⚠️',
+            couleur: '#f44336',
+            suivant: ['payee'],
+            description: 'Échéance dépassée'
+        },
+        annulee: {
+            label: 'Annulée',
+            icon: '🚫',
+            couleur: '#9e9e9e',
+            suivant: null,
+            description: 'Facture annulée'
+        }
+    },
+    
+    // Catégories de fournisseurs
+    CATEGORIES_FOURNISSEURS: {
+        telecom: {
+            label: 'Télécom',
+            icon: '📱',
+            description: 'Opérateurs téléphoniques et internet',
+            exemples: ['Free', 'Orange', 'SFR', 'Bouygues']
+        },
+        energie: {
+            label: 'Énergie',
+            icon: '⚡',
+            description: 'Électricité, gaz, eau',
+            exemples: ['EDF', 'Engie', 'Total Énergies']
+        },
+        services: {
+            label: 'Services',
+            icon: '💼',
+            description: 'Services professionnels',
+            exemples: ['Comptable', 'Avocat', 'Assurance']
+        },
+        informatique: {
+            label: 'Informatique',
+            icon: '💻',
+            description: 'Logiciels, cloud, matériel',
+            exemples: ['Microsoft', 'Adobe', 'OVH']
+        },
+        fournitures: {
+            label: 'Fournitures',
+            icon: '📦',
+            description: 'Fournitures de bureau et consommables',
+            exemples: ['Bureau Vallée', 'Amazon Business']
+        },
+        autre: {
+            label: 'Autre',
+            icon: '📋',
+            description: 'Autres types de fournisseurs',
+            exemples: []
+        }
+    },
+    
+    // Modes de paiement
+    MODES_PAIEMENT: {
+        virement: { label: 'Virement', icon: '🏦' },
+        prelevement: { label: 'Prélèvement', icon: '🔄' },
+        cheque: { label: 'Chèque', icon: '📄' },
+        cb: { label: 'Carte bancaire', icon: '💳' },
+        especes: { label: 'Espèces', icon: '💵' }
+    }
+};
+
+// ========================================
+// CLASSE SERVICE
+// ========================================
+
 export class FacturesFournisseursService {
     
     /**
      * Récupérer les factures selon des critères
-     * @param {Object} criteres - Critères de recherche
-     * @returns {Promise<Array>} Liste des factures
      */
     static async getFactures(criteres = {}) {
         try {
@@ -43,12 +152,6 @@ export class FacturesFournisseursService {
                 await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
             
             let constraints = [];
-            
-            // TEMPORAIRE : Désactivé en attendant l'index
-            // Exclure les factures annulées par défaut
-            // if (!criteres.inclureAnnulees) {
-            //     constraints.push(where('statut', '!=', 'annulee'));
-            // }
             
             // Filtrer par statut
             if (criteres.statut) {
@@ -75,10 +178,6 @@ export class FacturesFournisseursService {
                 constraints.push(where('fournisseur.categorie', '==', criteres.categorie));
             }
             
-            // TEMPORAIRE : Tri désactivé pour éviter l'erreur d'index
-            // Tri par date de facture décroissant
-            // constraints.push(orderBy('dateFacture', 'desc'));
-            
             // Limite si spécifiée
             if (criteres.limite) {
                 constraints.push(limit(criteres.limite));
@@ -94,23 +193,23 @@ export class FacturesFournisseursService {
             const factures = [];
             snapshot.forEach((doc) => {
                 const data = doc.data();
-                // Exclure manuellement les factures annulées
+                // Exclure manuellement les factures annulées si pas spécifié
                 if (!criteres.inclureAnnulees && data.statut === 'annulee') {
                     return;
                 }
                 factures.push({ id: doc.id, ...data });
             });
             
-            // TEMPORAIRE : Tri manuel en JavaScript
+            // Tri manuel en JavaScript (date décroissante)
             factures.sort((a, b) => {
                 const dateA = a.dateFacture?.toDate ? a.dateFacture.toDate() : new Date(a.dateFacture || 0);
                 const dateB = b.dateFacture?.toDate ? b.dateFacture.toDate() : new Date(b.dateFacture || 0);
-                return dateB - dateA; // Tri décroissant
+                return dateB - dateA;
             });
             
             // Post-traitement : vérifier les retards
             const facturesAvecRetard = factures.map(facture => {
-                if (estEnRetard(facture.dateEcheance, facture.statut)) {
+                if (this.estEnRetard(facture.dateEcheance, facture.statut)) {
                     facture.enRetard = true;
                 }
                 return facture;
@@ -126,8 +225,6 @@ export class FacturesFournisseursService {
     
     /**
      * Récupérer une facture par son ID
-     * @param {string} factureId - ID de la facture
-     * @returns {Promise<Object>} Données de la facture
      */
     static async getFacture(factureId) {
         try {
@@ -139,7 +236,7 @@ export class FacturesFournisseursService {
                 const facture = { id: factureDoc.id, ...factureDoc.data() };
                 
                 // Vérifier si en retard
-                if (estEnRetard(facture.dateEcheance, facture.statut)) {
+                if (this.estEnRetard(facture.dateEcheance, facture.statut)) {
                     facture.enRetard = true;
                 }
                 
@@ -155,45 +252,7 @@ export class FacturesFournisseursService {
     }
     
     /**
-     * Rechercher des factures
-     * @param {string} recherche - Terme de recherche
-     * @returns {Promise<Array>} Factures trouvées
-     */
-    static async rechercherFactures(recherche) {
-        try {
-            if (!recherche || recherche.length < 2) {
-                return await this.getFactures({ limite: 50 });
-            }
-            
-            // Récupérer toutes les factures récentes
-            const factures = await this.getFactures({ limite: 200 });
-            
-            const termeRecherche = recherche.toLowerCase();
-            
-            // Filtrer localement
-            return factures.filter(facture => {
-                const fournisseurNom = facture.fournisseur?.nom?.toLowerCase() || '';
-                const numeroFacture = facture.numeroFacture?.toLowerCase() || '';
-                const numeroInterne = facture.numeroInterne?.toLowerCase() || '';
-                const referenceVirement = facture.referenceVirement?.toLowerCase() || '';
-                const numeroClient = facture.fournisseur?.numeroClient || '';
-                
-                return fournisseurNom.includes(termeRecherche) ||
-                       numeroFacture.includes(termeRecherche) ||
-                       numeroInterne.includes(termeRecherche) ||
-                       referenceVirement.includes(termeRecherche) ||
-                       numeroClient.includes(termeRecherche);
-            });
-            
-        } catch (error) {
-            console.error('❌ Erreur recherche factures:', error);
-            return [];
-        }
-    }
-    
-    /**
      * Obtenir les statistiques des factures
-     * @returns {Promise<Object>} Statistiques
      */
     static async getStatistiques() {
         try {
@@ -233,7 +292,7 @@ export class FacturesFournisseursService {
                     stats.montantPaye += montantTTC;
                 }
                 
-                // En retard - compter aussi celles avec statut 'en_retard'
+                // En retard
                 if (facture.enRetard || facture.statut === 'en_retard') {
                     stats.nombreEnRetard++;
                 }
@@ -258,10 +317,6 @@ export class FacturesFournisseursService {
     
     /**
      * Changer le statut d'une facture
-     * @param {string} factureId - ID de la facture
-     * @param {string} nouveauStatut - Nouveau statut
-     * @param {Object} donnees - Données additionnelles
-     * @returns {Promise<boolean>} Succès du changement
      */
     static async changerStatut(factureId, nouveauStatut, donnees = {}) {
         try {
@@ -275,7 +330,7 @@ export class FacturesFournisseursService {
             }
             
             // Vérifier que le changement est valide
-            const statutsPossibles = getProchainStatut(facture.statut);
+            const statutsPossibles = this.getProchainStatut(facture.statut);
             
             if (!statutsPossibles.includes(nouveauStatut) && nouveauStatut !== 'annulee') {
                 throw new Error(`Passage de ${facture.statut} à ${nouveauStatut} non autorisé`);
@@ -307,10 +362,6 @@ export class FacturesFournisseursService {
                     if (donnees.referenceVirement) {
                         updates.referenceVirement = donnees.referenceVirement;
                     }
-                    // Passer automatiquement à "à pointer"
-                    setTimeout(() => {
-                        this.changerStatut(factureId, 'a_pointer');
-                    }, 1000);
                     break;
                     
                 case 'a_pointer':
@@ -349,44 +400,7 @@ export class FacturesFournisseursService {
     }
     
     /**
-     * Mettre à jour une facture
-     * @param {string} factureId - ID de la facture
-     * @param {Object} updates - Mises à jour à appliquer
-     * @returns {Promise<boolean>} Succès
-     */
-    static async mettreAJourFacture(factureId, updates) {
-        try {
-            const { doc, updateDoc, arrayUnion } = 
-                await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-            
-            // Ajouter à l'historique
-            const updatesAvecHistorique = {
-                ...updates,
-                historique: arrayUnion({
-                    date: new Date(),
-                    action: 'mise_a_jour',
-                    utilisateur: this.getUtilisateurActuel(),
-                    details: 'Facture mise à jour',
-                    timestamp: Date.now()
-                })
-            };
-            
-            await updateDoc(doc(db, 'facturesFournisseurs', factureId), updatesAvecHistorique);
-            
-            console.log('✅ Facture mise à jour');
-            return true;
-            
-        } catch (error) {
-            console.error('❌ Erreur mise à jour facture:', error);
-            throw error;
-        }
-    }
-    
-    /**
      * Supprimer une facture (soft delete)
-     * @param {string} factureId - ID de la facture
-     * @param {Object} infos - Informations de suppression
-     * @returns {Promise<void>}
      */
     static async supprimerFacture(factureId, infos = {}) {
         try {
@@ -402,45 +416,98 @@ export class FacturesFournisseursService {
         }
     }
     
+    // ========================================
+    // HELPERS (ancien data.js)
+    // ========================================
+    
     /**
-     * Vérifier et mettre à jour les factures en retard
-     * @returns {Promise<number>} Nombre de factures mises à jour
+     * Générer un numéro interne
      */
-    static async verifierRetards() {
-        try {
-            const factures = await this.getFactures({ 
-                statut: 'a_payer',
-                limite: 500 
-            });
-            
-            let compteur = 0;
-            const maintenant = new Date();
-            
-            for (const facture of factures) {
-                if (facture.dateEcheance) {
-                    const echeance = facture.dateEcheance.toDate ? 
-                        facture.dateEcheance.toDate() : 
-                        new Date(facture.dateEcheance);
-                    
-                    if (echeance < maintenant) {
-                        await this.changerStatut(facture.id, 'en_retard');
-                        compteur++;
-                    }
-                }
-            }
-            
-            console.log(`✅ ${compteur} facture(s) marquée(s) en retard`);
-            return compteur;
-            
-        } catch (error) {
-            console.error('❌ Erreur vérification retards:', error);
-            return 0;
-        }
+    static genererNumeroInterne() {
+        const date = new Date();
+        const annee = date.getFullYear();
+        const mois = String(date.getMonth() + 1).padStart(2, '0');
+        const jour = String(date.getDate()).padStart(2, '0');
+        const sequence = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+        
+        return `FF-${annee}${mois}${jour}-${sequence}`;
     }
     
-    // ========================================
-    // MÉTHODES PRIVÉES
-    // ========================================
+    /**
+     * Générer une référence de virement
+     */
+    static genererReferenceVirement(date = new Date()) {
+        const annee = date.getFullYear();
+        const mois = String(date.getMonth() + 1).padStart(2, '0');
+        const numero = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        
+        return `VIR-FF-${annee}-${mois}-${numero}`;
+    }
+    
+    /**
+     * Calculer la date d'échéance
+     */
+    static calculerDateEcheance(dateFacture, delaiPaiement = FACTURES_CONFIG.DELAI_PAIEMENT_DEFAUT) {
+        const date = new Date(dateFacture);
+        date.setDate(date.getDate() + delaiPaiement);
+        return date;
+    }
+    
+    /**
+     * Calculer le montant HT depuis TTC
+     */
+    static calculerMontantHT(montantTTC, tauxTVA = 20) {
+        return montantTTC / (1 + tauxTVA / 100);
+    }
+    
+    /**
+     * Calculer la TVA
+     */
+    static calculerMontantTVA(montantHT, tauxTVA = 20) {
+        return montantHT * (tauxTVA / 100);
+    }
+    
+    /**
+     * Déterminer la catégorie d'un fournisseur
+     */
+    static determinerCategorieFournisseur(nomFournisseur) {
+        const nom = nomFournisseur.toUpperCase();
+        
+        // Télécom
+        if (nom.includes('FREE') || nom.includes('ORANGE') || nom.includes('SFR') || nom.includes('BOUYGUES')) {
+            return 'telecom';
+        }
+        
+        // Énergie
+        if (nom.includes('EDF') || nom.includes('ENGIE') || nom.includes('TOTAL')) {
+            return 'energie';
+        }
+        
+        // Informatique
+        if (nom.includes('MICROSOFT') || nom.includes('ADOBE') || nom.includes('OVH') || nom.includes('GOOGLE')) {
+            return 'informatique';
+        }
+        
+        // Par défaut
+        return 'autre';
+    }
+    
+    /**
+     * Obtenir le prochain statut possible
+     */
+    static getProchainStatut(statutActuel) {
+        return FACTURES_CONFIG.STATUTS[statutActuel]?.suivant || [];
+    }
+    
+    /**
+     * Vérifier si une facture est en retard
+     */
+    static estEnRetard(dateEcheance, statut) {
+        if (!dateEcheance || statut !== 'a_payer') return false;
+        
+        const echeance = dateEcheance.toDate ? dateEcheance.toDate() : new Date(dateEcheance);
+        return echeance < new Date();
+    }
     
     /**
      * Récupérer l'utilisateur actuel
@@ -453,32 +520,7 @@ export class FacturesFournisseursService {
         }
         return { id: 'unknown', prenom: 'Inconnu', nom: '' };
     }
-    
-    /**
-     * Récupérer les magasins autorisés
-     */
-    static getMagasinsAutorises() {
-        const auth = localStorage.getItem('sav_auth');
-        if (auth) {
-            const authData = JSON.parse(auth);
-            return authData.magasins || [];
-        }
-        return [];
-    }
 }
 
-/* ========================================
-   HISTORIQUE DES DIFFICULTÉS
-   
-   [03/02/2025] - Création initiale
-   - Service adapté depuis decompte-mutuelle
-   - Gestion des statuts avec workflow factures
-   - Statistiques par statut, fournisseur et catégorie
-   - Vérification automatique des retards
-   
-   NOTES POUR REPRISES FUTURES:
-   - Gérer les permissions par magasin
-   - Ajouter l'export des données
-   - Intégrer avec le module operations-bancaires
-   - Ajouter des rappels automatiques pour échéances
-   ======================================== */
+// Export par défaut
+export default FacturesFournisseursService;

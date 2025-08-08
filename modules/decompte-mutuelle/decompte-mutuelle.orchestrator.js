@@ -21,6 +21,7 @@ import { SearchFiltersWidget } from '../../widgets/search-filters/search-filters
 import { DataGridWidget } from '../../widgets/data-grid/data-grid.widget.js';
 import { PdfUploaderWidget } from '../../widgets/pdf-uploader/pdf-uploader.widget.js';
 import { DetailViewerWidget } from '../../widgets/detail-viewer/detail-viewer.widget.js';
+import toast from '../../widgets/toast/toast.widget.js';
 
 // Import des services
 import uploadService from './decompte-mutuelle.upload.service.js';
@@ -223,6 +224,7 @@ createFilters() {
         wrapperStyle: 'card',
         wrapperTitle: 'Filtres',
         resetButton: true,
+        resetButtonClass: 'btn btn-glass-orange',
         filters: [
             { 
                 type: 'search', 
@@ -261,12 +263,18 @@ createFilters() {
         ],
         onFilter: (values) => {
             console.log('Filtres appliqués:', values);
-            // Ne pas écraser statuts qui vient des cards
+            
+            // Mettre à jour les filtres directement
+            // Si c'est une chaîne vide, on la garde vide (pas de filtrage)
             this.currentFilters = { 
                 ...this.currentFilters, 
-                ...values,
-                statuts: this.currentFilters.statuts  // Préserver les statuts
+                search: values.search || '',
+                mutuelle: values.mutuelle || '',
+                magasin: values.magasin || '',
+                periode: values.periode || 'all',
+                statuts: this.currentFilters.statuts  // Préserver les statuts des cartes
             };
+            
             this.applyFilters();
         },
         onReset: () => {
@@ -425,11 +433,6 @@ createFilters() {
                         action: () => this.openCreateModal()
                     },
                     { 
-                        text: '🤖 Analyser non traités', 
-                        class: 'btn btn-glass-purple btn-lg', 
-                        action: () => this.analyserDecomptesNonTraites()
-                    },
-                    { 
                         text: '📄 Export CSV', 
                         class: 'btn btn-glass-blue btn-lg', 
                         action: () => this.grid.export('csv')
@@ -464,11 +467,16 @@ createFilters() {
             this.showLoader();
             console.log('📊 Chargement des données...');
             
-            // Charger les décomptes
-            this.decomptesData = await firestoreService.getDecomptes({ limite: 100 });
-            console.log(`✅ ${this.decomptesData.length} décomptes chargés`);
+            // Charger TOUS les décomptes
+            const tousLesDecomptes = await firestoreService.getDecomptes({ limite: 100 });
             
-            // Charger les stats
+            // ✅ FILTRER les supprimés
+            this.decomptesData = tousLesDecomptes.filter(d => d.statut !== 'supprime');
+            
+            console.log(`📊 ${tousLesDecomptes.length} décomptes totaux`);
+            console.log(`✅ ${this.decomptesData.length} décomptes actifs (supprimés exclus)`);
+            
+            // Charger les stats (déjà filtrées dans getStatistiques)
             this.statsData = await firestoreService.getStatistiques();
             console.log('✅ Statistiques chargées:', this.statsData);
             
@@ -511,91 +519,6 @@ createFilters() {
         console.log('📊 Réseaux TP:', Array.from(this.reseauxTPDynamiques));
     }
     
-    // ========================================
-    // ANALYSE IA
-    // ========================================
-    
-    /**
-     * Analyser un décompte existant avec l'IA
-     */
-    async analyserDecompteExistant(decompteId) {
-        try {
-            console.log('🤖 Analyse du décompte existant:', decompteId);
-            this.showLoader();
-            this.showMessage('Analyse IA en cours...');
-            
-            // Récupérer le décompte
-            const decompte = await firestoreService.getDecompteById(decompteId);
-            if (!decompte) {
-                throw new Error('Décompte introuvable');
-            }
-            
-            if (!decompte.documents || decompte.documents.length === 0) {
-                throw new Error('Aucun document à analyser');
-            }
-            
-            // Charger les magasins pour FINESS
-            const magasins = await firestoreService.chargerMagasins();
-            
-            // Analyser le premier document
-            const document = decompte.documents[0];
-            console.log('📄 Analyse du document:', document.nom);
-            
-            // Analyser avec l'URL du document
-            const donneesExtraites = await openaiService.analyserDocument(
-                document.url,
-                document.type,
-                magasins
-            );
-            
-            console.log('📊 Données extraites:', donneesExtraites);
-            
-            // Ajouter les données au décompte
-            await firestoreService.ajouterDonneesExtraites(decompteId, donneesExtraites);
-            
-            this.showSuccess('Analyse IA terminée avec succès !');
-            
-            // Rafraîchir les données
-            await this.loadData();
-            
-            this.hideLoader();
-            return donneesExtraites;
-            
-        } catch (error) {
-            this.hideLoader();
-            this.showError('Erreur analyse IA : ' + error.message);
-            console.error('Erreur complète:', error);
-            throw error;
-        }
-    }
-    
-    /**
-     * Analyser tous les décomptes non traités
-     */
-    async analyserDecomptesNonTraites() {
-        const decomptesNonTraites = this.decomptesData.filter(d => 
-            d.statut === 'nouveau' && d.documents && d.documents.length > 0
-        );
-        
-        if (decomptesNonTraites.length === 0) {
-            this.showMessage('Aucun décompte à analyser');
-            return;
-        }
-        
-        const confirmation = confirm(`Analyser ${decomptesNonTraites.length} décompte(s) non traité(s) ?`);
-        if (!confirmation) return;
-        
-        for (const decompte of decomptesNonTraites) {
-            try {
-                console.log(`📋 Analyse du décompte ${decompte.numeroDecompte}...`);
-                await this.analyserDecompteExistant(decompte.id);
-            } catch (error) {
-                console.error(`❌ Erreur analyse ${decompte.numeroDecompte}:`, error);
-            }
-        }
-        
-        this.showSuccess(`Analyse terminée pour ${decomptesNonTraites.length} décompte(s)`);
-    }
     
     // ========================================
     // CRÉATION DE DÉCOMPTE
@@ -910,67 +833,98 @@ const timeline = {
             {
                 label: 'Fichiers uploadés',
                 key: 'documents',
-                formatter: (docs) => {
-                    if (!docs || docs.length === 0) return 'Aucun document';
-                    return docs.map(d => `
-                        <div style="margin: 5px 0;">
-                            📎 ${d.nomOriginal || d.nom}
-                            <a href="${d.url}" target="_blank" style="margin-left: 10px;">Voir</a>
-                        </div>
-                    `).join('');
-                },
+                    formatter: (docs) => {
+                        if (!docs || docs.length === 0) return 'Aucun document';
+                        return docs.map(d => `
+                            <div style="margin: 5px 0;">
+                                📎 ${d.nom}
+                                <a href="${d.url}" target="_blank" style="margin-left: 10px;">Voir</a>
+                            </div>
+                        `).join('');
+                    },
                 html: true
             }
         ]
     });
     
-    // Créer le viewer
-    new DetailViewerWidget({
-        title: `Décompte ${row.numeroDecompte}`,
-        subtitle: row.typeDecompte === 'groupe' 
-            ? `👥 ${row.clients?.length || row.nombreClients} clients - ${row.codeMagasin}`
-            : `${row.client?.prenom || ''} ${row.client?.nom || ''} - ${row.codeMagasin}`,
-        data: row,
-        timeline: timeline,
-        sections: sections,
-        actions: [
-            {
-                label: '🤖 Analyser avec IA',
-                class: 'btn btn-glass-purple btn-lg',
-                onClick: async (data) => {
-                    try {
-                        await self.analyserDecompteExistant(data.id);
-                        return true;
-                    } catch (error) {
-                        self.showError('Erreur analyse : ' + error.message);
+        // Créer le viewer ET GARDER LA RÉFÉRENCE
+        const viewer = new DetailViewerWidget({
+            title: `Décompte ${row.numeroDecompte}`,
+            subtitle: row.typeDecompte === 'groupe' 
+                ? `👥 ${row.clients?.length || row.nombreClients} clients - ${row.codeMagasin}`
+                : `${row.client?.prenom || ''} ${row.client?.nom || ''} - ${row.codeMagasin}`,
+            data: row,
+            timeline: timeline,
+            sections: sections,
+            actions: [
+                {
+                    label: '🚧 Analyser avec IA - En travaux',
+                    class: 'btn btn-glass-purple btn-lg',
+                    onClick: (data) => {
+                        self.showWarning('Fonction en cours de développement');
                         return false;
-                    }
+                    },
+                    closeOnClick: false,
+                    show: (data) => data.statut === 'nouveau'
                 },
-                closeOnClick: true,
-                show: (data) => data.statut === 'nouveau'
-            },
-            {
-                label: '✅ Valider',
-                class: 'btn btn-glass-green btn-lg',
-                onClick: async (data) => {
-                    try {
-                        await firestoreService.changerStatut(data.id, 'rapprochement_bancaire');
-                        self.showSuccess('Décompte validé !');
-                        await self.loadData();
-                        return true;
-                    } catch (error) {
-                        self.showError('Erreur validation : ' + error.message);
+                {
+                    label: '🚧 Valider - En travaux',
+                    class: 'btn btn-glass-green btn-lg',
+                    onClick: (data) => {
+                        self.showWarning('Fonction en cours de développement');
                         return false;
-                    }
+                    },
+                    closeOnClick: false,
+                    show: (data) => data.statut === 'traitement_effectue'
                 },
-                closeOnClick: true,
-                show: (data) => data.statut === 'traitement_effectue'
-            }
-        ],
-        size: 'large',
-        theme: 'default',
-        destroyOnClose: true
-    });
+                // ✅ BOUTON SUPPRIMER AVEC FERMETURE DU MODAL
+                {
+                    label: '🗑️ Supprimer',
+                    class: 'btn btn-glass-red btn-lg',
+                    onClick: async (data) => {
+                        // Confirmation simple
+                        const confirmation = confirm(
+                            `⚠️ Voulez-vous vraiment supprimer le décompte ${data.numeroDecompte} ?\n\n` +
+                            `Cette action est irréversible.`
+                        );
+                        
+                        if (!confirmation) {
+                            return false; // Ne pas fermer
+                        }
+                        
+                        try {
+                            self.showLoader();
+                            
+                            // Supprimer
+                            await firestoreService.supprimerDecompte(data.id, {
+                                motif: 'Suppression manuelle'
+                            });
+                            
+                            self.showSuccess('✅ Décompte supprimé');
+                            
+                            // Rafraîchir les données
+                            await self.loadData();
+                            
+                            self.hideLoader();
+                            
+                            // ✅ FERMER LE MODAL MANUELLEMENT
+                            viewer.close();
+                            
+                            return true;
+                            
+                        } catch (error) {
+                            self.hideLoader();
+                            self.showError('❌ Erreur : ' + error.message);
+                            return false;
+                        }
+                    },
+                    closeOnClick: false  // On gère manuellement
+                }
+            ],
+            size: 'large',
+            theme: 'default',
+            destroyOnClose: true
+        });
 }
     
     // ========================================
@@ -1072,20 +1026,49 @@ const timeline = {
         console.log('📊 Stats mises à jour:', cardsData);
     }
     
-    /**
-     * Mettre à jour les options de filtres
-     */
-    updateFilterOptions() {
-        // Récupérer les mutuelles et magasins uniques
-        const mutuelles = Array.from(this.mutuellesDynamiques).sort();
-        const magasins = [...new Set(this.decomptesData.map(d => d.codeMagasin).filter(Boolean))].sort();
+/**
+ * Mettre à jour les options de filtres dynamiquement
+ */
+updateFilterOptions() {
+    const mutuelles = Array.from(this.mutuellesDynamiques).sort();
+    const magasins = [...new Set(this.decomptesData.map(d => d.codeMagasin).filter(Boolean))].sort();
+    
+    console.log('🔧 Mise à jour des options:', { mutuelles, magasins });
+    
+    // ✅ Mettre à jour le dropdown MUTUELLE
+    if (this.filters && this.filters.state.dropdowns.mutuelle) {
+        const mutuelleDropdown = this.filters.state.dropdowns.mutuelle;
         
-        // TODO: Mettre à jour les options des filtres dynamiquement
-        // (nécessite une méthode updateOptions dans SearchFiltersWidget)
+        // Créer les nouvelles options
+        mutuelleDropdown.config.options = [
+            { value: '', label: 'Toutes les mutuelles' },
+            ...mutuelles.map(m => ({ value: m, label: m }))
+        ];
         
-        console.log('📋 Mutuelles disponibles:', mutuelles);
-        console.log('🏪 Magasins disponibles:', magasins);
+        // Re-filtrer et re-render
+        mutuelleDropdown.filteredOptions = [...mutuelleDropdown.config.options];
+        this.filters.renderDropdownOptions(mutuelleDropdown);
+        
+        console.log('✅ Dropdown mutuelle mis à jour avec', mutuelles.length, 'options');
     }
+    
+    // ✅ Mettre à jour le dropdown MAGASIN
+    if (this.filters && this.filters.state.dropdowns.magasin) {
+        const magasinDropdown = this.filters.state.dropdowns.magasin;
+        
+        // Créer les nouvelles options
+        magasinDropdown.config.options = [
+            { value: '', label: 'Tous les magasins' },
+            ...magasins.map(m => ({ value: m, label: m }))
+        ];
+        
+        // Re-filtrer et re-render
+        magasinDropdown.filteredOptions = [...magasinDropdown.config.options];
+        this.filters.renderDropdownOptions(magasinDropdown);
+        
+        console.log('✅ Dropdown magasin mis à jour avec', magasins.length, 'options');
+    }
+}
     
     // ========================================
     // FORMATTERS
@@ -1122,43 +1105,56 @@ const timeline = {
         return nss; // Retourner tel quel si format incorrect
     }
     
-    // ========================================
-    // UI HELPERS
-    // ========================================
-    
-    showLoader() {
-        const loader = document.getElementById('pageLoader');
-        if (loader) loader.classList.remove('hidden');
-    }
-    
-    hideLoader() {
-        const loader = document.getElementById('pageLoader');
-        if (loader) loader.classList.add('hidden');
-    }
-    
-    showMessage(message, type = 'info') {
-        const container = document.getElementById('messagesContainer');
-        if (!container) return;
-        
-        const div = document.createElement('div');
-        div.className = type === 'error' ? 'error-message' : 'success-message';
-        div.textContent = message;
-        container.appendChild(div);
-        
-        setTimeout(() => {
-            div.remove();
-        }, 5000);
-    }
-    
-    showError(message) {
-        this.showMessage(message, 'error');
-        console.error('❌', message);
-    }
-    
-    showSuccess(message) {
-        this.showMessage(message, 'success');
-        console.log('✅', message);
-    }
+        // ========================================
+        // UI HELPERS
+        // ========================================
+
+        showLoader() {
+            const loader = document.getElementById('pageLoader');
+            if (loader) loader.classList.remove('hidden');
+        }
+
+        hideLoader() {
+            const loader = document.getElementById('pageLoader');
+            if (loader) loader.classList.add('hidden');
+        }
+
+        showMessage(message, type = 'info') {
+            // Utiliser le ToastWidget selon le type
+            switch(type) {
+                case 'error':
+                    toast.error(message);
+                    break;
+                case 'success':
+                    toast.success(message);
+                    break;
+                case 'warning':
+                    toast.warning(message);
+                    break;
+                default:
+                    toast.info(message);
+            }
+        }
+
+        showError(message) {
+            toast.error(message);
+            console.error('❌', message);
+        }
+
+        showSuccess(message) {
+            toast.success(message);
+            console.log('✅', message);
+        }
+
+        showWarning(message) {
+            toast.warning(message);
+            console.log('🚧', message);
+        }
+
+        showInfo(message) {
+            toast.info(message);
+            console.log('ℹ️', message);
+        }
 }
 
 // ========================================

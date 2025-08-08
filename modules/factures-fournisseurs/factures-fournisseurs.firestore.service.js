@@ -5,21 +5,11 @@
 // DESCRIPTION:
 // Service de gestion des factures fournisseurs dans Firestore
 // Création, lecture, mise à jour des enregistrements
-//
-// FONCTIONS PUBLIQUES:
-// - creerFacture(data) : Créer une nouvelle facture
-// - getFactures(filtres) : Récupérer les factures avec filtres
-// - getFactureById(id) : Récupérer une facture par ID
-// - updateStatut(id, statut) : Mettre à jour le statut
-// - ajouterDonneesExtraites(id, donnees) : Ajouter les données IA
-// - genererNumeroInterne() : Générer un numéro unique
-//
-// STRUCTURE COLLECTION:
-// Collection: facturesFournisseurs (camelCase)
+// Adapté à l'architecture decompte-mutuelle
 // ========================================
 
 import { db } from '../../src/services/firebase.service.js';
-import { FACTURE_FOURNISSEUR_TEMPLATE } from '../../src/templates/index.js';
+import { FACTURE_FOURNISSEUR_TEMPLATE } from './factures-fournisseurs.firestore.template.js';
 
 // ========================================
 // CONFIGURATION
@@ -43,8 +33,6 @@ const STATUTS = {
 
 /**
  * Créer une nouvelle facture
- * @param {Object} data - Données de la facture
- * @returns {Promise<string>} ID de la facture créée
  */
 export async function creerFacture(data) {
     try {
@@ -58,48 +46,23 @@ export async function creerFacture(data) {
         // Récupérer les infos utilisateur
         const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
         
-        // DEBUG
-        console.log('🔍 DEBUG Auth:', auth);
-        console.log('🔍 DEBUG data reçue:', data);
-        console.log('🔍 DEBUG aPayer:', data.aPayer);
-        
-        // Cloner le template pour garantir la structure
+        // Cloner le template
         const factureData = JSON.parse(JSON.stringify(FACTURE_FOURNISSEUR_TEMPLATE));
         
-        // ========================================
-        // IDENTIFICATION
-        // ========================================
+        // Identification
         factureData.numeroInterne = numeroInterne;
         
-        // ========================================
-        // ORGANISATION
-        // ========================================
-        if (!auth.raisonSociale && auth.magasin) {
-            try {
-                const { chargerMagasins } = await import('../../src/services/firebase.service.js');
-                const magasins = await chargerMagasins();
-                const magasinUser = Object.values(magasins).find(m => m.code === auth.magasin);
-                factureData.societe = magasinUser?.societe?.raisonSociale || 'NON DEFINI';
-            } catch (error) {
-                factureData.societe = 'NON DEFINI';
-            }
-        } else {
-            factureData.societe = auth.raisonSociale || 'NON DEFINI';
-        }
+        // Organisation
+        factureData.societe = auth.raisonSociale || 'ORIXIS SAS';
         factureData.codeMagasin = auth.magasin || 'XXX';
         factureData.magasinUploadeur = auth.magasin || 'XXX';
         
-        // ========================================
-        // DOCUMENTS
-        // ========================================
+        // Documents
         factureData.documents = data.documents || [];
         
-        // ========================================
-        // FLAGS ET STATUTS
-        // ========================================
+        // Statuts
         factureData.aPayer = data.aPayer === true;
         
-        // Statut initial selon sélection
         if (data.dejaPayee === true) {
             factureData.statut = STATUTS.DEJA_PAYEE;
             factureData.statutPaiement = STATUTS.DEJA_PAYEE;
@@ -112,75 +75,11 @@ export async function creerFacture(data) {
             factureData.statutPaiement = STATUTS.NOUVELLE;
         }
         
-        // ========================================
-        // DONNÉES EXTRAITES PAR L'IA
-        // ========================================
-        if (data.fournisseur) {
-            factureData.fournisseur = data.fournisseur;
-        }
-        if (data.numeroFacture) {
-            factureData.numeroFacture = data.numeroFacture;
-        }
-        if (data.montantHT !== undefined) {
-            factureData.montantHT = data.montantHT;
-        }
-        if (data.montantTVA !== undefined) {
-            factureData.montantTVA = data.montantTVA;
-        }
-        if (data.montantTTC !== undefined) {
-            factureData.montantTTC = data.montantTTC;
-        }
-        if (data.tauxTVA !== undefined) {
-            factureData.tauxTVA = data.tauxTVA;
-        }
-        if (data.dateFacture) {
-            factureData.dateFacture = data.dateFacture;
-        }
-        if (data.dateEcheance) {
-            factureData.dateEcheance = data.dateEcheance;
-        }
-        if (data.periodeDebut) {
-            factureData.periodeDebut = data.periodeDebut;
-        }
-        if (data.periodeFin) {
-            factureData.periodeFin = data.periodeFin;
-        }
-        if (data.modePaiement) {
-            factureData.modePaiement = data.modePaiement;
-        }
-        
-        // ========================================
-        // DONNÉES BRUTES IA (pour debug)
-        // ========================================
-        if (data.iaData) {
-            // Nettoyer iaData pour éviter les références circulaires
-            try {
-                factureData.iaData = JSON.parse(JSON.stringify(data.iaData));
-            } catch (e) {
-                console.warn('⚠️ Impossible de sérialiser iaData, stockage partiel');
-                factureData.iaData = {
-                    dateAnalyse: data.iaData.dateAnalyse,
-                    modeleIA: data.iaData.modeleIA,
-                    erreurIA: data.iaData.erreurIA,
-                    reponseGPT: 'Erreur de sérialisation'
-                };
-            }
-        }
-        
-        // ========================================
-        // DATES
-        // ========================================
+        // Dates
         factureData.dates.creation = serverTimestamp();
         factureData.dateReception = serverTimestamp();
         
-        // Si on a des données IA, marquer la date d'analyse
-        if (data.montantTTC || data.numeroFacture || data.fournisseur?.nom) {
-            factureData.dates.analyse = serverTimestamp();
-        }
-        
-        // ========================================
-        // INTERVENANTS
-        // ========================================
+        // Intervenants
         factureData.intervenants.creePar = {
             id: auth.collaborateur?.id || 'unknown',
             nom: auth.collaborateur?.nom || 'Inconnu',
@@ -188,29 +87,19 @@ export async function creerFacture(data) {
             role: auth.collaborateur?.role || 'technicien'
         };
         
-        // ========================================
-        // HISTORIQUE
-        // ========================================
+        // Historique
         factureData.historique = [{
             date: new Date(),
             action: 'creation',
-            details: `${data.documents.length} document(s) uploadé(s)${factureData.aPayer ? ' - Marquée à payer' : ''}${data.iaData ? ' - Analyse IA effectuée' : ''}`,
+            details: `${data.documents.length} document(s) uploadé(s)`,
             timestamp: Date.now(),
-            utilisateur: {
-                id: auth.collaborateur?.id || 'unknown',
-                nom: auth.collaborateur?.nom || 'Inconnu',
-                prenom: auth.collaborateur?.prenom || '',
-                role: auth.collaborateur?.role || 'technicien'
-            }
+            utilisateur: factureData.intervenants.creePar
         }];
         
-        // ========================================
-        // CRÉATION DANS FIRESTORE
-        // ========================================
+        // Création dans Firestore
         const docRef = await addDoc(collection(db, COLLECTION_NAME), factureData);
         
         console.log('✅ Facture créée:', numeroInterne, 'ID:', docRef.id);
-        console.log('📋 Structure complète:', factureData);
         
         return docRef.id;
         
@@ -226,8 +115,6 @@ export async function creerFacture(data) {
 
 /**
  * Récupérer les factures avec filtres
- * @param {Object} filtres - Filtres à appliquer
- * @returns {Promise<Array>} Liste des factures
  */
 export async function getFactures(filtres = {}) {
     try {
@@ -236,8 +123,6 @@ export async function getFactures(filtres = {}) {
         );
         
         let q = collection(db, COLLECTION_NAME);
-        
-        // Construire la requête avec les filtres
         const constraints = [];
         
         if (filtres.societe) {
@@ -252,27 +137,14 @@ export async function getFactures(filtres = {}) {
             constraints.push(where('codeMagasin', '==', filtres.magasin));
         }
         
-        if (filtres.fournisseur) {
-            constraints.push(where('fournisseur.nom', '==', filtres.fournisseur));
-        }
-        
-        if (filtres.aPayer === true) {
-            constraints.push(where('aPayer', '==', true));
-        }
-        
-        // Tri par défaut : date de facture décroissante
-        constraints.push(orderBy('dateFacture', 'desc'));
-        
         if (filtres.limite) {
             constraints.push(limit(filtres.limite));
         }
         
-        // Appliquer les contraintes
         if (constraints.length > 0) {
             q = query(q, ...constraints);
         }
         
-        // Exécuter la requête
         const snapshot = await getDocs(q);
         
         const factures = [];
@@ -294,8 +166,6 @@ export async function getFactures(filtres = {}) {
 
 /**
  * Récupérer une facture par ID
- * @param {string} id - ID de la facture
- * @returns {Promise<Object|null>} La facture ou null
  */
 export async function getFactureById(id) {
     try {
@@ -326,81 +196,7 @@ export async function getFactureById(id) {
 // ========================================
 
 /**
- * Mettre à jour le statut d'une facture
- * @param {string} id - ID de la facture
- * @param {string} nouveauStatut - Nouveau statut
- * @param {Object} options - Options supplémentaires
- */
-export async function updateStatut(id, nouveauStatut, options = {}) {
-    try {
-        const { doc, updateDoc, serverTimestamp } = await import(
-            'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js'
-        );
-        
-        const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
-        
-        const updates = {
-            statut: nouveauStatut,
-            statutPaiement: nouveauStatut,
-            historique: await ajouterHistorique(id, {
-                action: 'changement_statut',
-                details: `Statut changé en: ${nouveauStatut}`
-            })
-        };
-        
-        // Mises à jour spécifiques selon le statut
-        switch (nouveauStatut) {
-            case STATUTS.PAYEE:
-                updates['dates.paiement'] = serverTimestamp();
-                updates.datePaiement = serverTimestamp();
-                updates['intervenants.payePar'] = {
-                    id: auth.collaborateur?.id || 'unknown',
-                    nom: auth.collaborateur?.nom || 'Inconnu',
-                    prenom: auth.collaborateur?.prenom || '',
-                    role: auth.collaborateur?.role || 'technicien'
-                };
-                updates.aPayer = false;
-                if (options.modePaiement) {
-                    updates.modePaiement = options.modePaiement;
-                }
-                if (options.referenceVirement) {
-                    updates.referenceVirement = options.referenceVirement;
-                }
-                break;
-                
-            case STATUTS.A_POINTER:
-                updates.aPayer = false;
-                break;
-                
-            case STATUTS.POINTEE:
-                updates['dates.pointage'] = serverTimestamp();
-                updates['intervenants.pointePar'] = {
-                    id: auth.collaborateur?.id || 'unknown',
-                    nom: auth.collaborateur?.nom || 'Inconnu',
-                    prenom: auth.collaborateur?.prenom || '',
-                    role: auth.collaborateur?.role || 'technicien'
-                };
-                break;
-                
-            case STATUTS.EN_RETARD:
-                updates.aPayer = true;
-                break;
-        }
-        
-        await updateDoc(doc(db, COLLECTION_NAME, id), updates);
-        
-        console.log('✅ Statut mis à jour:', nouveauStatut);
-        
-    } catch (error) {
-        console.error('❌ Erreur mise à jour statut:', error);
-        throw error;
-    }
-}
-
-/**
  * Ajouter les données extraites par l'IA
- * @param {string} id - ID de la facture
- * @param {Object} donnees - Données extraites
  */
 export async function ajouterDonneesExtraites(id, donnees) {
     try {
@@ -441,15 +237,14 @@ export async function ajouterDonneesExtraites(id, donnees) {
             iaData: {
                 reponseGPT: donnees,
                 dateAnalyse: serverTimestamp(),
-                modeleIA: donnees.modeleIA || 'gpt-4.1-mini',
+                modeleIA: donnees.modeleIA || 'gpt-4o-mini',
                 erreurIA: null
             },
             
             // Ajouter à l'historique
             historique: await ajouterHistorique(id, {
                 action: 'extraction_ia',
-                details: 'Données extraites avec succès',
-                donnees: donnees
+                details: 'Données extraites avec succès'
             })
         };
         
@@ -464,12 +259,11 @@ export async function ajouterDonneesExtraites(id, donnees) {
 }
 
 // ========================================
-// FONCTIONS UTILITAIRES
+// HELPERS
 // ========================================
 
 /**
  * Générer un numéro interne unique
- * Format: FF-AAAAMMJJ-XXXX
  */
 async function genererNumeroInterne() {
     try {
@@ -505,7 +299,6 @@ async function genererNumeroInterne() {
         
     } catch (error) {
         console.error('⚠️ Erreur génération numéro, fallback:', error);
-        // Fallback avec timestamp
         return `FF-${Date.now()}`;
     }
 }
@@ -530,9 +323,7 @@ async function ajouterHistorique(id, nouvelleEntree) {
                 nom: auth.collaborateur?.nom || 'Inconnu',
                 prenom: auth.collaborateur?.prenom || '',
                 role: auth.collaborateur?.role || 'technicien'
-            },
-            // Ajouter les données si présentes
-            ...(nouvelleEntree.donnees && { donnees: nouvelleEntree.donnees })
+            }
         });
         
         return historique;
@@ -543,44 +334,30 @@ async function ajouterHistorique(id, nouvelleEntree) {
     }
 }
 
-// ========================================
-// VÉRIFICATION DES RETARDS
-// ========================================
-
 /**
- * Vérifier et mettre à jour les factures en retard
+ * Charger les magasins (helper pour l'analyse)
  */
-export async function verifierFacturesEnRetard() {
+export async function chargerMagasins() {
     try {
-        const { collection, query, where, getDocs } = await import(
+        const { collection, getDocs } = await import(
             'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js'
         );
         
-        // Récupérer les factures à payer
-        const q = query(
-            collection(db, COLLECTION_NAME),
-            where('statut', '==', STATUTS.A_PAYER)
-        );
+        const snapshot = await getDocs(collection(db, 'magasins'));
+        const magasins = [];
         
-        const snapshot = await getDocs(q);
-        const aujourd = new Date();
-        let compteur = 0;
+        snapshot.forEach(doc => {
+            magasins.push({
+                id: doc.id,
+                ...doc.data()
+            });
+        });
         
-        for (const docSnap of snapshot.docs) {
-            const facture = docSnap.data();
-            if (facture.dateEcheance) {
-                const echeance = facture.dateEcheance.toDate();
-                if (echeance < aujourd) {
-                    await updateStatut(docSnap.id, STATUTS.EN_RETARD);
-                    compteur++;
-                }
-            }
-        }
-        
-        console.log(`✅ ${compteur} facture(s) marquée(s) en retard`);
+        return magasins;
         
     } catch (error) {
-        console.error('❌ Erreur vérification retards:', error);
+        console.error('⚠️ Erreur chargement magasins:', error);
+        return [];
     }
 }
 
@@ -592,23 +369,7 @@ export default {
     creerFacture,
     getFactures,
     getFactureById,
-    updateStatut,
     ajouterDonneesExtraites,
-    verifierFacturesEnRetard,
+    chargerMagasins,
     STATUTS
 };
-
-/* ========================================
-   HISTORIQUE DES MODIFICATIONS
-   
-   [05/02/2025] - Refactorisation
-   - Import du template depuis le fichier centralisé
-   - Ajout du support iaData pour stocker les réponses GPT
-   - Amélioration de la lisibilité avec sections
-   - Gestion cohérente des données IA
-   
-   NOTES POUR REPRISES FUTURES:
-   - Le template est dans src/templates/firestore/
-   - iaData stocke la réponse GPT brute pour debug
-   - L'historique trace toutes les actions y compris l'IA
-   ======================================== */

@@ -280,7 +280,7 @@ export class SearchFiltersWidget {
         if (this.config.resetButton && this.config.filters.length > 0) {
             const resetBtn = document.createElement('button');
             resetBtn.type = 'button';
-            resetBtn.className = 'btn btn-ghost-purple';
+            resetBtn.className = this.config.resetButtonClass;
             resetBtn.innerHTML = '<span class="reset-icon">↺</span> Réinitialiser';
             resetBtn.onclick = () => {
                 // D'abord reset les champs du widget

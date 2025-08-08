@@ -3,191 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAV Audio - Factures Fournisseurs</title>
-    
-    <!-- PWA Meta Tags -->
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="SAV Audio">
-    <link rel="manifest" href="../../manifest.json">
-    <meta name="theme-color" content="#ff6b6b">
-    
-    <!-- ========================================
-         CSS - Ordre de chargement optimisé
-         ======================================== -->
-    
-    <!-- 1. Base et layout -->
+    <title>Factures Fournisseurs</title>
     <link rel="stylesheet" href="../../src/css/main.css">
-
-    <!-- 2. CSS utilitaires partagés UNIQUEMENT -->
-    <link rel="stylesheet" href="../../src/components/ui/common/animation.css">
-    <link rel="stylesheet" href="../../src/components/ui/common/form.css">
-
-    <!-- 3. CSS spécifique au module factures fournisseurs -->
-    <link rel="stylesheet" href="./factures-fournisseurs.css">
     
-    <!-- NOTE: Les composants UI chargent leur CSS automatiquement via loadStyles() -->
-</head>
-<body>
-    <!-- Container pour le composant AppHeader -->
-    <!-- AppHeader sera injecté ici par JavaScript -->
-    
-    <div class="container">
-        <!-- Barre d'actions et statistiques -->
-        <div class="factures-header">
-            <div class="factures-stats">
-                <!-- StatsCards va générer le contenu ici -->
-            </div>
-            
-            <div class="factures-actions">
-                <button class="btn btn-primary btn-with-icon btn-lg pill" onclick="ouvrirNouvelleFacture()">
-                    <span>➕</span> Nouvelle facture
-                </button>
-            </div>
-        </div>
-
-        <!-- Filtres -->
-        <div class="factures-filters section">
-            <!-- DataTableFilters va générer le contenu ici -->
-        </div>
-
-        <!-- Container pour DataTable -->
-        <div class="factures-table-container section">
-            <!-- DataTable sera généré ici -->
-        </div>
-    </div>
-
-    <!-- Modal Nouvelle Facture -->
-    <div id="modalNouvelleFacture" class="modal" style="display: none;">
-        <div class="modal-content modal-large">
-            <div class="modal-header">
-                <h2>Nouvelle Facture Fournisseur</h2>
-                <button class="modal-close">&times;</button>
-            </div>
-            
-            <div class="modal-body">
-                <!-- Le contenu sera généré par factures-fournisseurs.create.js -->
-            </div>
-            
-            <div class="modal-footer">
-                <!-- Les boutons seront ajoutés dynamiquement par JavaScript -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Détail Facture -->
-    <div id="modalDetailFacture" class="modal" style="display: none;">
-        <div class="modal-content modal-large">
-            <div class="modal-header">
-                <h2>Détail de la facture <span id="detailNumFacture"></span></h2>
-                <button class="modal-close">&times;</button>
-            </div>
-            
-            <div class="modal-body">
-                <!-- Timeline du statut -->
-                <div class="timeline-container">
-                    <div class="timeline" id="timeline">
-                        <!-- Timeline générée dynamiquement -->
-                    </div>
-                </div>
-                
-                <!-- Sections détail -->
-                <div class="detail-sections">
-                    <!-- Colonne de gauche : Fournisseur + Montants -->
-                    <div class="detail-column-left">
-                        <!-- Section Fournisseur -->
-                        <div class="detail-section">
-                            <h3>Informations fournisseur</h3>
-                            <div id="detailFournisseur">
-                                <!-- Contenu généré dynamiquement -->
-                            </div>
-                        </div>
-                        
-                        <!-- Section Montants -->
-                        <div class="detail-section">
-                            <h3>Montants</h3>
-                            <div id="detailMontants">
-                                <!-- Contenu généré dynamiquement -->
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Colonne de droite : Dates + Paiement -->
-                    <div class="detail-column-right">
-                        <!-- Section Dates -->
-                        <div class="detail-section">
-                            <h3>Dates et périodes</h3>
-                            <div id="detailDates">
-                                <!-- Contenu généré dynamiquement -->
-                            </div>
-                        </div>
-                        
-                        <!-- Section Paiement -->
-                        <div class="detail-section">
-                            <h3>Informations de paiement</h3>
-                            <div id="detailPaiement">
-                                <!-- Contenu généré dynamiquement -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Nouvelle ligne pour Organisation et Documents -->
-                <div class="detail-sections" style="margin-top: 20px;">
-                    <!-- Colonne de gauche : Organisation -->
-                    <div class="detail-column-left">
-                        <div class="detail-section">
-                            <h3>📋 Organisation</h3>
-                            <div id="detailOrganisation">
-                                <!-- Contenu généré dynamiquement -->
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Colonne de droite : Documents -->
-                    <div class="detail-column-right">
-                        <div class="detail-section">
-                            <h3>📄 Documents</h3>
-                            <div id="detailDocuments">
-                                <!-- Contenu généré dynamiquement -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Section Historique en pleine largeur -->
-                <div class="detail-section" style="margin-top: 20px;">
-                    <h3>📜 Historique des actions</h3>
-                    <div id="detailHistorique" style="max-height: 300px; overflow-y: auto;">
-                        <!-- Contenu généré dynamiquement -->
-                    </div>
-                </div>
-                
-                <!-- Actions selon le statut -->
-                <div class="detail-actions" id="detailActions">
-                    <!-- Boutons d'action générés selon le statut -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Container pour les dialogs custom -->
-    <div id="dialog-container" class="dialog-container"></div>
-
-    <!-- Footer -->
-    <div class="footer">
-        <p>Orixis - © 2025</p>
-    </div>
-
-    <!-- PDF.js pour conversion PDF → Images -->
+    <!-- PDF.js pour conversion PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
         // Configuration PDF.js
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     </script>
-
-    <!-- JavaScript local au module -->
-    <script type="module" src="./factures-fournisseurs.main.js"></script>
+    
+    <!-- Style minimal pour loader uniquement -->
+    <style>
+        .page-loading {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .page-loading.hidden { display: none; }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #ff6b6b;
+            border-radius: 50%;
+            width: 40px; height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loader -->
+    <div class="page-loading" id="pageLoader">
+        <div class="loader"></div>
+    </div>
+    
+    <!-- Messages -->
+    <div id="messagesContainer" style="position: fixed; top: 10px; right: 10px; z-index: 1000; max-width: 400px;"></div>
+    
+    <!-- Container pour progress bar PDF (optionnel) -->
+    <div id="pdf-conversion-progress" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10000;"></div>
+    
+    <!-- Containers pour widgets -->
+    <div class="stats-container" style="margin: 100px 20px 20px 20px;"></div>
+    <div class="filters-container" style="margin: 20px;"></div>
+    <div class="table-container" style="margin: 20px;"></div>
+    
+    <script type="module">
+        // Import de l'orchestrateur qui gère TOUT
+        import orchestrator from './factures-fournisseurs.orchestrator.js';
+        
+        // Lancement de l'application
+        window.addEventListener('load', async () => {
+            console.log('🎯 Initialisation du module Factures Fournisseurs...');
+            await orchestrator.init();
+        });
+        
+        // Export pour debug uniquement
+        window.orchestrator = orchestrator;
+    </script>
 </body>
 </html>
