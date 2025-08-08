@@ -45,8 +45,9 @@
    VERSION: 1.0.0
    ======================================== */
 
-export class PdfUploaderWidget {
-    constructor(config = {}) {
+import { loadWidgetStyles } from '/src/utils/widget-styles-loader.js';
+
+export class PdfUploaderWidget {    constructor(config = {}) {
         // 1. Charger CSS TOUJOURS en premier
         this.loadCSS();
         
@@ -89,6 +90,10 @@ export class PdfUploaderWidget {
             onSave: config.onSave || null,
             onClose: config.onClose || null,
             onError: config.onError || null,
+
+            // Détection de doublons
+            checkDuplicate: config.checkDuplicate || null,
+            duplicateWarningText: config.duplicateWarningText || 'Ce fichier semble déjà exister',
             
             // Spread pour surcharger
             ...config
@@ -122,25 +127,10 @@ export class PdfUploaderWidget {
      * Charge le CSS avec timestamp anti-cache
      */
     loadCSS() {
-        // 1. Charger buttons.css en premier
-        if (!document.getElementById('buttons-css')) {
-            const buttonsLink = document.createElement('link');
-            buttonsLink.id = 'buttons-css';
-            buttonsLink.rel = 'stylesheet';
-            buttonsLink.href = '/src/css/components/buttons.css';
-            document.head.appendChild(buttonsLink);
-        }
+        // Charger les styles communs (buttons, badges, modal)
+        loadWidgetStyles();
         
-        // 2. Charger modal-base.css
-        if (!document.getElementById('modal-base-css')) {
-            const modalLink = document.createElement('link');
-            modalLink.id = 'modal-base-css';
-            modalLink.rel = 'stylesheet';
-            modalLink.href = '/src/css/components/modal-base.css';
-            document.head.appendChild(modalLink);
-        }
-        
-        // 3. Charger le CSS du widget
+        // Charger le CSS spécifique du widget
         const cssId = 'pdf-uploader-widget-css';
         const existing = document.getElementById(cssId);
         if (existing) existing.remove();
@@ -275,52 +265,184 @@ export class PdfUploaderWidget {
     /**
      * Initialise la dropzone
      */
+
     async initDropzone() {
-        try {
-            // Importer le composant DropZone
-            const { DropZone } = await import('../../src/components/ui/dropzone/dropzone.component.js');
-            
-            this.elements.dropzoneInstance = new DropZone({
-                container: `#${this.id}-dropzone`,
-                acceptedTypes: this.config.acceptedTypes,
-                maxFiles: this.config.maxFiles,
-                maxFileSize: this.config.maxFileSize,
-                showPreview: false,
-                messages: {
-                    drop: 'Glissez vos documents ici',
-                    browse: 'ou cliquez pour parcourir',
-                    typeError: 'Type de fichier non accepté',
-                    sizeError: `Fichier trop volumineux (max ${this.config.maxFileSize / 1024 / 1024}MB)`,
-                    maxFilesError: `Maximum ${this.config.maxFiles} fichiers`
-                },
-                onDrop: (files) => this.handleFilesDrop(files),
-                onChange: (files) => this.handleFilesChange(files),
-                onError: (error) => this.handleError(error)
-            });
-        } catch (error) {
-            console.error('❌ Erreur init dropzone:', error);
+    try {
+        // Importer le composant DropZone
+        const { DropZone } = await import('../../src/components/ui/dropzone/dropzone.component.js');
+        
+        this.elements.dropzoneInstance = new DropZone({
+            container: `#${this.id}-dropzone`,
+            acceptedTypes: this.config.acceptedTypes,
+            maxFiles: this.config.maxFiles,
+            maxFileSize: this.config.maxFileSize,
+            showPreview: false,
+            messages: {
+                drop: 'Glissez vos documents ici',
+                browse: 'ou cliquez pour parcourir',
+                typeError: 'Type de fichier non accepté',
+                sizeError: `Fichier trop volumineux (max ${this.config.maxFileSize / 1024 / 1024}MB)`,
+                maxFilesError: `Maximum ${this.config.maxFiles} fichiers`
+            },
+            onDrop: (files) => this.handleFilesDrop(files),
+            onChange: (files) => this.handleFilesChange(files),
+            onError: (error) => this.handleError(error)
+        });
+    } catch (error) {
+        console.error('❌ Erreur init dropzone:', error);
+    }
+}
+
+
+/**
+ * Gère le drop de fichiers avec fusion intelligente
+ */
+async handleFilesDrop(files) {
+    // Si détection de doublons activée
+    if (this.config.checkDuplicate) {
+        const filesToAdd = [];
+        
+        // ✅ On travaille avec notre propre liste, PAS celle de la DropZone !
+        const fichiersDejaDansLaListe = [...this.state.files]; // Copie de sécurité
+        
+        // Calculer les hash des fichiers VRAIMENT en attente (pas ceux de la DropZone)
+        const hashesEnAttente = new Map();
+        for (const fileEnAttente of fichiersDejaDansLaListe) {
+            if (fileEnAttente._hash) {
+                hashesEnAttente.set(fileEnAttente._hash, fileEnAttente);
+            } else {
+                const hash = await this.calculateFileHash(fileEnAttente);
+                fileEnAttente._hash = hash;
+                hashesEnAttente.set(hash, fileEnAttente);
+            }
         }
+        
+        // TRAITEMENT SÉQUENTIEL pour chaque nouveau fichier
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            
+            // Message de progression si plusieurs fichiers
+            if (files.length > 1 && window.toast) {
+                window.toast.info(`Vérification ${i + 1}/${files.length} : ${file.name}`);
+            }
+            
+            try {
+                // Calculer le hash du nouveau fichier
+                const hash = await this.calculateFileHash(file);
+                file._hash = hash; // Stocker pour réutilisation future
+                
+                // ✅ NIVEAU 1 : Vérifier si déjà en attente
+                if (hashesEnAttente.has(hash)) {
+                    const fichierEnAttente = hashesEnAttente.get(hash);
+                    
+                    const continuer = confirm(
+                        `⚠️ FICHIER DÉJÀ EN ATTENTE !\n\n` +
+                        `Le fichier "${file.name}" est déjà dans la liste :\n` +
+                        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                        `📄 Nom en attente : ${fichierEnAttente.name}\n` +
+                        `📏 Taille : ${this.formatFileSize(fichierEnAttente.size)}\n` +
+                        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+                        `Ajouter quand même une copie ?`
+                    );
+                    
+                    if (!continuer) {
+                        console.log(`⏭️ Fichier ${file.name} ignoré (déjà en attente)`);
+                        continue;
+                    }
+                    
+                    // Si on continue, on ajoute quand même (copie acceptée)
+                    filesToAdd.push(file);
+                    continue;
+                }
+                
+                // ✅ NIVEAU 2 : Vérifier dans la base de données
+                const doublonDB = await this.config.checkDuplicate(file, hash);
+                
+                if (doublonDB) {
+                    const continuer = confirm(
+                        `⚠️ FICHIER DÉJÀ DANS LA BASE !\n\n` +
+                        `Le fichier "${file.name}" existe déjà :\n` +
+                        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                        `📄 Décompte : ${doublonDB.numeroDecompte || 'Sans numéro'}\n` +
+                        `👤 Client : ${doublonDB.client?.nom || 'Non défini'}\n` +
+                        `📅 Uploadé le : ${this.formatDate(doublonDB.dateUpload)}\n` +
+                        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+                        `Ajouter quand même ce fichier ?`
+                    );
+                    
+                    if (!continuer) {
+                        console.log(`⏭️ Fichier ${file.name} ignoré (doublon DB)`);
+                        continue;
+                    }
+                }
+                
+                // ✅ Fichier validé, on l'ajoute
+                filesToAdd.push(file);
+                
+            } catch (error) {
+                console.error(`❌ Erreur vérification ${file.name}:`, error);
+                // En cas d'erreur, on ajoute quand même
+                filesToAdd.push(file);
+            }
+        }
+        
+        // ✅ FUSION : Garder les anciens ET ajouter les nouveaux
+        this.state.files = [...this.state.files, ...filesToAdd];
+        
+        // Synchroniser la DropZone avec TOUS les fichiers
+        // ✅ IMPORTANT : On fusionne avec notre liste, pas celle de la DropZone
+        this.state.files = [...fichiersDejaDansLaListe, ...filesToAdd];
+        
+        // Forcer la DropZone à utiliser NOTRE liste
+        if (this.elements.dropzoneInstance) {
+            this.elements.dropzoneInstance.files = [...this.state.files];
+            if (this.elements.dropzoneInstance.updatePreview) {
+                this.elements.dropzoneInstance.updatePreview();
+            }
+        }
+        
+        // Messages récapitulatifs
+        if (filesToAdd.length > 0 && window.toast) {
+            window.toast.success(`${filesToAdd.length} fichier(s) ajouté(s)`);
+        }
+        
+        if (files.length > filesToAdd.length && window.toast) {
+            const nbIgnores = files.length - filesToAdd.length;
+            window.toast.warning(`${nbIgnores} fichier(s) ignoré(s)`);
+        }
+        
+    } else {
+        // ✅ Pas de vérification : on fusionne directement
+        this.state.files = [...this.state.files, ...files];
     }
     
-    /**
-     * Gère le drop de fichiers
-     */
-    handleFilesDrop(files) {
-        this.state.files = files;
-        
-        if (this.config.mode === 'selection' && files.length > 0) {
-            this.showSelectionStep();
-        } else {
-            this.updateSummary();
-            this.updateSaveButton();
-        }
+    // Suite du workflow
+    if (this.config.mode === 'selection' && this.state.files.length > 0) {
+        this.showSelectionStep();
+    } else {
+        this.updateSummary();
+        this.updateSaveButton();
     }
+}
     
     /**
      * Gère le changement de fichiers
      */
     handleFilesChange(files) {
+        // ✅ SI on a la détection de doublons, on IGNORE onChange
+        // Car handleFilesDrop va gérer correctement
+        if (this.config.checkDuplicate) {
+            return; // Ne rien faire !
+        }
+        
+        // Sinon comportement normal
         this.state.files = files;
+        
+        // Si mode selection et qu'on était déjà sur l'étape selection, rafraîchir
+        if (this.config.mode === 'selection' && this.state.step === 'selection') {
+            this.showSelectionStep();
+        }
+        
         this.updateSummary();
         this.updateSaveButton();
     }
@@ -334,35 +456,46 @@ export class PdfUploaderWidget {
         
         if (!selectionZone || !selectionContent) return;
         
-        // Initialiser les sélections
-        this.state.selections = this.state.files.map(() => this.config.selectionOptions[0]?.value || '');
+        // Préserver les sélections existantes ou initialiser avec la valeur par défaut
+        const oldSelections = [...this.state.selections];
+        this.state.selections = this.state.files.map((file, index) => {
+            // Si une sélection existait déjà pour cet index, la garder
+            if (oldSelections[index]) {
+                return oldSelections[index];
+            }
+            // Sinon, utiliser la valeur par défaut (la deuxième option si elle existe)
+            return this.config.selectionOptions[1]?.value || this.config.selectionOptions[0]?.value || '';
+        });
         
         // Générer le HTML de sélection
         selectionContent.innerHTML = `
             <h5>Sélectionnez le statut pour chaque fichier :</h5>
             <div class="selection-files">
-                ${this.state.files.map((file, index) => `
-                    <div class="selection-file-item">
-                        <div class="file-info">
-                            <span class="file-icon">📄</span>
-                            <span class="file-name">${this.escapeHtml(file.name)}</span>
+                ${this.state.files.map((file, index) => {
+                    const currentSelection = this.state.selections[index];
+                    return `
+                        <div class="selection-file-item">
+                            <div class="file-info">
+                                <span class="file-icon">📄</span>
+                                <span class="file-name">${this.escapeHtml(file.name)}</span>
+                            </div>
+                            <div class="selection-options">
+                                ${this.config.selectionOptions.map(option => `
+                                    <label class="selection-option">
+                                        <input type="radio" 
+                                            name="selection-${this.id}-${index}" 
+                                            value="${option.value}"
+                                            ${currentSelection === option.value ? 'checked' : ''}
+                                            onchange="window.pdfUploaderWidgets['${this.id}'].updateSelection(${index}, '${option.value}')">
+                                        <span class="option-label option-${option.value}">
+                                            ${option.label}
+                                        </span>
+                                    </label>
+                                `).join('')}
+                            </div>
                         </div>
-                        <div class="selection-options">
-                            ${this.config.selectionOptions.map(option => `
-                                <label class="selection-option">
-                                    <input type="radio" 
-                                           name="selection-${this.id}-${index}" 
-                                           value="${option.value}"
-                                           ${index === 0 ? 'checked' : ''}
-                                           onchange="window.pdfUploaderWidgets['${this.id}'].updateSelection(${index}, '${option.value}')">
-                                    <span class="option-label option-${option.value}">
-                                        ${option.label}
-                                    </span>
-                                </label>
-                            `).join('')}
-                        </div>
-                    </div>
-                `).join('')}
+                    `;
+                }).join('')}
             </div>
         `;
         
@@ -380,43 +513,60 @@ export class PdfUploaderWidget {
         this.updateSummary();
     }
     
-    /**
-     * Supprime un fichier
-     */
-    async removeFile(index) {
-        // Confirmation si configuré
-        if (this.config.confirmBeforeRemove) {
-            const confirm = window.confirm(`Supprimer "${this.state.files[index].name}" ?`);
-            if (!confirm) return;
-        }
+/**
+ * Supprime un fichier
+ */
+async removeFile(index) {
+    // Confirmation si configuré
+    if (this.config.confirmBeforeRemove) {
+        const confirm = window.confirm(`Supprimer "${this.state.files[index].name}" ?`);
+        if (!confirm) return;
+    }
+    
+    // ✅ SI checkDuplicate activé, on gère nous-mêmes
+    if (this.config.checkDuplicate) {
+        // Supprimer de notre liste
+        this.state.files.splice(index, 1);
         
-        // Supprimer de la dropzone (qui met à jour this.state.files automatiquement)
+        // Synchroniser la DropZone avec notre nouvelle liste
+        if (this.elements.dropzoneInstance) {
+            this.elements.dropzoneInstance.files = [...this.state.files];
+            if (this.elements.dropzoneInstance.updatePreview) {
+                this.elements.dropzoneInstance.updatePreview();
+            }
+        }
+    } else {
+        // Sinon, utiliser la méthode normale de la DropZone
         if (this.elements.dropzoneInstance) {
             this.elements.dropzoneInstance.removeFile(index);
-            // La DropZone a déjà mis à jour this.state.files via onChange
+            // La DropZone met à jour this.state.files via onChange
         } else {
             // Si pas de dropzone, supprimer manuellement
             this.state.files.splice(index, 1);
         }
-        
-        // Supprimer de la sélection si mode selection
-        if (this.state.selections.length > 0) {
-            this.state.selections.splice(index, 1);
-        }
-        
-        // Si mode selection et plus de fichiers, revenir à l'upload
-        if (this.config.mode === 'selection' && this.state.files.length === 0) {
-            const selectionZone = this.elements.modal.querySelector('.pdf-uploader-selection');
-            if (selectionZone) {
-                selectionZone.style.display = 'none';
-            }
-            this.state.step = 'upload';
-        }
-        
-        // Mettre à jour l'affichage
-        this.updateSummary();
-        this.updateSaveButton();
     }
+    
+    // Supprimer de la sélection si mode selection
+    if (this.state.selections.length > 0) {
+        this.state.selections.splice(index, 1);
+    }
+    
+    // Si mode selection et plus de fichiers, revenir à l'upload
+    if (this.config.mode === 'selection' && this.state.files.length === 0) {
+        const selectionZone = this.elements.modal.querySelector('.pdf-uploader-selection');
+        if (selectionZone) {
+            selectionZone.style.display = 'none';
+        }
+        this.state.step = 'upload';
+    } else if (this.config.mode === 'selection' && this.state.files.length > 0) {
+        // Rafraîchir la zone de sélection si encore des fichiers
+        this.showSelectionStep();
+    }
+    
+    // Mettre à jour l'affichage
+    this.updateSummary();
+    this.updateSaveButton();
+}
     
     /**
      * Met à jour le résumé
@@ -707,6 +857,42 @@ export class PdfUploaderWidget {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    /**
+     * Calculer le hash SHA-256 d'un fichier
+     */
+    async calculateFileHash(file) {
+        try {
+            const buffer = await file.arrayBuffer();
+            const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+            return hashHex;
+        } catch (error) {
+            console.error('❌ Erreur calcul hash:', error);
+            return 'hash-error-' + Date.now();
+        }
+    }
+
+    /**
+     * Formater une date pour l'affichage
+     */
+    formatDate(date) {
+        if (!date) return 'Date inconnue';
+        
+        let d;
+        if (date?.seconds) {
+            d = new Date(date.seconds * 1000);
+        } else if (date instanceof Date) {
+            d = date;
+        } else {
+            d = new Date(date);
+        }
+        
+        return d.toLocaleDateString('fr-FR');
     }
 }
 

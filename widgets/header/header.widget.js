@@ -12,6 +12,8 @@
 // Chemin: widgets/header/header.widget.js
 // ========================================
 
+import { loadWidgetStyles } from '/src/utils/widget-styles-loader.js';
+
 export class HeaderWidget {
     constructor(config = {}) {
         // Charger le CSS automatiquement
@@ -64,29 +66,22 @@ export class HeaderWidget {
     
     // Charge le CSS automatiquement
     loadCSS() {
-            // Charger buttons.css EN PREMIER
-            const buttonsId = 'buttons-css';
-            if (!document.getElementById(buttonsId)) {
-                const buttonsLink = document.createElement('link');
-                buttonsLink.id = buttonsId;
-                buttonsLink.rel = 'stylesheet';
-                buttonsLink.href = '/src/css/components/buttons.css';
-                document.head.appendChild(buttonsLink);
-            }
-            
-            // Puis charger le CSS du widget
-            const cssId = 'header-widget-css';
-            const existing = document.getElementById(cssId);
-            if (existing) existing.remove();
-            
-            const link = document.createElement('link');
-            link.id = cssId;
-            link.rel = 'stylesheet';
-            link.href = `/widgets/header/header.widget.css?v=${Date.now()}`;
-            document.head.appendChild(link);
-            
-            console.log('✅ CSS chargés : buttons.css + header.widget.css');
-        }
+        // Charger les styles communs (buttons, badges, modal)
+        loadWidgetStyles();
+        
+        // Charger le CSS spécifique du widget
+        const cssId = 'header-widget-css';
+        const existing = document.getElementById(cssId);
+        if (existing) existing.remove();
+        
+        const link = document.createElement('link');
+        link.id = cssId;
+        link.rel = 'stylesheet';
+        link.href = `/widgets/header/header.widget.css?v=${Date.now()}`;
+        document.head.appendChild(link);
+        
+        console.log('✅ CSS chargés : styles communs + header.widget.css');
+    }
     
     // ========================================
     // INITIALISATION

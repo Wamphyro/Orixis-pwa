@@ -25,7 +25,7 @@ import { DECOMPTE_TEMPLATE } from './decompte-mutuelle.template.js';
 
 const CONFIG = {
     // Collection Firestore
-    COLLECTION_NAME: 'decomptes_mutuelles',
+    COLLECTION_NAME: 'decomptesMutuelles',
     
     // Storage
     STORAGE_BASE_PATH: 'decomptes-mutuelles',

@@ -205,43 +205,65 @@ export async function ajouterDonneesExtraites(id, donnees) {
         );
         
         const updates = {
-            // Fournisseur
-            fournisseur: {
-                nom: donnees.fournisseur?.nom || null,
-                categorie: donnees.fournisseur?.categorie || 'autre',
-                numeroClient: donnees.fournisseur?.numeroClient || null,
-                siren: donnees.fournisseur?.siren || null
-            },
+            // ✅ IDENTIFIANTS COMPLETS
+            identifiants: donnees.identifiants || {},
             
-            // Numéro de facture
-            numeroFacture: donnees.numeroFacture || null,
+            // ✅ FOURNISSEUR COMPLET
+            fournisseur: donnees.fournisseur ? {
+                ...donnees.fournisseur,
+                nom: donnees.fournisseur.nom?.toUpperCase() || null
+            } : {},
             
-            // Montants
-            montantHT: donnees.montantHT || 0,
-            montantTVA: donnees.montantTVA || 0,
-            montantTTC: donnees.montantTTC || 0,
-            tauxTVA: donnees.tauxTVA || 20,
+            // ✅ CLIENT
+            client: donnees.client || {},
             
-            // Dates
-            dateFacture: donnees.dateFacture || null,
-            dateEcheance: donnees.dateEcheance || null,
+            // ✅ TVA DÉTAILLÉE
+            tva: donnees.tva || {},
             
-            // Période facturée
-            periodeDebut: donnees.periodeDebut || null,
-            periodeFin: donnees.periodeFin || null,
+            // ✅ COMPTABILITÉ
+            comptabilite: donnees.comptabilite || {},
             
-            // Mise à jour des dates
+            // ✅ PAIEMENT
+            paiement: donnees.paiement || {},
+            
+            // ✅ DOCUMENTS LIÉS
+            documentsLies: donnees.documentsLies || {},
+            
+            // ✅ LIGNES DÉTAIL
+            lignesDetail: donnees.lignesDetail || [],
+            
+            // ✅ MONTANTS (compatibilité)
+            numeroFacture: donnees.numeroFacture?.toUpperCase() || null,
+            montantHT: donnees.montantHT,
+            montantTVA: donnees.montantTVA,
+            montantTTC: donnees.montantTTC,
+            tauxTVA: donnees.tauxTVA,
+            
+            // ✅ MONTANTS STRUCTURÉS
+            montants: donnees.montants || {},
+            
+            // ✅ DATES
+            dateFacture: donnees.dateFacture,
+            dateEcheance: donnees.dateEcheance,
+            periodeDebut: donnees.periodeDebut,
+            periodeFin: donnees.periodeFin,
+            
+            // ✅ MODE PAIEMENT
+            modePaiement: donnees.modePaiement,
+            
+            // Dates système
             'dates.analyse': serverTimestamp(),
             
-            // Stocker les données brutes IA
+            // ✅ DONNÉES IA COMPLÈTES
             iaData: {
                 reponseGPT: donnees,
                 dateAnalyse: serverTimestamp(),
-                modeleIA: donnees.modeleIA || 'gpt-4o-mini',
-                erreurIA: null
+                modeleIA: donnees.extractionIA?.modele || 'gpt-4o-mini',
+                erreurIA: null,
+                donneesExtraites: donnees
             },
             
-            // Ajouter à l'historique
+            // Historique
             historique: await ajouterHistorique(id, {
                 action: 'extraction_ia',
                 details: 'Données extraites avec succès'
@@ -250,7 +272,7 @@ export async function ajouterDonneesExtraites(id, donnees) {
         
         await updateDoc(doc(db, COLLECTION_NAME, id), updates);
         
-        console.log('✅ Données extraites ajoutées');
+        console.log('✅ Données extraites ajoutées (COMPLÈTES)');
         
     } catch (error) {
         console.error('❌ Erreur ajout données:', error);
@@ -361,6 +383,207 @@ export async function chargerMagasins() {
     }
 }
 
+/**
+ * Vérifier si un hash de document existe déjà
+ */
+export async function verifierHashExiste(hash) {
+    try {
+        const { collection, getDocs } = await import(
+            'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js'
+        );
+        
+        console.log('🔍 Vérification du hash:', hash.substring(0, 12) + '...');
+        
+        // Récupérer toutes les factures
+        const snapshot = await getDocs(collection(db, COLLECTION_NAME));
+        
+        // Parcourir toutes les factures
+        for (const doc of snapshot.docs) {
+            const data = doc.data();
+            
+            // Vérifier si la facture a des documents
+            if (data.documents && Array.isArray(data.documents)) {
+                // Parcourir tous les documents de la facture
+                for (const document of data.documents) {
+                    if (document.hash === hash) {
+                        console.log('⚠️ Doublon trouvé:', doc.id);
+                        return {
+                            id: doc.id,
+                            numeroFacture: data.numeroFacture || data.numeroInterne,
+                            dateUpload: data.dates?.creation,
+                            fournisseur: data.fournisseur?.nom,
+                            statut: data.statut
+                        };
+                    }
+                }
+            }
+        }
+        
+        console.log('✅ Pas de doublon trouvé');
+        return null;
+        
+    } catch (error) {
+        console.error('❌ Erreur vérification hash:', error);
+        return null;
+    }
+}
+
+/**
+ * Vérifier si un numéro de facture existe déjà
+ */
+export async function verifierNumeroFactureExiste(numeroFacture) {
+    try {
+        if (!numeroFacture) return null;
+        
+        const { collection, getDocs } = await import(
+            'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js'
+        );
+        
+        // Normaliser en majuscules pour la comparaison
+        const numeroRecherche = numeroFacture.toUpperCase().trim();
+        
+        console.log('🔍 Vérification du numéro facture:', numeroRecherche);
+        
+        // Récupérer toutes les factures
+        const snapshot = await getDocs(collection(db, COLLECTION_NAME));
+        
+        // Parcourir et comparer sans tenir compte de la casse
+        for (const doc of snapshot.docs) {
+            const data = doc.data();
+            
+            // Vérifier le numéro de facture (insensible à la casse)
+            const numeroExistant = (data.numeroFacture || '').toUpperCase().trim();
+            
+            if (numeroExistant && numeroExistant === numeroRecherche) {
+                console.log('⚠️ Numéro facture trouvé:', doc.id);
+                return {
+                    id: doc.id,
+                    numeroFacture: data.numeroFacture,
+                    dateFacture: data.dateFacture,
+                    fournisseur: data.fournisseur?.nom,
+                    montantTTC: data.montantTTC,
+                    statut: data.statut
+                };
+            }
+        }
+        
+        console.log('✅ Numéro facture non trouvé');
+        return null;
+        
+    } catch (error) {
+        console.error('❌ Erreur vérification numéro facture:', error);
+        return null;
+    }
+}
+
+/**
+ * Rechercher les doublons potentiels avec score de probabilité
+ */
+export async function rechercherDoublonsProbables(donnees) {
+    try {
+        const { collection, getDocs } = await import(
+            'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js'
+        );
+        
+        console.log('🔍 Recherche de doublons probables...');
+        
+        // Normaliser les données de recherche
+        const numeroRecherche = (donnees.numeroFacture || '').toUpperCase().trim();
+        const montantRecherche = parseFloat(donnees.montantTTC || 0);
+        const fournisseurRecherche = (donnees.fournisseur || '').toUpperCase().trim();
+        
+        // Date de recherche (tolérance +/- 3 jours)
+        let dateRecherche = null;
+        if (donnees.dateFacture) {
+            dateRecherche = donnees.dateFacture.toDate ? 
+                donnees.dateFacture.toDate() : 
+                new Date(donnees.dateFacture);
+        }
+        
+        // Récupérer toutes les factures
+        const snapshot = await getDocs(collection(db, COLLECTION_NAME));
+        
+        const doublonsPotentiels = [];
+        
+        // Analyser chaque facture
+        for (const doc of snapshot.docs) {
+            const data = doc.data();
+            let score = 0;
+            const details = [];
+            
+            // 1️⃣ NUMÉRO FACTURE (40 points)
+            if (numeroRecherche && data.numeroFacture) {
+                const numeroExistant = (data.numeroFacture || '').toUpperCase().trim();
+                if (numeroExistant === numeroRecherche) {
+                    score += 40;
+                    details.push('N° facture identique');
+                }
+            }
+            
+            // 2️⃣ MONTANT TTC (30 points)
+            if (montantRecherche > 0 && data.montantTTC) {
+                const montantExistant = parseFloat(data.montantTTC || 0);
+                // Tolérance de 0.01€ pour les arrondis
+                if (Math.abs(montantExistant - montantRecherche) < 0.01) {
+                    score += 30;
+                    details.push('Montant identique');
+                }
+            }
+            
+            // 3️⃣ DATE FACTURE (20 points)
+            if (dateRecherche && data.dateFacture) {
+                const dateExistante = data.dateFacture.toDate ? 
+                    data.dateFacture.toDate() : 
+                    new Date(data.dateFacture);
+                
+                // Tolérance : même jour
+                const diffJours = Math.abs(dateRecherche - dateExistante) / (1000 * 60 * 60 * 24);
+                if (diffJours < 1) {
+                    score += 20;
+                    details.push('Date identique');
+                } else if (diffJours < 3) {
+                    score += 10;
+                    details.push('Date proche (±3j)');
+                }
+            }
+            
+            // 4️⃣ FOURNISSEUR (10 points)
+            if (fournisseurRecherche && data.fournisseur?.nom) {
+                const fournisseurExistant = (data.fournisseur.nom || '').toUpperCase().trim();
+                if (fournisseurExistant === fournisseurRecherche) {
+                    score += 10;
+                    details.push('Fournisseur identique');
+                }
+            }
+            
+            // Si score significatif, ajouter aux doublons potentiels
+            if (score >= 40) {
+                doublonsPotentiels.push({
+                    id: doc.id,
+                    score: score,
+                    details: details,
+                    numeroFacture: data.numeroFacture,
+                    dateFacture: data.dateFacture,
+                    montantTTC: data.montantTTC,
+                    fournisseur: data.fournisseur?.nom,
+                    statut: data.statut
+                });
+            }
+        }
+        
+        // Trier par score décroissant
+        doublonsPotentiels.sort((a, b) => b.score - a.score);
+        
+        console.log(`📊 ${doublonsPotentiels.length} doublon(s) potentiel(s) trouvé(s)`);
+        
+        return doublonsPotentiels;
+        
+    } catch (error) {
+        console.error('❌ Erreur recherche doublons:', error);
+        return [];
+    }
+}
+
 // ========================================
 // EXPORT
 // ========================================
@@ -371,5 +594,8 @@ export default {
     getFactureById,
     ajouterDonneesExtraites,
     chargerMagasins,
+    verifierHashExiste,
+    verifierNumeroFactureExiste,
+    rechercherDoublonsProbables,
     STATUTS
 };

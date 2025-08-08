@@ -532,6 +532,12 @@ createFilters() {
             title: 'Nouveaux Décomptes',
             theme: 'purple',
             mode: 'simple',
+            maxFiles: 100,  // ✅ ON CONFIGURE ICI POUR TESTS
+            
+            // ✅ NOUVEAU : Détection de doublons par hash
+            checkDuplicate: async (file, hash) => {
+                return await firestoreService.verifierHashExiste(hash);
+            },
             description: {
                 icon: '📄',
                 title: 'Upload de décomptes mutuelles',
@@ -606,8 +612,117 @@ createFilters() {
                         );
                         
                         // Ajouter les données extraites au décompte
+                        // ✅ RECHERCHE INTELLIGENTE DE DOUBLONS APRÈS IA
+                        // Utiliser le montant INDIVIDUEL du client, pas le total !
+                        const montantPourRecherche = donneesExtraites.montantRemboursementClient || 
+                                                    donneesExtraites.client?.montantRemboursement || 
+                                                    donneesExtraites.montantVirement;
+
+                        console.log('🔍 Montants pour recherche:', {
+                            montantRemboursementClient: donneesExtraites.montantRemboursementClient,
+                            montantVirement: donneesExtraites.montantVirement,
+                            montantUtilise: montantPourRecherche
+                        });
+
+                        const doublonsPotentiels = await firestoreService.rechercherDoublonsProbables({
+                            client: donneesExtraites.client,
+                            montantVirement: montantPourRecherche,  // ✅ Montant INDIVIDUEL !
+                            mutuelle: donneesExtraites.mutuelle,
+                            codeMagasin: donneesExtraites.codeMagasin
+                        });
+
+                        // Si doublon probable trouvé
+                        if (doublonsPotentiels.length > 0 && doublonsPotentiels[0].id !== decompteId) {
+                            const doublon = doublonsPotentiels[0];
+                            
+                            // Déterminer le niveau d'alerte
+                            let emoji = '🟡';
+                            let niveau = 'POSSIBLE';
+                            if (doublon.score >= 80) {
+                                emoji = '🔴';
+                                niveau = 'QUASI-CERTAIN';
+                            } else if (doublon.score >= 60) {
+                                emoji = '🟠';
+                                niveau = 'PROBABLE';
+                            }
+                            
+                            // ✅ CORRECTION : Afficher TOUS les clients
+                            let clientInfo = '';
+                            if (doublon.typeDecompte === 'groupe' && doublon.clients && doublon.clients.length > 0) {
+                                // Décompte groupé : afficher TOUS les clients
+                                const nomsClients = doublon.clients
+                                    .map(c => `${c.prenom || ''} ${c.nom || ''}`.trim())
+                                    .filter(n => n) // Enlever les vides
+                                    .join(', ');
+                                clientInfo = nomsClients || 'Clients multiples';
+                            } else if (doublon.client) {
+                                // Décompte unitaire
+                                clientInfo = `${doublon.client.prenom || ''} ${doublon.client.nom || ''}`.trim();
+                            } else {
+                                clientInfo = 'Client non défini';
+                            }
+
+                            // ✅ DEBUG pour voir ce qu'on a
+                            console.log('🔍 Doublon détecté:', {
+                                type: doublon.typeDecompte,
+                                clients: doublon.clients,
+                                client: doublon.client,
+                                clientInfo: clientInfo
+                            });
+
+                            const garder = confirm(
+                                `${emoji} DOUBLON ${niveau} DÉTECTÉ ! (${doublon.score}%)\n\n` +
+                                `Un décompte similaire existe déjà :\n` +
+                                `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                                `📄 N° Décompte : ${doublon.numeroDecompte || 'Sans numéro'}\n` +
+                                `👤 Client(s) : ${clientInfo}\n` +
+                                `${doublon.typeDecompte === 'groupe' ? `👥 Type : Décompte groupé (${doublon.nombreClients || doublon.clients?.length || 2} clients)\n` : ''}` +
+                                `🏥 Mutuelle : ${doublon.mutuelle || 'Non définie'}\n` +
+                                `💰 Montant : ${this.formaterMontant(doublon.montantVirement || 0)}\n` +
+                                `\n` +
+                                `🔍 Critères correspondants :\n` +
+                                doublon.details.map(d => `   ✓ ${d}`).join('\n') +
+                                `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+                                `Garder quand même ce décompte ?`
+                            );
+                            
+                        if (!garder) {
+                            // Supprimer le décompte créé
+                            console.log('🗑️ Suppression du décompte doublon');
+                            await firestoreService.supprimerDecompte(decompteId, {
+                                motif: `Doublon probable (${doublon.score}%) de ${doublon.numeroDecompte}`
+                            });
+                            
+                            this.showWarning(`Décompte ${file.name} supprimé (doublon ${doublon.score}%)`);
+                            
+                            // ✅ RETIRER DES CRÉÉS car supprimé
+                            const indexCree = resultats.crees.findIndex(c => c.id === decompteId);
+                            if (indexCree !== -1) {
+                                resultats.crees.splice(indexCree, 1);
+                            }
+                            
+                            // ✅ RETIRER DES ANALYSES aussi
+                            const indexAnalyse = resultats.analyses.findIndex(a => a.id === decompteId);
+                            if (indexAnalyse !== -1) {
+                                resultats.analyses.splice(indexAnalyse, 1);
+                            }
+                            
+                            resultats.erreurs.push({
+                                fichier: file.name,
+                                erreur: `Doublon détecté (${doublon.score}% de certitude)`,
+                                type: 'doublon_intelligent',
+                                score: doublon.score
+                            });
+                            
+                            continue; // Passer au fichier suivant
+                        }
+                            
+                            console.log(`⚠️ Doublon ${doublon.score}% confirmé, création forcée`);
+                        }
+
+                        // Ajouter les données extraites au décompte
                         await firestoreService.ajouterDonneesExtraites(decompteId, donneesExtraites);
-                        
+
                         console.log('✅ Analyse IA terminée:', donneesExtraites);
                         resultats.analyses.push({
                             id: decompteId,
@@ -647,7 +762,14 @@ createFilters() {
             
             if (resultats.erreurs.length > 0) {
                 resultats.erreurs.forEach(err => {
-                    this.showError(`❌ ${err.fichier}: ${err.erreur}`);
+                    // Message différent selon le type d'erreur
+                    if (err.type === 'doublon_intelligent') {
+                        // Orange pour les doublons (c'est un choix, pas une erreur)
+                        this.showWarning(`⚠️ ${err.fichier}: ${err.erreur}`);
+                    } else {
+                        // Rouge pour les vraies erreurs
+                        this.showError(`❌ ${err.fichier}: ${err.erreur}`);
+                    }
                 });
             }
             
@@ -833,15 +955,24 @@ const timeline = {
             {
                 label: 'Fichiers uploadés',
                 key: 'documents',
-                    formatter: (docs) => {
-                        if (!docs || docs.length === 0) return 'Aucun document';
-                        return docs.map(d => `
-                            <div style="margin: 5px 0;">
-                                📎 ${d.nom}
-                                <a href="${d.url}" target="_blank" style="margin-left: 10px;">Voir</a>
+                formatter: (docs) => {
+                    if (!docs || docs.length === 0) return 'Aucun document';
+                    return docs.map(d => `
+                        <div style="margin: 8px 0; padding: 8px; background: #f8f9fa; border-radius: 4px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    📎 <strong>${d.nom || d.nomOriginal}</strong>
+                                    <span style="color: #6b7280; font-size: 0.9em; margin-left: 10px;">
+                                        (${self.formatFileSize(d.taille)})
+                                    </span>
+                                </div>
+                                <a href="${d.url}" target="_blank" class="btn btn-view-icon btn-sm" title="Voir le document">
+                                </a>
                             </div>
-                        `).join('');
-                    },
+                            ${d.hash ? `<div style="font-size: 0.8em; color: #9ca3af; margin-top: 4px;">Hash: ${d.hash.substring(0, 12)}...</div>` : ''}
+                        </div>
+                    `).join('');
+                },
                 html: true
             }
         ]
@@ -1074,6 +1205,16 @@ updateFilterOptions() {
     // FORMATTERS
     // ========================================
     
+    /**
+     * Formater la taille d'un fichier
+     */
+    formatFileSize(bytes) {
+        if (!bytes) return '0 B';
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(1024));
+        return parseFloat((bytes / Math.pow(1024, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
     /**
      * Formater un montant
      */

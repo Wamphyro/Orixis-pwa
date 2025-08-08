@@ -1,6 +1,6 @@
 // ========================================
 // TEMPLATE FIRESTORE - DÉCOMPTES MUTUELLES
-// Collection: decomptes_mutuelles
+// Collection: decomptesMutuelles
 // ========================================
 
 export const DECOMPTE_TEMPLATE = {

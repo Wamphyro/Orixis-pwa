@@ -25,7 +25,7 @@ const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
 /**
  * Upload une facture vers Firebase Storage
  */
-export async function uploadFactureDocument(file) {
+export async function uploadFactureDocument(file, hashFromWidget = null) {
     try {
         // Importer les fonctions Firebase Storage
         const { ref, uploadBytes, getDownloadURL } = await import(
@@ -35,8 +35,9 @@ export async function uploadFactureDocument(file) {
         // Validation du fichier
         validateFile(file);
         
-        // Calculer le hash pour détecter les doublons
-        const hash = await calculateFileHash(file);
+        // ✅ MODIFICATION : Utiliser le hash du widget au lieu de le recalculer
+        const hash = hashFromWidget || file._hash || 'no-hash-' + Date.now();
+        console.log('📦 Utilisation du hash:', hash.substring(0, 12) + '...');
         
         // Créer le chemin de stockage
         const timestamp = Date.now();
@@ -55,7 +56,7 @@ export async function uploadFactureDocument(file) {
         const extension = file.name.split('.').pop().toLowerCase();
         const nomFichier = `FF_${userInfo.societe}_${dateStr}_${timeStr}_${shortUUID}.${extension}`;
         
-        // Chemin complet : factures-fournisseurs/ORIXIS/inbox/2025/02/09/FF_ORIXIS_20250209_143029_550e8400.pdf
+        // Chemin complet
         const chemin = `${STORAGE_BASE_PATH}/${userInfo.societe}/inbox/${annee}/${mois}/${jour}/${nomFichier}`;
         
         console.log('📤 Upload vers:', chemin);
@@ -71,7 +72,7 @@ export async function uploadFactureDocument(file) {
                 magasinUploadeur: userInfo.magasin,
                 societeUploadeur: userInfo.societe,
                 nomOriginal: file.name,
-                hash: hash,
+                hash: hash,  // ✅ Hash venant du widget
                 dateUpload: new Date().toISOString(),
                 taille: String(file.size)
             }
@@ -92,7 +93,7 @@ export async function uploadFactureDocument(file) {
             url: url,
             taille: file.size,
             type: file.type,
-            hash: hash,
+            hash: hash,  // ✅ Hash venant du widget
             dateUpload: new Date()
         };
         
@@ -111,7 +112,8 @@ export async function uploadMultipleDocuments(files) {
     
     for (const file of files) {
         try {
-            const metadata = await uploadFactureDocument(file);
+            // ✅ Passer le hash du widget si disponible
+            const metadata = await uploadFactureDocument(file, file._hash);
             resultats.push(metadata);
         } catch (error) {
             erreurs.push({
@@ -178,31 +180,6 @@ export async function getDocumentUrl(chemin) {
 // ========================================
 
 /**
- * Calculer le hash SHA-256 d'un fichier
- */
-export async function calculateFileHash(file) {
-    try {
-        // Lire le fichier comme ArrayBuffer
-        const buffer = await file.arrayBuffer();
-        
-        // Calculer le hash SHA-256
-        const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
-        
-        // Convertir en hexadécimal
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const hashHex = hashArray
-            .map(b => b.toString(16).padStart(2, '0'))
-            .join('');
-        
-        return hashHex;
-        
-    } catch (error) {
-        console.error('❌ Erreur calcul hash:', error);
-        return 'hash-error-' + Date.now();
-    }
-}
-
-/**
  * Valider un fichier avant upload
  */
 function validateFile(file) {
@@ -246,6 +223,6 @@ export default {
     uploadFactureDocument,
     uploadMultipleDocuments,
     deleteDocument,
-    getDocumentUrl,
-    calculateFileHash
-};
+    getDocumentUrl
+    // ✅ calculateFileHash SUPPRIMÉ
+}

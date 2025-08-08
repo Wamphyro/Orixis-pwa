@@ -1,385 +1,366 @@
-# 📄 Module Décomptes Mutuelles
+# 📑 Module Factures Fournisseurs
 
-Module complet de gestion des décomptes mutuelles avec analyse IA automatique et workflow intégré.
+## 📝 Description
 
-## 🏗️ Architecture Simplifiée
+Module complet de gestion des factures fournisseurs avec extraction automatique des données par IA (GPT-4.1-mini). Le module permet l'upload, l'analyse, le suivi et la gestion comptable des factures.
 
+## 🎯 Fonctionnalités principales
+
+### 1. Upload et création
+- **Upload multiple** de factures (PDF, JPG, PNG)
+- **Détection de doublons** par hash SHA-256
+- **Classement automatique** : À payer / Déjà payée
+- **Stockage structuré** dans Firebase Storage
+
+### 2. Extraction IA automatique
+- **Analyse GPT-4.1-mini** de chaque facture uploadée
+- **Extraction complète** :
+  - Identifiants (n° facture, SIRET, TVA intra...)
+  - Fournisseur (nom, catégorie, coordonnées...)
+  - Montants (HT, TVA, TTC, ventilation...)
+  - TVA détaillée (régime, exonération, taux...)
+  - **Comptabilité intelligente** (compte PCG, justification)
+  - Dates et échéances
+  - Mode de paiement
+
+### 3. Gestion des statuts
 ```
-/modules/decompte-mutuelle/
-├── decompte-mutuelle.html              # Page HTML
-├── decompte-mutuelle.css               # Styles spécifiques
-├── decompte-mutuelle.orchestrator.js   # Orchestrateur des widgets
-├── decompte-mutuelle.service.js        # Service backend unifié
-└── decompte-mutuelle.template.js       # Template Firestore
-```
-
-## 🚀 Installation
-
-### Prérequis
-
-- ✅ Firebase configuré (Auth, Firestore, Storage)
-- ✅ Cloud Function déployée pour l'analyse IA
-- ✅ Widgets installés dans `/widgets/`
-- ✅ Utilisateur authentifié
-
-### Configuration Firebase
-
-```javascript
-// Collections Firestore requises
-- decomptes_mutuelles  // Collection principale
-- magasins            // Pour la recherche FINESS
-
-// Structure Storage
-decomptes-mutuelles/
-└── [société]/
-    └── inbox/
-        └── [année]/
-            └── [mois]/
-                └── [jour]/
-                    └── [fichiers]
+Nouvelle → À payer → Payée → Pointée
+         ↘ Déjà payée ↗
 ```
 
-## 📦 Widgets Utilisés
+### 4. Tableaux de bord
+- **Stats en temps réel** par cartes cliquables
+- **Sélection multiple** dans le tableau ✅ NOUVEAU
+- **Filtres multiples** : statut, fournisseur, catégorie, magasin, période
+- **Recherche globale** : n° facture, fournisseur, référence
+- **Export** : CSV, Excel, **Export comptable** ✅ NOUVEAU
 
-| Widget | Rôle | Import |
-|--------|------|--------|
-| **HeaderWidget** | En-tête avec infos utilisateur | `/widgets/header/header.widget.js` |
-| **StatsCardsWidget** | Cartes de statistiques cliquables | `/widgets/stats-cards/stats-cards.widget.js` |
-| **SearchFiltersWidget** | Filtres de recherche avancés | `/widgets/search-filters/search-filters.widget.js` |
-| **DataGridWidget** | Tableau avec tri, pagination, export | `/widgets/data-grid/data-grid.widget.js` |
-| **PdfUploaderWidget** | Upload de documents avec workflow | `/widgets/pdf-uploader/pdf-uploader.widget.js` |
-| **DetailViewerWidget** | Affichage détaillé avec timeline | `/widgets/detail-viewer/detail-viewer.widget.js` |
+### 5. Export comptable avancé ✅ NOUVEAU
+- **Export individuel** : Depuis le détail d'une facture
+- **Export multiple** : Sélection de plusieurs factures dans le tableau
+- **Format FEC** compatible avec tous les logiciels comptables
+- **Écritures détaillées** avec ventilation TVA et lignes de détail
+- **Résumé** par fournisseur et compte comptable
 
-## 🔄 Workflow Complet
+### 6. Vue détaillée enrichie
+- **Timeline visuelle** du workflow
+- **12 sections d'informations** structurées
+- **Actions contextuelles** selon le statut
+- **Export comptable individuel**
+- **Boutons avec icônes prédéfinies** ✅ NOUVEAU
 
-### 1️⃣ Création d'un décompte
+## 🏗️ Architecture
 
-```javascript
-// L'utilisateur clique sur "Nouveau décompte"
-// → Ouverture du PdfUploaderWidget
-// → Upload des PDF
-// → Création automatique dans Firestore
-// → Analyse IA optionnelle
+```
+modules/factures-fournisseurs/
+├── factures-fournisseurs.html              # Page principale
+├── factures-fournisseurs.orchestrator.js   # 🎯 Chef d'orchestre
+├── factures-fournisseurs.service.js        # Logique métier
+├── factures-fournisseurs.firestore.service.js  # Base de données
+├── factures-fournisseurs.openai.service.js # Extraction IA
+├── factures-fournisseurs.upload.service.js # Stockage fichiers
+└── factures-fournisseurs.template.js       # Structure données
 
-const uploader = new PdfUploaderWidget({
-    title: 'Nouveau Décompte Mutuelle',
-    onSave: async (data) => {
-        // Upload des fichiers
-        const resultats = await decompteService.uploadDocuments(data.files);
-        
-        // Création du décompte
-        const decompteId = await decompteService.creerDecompte({
-            documents: resultats.reussis
-        });
-        
-        // Analyse IA automatique
-        await decompteService.analyserDecompteIA(decompteId);
-        
-        // Rafraîchir la liste
-        await refreshGrid();
-    }
-});
+src/utils/
+└── widget-styles-loader.js    # ✅ NOUVEAU : Chargeur de styles centralisé
+
+widgets/
+├── data-grid/                 # Tableau avec sélection multiple
+├── pdf-uploader/              # Upload de documents
+├── detail-viewer/             # Vue détaillée
+└── ...                        # Autres widgets
 ```
 
-### 2️⃣ Workflow des statuts
+## 🎨 Système de design centralisé ✅ NOUVEAU
+
+### Chargement automatique des styles
+Tous les widgets chargent automatiquement les styles communs via `widget-styles-loader.js` :
+- `buttons.css` : Tous les styles de boutons
+- `badges.css` : Tous les styles de badges
+- `modal-base.css` : Styles de base des modals
+
+### Classes CSS disponibles
+
+#### Boutons icônes
+```html
+<button class="btn btn-view-icon"></button>     <!-- Œil vert -->
+<button class="btn btn-delete-icon"></button>   <!-- Poubelle rouge -->
+<button class="btn btn-edit-icon"></button>     <!-- Crayon bleu -->
+```
+
+#### Boutons glass
+```html
+<button class="btn btn-glass-blue btn-lg">Valider</button>
+<button class="btn btn-glass-red">Annuler</button>
+<button class="btn btn-glass-orange">En attente</button>
+<button class="btn btn-glass-purple">Export</button>
+```
+
+#### Badges
+```html
+<span class="badge badge-success">Payée</span>
+<span class="badge badge-warning">À payer</span>
+<span class="badge badge-danger">En retard</span>
+```
+
+## 🔄 Workflow complet
 
 ```mermaid
 graph LR
-    A[📋 Nouveau] --> B[🤖 Traitement IA]
-    B --> C[✅ Traité]
-    B --> D[✏️ Manuel]
-    C --> E[🔗 Rapproché]
-    D --> E
+    A[Upload PDF] --> B[Hash + Storage]
+    B --> C[Création Firestore]
+    C --> D[Analyse GPT-4.1-mini]
+    D --> E[Extraction données]
+    E --> F[Enrichissement]
+    F --> G[Affichage]
+    G --> H[Sélection]
+    H --> I[Export comptable]
 ```
 
-### 3️⃣ Visualisation détaillée
+## 💾 Structure de données (Firestore)
 
+### Document principal
 ```javascript
-// Clic sur une ligne du tableau
-// → Ouverture du DetailViewerWidget
-// → Timeline du workflow
-// → Actions contextuelles selon le statut
+{
+  // IDENTIFICATION
+  numeroInterne: "FF-20250209-0001",
+  numeroFacture: "F-2025-1234",
+  
+  // IDENTIFIANTS COMPLETS
+  identifiants: {
+    numeroFacture, numeroCommande, numeroClient,
+    numeroTVAIntra, siret, siren, naf
+  },
+  
+  // FOURNISSEUR ENRICHI
+  fournisseur: {
+    nom, categorie, siren, numeroTVA,
+    adresse, telephone, email,
+    paysDomiciliation, compteFournisseur,
+    banque: { nom, iban, bic }
+  },
+  
+  // TVA DÉTAILLÉE
+  tva: {
+    regime: "NATIONAL|INTRACOMMUNAUTAIRE|EXPORT",
+    exoneration: boolean,
+    motifExoneration: string,
+    autoliquidation: boolean,
+    tauxApplique: number,
+    ventilationTVA: []
+  },
+  
+  // COMPTABILITÉ INTELLIGENTE
+  comptabilite: {
+    categorieDetectee: string,
+    compteComptable: "6xxx",      // Compte PCG
+    libelleCompte: string,
+    justification: string,         // Explication IA
+    motsClesDetectes: [],
+    fiabilite: 0-100,
+    journalComptable: "HA",
+    codeAnalytique: string
+  },
+  
+  // PAIEMENT
+  paiement: {
+    modePaiement, conditionsPaiement,
+    iban, bic, referenceMandat,
+    escompte: { taux, dateLimit, montant }
+  },
+  
+  // DOCUMENTS LIÉS
+  documentsLies: {
+    bonCommande, bonLivraison, avoir,
+    facturePrecedente, contrat, devis
+  },
+  
+  // LIGNES DÉTAIL
+  lignesDetail: [{
+    reference, designation, quantite,
+    prixUnitaireHT, montantHT, tauxTVA
+  }],
+  
+  // WORKFLOW
+  statut: "nouvelle|a_payer|payee|pointee",
+  dates: { creation, analyse, paiement... },
+  historique: []
+}
+```
 
-grid.onRowClick = (row) => {
-    new DetailViewerWidget({
-        title: `Décompte ${row.numeroDecompte}`,
-        data: row,
-        timeline: generateTimeline(row),
-        actions: getActionsForStatus(row.statut)
-    });
+## 📊 Export comptable multiple ✅ NOUVEAU
+
+### Activation de la sélection
+Le tableau permet maintenant la **sélection multiple** avec cases à cocher :
+- Cliquer sur les cases pour sélectionner
+- Le bouton "Export comptable" affiche le nombre sélectionné
+- Export de toutes les factures sélectionnées en un seul fichier
+
+### Format du fichier exporté
+```csv
+EXPORT COMPTABLE - 09/02/2025 14:30:00
+Nombre de factures;5
+Total HT;2500,00
+Total TVA;500,00
+Total TTC;3000,00
+
+RESUME PAR FOURNISSEUR
+Fournisseur;Nombre;Montant TTC
+Free;2;240,00
+EDF;1;1500,00
+
+RESUME PAR COMPTE COMPTABLE
+Compte;Libellé;Montant HT
+6262;Télécommunications;1250,00
+6061;Fournitures non stockables;1250,00
+
+ECRITURES COMPTABLES DETAILLEES
+Journal;Date;N°Écriture;Compte;Débit;Crédit;...
+HA;09/02/2025;HA202500001;6262;100,00;0,00;...
+```
+
+### Utilisation
+1. **Sélectionner** les factures dans le tableau (cases à cocher)
+2. **Cliquer** sur "📊 Export comptable (X)"
+3. **Téléchargement** automatique du CSV
+
+## 🤖 Extraction IA - Données récupérées
+
+### Catégories détectées automatiquement
+- **6061** : Eau, gaz, électricité
+- **6064** : Fournitures administratives  
+- **6183/2183** : Informatique (>500€ = immobilisation)
+- **6262** : Télécommunications
+- **6265** : Logiciels et abonnements
+- **6221** : Carburants
+- **6156** : Maintenance
+- **6226** : Honoraires
+- **627** : Services bancaires
+
+### Régimes TVA identifiés
+- **National** : TVA française standard
+- **Intracommunautaire** : Exonération + autoliquidation
+- **Export** : TVA 0%
+
+## 🚀 Installation
+
+### 1. Prérequis
+- Firebase (Firestore + Storage + Auth)
+- Clé API OpenAI (Cloud Function)
+- PDF.js pour conversion
+
+### 2. Configuration Firebase
+```javascript
+// src/services/firebase.service.js
+const firebaseConfig = {
+  projectId: "orixis-pwa",
+  storageBucket: "orixis-pwa.appspot.com"
+  // ...
 };
 ```
 
-## 💻 API du Service
-
-### Méthodes principales
-
+### 3. Cloud Function OpenAI
 ```javascript
-import decompteService from './decompte-mutuelle.service.js';
-
-// Upload de documents
-const resultats = await decompteService.uploadDocuments(files);
-// → { reussis: [...], erreurs: [...] }
-
-// Création d'un décompte
-const decompteId = await decompteService.creerDecompte({
-    documents: resultats.reussis
-});
-
-// Récupération des décomptes
-const decomptes = await decompteService.getDecomptes({
-    statut: 'nouveau',      // Filtrer par statut
-    mutuelle: 'HARMONIE',   // Filtrer par mutuelle
-    magasin: '9PAR',        // Filtrer par magasin
-    limite: 50              // Limiter les résultats
-});
-
-// Récupération d'un décompte
-const decompte = await decompteService.getDecompteById(id);
-
-// Analyse IA
-const donneesExtraites = await decompteService.analyserDecompteIA(decompteId);
-
-// Changement de statut
-await decompteService.changerStatut(decompteId, 'rapprochement_bancaire', {
-    motif: 'Validation manuelle'  // Optionnel
-});
-
-// Statistiques
-const stats = await decompteService.getStatistiques();
-// → { total: 42, parStatut: {...}, parMutuelle: {...}, montantTotal: 12500 }
-
-// Recherche
-const resultats = await decompteService.rechercherDecomptes('DUPONT');
+// Déployée sur : 
+// https://europe-west1-orixis-pwa.cloudfunctions.net/analyzeDocument
 ```
 
-## 🎨 Structure des données
+### 4. Créer le widget-styles-loader ✅ NOUVEAU
+Créer `/src/utils/widget-styles-loader.js` avec le code fourni pour centraliser le chargement des styles.
 
-### Template Firestore
+## 📊 Widgets utilisés
 
-```javascript
-{
-    // Identification
-    numeroDecompte: "DEC-20250208-0001",
-    typeDecompte: "individuel",
-    
-    // Organisation
-    societe: "ORIXIS SAS",
-    codeMagasin: "9PAR",
-    magasinUploadeur: "9PAR",
-    prestataireTP: "SANTECLAIR",
-    
-    // Client
-    client: {
-        nom: "DUPONT",
-        prenom: "Jean",
-        numeroSecuriteSociale: "1850578006048"
-    },
-    
-    // Données financières
-    mutuelle: "HARMONIE",
-    montantRemboursementClient: 150.50,
-    montantVirement: 150.50,
-    nombreClients: 1,
-    dateVirement: Timestamp,
-    
-    // Dates
-    dates: {
-        creation: Timestamp,
-        transmissionIA: Timestamp,
-        traitementEffectue: Timestamp,
-        traitementManuel: null,
-        rapprochementBancaire: null
-    },
-    
-    // Documents
-    documents: [{
-        nom: "DM_ORIXIS_20250208_143029_550e8400.pdf",
-        url: "https://storage.googleapis.com/...",
-        taille: 245687,
-        type: "application/pdf"
-    }],
-    
-    // Workflow
-    statut: "traitement_effectue",
-    
-    // Historique
-    historique: [...]
-}
-```
+- **HeaderWidget** : En-tête avec navigation
+- **StatsCardsWidget** : Cartes statistiques cliquables
+- **SearchFiltersWidget** : Filtres avancés
+- **DataGridWidget** : Tableau avec tri/export/sélection ✅ AMÉLIORÉ
+- **PdfUploaderWidget** : Upload avec sélection statut
+- **DetailViewerWidget** : Vue détaillée complète
 
-## 🤖 Analyse IA
+## 🔍 Points d'attention
 
-### Données extraites automatiquement
-
-- ✅ **Client** : Nom, prénom, NSS
-- ✅ **Mutuelle** : Organisme payeur
-- ✅ **Montants** : Remboursement, virement
-- ✅ **Dates** : Virement, période
-- ✅ **Magasin** : Via numéro FINESS
-- ✅ **Type** : Individuel ou groupé
-
-### Prompt IA personnalisable
-
-Le prompt est dans `decompteService.buildOpenAIPrompt()` et peut être adapté selon vos besoins.
-
-## 📊 Statistiques disponibles
-
-```javascript
-const stats = await decompteService.getStatistiques();
-
-// Retourne :
-{
-    total: 156,                    // Nombre total de décomptes
-    parStatut: {
-        nouveau: 12,
-        traitement_ia: 3,
-        traitement_effectue: 85,
-        rapprochement_bancaire: 56
-    },
-    parMutuelle: {
-        HARMONIE: 45,
-        SANTECLAIR: 38,
-        ALMERYS: 73
-    },
-    montantTotal: 24650.50,        // Somme totale des virements
-    montantMoyen: 158.01           // Montant moyen par décompte
-}
-```
-
-## 🔍 Recherche et filtres
-
-### Filtres disponibles
-
-- **Recherche textuelle** : Client, NSS, n° décompte, virement
-- **Magasin** : Code magasin
-- **Mutuelle** : Organisme mutuelle
-- **Réseau TP** : Prestataire tiers-payant
-- **Période** : Toutes, aujourd'hui, semaine, mois
-- **Statut** : Filtrage par statut ou multi-statuts
-
-### Export des données
-
-```javascript
-// Export CSV ou Excel via DataGridWidget
-grid.export('csv');   // Export CSV
-grid.export('excel'); // Export Excel
-```
-
-## ⚙️ Configuration
-
-### Constantes modifiables
-
-```javascript
-// Dans decompte-mutuelle.service.js
-const CONFIG = {
-    MAX_FILE_SIZE: 10 * 1024 * 1024,  // 10MB
-    ALLOWED_TYPES: ['application/pdf', 'image/jpeg', 'image/png'],
-    CLOUD_FUNCTION_URL: 'https://...',
-    // ...
-};
-```
-
-### Personnalisation des widgets
-
-```javascript
-// Couleurs des statuts (StatsCardsWidget)
-const statsCards = new StatsCardsWidget({
-    cards: [
-        { statut: 'nouveau', color: 'secondary' },
-        { statut: 'traitement_ia', color: 'info' },
-        { statut: 'traitement_effectue', color: 'success' }
-    ]
-});
-
-// Colonnes du tableau (DataGridWidget)
-const grid = new DataGridWidget({
-    columns: [
-        { key: 'dateVirement', label: 'Date', sortable: true },
-        { key: 'client', label: 'Client', formatter: formatClient },
-        // ...
-    ]
-});
-```
-
-## 🚨 Gestion des erreurs
-
-```javascript
-try {
-    const decompteId = await decompteService.creerDecompte(data);
-} catch (error) {
-    if (error.message.includes('trop volumineux')) {
-        alert('Fichier trop volumineux (max 10MB)');
-    } else if (error.message.includes('Type de fichier')) {
-        alert('Seuls les PDF et images sont acceptés');
-    } else {
-        console.error('Erreur création:', error);
-        alert('Erreur lors de la création du décompte');
-    }
-}
-```
-
-## 📱 Responsive
-
-Le module s'adapte automatiquement :
-
-- **Desktop** : Layout multi-colonnes, modals centrés
-- **Tablet** : Colonnes adaptatives, modals pleine largeur
-- **Mobile** : Layout vertical, modals plein écran
-
-## 🔐 Sécurité
-
+### Sécurité
+- ✅ Hash SHA-256 anti-doublons
+- ✅ Validation types fichiers
+- ✅ Limite taille 10MB
 - ✅ Authentification requise
-- ✅ Validation des fichiers (type, taille)
-- ✅ Hash SHA-256 pour détecter les doublons
-- ✅ Traçabilité complète (historique)
-- ✅ Permissions par rôle (à implémenter)
+
+### Performance
+- ⚡ Conversion PDF côté client
+- ⚡ Limité à 5 pages par PDF
+- ⚡ Cache des données fournisseurs
+- ⚡ Pagination 20 items
+- ⚡ Chargement CSS centralisé ✅ NOUVEAU
+
+### Conformité
+- 📋 Mentions obligatoires vérifiées
+- 📋 Conservation données comptables
+- 📋 Export FEC compatible
+- 📋 Écritures équilibrées (débit = crédit)
 
 ## 🐛 Debug
 
+### Console navigateur
 ```javascript
-// Activer les logs détaillés
-localStorage.setItem('debug_decomptes', 'true');
+window.orchestrator  // Accès orchestrateur
 
-// Vérifier l'état du service
-console.log(decompteService.getUserInfo());
-console.log(await decompteService.getStatistiques());
-
-// Tester l'upload
-const testFile = new File(['test'], 'test.pdf', { type: 'application/pdf' });
-const result = await decompteService.uploadDocuments([testFile]);
-console.log('Upload result:', result);
+// Vérifier le chargement des styles
+document.getElementById('buttons-css')  // Doit exister
+document.getElementById('badges-css')   // Doit exister
+document.getElementById('modal-base-css') // Doit exister
 ```
 
-## 📈 Performances
+### Logs structurés
+- 🚀 Initialisation
+- 📊 Chargement données
+- 🤖 Analyse IA
+- ✅ Succès
+- ❌ Erreurs
+- 📊 Export comptable
 
-- **Pagination** : Chargement par pages de 20-50 items
-- **Lazy loading** : Widgets chargés à la demande
-- **Cache** : Magasins mis en cache localement
-- **Debounce** : Recherche avec délai de 300ms
+## 🆕 Nouveautés v2.0
 
-## 🔄 Évolutions futures
+### Février 2025
+- ✅ **Sélection multiple** dans le tableau
+- ✅ **Export comptable groupé** pour plusieurs factures
+- ✅ **Système de design centralisé** avec `widget-styles-loader.js`
+- ✅ **Boutons avec icônes prédéfinies** (view, delete, edit)
+- ✅ **Synchronisation complète** des données GPT-4.1-mini vers Firestore
+- ✅ **Format CSV enrichi** avec résumés et ventilations
 
-- [ ] Batch processing (traiter plusieurs décomptes)
-- [ ] Export PDF des décomptes
-- [ ] Notifications temps réel
-- [ ] Dashboard analytics avancé
-- [ ] Intégration API mutuelles
-- [ ] OCR avancé pour documents manuscrits
-- [ ] Reconnaissance de tableaux complexes
-- [ ] Workflow personnalisable par mutuelle
+## 📈 Évolutions prévues
 
-## 📞 Support
+- [ ] Import par email
+- [ ] OCR avancé pour manuscrits
+- [ ] Rapprochement automatique bancaire
+- [ ] Workflows personnalisés
+- [ ] API REST pour intégration
+- [ ] Dashboard analytique
+- [ ] Alertes échéances
+- [ ] Export direct vers logiciels comptables (API)
 
-Pour toute question ou problème :
-1. Vérifier la console navigateur pour les erreurs
-2. Vérifier la configuration Firebase
-3. Vérifier que la Cloud Function est déployée
-4. Consulter les logs Firestore
+## 👥 Auteur
+
+Module développé dans l'architecture **decompte-mutuelle** adaptée pour la gestion des factures fournisseurs.
 
 ---
 
-**Version** : 2.0.0  
-**Date** : 08/02/2025  
-**Architecture** : Widgets + Service unifié  
-**Auteur** : Module Décomptes Mutuelles Team
+**Version** : 2.0  
+**Dernière MAJ** : 09/02/2025  
+**Statut** : Production
+
+## 📋 Changelog
+
+### v2.0 (09/02/2025)
+- Ajout sélection multiple dans DataGrid
+- Export comptable groupé
+- Système de styles centralisé
+- Boutons avec icônes CSS prédéfinies
+- Correction synchronisation données IA
+
+### v1.0 (08/02/2025)
+- Version initiale
+- Upload et analyse IA
+- Vue détaillée avec timeline
+- Export CSV/Excel simple

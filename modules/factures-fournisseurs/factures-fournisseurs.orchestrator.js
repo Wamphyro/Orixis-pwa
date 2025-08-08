@@ -49,6 +49,7 @@ class FactureOrchestrator {
         this.facturesData = [];
         this.statsData = {};
         this.filteredData = [];
+        this.selectedFactures = [];
         
         // État des filtres
         this.currentFilters = {
@@ -153,9 +154,9 @@ class FactureOrchestrator {
         const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
         
         this.header = new HeaderWidget({
-            title: '📑 Factures Fournisseurs',
+            title: 'Factures Fournisseurs',
             icon: '📑',
-            subtitle: 'Gestion des factures à payer',
+            subtitle: 'Gestion des factures',
             showBack: true,
             showUser: true,
             showLogout: true
@@ -323,6 +324,17 @@ class FactureOrchestrator {
             wrapperTitle: '',
             columns: [
                 { 
+                    key: 'dateFacture', 
+                    label: 'Date', 
+                    sortable: true, 
+                    width: 100,
+                    formatter: (v) => {
+                        if (!v) return '-';
+                        const date = v.toDate ? v.toDate() : new Date(v);
+                        return date.toLocaleDateString('fr-FR');
+                    }
+                },
+                { 
                     key: 'numeroFacture', 
                     label: 'N° Facture', 
                     sortable: true, 
@@ -330,15 +342,11 @@ class FactureOrchestrator {
                     formatter: (v, row) => v || row.numeroInterne || '-'
                 },
                 { 
-                    key: 'dateFacture', 
-                    label: 'Date facture', 
+                    key: 'codeMagasin', 
+                    label: 'Magasin', 
                     sortable: true, 
-                    width: 110,
-                    formatter: (v) => {
-                        if (!v) return '-';
-                        const date = v.toDate ? v.toDate() : new Date(v);
-                        return date.toLocaleDateString('fr-FR');
-                    }
+                    width: 100,
+                    formatter: (v) => v || '-'
                 },
                 { 
                     key: 'fournisseur', 
@@ -347,7 +355,17 @@ class FactureOrchestrator {
                     width: 200,
                     formatter: (fournisseur) => {
                         if (!fournisseur || !fournisseur.nom) return '-';
-                        return `<strong>${fournisseur.nom}</strong>${fournisseur.categorie ? `<br><small>${fournisseur.categorie}</small>` : ''}`;
+                        return `<strong>${fournisseur.nom}</strong>`;
+                    }
+                },
+                { 
+                    key: 'categorie', 
+                    label: 'Catégorie', 
+                    sortable: true, 
+                    width: 120,
+                    formatter: (v, row) => {
+                        const cat = row.fournisseur?.categorie || '-';
+                        return cat.charAt(0).toUpperCase() + cat.slice(1);
                     }
                 },
                 { 
@@ -360,29 +378,6 @@ class FactureOrchestrator {
                             style: 'currency', 
                             currency: 'EUR' 
                         }).format(v || 0);
-                    }
-                },
-                { 
-                    key: 'dateEcheance', 
-                    label: 'Échéance', 
-                    sortable: true, 
-                    width: 130,
-                    formatter: (v, row) => {
-                        if (!v) return '-';
-                        const date = v.toDate ? v.toDate() : new Date(v);
-                        const dateStr = date.toLocaleDateString('fr-FR');
-                        
-                        // Vérifier si en retard
-                        if (row.statut === 'a_payer' || row.statut === 'en_retard') {
-                            const aujourd = new Date();
-                            if (date < aujourd) {
-                                const jours = Math.floor((aujourd - date) / (1000 * 60 * 60 * 24));
-                                return `<span style="color: #dc2626; font-weight: 600;">${dateStr} (${jours}j de retard)</span>`;
-                            } else if ((date - aujourd) / (1000 * 60 * 60 * 24) <= 7) {
-                                return `<span style="color: #f97316;">${dateStr}</span>`;
-                            }
-                        }
-                        return dateStr;
                     }
                 },
                 { 
@@ -422,7 +417,8 @@ class FactureOrchestrator {
             features: {
                 sort: true,
                 export: true,
-                selection: false,
+                selection: true,           // ✅ ACTIVÉ
+                selectionMode: 'multiple', // ✅ AJOUTÉ
                 pagination: true,
                 resize: false
             },
@@ -430,6 +426,20 @@ class FactureOrchestrator {
                 itemsPerPage: 20,
                 pageSizeOptions: [10, 20, 50, 100],
                 showPageInfo: true
+            },
+            // ✅ NOUVEAU : Callback de sélection
+            onSelectionChange: (selectedRows) => {
+                this.selectedFactures = selectedRows;
+                console.log(`📋 ${selectedRows.length} facture(s) sélectionnée(s)`);
+                
+                // Mettre à jour le bouton export comptable
+                const btnExportCompta = document.querySelector('.btn-export-comptable');
+                if (btnExportCompta) {
+                    btnExportCompta.textContent = selectedRows.length > 0 
+                        ? `📊 Export comptable (${selectedRows.length})` 
+                        : '📊 Export comptable';
+                    btnExportCompta.disabled = selectedRows.length === 0;
+                }
             }
         });
     }
@@ -437,38 +447,46 @@ class FactureOrchestrator {
     /**
      * Ajouter les boutons d'action
      */
-    addActionButtons() {
-        setTimeout(() => {
-            const actionsZone = document.querySelector('.data-grid-export-buttons');
-            if (actionsZone) {
-                const buttons = [
-                    { 
-                        text: '➕ Nouvelles factures', 
-                        class: 'btn btn-glass-blue btn-lg', 
-                        action: () => this.openCreateModal()
-                    },
-                    { 
-                        text: '📄 Export CSV', 
-                        class: 'btn btn-glass-blue btn-lg', 
-                        action: () => this.grid.export('csv')
-                    },
-                    { 
-                        text: '📊 Export Excel', 
-                        class: 'btn btn-glass-blue btn-lg', 
-                        action: () => this.grid.export('excel')
-                    }
-                ];
-                
-                buttons.forEach(btn => {
-                    const button = document.createElement('button');
-                    button.className = btn.class;
-                    button.innerHTML = btn.text;
-                    button.onclick = btn.action;
-                    actionsZone.appendChild(button);
-                });
-            }
-        }, 100);
-    }
+addActionButtons() {
+    setTimeout(() => {
+        const actionsZone = document.querySelector('.data-grid-export-buttons');
+        if (actionsZone) {
+            const buttons = [
+                { 
+                    text: '➕ Nouvelles factures', 
+                    class: 'btn btn-glass-blue btn-lg', 
+                    action: () => this.openCreateModal()
+                },
+                { 
+                    text: '📊 Export comptable',  // ✅ NOUVEAU BOUTON
+                    class: 'btn btn-glass-purple btn-lg btn-export-comptable', 
+                    action: () => this.exportComptableMultiple(),
+                    disabled: true  // Désactivé par défaut
+                },
+                { 
+                    text: '📄 Export CSV', 
+                    class: 'btn btn-glass-blue btn-lg', 
+                    action: () => this.grid.export('csv')
+                },
+                { 
+                    text: '📊 Export Excel', 
+                    class: 'btn btn-glass-blue btn-lg', 
+                    action: () => this.grid.export('excel')
+                }
+            ];
+            
+            buttons.forEach(btn => {
+                const button = document.createElement('button');
+                button.className = btn.class;
+                button.innerHTML = btn.text;
+                button.onclick = btn.action;
+                if (btn.disabled) button.disabled = true;
+                actionsZone.appendChild(button);
+            });
+        }
+    }, 100);
+}
+
     
     // ========================================
     // CHARGEMENT DES DONNÉES
@@ -578,17 +596,23 @@ class FactureOrchestrator {
     openCreateModal() {
         const uploader = new PdfUploaderWidget({
             title: 'Nouvelles Factures',
-            theme: 'red',  // Rouge pour factures (vs purple pour décomptes)
-            mode: 'advanced',  // Mode avancé avec sélection du statut
+            theme: 'red',
+            mode: 'selection',
+            maxFiles: 100,  // ✅ Permettre plusieurs fichiers
+            
+            // ✅ NOUVEAU : Détection de doublons par hash
+            checkDuplicate: async (file, hash) => {
+                return await firestoreService.verifierHashExiste(hash);
+            },
+            
             description: {
                 icon: '📑',
                 title: 'Upload de factures fournisseurs',
                 text: 'Déposez vos factures (Free, EDF, Orange, etc.). Chaque fichier créera une facture séparée et sera analysé automatiquement.'
             },
-            // Options pour sélection du statut initial
-            statusOptions: [
-                { value: 'a_payer', label: '💳 À payer', default: false },
-                { value: 'deja_payee', label: '✅ Déjà payée', default: true }
+            selectionOptions: [
+                { value: 'a_payer', label: '💳 À payer' },
+                { value: 'deja_payee', label: '✅ Déjà payée' }
             ],
             saveButtonText: '💾 Créer les factures',
             onSave: async (data) => this.handleCreateFacture(data),
@@ -626,8 +650,8 @@ class FactureOrchestrator {
                     
                     // ÉTAPE 1 : Upload du document
                     this.showMessage(`Upload du document ${numero}/${data.files.length}...`);
-                    const resultatsUpload = await uploadService.uploadFactureDocument(file);
-                    
+                    // ✅ MODIFICATION : Passer le hash du widget à l'upload
+                    const resultatsUpload = await uploadService.uploadFactureDocument(file, file._hash);                    
                     console.log('✅ Document uploadé:', resultatsUpload);
                     
                     // ÉTAPE 2 : Créer une facture pour CE document
@@ -658,8 +682,96 @@ class FactureOrchestrator {
                         );
                         
                         // Ajouter les données extraites à la facture
+                        // ✅ RECHERCHE INTELLIGENTE DE DOUBLONS
+                        const doublonsPotentiels = await firestoreService.rechercherDoublonsProbables({
+                            numeroFacture: donneesExtraites.numeroFacture,
+                            montantTTC: donneesExtraites.montantTTC,
+                            dateFacture: donneesExtraites.dateFacture,
+                            fournisseur: donneesExtraites.fournisseur?.nom
+                        });
+
+                        // Si doublon probable trouvé
+                        if (doublonsPotentiels.length > 0 && doublonsPotentiels[0].id !== factureId) {
+                            const doublon = doublonsPotentiels[0];
+                            
+                            // Formater les infos
+                            let dateFacture = 'Date inconnue';
+                            if (doublon.dateFacture) {
+                                const d = doublon.dateFacture.toDate ? 
+                                    doublon.dateFacture.toDate() : 
+                                    new Date(doublon.dateFacture);
+                                dateFacture = d.toLocaleDateString('fr-FR');
+                            }
+                            
+                            const montant = new Intl.NumberFormat('fr-FR', { 
+                                style: 'currency', 
+                                currency: 'EUR' 
+                            }).format(doublon.montantTTC || 0);
+                            
+                            // Déterminer le niveau d'alerte
+                            let emoji = '🟡';
+                            let niveau = 'POSSIBLE';
+                            if (doublon.score >= 80) {
+                                emoji = '🔴';
+                                niveau = 'QUASI-CERTAIN';
+                            } else if (doublon.score >= 60) {
+                                emoji = '🟠';
+                                niveau = 'PROBABLE';
+                            }
+                            
+                            const garder = confirm(
+                                `${emoji} DOUBLON ${niveau} DÉTECTÉ ! (${doublon.score}%)\n\n` +
+                                `Une facture similaire existe déjà :\n` +
+                                `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                                `📄 N° Facture : ${doublon.numeroFacture || 'Sans numéro'}\n` +
+                                `🏢 Fournisseur : ${doublon.fournisseur || 'Non défini'}\n` +
+                                `📅 Date : ${dateFacture}\n` +
+                                `💰 Montant : ${montant}\n` +
+                                `📊 Statut : ${this.getStatutLabel(doublon.statut)}\n` +
+                                `\n` +
+                                `🔍 Critères correspondants :\n` +
+                                doublon.details.map(d => `   ✓ ${d}`).join('\n') +
+                                `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+                                `Garder quand même cette nouvelle facture ?`
+                            );
+                            
+                            if (!garder) {
+                                // Supprimer la facture créée
+                                console.log('🗑️ Suppression de la facture doublon créée');
+                                await FacturesFournisseursService.supprimerFacture(factureId, {
+                                    motif: `Doublon probable (${doublon.score}%) de ${doublon.numeroFacture || 'facture existante'}`
+                                });
+                                
+                                this.showWarning(`Facture ${file.name} supprimée (doublon ${doublon.score}%)`);
+                                
+                                // ✅ RETIRER DES CRÉÉS car supprimé
+                                const indexCree = resultats.crees.findIndex(c => c.id === factureId);
+                                if (indexCree !== -1) {
+                                    resultats.crees.splice(indexCree, 1);
+                                }
+                                
+                                // ✅ RETIRER DES ANALYSES aussi (au cas où)
+                                const indexAnalyse = resultats.analyses.findIndex(a => a.id === factureId);
+                                if (indexAnalyse !== -1) {
+                                    resultats.analyses.splice(indexAnalyse, 1);
+                                }
+                                
+                                resultats.erreurs.push({
+                                    fichier: file.name,
+                                    erreur: `Doublon détecté (${doublon.score}% de certitude)`,
+                                    type: 'doublon_intelligent',
+                                    score: doublon.score
+                                });
+                                
+                                continue; // Passer au fichier suivant
+                            }
+                            
+                            console.log(`⚠️ Doublon ${doublon.score}% confirmé, création forcée`);
+                        }
+
+                        // Ajouter les données extraites à la facture
                         await firestoreService.ajouterDonneesExtraites(factureId, donneesExtraites);
-                        
+
                         console.log('✅ Analyse IA terminée:', donneesExtraites);
                         resultats.analyses.push({
                             id: factureId,
@@ -698,7 +810,14 @@ class FactureOrchestrator {
             
             if (resultats.erreurs.length > 0) {
                 resultats.erreurs.forEach(err => {
-                    this.showError(`❌ ${err.fichier}: ${err.erreur}`);
+                    // Messages différents selon le type d'erreur
+                    if (err.type === 'doublon' || err.type === 'doublon_intelligent') {
+                        // Orange pour les doublons (c'est un choix, pas une erreur)
+                        this.showWarning(`⚠️ ${err.fichier}: ${err.erreur}`);
+                    } else {
+                        // Rouge pour les vraies erreurs
+                        this.showError(`❌ ${err.fichier}: ${err.erreur}`);
+                    }
                 });
             }
             
@@ -718,200 +837,1322 @@ class FactureOrchestrator {
         }
     }
     
-    // ========================================
-    // AFFICHAGE DÉTAIL
-    // ========================================
+// ========================================
+// AFFICHAGE DÉTAIL
+// ========================================
+
+/**
+ * Ouvrir le modal de détail avec toutes les données enrichies
+ */
+openDetailModal(row) {
+    const self = this;
     
-    /**
-     * Ouvrir le modal de détail
-     */
-    openDetailModal(row) {
-        const self = this;
-        
-        // Timeline
-        const timeline = {
-            enabled: true,
-            orientation: 'horizontal',
-            items: [
+    // Timeline
+    const timeline = {
+        enabled: true,
+        orientation: 'horizontal',
+        items: [
+            { 
+                label: 'Nouvelle', 
+                status: row.statut === 'nouvelle' ? 'active' : 'completed',
+                icon: '📄',
+                date: this.formatDate(row.dates?.creation),
+                description: 'Création de la facture'
+            },
+            { 
+                label: 'À payer', 
+                status: row.statut === 'a_payer' ? 'active' : 
+                        ['nouvelle'].includes(row.statut) ? 'pending' : 'completed',
+                icon: '💳',
+                date: this.formatDate(row.dates?.verification),
+                description: 'En attente de paiement'
+            },
+            { 
+                label: 'Payée', 
+                status: row.statut === 'payee' || row.statut === 'deja_payee' ? 'active' : 
+                        ['nouvelle', 'a_payer'].includes(row.statut) ? 'pending' : 'completed',
+                icon: '💰',
+                date: this.formatDate(row.dates?.paiement || row.datePaiement),
+                description: 'Paiement effectué'
+            },
+            { 
+                label: 'Pointée', 
+                status: row.statut === 'pointee' ? 'completed' : 'pending',
+                icon: '✓✓',
+                date: this.formatDate(row.dates?.pointage),
+                description: 'Rapprochement bancaire'
+            }
+        ],
+        theme: 'colorful',
+        size: 'medium',
+        showDates: true,
+        showLabels: true
+    };
+    
+    // Sections
+    let sections = [];
+    
+    // ========================================
+    // SECTION 1 : IDENTIFIANTS
+    // ========================================
+    sections.push({
+        id: 'identifiants',
+        title: '🔢 Identifiants & Références',
+        fields: [
+            { 
+                label: 'N° Facture Fournisseur', 
+                value: row.numeroFacture || row.identifiants?.numeroFacture || '-',
+                bold: true
+            },
+            { 
+                label: 'N° Facture Interne', 
+                value: row.numeroInterne || '-',
+                bold: true
+            },
+            { 
+                label: 'N° Commande', 
+                value: row.identifiants?.numeroCommande || row.documentsLies?.bonCommande || '-' 
+            },
+            { 
+                label: 'N° Client (notre ref)', 
+                value: row.identifiants?.numeroClient || row.client?.numeroClient || '-' 
+            },
+            { 
+                label: 'N° TVA Intracommunautaire', 
+                value: row.identifiants?.numeroTVAIntra || '-' 
+            },
+            { 
+                label: 'SIRET', 
+                value: row.identifiants?.siret || '-' 
+            },
+            { 
+                label: 'SIREN', 
+                value: row.identifiants?.siren || '-' 
+            },
+            { 
+                label: 'Code NAF/APE', 
+                value: row.identifiants?.naf || '-' 
+            }
+        ]
+    });
+    
+    // ========================================
+    // SECTION 2 : FOURNISSEUR DÉTAILLÉ
+    // ========================================
+    sections.push({
+        id: 'fournisseur',
+        title: '🏢 Fournisseur',
+        fields: [
+            { 
+                label: 'Raison sociale', 
+                value: row.fournisseur?.nom || '-',
+                bold: true
+            },
+            { 
+                label: 'Catégorie', 
+                value: row.fournisseur?.categorie ? 
+                    row.fournisseur.categorie.charAt(0).toUpperCase() + row.fournisseur.categorie.slice(1) : 
+                    '-' 
+            },
+            { 
+                label: 'Pays', 
+                value: row.fournisseur?.paysDomiciliation ? 
+                    `${row.fournisseur.paysDomiciliation} ${this.getFlagEmoji(row.fournisseur.paysDomiciliation)}` : 
+                    '-'
+            },
+            { 
+                label: 'Adresse', 
+                value: row.fournisseur?.adresse || '-' 
+            },
+            { 
+                label: 'Téléphone', 
+                value: row.fournisseur?.telephone || '-' 
+            },
+            { 
+                label: 'Email', 
+                value: row.fournisseur?.email || '-' 
+            },
+            { 
+                label: 'N° TVA Fournisseur', 
+                value: row.fournisseur?.numeroTVA || '-' 
+            },
+            { 
+                label: 'SIREN Fournisseur', 
+                value: row.fournisseur?.siren || '-' 
+            },
+            { 
+                label: 'Compte auxiliaire', 
+                value: row.fournisseur?.compteFournisseur || '-' 
+            }
+        ]
+    });
+    
+    // ========================================
+    // SECTION 3 : CLIENT (NOUS)
+    // ========================================
+    if (row.client && Object.keys(row.client).some(k => row.client[k])) {
+        sections.push({
+            id: 'client',
+            title: '👤 Client (Nous)',
+            fields: [
                 { 
-                    label: 'Nouvelle', 
-                    status: row.statut === 'nouvelle' ? 'active' : 'completed',
-                    icon: '📄',
-                    date: this.formatDate(row.dates?.creation),
-                    description: 'Création de la facture'
+                    label: 'Nom', 
+                    value: row.client?.nom || row.societe || '-' 
                 },
                 { 
-                    label: 'À payer', 
-                    status: row.statut === 'a_payer' ? 'active' : 
-                            ['nouvelle'].includes(row.statut) ? 'pending' : 'completed',
-                    icon: '💳',
-                    date: this.formatDate(row.dates?.verification),
-                    description: 'En attente de paiement'
+                    label: 'N° Client', 
+                    value: row.client?.numeroClient || '-' 
                 },
                 { 
-                    label: 'Payée', 
-                    status: row.statut === 'payee' || row.statut === 'deja_payee' ? 'active' : 
-                            ['nouvelle', 'a_payer'].includes(row.statut) ? 'pending' : 'completed',
-                    icon: '💰',
-                    date: this.formatDate(row.dates?.paiement),
-                    description: 'Paiement effectué'
+                    label: 'Adresse', 
+                    value: row.client?.adresse || '-' 
                 },
                 { 
-                    label: 'Pointée', 
-                    status: row.statut === 'pointee' ? 'completed' : 'pending',
-                    icon: '✓✓',
-                    date: this.formatDate(row.dates?.pointage),
-                    description: 'Rapprochement bancaire'
+                    label: 'N° TVA', 
+                    value: row.client?.numeroTVA || '-' 
+                },
+                { 
+                    label: 'Point de livraison', 
+                    value: row.client?.pointLivraison || '-' 
                 }
-            ],
-            theme: 'colorful',
-            size: 'medium',
-            showDates: true,
-            showLabels: true
-        };
-        
-        // Sections
-        let sections = [];
-        
-        // Section fournisseur
-        sections.push({
-            id: 'fournisseur',
-            title: '🏢 Informations Fournisseur',
-            fields: [
-                { label: 'Nom', value: row.fournisseur?.nom || '-' },
-                { label: 'Catégorie', value: row.fournisseur?.categorie || '-' },
-                { label: 'N° Client', value: row.fournisseur?.numeroClient || '-' },
-                { label: 'SIREN', value: row.fournisseur?.siren || '-' }
             ]
         });
-        
-        // Section financière
+    }
+    
+    // ========================================
+    // SECTION 4 : TVA DÉTAILLÉE
+    // ========================================
+    sections.push({
+        id: 'tva',
+        title: '📋 TVA & Fiscalité',
+        fields: [
+            { 
+                label: 'Régime TVA', 
+                value: row.tva?.regime || 'NATIONAL',
+                formatter: (v) => {
+                    const badges = {
+                        'NATIONAL': '<span class="badge badge-primary">National</span>',
+                        'INTRACOMMUNAUTAIRE': '<span class="badge badge-warning">Intracommunautaire</span>',
+                        'EXPORT': '<span class="badge badge-info">Export</span>'
+                    };
+                    return badges[v] || v;
+                },
+                html: true
+            },
+            { 
+                label: 'Taux appliqué', 
+                value: `${row.tva?.tauxApplique || row.tauxTVA || 0}%`,
+                bold: true
+            },
+            { 
+                label: 'Exonération', 
+                value: row.tva?.exoneration ? '✅ Oui' : '❌ Non' 
+            },
+            { 
+                label: 'Motif exonération', 
+                value: row.tva?.motifExoneration || '-' 
+            },
+            { 
+                label: 'Autoliquidation', 
+                value: row.tva?.autoliquidation ? '✅ Oui' : '❌ Non' 
+            }
+        ]
+    });
+    
+    // Ventilation TVA si plusieurs taux
+    if (row.tva?.ventilationTVA && row.tva.ventilationTVA.length > 0) {
         sections.push({
-            id: 'financier',
-            title: '💰 Données Financières',
+            id: 'ventilation-tva',
+            title: '📊 Ventilation TVA',
+            fields: row.tva.ventilationTVA.map((v, i) => ({
+                label: `Taux ${v.taux}%`,
+                value: `Base: ${this.formaterMontant(v.base)} | TVA: ${this.formaterMontant(v.montant)}`
+            }))
+        });
+    }
+    
+    // ========================================
+    // SECTION 5 : COMPTABILITÉ
+    // ========================================
+    sections.push({
+        id: 'comptabilite',
+        title: '📊 Comptabilité',
+        fields: [
+            { 
+                label: 'Compte comptable', 
+                value: row.comptabilite?.compteComptable || '-',
+                formatter: (v) => v !== '-' ? `<strong>${v}</strong>` : '-',
+                html: true,
+                bold: true
+            },
+            { 
+                label: 'Libellé compte', 
+                value: row.comptabilite?.libelleCompte || '-' 
+            },
+            { 
+                label: 'Catégorie détectée', 
+                value: row.comptabilite?.categorieDetectee || '-' 
+            },
+            { 
+                label: 'Justification', 
+                value: row.comptabilite?.justification || '-' 
+            },
+            { 
+                label: 'Mots-clés détectés', 
+                value: row.comptabilite?.motsClesDetectes?.join(', ') || '-' 
+            },
+            { 
+                label: 'Fiabilité', 
+                value: row.comptabilite?.fiabilite ? 
+                    `${row.comptabilite.fiabilite}%` : '-',
+                formatter: (v) => {
+                    if (v === '-') return '-';
+                    const pct = parseInt(v);
+                    const color = pct >= 80 ? 'success' : pct >= 60 ? 'warning' : 'danger';
+                    return `<span class="badge badge-${color}">${v}</span>`;
+                },
+                html: true
+            },
+            { 
+                label: 'Journal', 
+                value: row.comptabilite?.journalComptable || 'HA' 
+            },
+            { 
+                label: 'Code analytique', 
+                value: row.comptabilite?.codeAnalytique || '-' 
+            },
+            { 
+                label: 'Type dépense', 
+                value: row.comptabilite?.typeDepense || '-' 
+            }
+        ]
+    });
+    
+    // ========================================
+    // SECTION 6 : MONTANTS DÉTAILLÉS
+    // ========================================
+    sections.push({
+        id: 'montants',
+        title: '💰 Montants',
+        fields: [
+            { 
+                label: 'Montant HT', 
+                value: this.formaterMontant(row.montantHT || row.montants?.montantHT || 0) 
+            },
+            { 
+                label: `TVA (${row.tauxTVA || row.tva?.tauxApplique || 0}%)`, 
+                value: this.formaterMontant(row.montantTVA || row.montants?.montantTVA || 0) 
+            },
+            { 
+                label: 'Montant TTC',
+                value: this.formaterMontant(row.montantTTC || row.montants?.montantTTC || 0),
+                bold: true,
+                formatter: (v) => `<strong style="font-size: 1.2em; color: var(--primary);">${v}</strong>`,
+                html: true
+            },
+            { 
+                label: 'Frais de port', 
+                value: this.formaterMontant(row.montants?.fraisPort || 0) 
+            },
+            { 
+                label: 'Remise', 
+                value: this.formaterMontant(row.montants?.remise || 0) 
+            },
+            { 
+                label: 'Net à payer', 
+                value: this.formaterMontant(row.montants?.montantNet || row.montantTTC || 0),
+                bold: true
+            }
+        ]
+    });
+    
+    // ========================================
+    // SECTION 7 : PAIEMENT
+    // ========================================
+    sections.push({
+        id: 'paiement',
+        title: '💳 Paiement',
+        fields: [
+            { 
+                label: 'Mode de paiement', 
+                value: row.paiement?.modePaiement || row.modePaiement || '-',
+                formatter: (v) => {
+                    const modes = {
+                        'virement': '🏦 Virement',
+                        'prelevement': '🔄 Prélèvement',
+                        'cheque': '📄 Chèque',
+                        'cb': '💳 Carte bancaire',
+                        'especes': '💵 Espèces'
+                    };
+                    return modes[v] || v;
+                }
+            },
+            { 
+                label: 'Conditions', 
+                value: row.paiement?.conditionsPaiement || '-' 
+            },
+            { 
+                label: 'Référence virement', 
+                value: row.paiement?.referenceVirement || row.referenceVirement || '-' 
+            },
+            { 
+                label: 'IBAN', 
+                value: row.paiement?.iban || '-',
+                formatter: (v) => v !== '-' ? this.formatIBAN(v) : '-'
+            },
+            { 
+                label: 'BIC', 
+                value: row.paiement?.bic || '-' 
+            },
+            { 
+                label: 'Référence mandat', 
+                value: row.paiement?.referenceMandat || '-' 
+            }
+        ]
+    });
+    
+    // Escompte si présent
+    if (row.paiement?.escompte) {
+        sections.push({
+            id: 'escompte',
+            title: '💸 Escompte',
             fields: [
-                { label: 'Montant HT', value: self.formaterMontant(row.montantHT || 0) },
-                { label: `TVA (${row.tauxTVA || 20}%)`, value: self.formaterMontant(row.montantTVA || 0) },
                 { 
-                    label: 'Montant TTC',
-                    value: self.formaterMontant(row.montantTTC || 0),
-                    bold: true
+                    label: 'Taux', 
+                    value: `${row.paiement.escompte.taux || 0}%` 
+                },
+                { 
+                    label: 'Date limite', 
+                    value: this.formatDate(row.paiement.escompte.dateLimit) 
+                },
+                { 
+                    label: 'Montant', 
+                    value: this.formaterMontant(row.paiement.escompte.montant || 0) 
                 }
             ]
         });
-        
-        // Section dates
+    }
+    
+    // ========================================
+    // SECTION 8 : DATES
+    // ========================================
+    sections.push({
+        id: 'dates',
+        title: '📅 Dates',
+        fields: [
+            { 
+                label: 'Date facture', 
+                value: this.formatDate(row.dateFacture),
+                bold: true
+            },
+            { 
+                label: 'Date échéance', 
+                value: this.formatDate(row.dateEcheance),
+                formatter: (v, data) => {
+                    if (!v || v === '') return '-';
+                    const echeance = data.dateEcheance?.toDate ? 
+                        data.dateEcheance.toDate() : 
+                        new Date(data.dateEcheance);
+                    const aujourd = new Date();
+                    
+                    if (data.statut === 'a_payer' && echeance < aujourd) {
+                        const jours = Math.floor((aujourd - echeance) / (1000 * 60 * 60 * 24));
+                        return `<span style="color: #dc2626; font-weight: 600;">${v} (${jours}j de retard)</span>`;
+                    }
+                    return v;
+                },
+                html: true
+            },
+            { 
+                label: 'Date réception', 
+                value: this.formatDate(row.dateReception) 
+            },
+            { 
+                label: 'Date paiement', 
+                value: this.formatDate(row.datePaiement) 
+            },
+            { 
+                label: 'Période facturée', 
+                value: row.periodeDebut && row.periodeFin ? 
+                    `Du ${this.formatDate(row.periodeDebut)} au ${this.formatDate(row.periodeFin)}` : 
+                    '-' 
+            }
+        ]
+    });
+    
+    // ========================================
+    // SECTION 9 : DOCUMENTS LIÉS
+    // ========================================
+    if (row.documentsLies && Object.keys(row.documentsLies).some(k => row.documentsLies[k])) {
         sections.push({
-            id: 'dates',
-            title: '📅 Dates',
+            id: 'documents-lies',
+            title: '🔗 Documents liés',
             fields: [
-                { label: 'Date facture', value: this.formatDate(row.dateFacture) },
-                { label: 'Date échéance', value: this.formatDate(row.dateEcheance) },
-                { label: 'Date réception', value: this.formatDate(row.dateReception) }
+                { 
+                    label: 'Bon de commande', 
+                    value: row.documentsLies?.bonCommande || '-' 
+                },
+                { 
+                    label: 'Bon de livraison', 
+                    value: row.documentsLies?.bonLivraison || '-' 
+                },
+                { 
+                    label: 'Avoir', 
+                    value: row.documentsLies?.avoir || '-' 
+                },
+                { 
+                    label: 'Facture précédente', 
+                    value: row.documentsLies?.facturePrecedente || '-' 
+                },
+                { 
+                    label: 'Contrat', 
+                    value: row.documentsLies?.contrat || '-' 
+                },
+                { 
+                    label: 'Devis', 
+                    value: row.documentsLies?.devis || '-' 
+                }
             ]
         });
-        
-        // Section documents
+    }
+    
+    // ========================================
+    // SECTION 10 : LIGNES DE DÉTAIL
+    // ========================================
+    if (row.lignesDetail && row.lignesDetail.length > 0) {
         sections.push({
-            id: 'documents',
-            title: '📄 Documents',
+            id: 'lignes-detail',
+            title: '📝 Détail des articles',
             fields: [
                 {
-                    label: 'Fichiers uploadés',
-                    key: 'documents',
-                    formatter: (docs) => {
-                        if (!docs || docs.length === 0) return 'Aucun document';
-                        return docs.map(d => `
-                            <div style="margin: 5px 0;">
-                                📎 ${d.nom}
-                                <a href="${d.url}" target="_blank" style="margin-left: 10px;">Voir</a>
-                            </div>
-                        `).join('');
+                    label: 'Articles',
+                    key: 'lignesDetail',
+                    formatter: (lignes) => {
+                        return `
+                            <table style="width: 100%; font-size: 0.9em;">
+                                <thead>
+                                    <tr style="background: #f5f5f5;">
+                                        <th style="padding: 8px; text-align: left;">Référence</th>
+                                        <th style="padding: 8px; text-align: left;">Désignation</th>
+                                        <th style="padding: 8px; text-align: center;">Qté</th>
+                                        <th style="padding: 8px; text-align: right;">PU HT</th>
+                                        <th style="padding: 8px; text-align: right;">Total HT</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${lignes.map(ligne => `
+                                        <tr>
+                                            <td style="padding: 8px;">${ligne.reference || '-'}</td>
+                                            <td style="padding: 8px;">${ligne.designation || '-'}</td>
+                                            <td style="padding: 8px; text-align: center;">${ligne.quantite || 1}</td>
+                                            <td style="padding: 8px; text-align: right;">${self.formaterMontant(ligne.prixUnitaireHT || 0)}</td>
+                                            <td style="padding: 8px; text-align: right;"><strong>${self.formaterMontant(ligne.montantHT || 0)}</strong></td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        `;
                     },
                     html: true
                 }
             ]
         });
-        
-        // Créer le viewer
-        const viewer = new DetailViewerWidget({
-            title: `Facture ${row.numeroFacture || row.numeroInterne}`,
-            subtitle: `${row.fournisseur?.nom || 'Fournisseur inconnu'} - ${row.codeMagasin}`,
-            data: row,
-            timeline: timeline,
-            sections: sections,
-            actions: [
-                {
-                    label: '💳 Marquer à payer',
-                    class: 'btn btn-glass-orange btn-lg',
-                    onClick: async (data) => {
-                        await FacturesFournisseursService.changerStatut(data.id, 'a_payer');
-                        await self.loadData();
-                        viewer.close();
-                        self.showSuccess('✅ Facture marquée à payer');
-                        return true;
-                    },
-                    show: (data) => data.statut === 'nouvelle'
+    }
+    
+    // ========================================
+    // SECTION 11 : DOCUMENTS UPLOADÉS
+    // ========================================
+    sections.push({
+        id: 'documents',
+        title: '📄 Documents',
+        fields: [
+            {
+                label: 'Fichiers uploadés',
+                key: 'documents',
+                formatter: (docs) => {
+                    if (!docs || docs.length === 0) return 'Aucun document';
+                    return docs.map(d => `
+                        <div style="margin: 8px 0; padding: 8px; background: #f8f9fa; border-radius: 4px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    📎 <strong>${d.nom || d.nomOriginal}</strong>
+                                    <span style="color: #6b7280; font-size: 0.9em; margin-left: 10px;">
+                                        (${self.formatFileSize(d.taille)})
+                                    </span>
+                                </div>
+                                <a href="${d.url}" target="_blank" class="btn btn-view-icon btn-sm" title="Voir le document">
+                                </a>
+                            </div>
+                            ${d.hash ? `<div style="font-size: 0.8em; color: #9ca3af; margin-top: 4px;">Hash: ${d.hash.substring(0, 12)}...</div>` : ''}
+                        </div>
+                    `).join('');
                 },
-                {
-                    label: '💰 Marquer payée',
-                    class: 'btn btn-glass-green btn-lg',
-                    onClick: async (data) => {
-                        await FacturesFournisseursService.changerStatut(data.id, 'payee');
-                        await self.loadData();
-                        viewer.close();
-                        self.showSuccess('✅ Facture marquée comme payée');
-                        return true;
-                    },
-                    show: (data) => data.statut === 'a_payer' || data.statut === 'en_retard'
+                html: true
+            }
+        ]
+    });
+    
+    // ========================================
+    // SECTION 12 : INFORMATIONS SYSTÈME
+    // ========================================
+    sections.push({
+        id: 'systeme',
+        title: '⚙️ Informations système',
+        fields: [
+            { 
+                label: 'ID Document', 
+                value: row.id || '-',
+                formatter: (v) => `<code>${v}</code>`,
+                html: true
+            },
+            { 
+                label: 'Société', 
+                value: row.societe || '-' 
+            },
+            { 
+                label: 'Code magasin', 
+                value: row.codeMagasin || '-' 
+            },
+            { 
+                label: 'Uploadé par', 
+                value: row.magasinUploadeur || '-' 
+            },
+            { 
+                label: 'Créé le', 
+                value: this.formatDate(row.dates?.creation) 
+            },
+            { 
+                label: 'Analysé le', 
+                value: this.formatDate(row.dates?.analyse || row.iaData?.dateAnalyse) 
+            },
+            { 
+                label: 'Modèle IA', 
+                value: row.iaData?.modeleIA || '-' 
+            },
+            { 
+                label: 'Créé par', 
+                value: row.intervenants?.creePar ? 
+                    `${row.intervenants.creePar.prenom} ${row.intervenants.creePar.nom}` : 
+                    '-' 
+            }
+        ]
+    });
+    
+    // ========================================
+    // CRÉATION DU WIDGET
+    // ========================================
+    
+    // Créer le viewer
+    const viewer = new DetailViewerWidget({
+        title: `Facture ${row.numeroFacture || row.numeroInterne}`,
+        subtitle: `${row.fournisseur?.nom || 'Fournisseur inconnu'} - ${row.codeMagasin}`,
+        data: row,
+        timeline: timeline,
+        sections: sections,
+        actions: [
+            {
+                label: '💳 Marquer à payer',
+                class: 'btn btn-glass-orange btn-lg',
+                onClick: async (data) => {
+                    await FacturesFournisseursService.changerStatut(data.id, 'a_payer');
+                    await self.loadData();
+                    viewer.close();
+                    self.showSuccess('✅ Facture marquée à payer');
+                    return true;
                 },
-                {
-                    label: '✓✓ Pointer',
-                    class: 'btn btn-glass-blue btn-lg',
-                    onClick: async (data) => {
-                        await FacturesFournisseursService.changerStatut(data.id, 'pointee');
-                        await self.loadData();
-                        viewer.close();
-                        self.showSuccess('✅ Facture pointée');
-                        return true;
-                    },
-                    show: (data) => data.statut === 'payee' || data.statut === 'deja_payee' || data.statut === 'a_pointer'
+                show: (data) => data.statut === 'nouvelle'
+            },
+            {
+                label: '💰 Marquer payée',
+                class: 'btn btn-glass-green btn-lg',
+                onClick: async (data) => {
+                    await FacturesFournisseursService.changerStatut(data.id, 'payee');
+                    await self.loadData();
+                    viewer.close();
+                    self.showSuccess('✅ Facture marquée comme payée');
+                    return true;
                 },
-                {
-                    label: '🗑️ Supprimer',
-                    class: 'btn btn-glass-red btn-lg',
-                    onClick: async (data) => {
-                        const confirmation = confirm(
-                            `⚠️ Voulez-vous vraiment supprimer la facture ${data.numeroFacture || data.numeroInterne} ?\n\n` +
-                            `Cette action est irréversible.`
-                        );
-                        
-                        if (!confirmation) {
-                            return false;
-                        }
-                        
-                        try {
-                            self.showLoader();
-                            await FacturesFournisseursService.supprimerFacture(data.id);
-                            self.showSuccess('✅ Facture supprimée');
-                            await self.loadData();
-                            self.hideLoader();
-                            viewer.close();
-                            return true;
-                        } catch (error) {
-                            self.hideLoader();
-                            self.showError('❌ Erreur : ' + error.message);
-                            return false;
-                        }
-                    },
-                    closeOnClick: false
+                show: (data) => data.statut === 'a_payer' || data.statut === 'en_retard'
+            },
+            {
+                label: '✓✓ Pointer',
+                class: 'btn btn-glass-blue btn-lg',
+                onClick: async (data) => {
+                    await FacturesFournisseursService.changerStatut(data.id, 'pointee');
+                    await self.loadData();
+                    viewer.close();
+                    self.showSuccess('✅ Facture pointée');
+                    return true;
+                },
+                show: (data) => data.statut === 'payee' || data.statut === 'deja_payee' || data.statut === 'a_pointer'
+            },
+            {
+                label: '📊 Export comptable',
+                class: 'btn btn-glass-purple btn-lg',
+                onClick: async (data) => {
+                    self.exportComptable(data);
+                    return false; // Ne pas fermer
                 }
-            ],
-            size: 'large',
-            theme: 'default',
-            destroyOnClose: true
+            },
+            {
+                label: '🗑️ Supprimer',
+                class: 'btn btn-glass-red btn-lg',
+                onClick: async (data) => {
+                    const confirmation = confirm(
+                        `⚠️ Voulez-vous vraiment supprimer la facture ${data.numeroFacture || data.numeroInterne} ?\n\n` +
+                        `Cette action est irréversible.`
+                    );
+                    
+                    if (!confirmation) {
+                        return false;
+                    }
+                    
+                    try {
+                        self.showLoader();
+                        await FacturesFournisseursService.supprimerFacture(data.id);
+                        self.showSuccess('✅ Facture supprimée');
+                        await self.loadData();
+                        self.hideLoader();
+                        viewer.close();
+                        return true;
+                    } catch (error) {
+                        self.hideLoader();
+                        self.showError('❌ Erreur : ' + error.message);
+                        return false;
+                    }
+                },
+                closeOnClick: false
+            }
+        ],
+        size: 'x-large',  // Plus grand pour toutes les données
+        theme: 'default',
+        destroyOnClose: true
+    });
+}
+
+// ========================================
+// HELPERS SUPPLÉMENTAIRES
+// ========================================
+
+/**
+ * Obtenir l'emoji du drapeau pour un code pays
+ */
+getFlagEmoji(countryCode) {
+    const flags = {
+        'FR': '🇫🇷',
+        'DE': '🇩🇪',
+        'ES': '🇪🇸',
+        'IT': '🇮🇹',
+        'GB': '🇬🇧',
+        'US': '🇺🇸',
+        'BE': '🇧🇪',
+        'NL': '🇳🇱',
+        'CH': '🇨🇭',
+        'LU': '🇱🇺'
+    };
+    return flags[countryCode] || '🏳️';
+}
+
+/**
+ * Formater un IBAN pour l'affichage
+ */
+formatIBAN(iban) {
+    if (!iban) return '-';
+    // Formater par groupes de 4
+    return iban.replace(/\s/g, '').match(/.{1,4}/g)?.join(' ') || iban;
+}
+
+/**
+ * Formater la taille d'un fichier
+ */
+formatFileSize(bytes) {
+        if (!bytes) return '0 B';
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(1024));
+        return parseFloat((bytes / Math.pow(1024, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+    
+    /**
+     * Obtenir le label formaté d'un statut
+     */
+    getStatutLabel(statut) {
+        const statuts = {
+            'nouvelle': 'NOUVELLE',
+            'a_payer': 'À PAYER',
+            'deja_payee': 'DÉJÀ PAYÉE',
+            'payee': 'PAYÉE',
+            'a_pointer': 'À POINTER',
+            'pointee': 'POINTÉE',
+            'en_retard': 'EN RETARD',
+            'annulee': 'ANNULÉE'
+        };
+        return statuts[statut] || statut?.toUpperCase() || 'INCONNU';
+    }
+
+/**
+ * Export comptable avec téléchargement automatique
+ * À remplacer directement dans orchestrator.js
+ */
+exportComptable(facture) {
+    try {
+        console.log('🔄 Génération export comptable...', facture);
+        
+        // 1. CRÉER LES ÉCRITURES COMPTABLES
+        const ecritures = [];
+        const dateFacture = this.formatDateSimple(facture.dateFacture);
+        const numeroEcriture = `HA${Date.now()}`;
+        
+        // Ligne 1 : Charge (HT)
+        ecritures.push({
+            journal: 'HA',
+            date: dateFacture,
+            compte: facture.comptabilite?.compteComptable || '6064',
+            libelle: `${facture.fournisseur?.nom || 'Fournisseur'} - ${facture.numeroFacture || facture.numeroInterne}`,
+            debit: (facture.montantHT || 0).toFixed(2),
+            credit: '0.00',
+            piece: facture.numeroFacture || facture.numeroInterne,
+            tiers: ''
+        });
+        
+        // Ligne 2 : TVA (si applicable)
+        if (facture.montantTVA && facture.montantTVA > 0) {
+            ecritures.push({
+                journal: 'HA',
+                date: dateFacture,
+                compte: '44566',
+                libelle: `TVA ${facture.tauxTVA || 20}% - ${facture.fournisseur?.nom || 'Fournisseur'}`,
+                debit: (facture.montantTVA || 0).toFixed(2),
+                credit: '0.00',
+                piece: facture.numeroFacture || facture.numeroInterne,
+                tiers: ''
+            });
+        }
+        
+        // Ligne 3 : Fournisseur (TTC)
+        const compteFournisseur = facture.fournisseur?.compteFournisseur || 
+                                  this.genererCompteFournisseurSimple(facture.fournisseur?.nom);
+        
+        ecritures.push({
+            journal: 'HA',
+            date: dateFacture,
+            compte: '401',
+            libelle: `${facture.fournisseur?.nom || 'Fournisseur'} - ${facture.numeroFacture || facture.numeroInterne}`,
+            debit: '0.00',
+            credit: (facture.montantTTC || 0).toFixed(2),
+            piece: facture.numeroFacture || facture.numeroInterne,
+            tiers: compteFournisseur
+        });
+        
+        // 2. GÉNÉRER LE CSV
+        const csv = this.genererCSV(ecritures);
+        
+        // 3. TÉLÉCHARGER LE FICHIER
+        this.telechargerCSV(csv, `export_${facture.numeroInterne || 'facture'}_${Date.now()}.csv`);
+        
+        // 4. AFFICHER UN RÉSUMÉ
+        this.afficherResumeExport(ecritures);
+        
+    } catch (error) {
+        console.error('❌ Erreur export comptable:', error);
+        this.showError('Erreur lors de l\'export comptable');
+    }
+}
+
+/**
+ * Export comptable de plusieurs factures sélectionnées
+ */
+exportComptableMultiple() {
+    try {
+        // Vérifier qu'il y a des factures sélectionnées
+        if (!this.selectedFactures || this.selectedFactures.length === 0) {
+            this.showWarning('Veuillez sélectionner au moins une facture');
+            return;
+        }
+        
+        console.log(`📊 Export comptable de ${this.selectedFactures.length} facture(s)`);
+        
+        // Collecter toutes les écritures
+        const toutesEcritures = [];
+        const resume = {
+            nbFactures: this.selectedFactures.length,
+            totalHT: 0,
+            totalTVA: 0,
+            totalTTC: 0,
+            parFournisseur: {},
+            parCompte: {}
+        };
+        
+        // Générer les écritures pour chaque facture
+        this.selectedFactures.forEach((facture, index) => {
+            const ecritures = this.genererEcrituresComptables(facture, index + 1);
+            toutesEcritures.push(...ecritures);
+            
+            // Statistiques
+            resume.totalHT += facture.montantHT || 0;
+            resume.totalTVA += facture.montantTVA || 0;
+            resume.totalTTC += facture.montantTTC || 0;
+            
+            // Par fournisseur
+            const nomFournisseur = facture.fournisseur?.nom || 'Non défini';
+            if (!resume.parFournisseur[nomFournisseur]) {
+                resume.parFournisseur[nomFournisseur] = {
+                    nombre: 0,
+                    montantTTC: 0
+                };
+            }
+            resume.parFournisseur[nomFournisseur].nombre++;
+            resume.parFournisseur[nomFournisseur].montantTTC += facture.montantTTC || 0;
+            
+            // Par compte comptable
+            const compte = facture.comptabilite?.compteComptable || '6064';
+            if (!resume.parCompte[compte]) {
+                resume.parCompte[compte] = {
+                    libelle: this.getLibelleCompte(compte),
+                    montantHT: 0
+                };
+            }
+            resume.parCompte[compte].montantHT += facture.montantHT || 0;
+        });
+        
+        // Générer le CSV
+        const csv = this.genererCSVComptableComplet(toutesEcritures, resume);
+        
+        // Nom du fichier avec date et heure
+        const maintenant = new Date();
+        const dateStr = maintenant.toISOString().slice(0, 10).replace(/-/g, '');
+        const heureStr = maintenant.toTimeString().slice(0, 5).replace(':', '');
+        const nomFichier = `export_comptable_${dateStr}_${heureStr}_${this.selectedFactures.length}factures.csv`;
+        
+        // Télécharger
+        this.telechargerCSV(csv, nomFichier);
+        
+        // Afficher le résumé
+        this.afficherResumeExportMultiple(resume);
+        
+    } catch (error) {
+        console.error('❌ Erreur export comptable multiple:', error);
+        this.showError('Erreur lors de l\'export comptable');
+    }
+}
+
+/**
+ * Générer les écritures comptables pour une facture
+ */
+genererEcrituresComptables(facture, numeroOrdre) {
+    const ecritures = [];
+    const dateFacture = this.formatDateSimple(facture.dateFacture);
+    const numeroEcriture = `HA${new Date().getFullYear()}${String(numeroOrdre).padStart(5, '0')}`;
+    
+    // Déterminer le compte comptable principal
+    const compteCharge = facture.comptabilite?.compteComptable || this.determinerCompteAuto(facture) || '6064';
+    
+    // LIGNE 1 : Charge HT (ou plusieurs lignes si détail)
+    if (facture.lignesDetail && facture.lignesDetail.length > 0) {
+        // Ventilation par ligne de détail
+        facture.lignesDetail.forEach((ligne, idx) => {
+            ecritures.push({
+                journal: 'HA',
+                date: dateFacture,
+                numeroEcriture: numeroEcriture,
+                numeroLigne: idx + 1,
+                compte: ligne.compteComptable || compteCharge,
+                libelle: `${ligne.designation || facture.fournisseur?.nom} - ${facture.numeroFacture || facture.numeroInterne}`,
+                debit: (ligne.montantHT || 0).toFixed(2),
+                credit: '0.00',
+                piece: facture.numeroFacture || facture.numeroInterne,
+                tiers: '',
+                codeAnalytique: facture.comptabilite?.codeAnalytique || '',
+                quantite: ligne.quantite || 1,
+                reference: ligne.reference || ''
+            });
+        });
+    } else {
+        // Une seule ligne de charge
+        ecritures.push({
+            journal: 'HA',
+            date: dateFacture,
+            numeroEcriture: numeroEcriture,
+            numeroLigne: 1,
+            compte: compteCharge,
+            libelle: `${facture.fournisseur?.nom || 'Fournisseur'} - ${facture.numeroFacture || facture.numeroInterne}`,
+            debit: (facture.montantHT || 0).toFixed(2),
+            credit: '0.00',
+            piece: facture.numeroFacture || facture.numeroInterne,
+            tiers: '',
+            codeAnalytique: facture.comptabilite?.codeAnalytique || '',
+            quantite: 1,
+            reference: facture.comptabilite?.categorieDetectee || ''
         });
     }
+    
+    // LIGNE 2 : TVA (si applicable)
+    if (facture.tva?.ventilationTVA && facture.tva.ventilationTVA.length > 0) {
+        // Ventilation TVA multiple
+        facture.tva.ventilationTVA.forEach((ventil, idx) => {
+            ecritures.push({
+                journal: 'HA',
+                date: dateFacture,
+                numeroEcriture: numeroEcriture,
+                numeroLigne: ecritures.length + 1,
+                compte: this.getCompteTVA(ventil.taux),
+                libelle: `TVA ${ventil.taux}% - ${facture.fournisseur?.nom}`,
+                debit: (ventil.montant || 0).toFixed(2),
+                credit: '0.00',
+                piece: facture.numeroFacture || facture.numeroInterne,
+                tiers: '',
+                codeAnalytique: '',
+                quantite: 0,
+                reference: ''
+            });
+        });
+    } else if (facture.montantTVA && facture.montantTVA > 0) {
+        // TVA simple
+        const compteTVA = this.determinerCompteTVA(facture);
+        ecritures.push({
+            journal: 'HA',
+            date: dateFacture,
+            numeroEcriture: numeroEcriture,
+            numeroLigne: ecritures.length + 1,
+            compte: compteTVA,
+            libelle: `TVA ${facture.tauxTVA || facture.tva?.tauxApplique || 20}% - ${facture.fournisseur?.nom}`,
+            debit: (facture.montantTVA || 0).toFixed(2),
+            credit: '0.00',
+            piece: facture.numeroFacture || facture.numeroInterne,
+            tiers: '',
+            codeAnalytique: '',
+            quantite: 0,
+            reference: facture.tva?.regime || 'NATIONAL'
+        });
+    }
+    
+    // LIGNE 3 : Fournisseur (TTC)
+    const compteFournisseur = facture.fournisseur?.compteFournisseur || 
+                              this.genererCompteFournisseurSimple(facture.fournisseur?.nom);
+    
+    ecritures.push({
+        journal: 'HA',
+        date: dateFacture,
+        numeroEcriture: numeroEcriture,
+        numeroLigne: ecritures.length + 1,
+        compte: '401',
+        libelle: `${facture.fournisseur?.nom || 'Fournisseur'} - ${facture.numeroFacture || facture.numeroInterne}`,
+        debit: '0.00',
+        credit: (facture.montantTTC || 0).toFixed(2),
+        piece: facture.numeroFacture || facture.numeroInterne,
+        tiers: compteFournisseur,
+        codeAnalytique: '',
+        quantite: 0,
+        reference: facture.paiement?.modePaiement || ''
+    });
+    
+    return ecritures;
+}
+
+/**
+ * Générer le CSV comptable complet avec toutes les écritures
+ */
+genererCSVComptableComplet(ecritures, resume) {
+    // En-tête avec métadonnées
+    let csv = `EXPORT COMPTABLE - ${new Date().toLocaleDateString('fr-FR')} ${new Date().toLocaleTimeString('fr-FR')}\n`;
+    csv += `Nombre de factures;${resume.nbFactures}\n`;
+    csv += `Total HT;${resume.totalHT.toFixed(2).replace('.', ',')}\n`;
+    csv += `Total TVA;${resume.totalTVA.toFixed(2).replace('.', ',')}\n`;
+    csv += `Total TTC;${resume.totalTTC.toFixed(2).replace('.', ',')}\n`;
+    csv += `\n`;
+    
+    // Résumé par fournisseur
+    csv += `RESUME PAR FOURNISSEUR\n`;
+    csv += `Fournisseur;Nombre;Montant TTC\n`;
+    Object.entries(resume.parFournisseur).forEach(([nom, data]) => {
+        csv += `${nom};${data.nombre};${data.montantTTC.toFixed(2).replace('.', ',')}\n`;
+    });
+    csv += `\n`;
+    
+    // Résumé par compte
+    csv += `RESUME PAR COMPTE COMPTABLE\n`;
+    csv += `Compte;Libellé;Montant HT\n`;
+    Object.entries(resume.parCompte).forEach(([compte, data]) => {
+        csv += `${compte};${data.libelle};${data.montantHT.toFixed(2).replace('.', ',')}\n`;
+    });
+    csv += `\n`;
+    
+    // Écritures détaillées
+    csv += `ECRITURES COMPTABLES DETAILLEES\n`;
+    const headers = [
+        'Journal', 'Date', 'N°Écriture', 'N°Ligne', 'Compte', 'Tiers',
+        'Libellé', 'Débit', 'Crédit', 'Pièce', 'Code Analytique', 
+        'Quantité', 'Référence'
+    ];
+    csv += headers.join(';') + '\n';
+    
+    // Ajouter toutes les écritures
+    ecritures.forEach(e => {
+        const ligne = [
+            e.journal,
+            e.date,
+            e.numeroEcriture,
+            e.numeroLigne,
+            e.compte,
+            e.tiers || '',
+            e.libelle.replace(/;/g, ','),
+            e.debit.replace('.', ','),
+            e.credit.replace('.', ','),
+            e.piece,
+            e.codeAnalytique || '',
+            e.quantite || '',
+            e.reference || ''
+        ];
+        csv += ligne.join(';') + '\n';
+    });
+    
+    // Totaux de contrôle
+    const totalDebit = ecritures.reduce((sum, e) => sum + parseFloat(e.debit), 0);
+    const totalCredit = ecritures.reduce((sum, e) => sum + parseFloat(e.credit), 0);
+    csv += `\n`;
+    csv += `TOTAUX;;;;;;;${totalDebit.toFixed(2).replace('.', ',')};${totalCredit.toFixed(2).replace('.', ',')}\n`;
+    csv += `EQUILIBRE;;;;;;;${Math.abs(totalDebit - totalCredit) < 0.01 ? 'OUI' : 'NON'}\n`;
+    
+    // Ajouter le BOM UTF-8 pour Excel
+    const BOM = '\uFEFF';
+    return BOM + csv;
+}
+
+/**
+ * Afficher le résumé de l'export multiple
+ */
+afficherResumeExportMultiple(resume) {
+    console.log('📊 EXPORT COMPTABLE MULTIPLE');
+    console.log('═══════════════════════════════════════');
+    console.log(`Nombre de factures : ${resume.nbFactures}`);
+    console.log(`Total HT  : ${this.formaterMontant(resume.totalHT)}`);
+    console.log(`Total TVA : ${this.formaterMontant(resume.totalTVA)}`);
+    console.log(`Total TTC : ${this.formaterMontant(resume.totalTTC)}`);
+    console.log('───────────────────────────────────────');
+    console.log('PAR FOURNISSEUR:');
+    Object.entries(resume.parFournisseur).forEach(([nom, data]) => {
+        console.log(`  ${nom}: ${data.nombre} facture(s) = ${this.formaterMontant(data.montantTTC)}`);
+    });
+    console.log('───────────────────────────────────────');
+    console.log('PAR COMPTE COMPTABLE:');
+    Object.entries(resume.parCompte).forEach(([compte, data]) => {
+        console.log(`  ${compte} ${data.libelle}: ${this.formaterMontant(data.montantHT)}`);
+    });
+    console.log('═══════════════════════════════════════');
+    
+    // Message de succès avec détails
+    this.showSuccess(`✅ Export comptable de ${resume.nbFactures} facture(s) - Total: ${this.formaterMontant(resume.totalTTC)}`);
+}
+
+// 4️⃣ AJOUTER LES FONCTIONS HELPERS (si elles n'existent pas déjà)
+
+/**
+ * Déterminer automatiquement le compte comptable
+ */
+determinerCompteAuto(facture) {
+    const nom = (facture.fournisseur?.nom || '').toUpperCase();
+    const categorie = facture.fournisseur?.categorie;
+    
+    // Par catégorie
+    const comptesParCategorie = {
+        'telecom': '6262',
+        'energie': '6061',
+        'informatique': '6183',
+        'fournitures': '6064',
+        'eau': '6061',
+        'carburant': '6221',
+        'assurance': '616',
+        'honoraires': '6226',
+        'transport': '6241'
+    };
+    
+    if (categorie && comptesParCategorie[categorie]) {
+        return comptesParCategorie[categorie];
+    }
+    
+    // Par nom de fournisseur
+    if (nom.includes('FREE') || nom.includes('ORANGE') || nom.includes('SFR')) return '6262';
+    if (nom.includes('EDF') || nom.includes('ENGIE')) return '6061';
+    if (nom.includes('MICROSOFT') || nom.includes('ADOBE')) return '6265';
+    
+    return '6064'; // Par défaut
+}
+
+/**
+ * Déterminer le compte TVA
+ */
+determinerCompteTVA(facture) {
+    // TVA intracommunautaire
+    if (facture.tva?.regime === 'INTRACOMMUNAUTAIRE') {
+        return '445662';
+    }
+    
+    // TVA autoliquidée
+    if (facture.tva?.autoliquidation) {
+        return '445663';
+    }
+    
+    // TVA standard
+    return '44566';
+}
+
+/**
+ * Obtenir le compte TVA par taux
+ */
+getCompteTVA(taux) {
+    // Tous les taux utilisent le même compte en France
+    return '44566';
+}
+
+/**
+ * Obtenir le libellé d'un compte
+ */
+getLibelleCompte(compte) {
+    const comptes = {
+        '401': 'Fournisseurs',
+        '44566': 'TVA déductible',
+        '445662': 'TVA intracommunautaire',
+        '445663': 'TVA autoliquidée',
+        '6061': 'Fournitures non stockables',
+        '6064': 'Fournitures administratives',
+        '616': 'Primes d\'assurances',
+        '6183': 'Documentation technique',
+        '6221': 'Carburants',
+        '6226': 'Honoraires',
+        '6241': 'Transports sur achats',
+        '6262': 'Télécommunications',
+        '6265': 'Logiciels',
+        '627': 'Services bancaires',
+        '2183': 'Matériel informatique'
+    };
+    
+    return comptes[compte] || comptes[compte.substring(0, 4)] || comptes[compte.substring(0, 3)] || 'Compte non défini';
+}
+
+/**
+ * Générer le CSV
+ */
+genererCSV(ecritures) {
+    // En-têtes
+    const headers = ['Journal', 'Date', 'Compte', 'Tiers', 'Libellé', 'Débit', 'Crédit', 'Pièce'];
+    
+    // Créer le CSV avec point-virgule comme séparateur (standard français)
+    let csv = headers.join(';') + '\n';
+    
+    // Ajouter les lignes
+    ecritures.forEach(e => {
+        const ligne = [
+            e.journal,
+            e.date,
+            e.compte,
+            e.tiers || '',
+            e.libelle.replace(/;/g, ','), // Nettoyer les point-virgules
+            e.debit.replace('.', ','),    // Format français pour les nombres
+            e.credit.replace('.', ','),
+            e.piece
+        ];
+        csv += ligne.join(';') + '\n';
+    });
+    
+    // Ajouter le BOM UTF-8 pour Excel
+    const BOM = '\uFEFF';
+    return BOM + csv;
+}
+
+/**
+ * Télécharger le CSV
+ */
+telechargerCSV(contenu, nomFichier) {
+    try {
+        // Créer un Blob avec le bon encodage
+        const blob = new Blob([contenu], { 
+            type: 'text/csv;charset=utf-8;' 
+        });
+        
+        // Créer l'URL temporaire
+        const url = window.URL.createObjectURL(blob);
+        
+        // Créer le lien de téléchargement
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = nomFichier;
+        link.style.display = 'none';
+        
+        // Ajouter au DOM, cliquer, et retirer
+        document.body.appendChild(link);
+        link.click();
+        
+        // Nettoyer
+        setTimeout(() => {
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        }, 100);
+        
+        console.log('✅ Fichier téléchargé:', nomFichier);
+        this.showSuccess(`📊 Export téléchargé : ${nomFichier}`);
+        
+    } catch (error) {
+        console.error('❌ Erreur téléchargement:', error);
+        this.showError('Impossible de télécharger le fichier');
+    }
+}
+
+/**
+ * Afficher un résumé dans la console
+ */
+afficherResumeExport(ecritures) {
+    console.log('📊 EXPORT COMPTABLE GÉNÉRÉ');
+    console.log('═══════════════════════════');
+    
+    let totalDebit = 0;
+    let totalCredit = 0;
+    
+    ecritures.forEach(e => {
+        console.log(`${e.compte} | ${e.libelle}`);
+        console.log(`  Débit: ${e.debit} | Crédit: ${e.credit}`);
+        totalDebit += parseFloat(e.debit);
+        totalCredit += parseFloat(e.credit);
+    });
+    
+    console.log('───────────────────────────');
+    console.log(`TOTAUX: Débit ${totalDebit.toFixed(2)} | Crédit ${totalCredit.toFixed(2)}`);
+    console.log(`Équilibré: ${Math.abs(totalDebit - totalCredit) < 0.01 ? '✅ OUI' : '❌ NON'}`);
+    console.log('═══════════════════════════');
+}
+
+/**
+ * Helpers
+ */
+formatDateSimple(date) {
+    if (!date) return new Date().toISOString().split('T')[0];
+    
+    let d;
+    if (date.toDate) {
+        d = date.toDate();
+    } else if (date instanceof Date) {
+        d = date;
+    } else {
+        d = new Date(date);
+    }
+    
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    
+    return `${day}/${month}/${year}`;
+}
+
+genererCompteFournisseurSimple(nomFournisseur) {
+    if (!nomFournisseur) return '401000';
+    
+    // Prendre les 3 premières lettres en majuscules
+    const code = nomFournisseur
+        .toUpperCase()
+        .replace(/[^A-Z]/g, '')
+        .substring(0, 3)
+        .padEnd(3, 'X');
+    
+    return `401${code}`;
+}
     
     // ========================================
     // FILTRAGE ET MISE À JOUR
@@ -940,9 +2181,34 @@ class FactureOrchestrator {
                 }
             }
             
-            // Filtre statuts (multiple)
+            // Filtre statuts (multiple) avec gestion des statuts groupés
             if (this.currentFilters.statuts && this.currentFilters.statuts.length > 0) {
-                if (!this.currentFilters.statuts.includes(facture.statut)) {
+                let match = false;
+                
+                for (const filterStatut of this.currentFilters.statuts) {
+                    // Mapping des statuts groupés
+                    if (filterStatut === 'payee') {
+                        // "Payée" inclut payee ET deja_payee
+                        if (facture.statut === 'payee' || facture.statut === 'deja_payee') {
+                            match = true;
+                            break;
+                        }
+                    } else if (filterStatut === 'en_retard') {
+                        // "En retard" peut être un statut OU un flag
+                        if (facture.statut === 'en_retard' || facture.enRetard === true) {
+                            match = true;
+                            break;
+                        }
+                    } else {
+                        // Autres statuts : comparaison directe
+                        if (facture.statut === filterStatut) {
+                            match = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if (!match) {
                     return false;
                 }
             }
