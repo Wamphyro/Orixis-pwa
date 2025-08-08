@@ -1,16 +1,11 @@
 // ========================================
-// DECOMPTE-MUTUELLE.UPLOAD.SERVICE.JS - 📁 SERVICE UPLOAD
-// Chemin: modules/test/decompte-mutuelle.upload.service.js
+// FACTURES-FOURNISSEURS.UPLOAD.SERVICE.JS - 📁 GESTION STOCKAGE FICHIERS
+// Chemin: modules/factures-fournisseurs/factures-fournisseurs.upload.service.js
 //
 // DESCRIPTION:
-// Service d'upload des décomptes vers Firebase Storage
-// Gère le hash SHA-256, la structure des dossiers et les métadonnées
-//
-// FONCTIONS PUBLIQUES:
-// - uploadDocuments(files) : Upload multiple
-// - uploadSingleDocument(file, hash) : Upload unitaire
-// - calculateFileHash(file) : Calcul SHA-256
-// - deleteDocument(chemin) : Suppression
+// Service d'upload des factures fournisseurs vers Firebase Storage
+// Gère le hash, la structure des dossiers et les métadonnées
+// Adapté à l'architecture decompte-mutuelle
 // ========================================
 
 import { storage } from '../../src/services/firebase.service.js';
@@ -19,90 +14,51 @@ import { storage } from '../../src/services/firebase.service.js';
 // CONFIGURATION
 // ========================================
 
-const CONFIG = {
-    STORAGE_BASE_PATH: 'decomptes-mutuelles',
-    MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
-    ALLOWED_TYPES: ['application/pdf', 'image/jpeg', 'image/png']
-};
+const STORAGE_BASE_PATH = 'factures-fournisseurs';
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
 
 // ========================================
-// CLASSE DU SERVICE
+// FONCTIONS D'UPLOAD
 // ========================================
 
-export class DecompteUploadService {
-    
-    /**
-     * Upload un ou plusieurs documents
-     * @param {File[]} files - Fichiers à uploader
-     * @returns {Promise<Object>} Résultats de l'upload
-     */
-    static async uploadDocuments(files) {
-        const resultats = {
-            reussis: [],
-            erreurs: []
-        };
-        
-        console.log(`📤 Upload de ${files.length} fichier(s)...`);
-        
-        for (const file of files) {
-            try {
-                // Validation
-                this.validateFile(file);
-                
-                // Calculer le hash pour détecter les doublons
-                const hash = await this.calculateFileHash(file);
-                console.log(`📊 Hash calculé pour ${file.name}: ${hash.substring(0, 8)}...`);
-                
-                // Upload
-                const metadata = await this.uploadSingleDocument(file, hash);
-                resultats.reussis.push(metadata);
-                console.log(`✅ ${file.name} uploadé avec succès`);
-                
-            } catch (error) {
-                console.error(`❌ Erreur upload ${file.name}:`, error);
-                resultats.erreurs.push({
-                    fichier: file.name,
-                    erreur: error.message
-                });
-            }
-        }
-        
-        if (resultats.erreurs.length > 0) {
-            console.warn(`⚠️ ${resultats.erreurs.length} upload(s) échoué(s)`);
-        }
-        
-        return resultats;
-    }
-    
-    /**
-     * Upload un seul document
-     * @param {File} file - Fichier à uploader
-     * @param {string} hash - Hash SHA-256 du fichier
-     * @returns {Promise<Object>} Métadonnées du document
-     */
-    static async uploadSingleDocument(file, hash) {
+/**
+ * Upload une facture vers Firebase Storage
+ */
+export async function uploadFactureDocument(file) {
+    try {
+        // Importer les fonctions Firebase Storage
         const { ref, uploadBytes, getDownloadURL } = await import(
             'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js'
         );
         
+        // Validation du fichier
+        validateFile(file);
+        
+        // Calculer le hash pour détecter les doublons
+        const hash = await calculateFileHash(file);
+        
         // Créer le chemin de stockage
-        const userInfo = this.getUserInfo();
+        const timestamp = Date.now();
         const date = new Date();
         const annee = date.getFullYear();
         const mois = String(date.getMonth() + 1).padStart(2, '0');
         const jour = String(date.getDate()).padStart(2, '0');
         
-        // Créer un nom standardisé - MAJUSCULES sauf extension
+        // Récupérer les infos utilisateur
+        const userInfo = getUserInfo();
+        
+        // Créer un nom standardisé avec UUID court
         const dateStr = `${annee}${mois}${jour}`;
         const timeStr = date.toTimeString().slice(0,8).replace(/:/g, '');
-        const shortUUID = crypto.randomUUID().substring(0, 8).toUpperCase();  // ← UUID en MAJUSCULES
-        const extension = file.name.split('.').pop().toLowerCase();  // ← Extension en minuscules
-        const nomFichier = `DM_${userInfo.societe}_${dateStr}_${timeStr}_${shortUUID}.${extension}`;
+        const shortUUID = crypto.randomUUID().substring(0, 8);
+        const extension = file.name.split('.').pop().toLowerCase();
+        const nomFichier = `FF_${userInfo.societe}_${dateStr}_${timeStr}_${shortUUID}.${extension}`;
         
-        // Chemin complet : decomptes-mutuelles/SOCIETE/inbox/2025/02/08/DM_SOCIETE_20250208_143029_550e8400.pdf
-        const chemin = `${CONFIG.STORAGE_BASE_PATH}/${userInfo.societe}/inbox/${annee}/${mois}/${jour}/${nomFichier}`;
+        // Chemin complet : factures-fournisseurs/ORIXIS/inbox/2025/02/09/FF_ORIXIS_20250209_143029_550e8400.pdf
+        const chemin = `${STORAGE_BASE_PATH}/${userInfo.societe}/inbox/${annee}/${mois}/${jour}/${nomFichier}`;
         
-        console.log(`📁 Chemin Storage: ${chemin}`);
+        console.log('📤 Upload vers:', chemin);
         
         // Créer la référence Storage
         const storageRef = ref(storage, chemin);
@@ -123,8 +79,12 @@ export class DecompteUploadService {
         
         // Upload du fichier
         const snapshot = await uploadBytes(storageRef, file, metadata);
+        console.log('✅ Upload réussi:', snapshot.ref.fullPath);
+        
+        // Obtenir l'URL de téléchargement
         const url = await getDownloadURL(snapshot.ref);
         
+        // Retourner les métadonnées
         return {
             nom: nomFichier,
             nomOriginal: file.name,
@@ -135,154 +95,157 @@ export class DecompteUploadService {
             hash: hash,
             dateUpload: new Date()
         };
+        
+    } catch (error) {
+        console.error('❌ Erreur upload:', error);
+        throw new Error(`Erreur lors de l'upload: ${error.message}`);
     }
+}
+
+/**
+ * Upload plusieurs factures
+ */
+export async function uploadMultipleDocuments(files) {
+    const resultats = [];
+    const erreurs = [];
     
-    /**
-     * Calculer le hash SHA-256 d'un fichier
-     * @param {File} file - Le fichier
-     * @returns {Promise<string>} Le hash en hexadécimal
-     */
-    static async calculateFileHash(file) {
+    for (const file of files) {
         try {
-            // Lire le fichier comme ArrayBuffer
-            const buffer = await file.arrayBuffer();
-            
-            // Calculer le hash SHA-256
-            const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
-            
-            // Convertir en hexadécimal
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            const hashHex = hashArray
-                .map(b => b.toString(16).padStart(2, '0'))
-                .join('');
-            
-            return hashHex;
-            
+            const metadata = await uploadFactureDocument(file);
+            resultats.push(metadata);
         } catch (error) {
-            console.error('❌ Erreur calcul hash:', error);
-            // Fallback avec timestamp si erreur
-            return 'hash-error-' + Date.now();
+            erreurs.push({
+                fichier: file.name,
+                erreur: error.message
+            });
         }
     }
     
-    /**
-     * Supprimer un document de Storage
-     * @param {string} chemin - Le chemin du document
-     */
-    static async deleteDocument(chemin) {
-        try {
-            const { ref, deleteObject } = await import(
-                'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js'
-            );
-            
-            const storageRef = ref(storage, chemin);
-            await deleteObject(storageRef);
-            
-            console.log('🗑️ Document supprimé:', chemin);
-            
-        } catch (error) {
-            console.error('❌ Erreur suppression:', error);
-            throw new Error(`Erreur lors de la suppression: ${error.message}`);
-        }
+    if (erreurs.length > 0) {
+        console.warn('⚠️ Certains uploads ont échoué:', erreurs);
     }
     
-    /**
-     * Obtenir l'URL d'un document existant
-     * @param {string} chemin - Le chemin du document
-     * @returns {Promise<string>} L'URL de téléchargement
-     */
-    static async getDocumentUrl(chemin) {
-        try {
-            const { ref, getDownloadURL } = await import(
-                'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js'
-            );
-            
-            const storageRef = ref(storage, chemin);
-            return await getDownloadURL(storageRef);
-            
-        } catch (error) {
-            console.error('❌ Erreur récupération URL:', error);
-            throw new Error(`Document introuvable: ${chemin}`);
-        }
+    return {
+        reussis: resultats,
+        erreurs: erreurs
+    };
+}
+
+// ========================================
+// FONCTIONS DE GESTION
+// ========================================
+
+/**
+ * Supprimer un document de Storage
+ */
+export async function deleteDocument(chemin) {
+    try {
+        const { ref, deleteObject } = await import(
+            'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js'
+        );
+        
+        const storageRef = ref(storage, chemin);
+        await deleteObject(storageRef);
+        
+        console.log('🗑️ Document supprimé:', chemin);
+        
+    } catch (error) {
+        console.error('❌ Erreur suppression:', error);
+        throw new Error(`Erreur lors de la suppression: ${error.message}`);
     }
-    
-    // ========================================
-    // MÉTHODES PRIVÉES
-    // ========================================
-    
-    /**
-     * Valider un fichier avant upload
-     * @private
-     */
-    static validateFile(file) {
-        // Vérifier la taille
-        if (file.size > CONFIG.MAX_FILE_SIZE) {
-            const sizeMB = (CONFIG.MAX_FILE_SIZE / 1024 / 1024).toFixed(0);
-            throw new Error(`Fichier trop volumineux (max ${sizeMB}MB)`);
-        }
+}
+
+/**
+ * Obtenir l'URL d'un document existant
+ */
+export async function getDocumentUrl(chemin) {
+    try {
+        const { ref, getDownloadURL } = await import(
+            'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js'
+        );
         
-        // Vérifier le type
-        if (!CONFIG.ALLOWED_TYPES.includes(file.type)) {
-            throw new Error(`Type de fichier non autorisé. Utilisez PDF, JPG ou PNG`);
-        }
+        const storageRef = ref(storage, chemin);
+        return await getDownloadURL(storageRef);
         
-        console.log(`✅ Fichier ${file.name} validé (${(file.size / 1024).toFixed(1)} KB)`);
-    }
-    
-    /**
-     * Obtenir les infos utilisateur
-     * @private
-     */
-    static getUserInfo() {
-        const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
-        
-        // Extraire la société du code magasin si pas définie
-        let societe = auth.raisonSociale || auth.societe || '';
-        
-        if (!societe && auth.magasin) {
-            // Déterminer la société selon le préfixe du magasin
-            if (auth.magasin.startsWith('9')) {
-                societe = 'BA'; // Boucle Auditive
-            } else if (auth.magasin.startsWith('8')) {
-                societe = 'ORIXIS';
-            } else {
-                societe = 'XXX';
-            }
-        }
-        
-        // Nettoyer le nom de société pour le chemin de fichier
-        societe = societe.replace(/[^A-Za-z0-9]/g, '_').toUpperCase();
-        
-        return {
-            id: auth.collaborateur?.id || 'unknown',
-            nom: auth.collaborateur?.nom || 'Inconnu',
-            prenom: auth.collaborateur?.prenom || '',
-            role: auth.collaborateur?.role || 'technicien',
-            name: `${auth.collaborateur?.prenom || ''} ${auth.collaborateur?.nom || ''}`.trim() || 'Inconnu',
-            magasin: auth.magasin || auth.collaborateur?.magasin || 'XXX',
-            societe: societe || 'NON_DEFINI'
-        };
+    } catch (error) {
+        console.error('❌ Erreur récupération URL:', error);
+        throw new Error(`Document introuvable: ${chemin}`);
     }
 }
 
 // ========================================
-// EXPORT
+// FONCTIONS UTILITAIRES
+// ========================================
+
+/**
+ * Calculer le hash SHA-256 d'un fichier
+ */
+export async function calculateFileHash(file) {
+    try {
+        // Lire le fichier comme ArrayBuffer
+        const buffer = await file.arrayBuffer();
+        
+        // Calculer le hash SHA-256
+        const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+        
+        // Convertir en hexadécimal
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray
+            .map(b => b.toString(16).padStart(2, '0'))
+            .join('');
+        
+        return hashHex;
+        
+    } catch (error) {
+        console.error('❌ Erreur calcul hash:', error);
+        return 'hash-error-' + Date.now();
+    }
+}
+
+/**
+ * Valider un fichier avant upload
+ */
+function validateFile(file) {
+    // Vérifier la taille
+    if (file.size > MAX_FILE_SIZE) {
+        const sizeMB = (MAX_FILE_SIZE / 1024 / 1024).toFixed(0);
+        throw new Error(`Fichier trop volumineux (max ${sizeMB}MB)`);
+    }
+    
+    // Vérifier le type
+    if (!ALLOWED_TYPES.includes(file.type)) {
+        throw new Error(`Type de fichier non autorisé. Utilisez PDF, JPG ou PNG`);
+    }
+}
+
+/**
+ * Récupérer les infos de l'utilisateur connecté
+ */
+function getUserInfo() {
+    const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
+    
+    // Extraire la société
+    let societe = auth.societe || auth.raisonSociale || 'ORIXIS';
+    
+    // Simplifier le nom de société pour le chemin
+    societe = societe.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+    
+    return {
+        name: auth.collaborateur ? `${auth.collaborateur.prenom} ${auth.collaborateur.nom}` : 'Inconnu',
+        magasin: auth.magasin || auth.collaborateur?.magasin || 'XXX',
+        societe: societe,
+        id: auth.collaborateur?.id || 'unknown'
+    };
+}
+
+// ========================================
+// EXPORT PAR DÉFAUT
 // ========================================
 
 export default {
-    uploadDocuments: DecompteUploadService.uploadDocuments.bind(DecompteUploadService),
-    uploadSingleDocument: DecompteUploadService.uploadSingleDocument.bind(DecompteUploadService),
-    calculateFileHash: DecompteUploadService.calculateFileHash.bind(DecompteUploadService),
-    deleteDocument: DecompteUploadService.deleteDocument.bind(DecompteUploadService),
-    getDocumentUrl: DecompteUploadService.getDocumentUrl.bind(DecompteUploadService)
+    uploadFactureDocument,
+    uploadMultipleDocuments,
+    deleteDocument,
+    getDocumentUrl,
+    calculateFileHash
 };
-
-/* ========================================
-   HISTORIQUE
-   
-   [08/02/2025] - Création
-   - Service dédié à l'upload Storage
-   - Hash SHA-256 pour détection doublons
-   - Structure : decomptes-mutuelles/[société]/inbox/[année]/[mois]/[jour]/
-   - Nom fichier : DM_[société]_[date]_[heure]_[uuid].pdf
-   ======================================== */

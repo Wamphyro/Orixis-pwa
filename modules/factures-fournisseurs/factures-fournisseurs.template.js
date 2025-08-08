@@ -1,187 +1,137 @@
 // ========================================
-// DECOMPTE-MUTUELLE.TEMPLATE.JS - Template Firestore pour décomptes
-// Chemin: modules/decompte-mutuelle/decompte-mutuelle.template.js
+// FACTURES-FOURNISSEURS.FIRESTORE.TEMPLATE.JS - TEMPLATE FIRESTORE
+// Chemin: modules/factures-fournisseurs/factures-fournisseurs.firestore.template.js
 //
 // DESCRIPTION:
-// Définit la structure complète d'un document décompte dans Firestore
-// Garantit que tous les champs existent avec les bons types
-//
-// UTILISATION:
-// import { DECOMPTE_TEMPLATE } from './decompte-mutuelle.template.js';
-// const nouveauDecompte = JSON.parse(JSON.stringify(DECOMPTE_TEMPLATE));
+// Template de structure pour les factures fournisseurs
+// Définit la structure exacte d'un document Firestore
 // ========================================
 
-export const DECOMPTE_TEMPLATE = {
+export const FACTURE_FOURNISSEUR_TEMPLATE = {
     // ========================================
     // IDENTIFICATION
     // ========================================
+    numeroFacture: null,           // String - Numéro du fournisseur
+    numeroInterne: null,           // String - Format: FF-AAAAMMJJ-XXXX
     
-    // Numéro unique du décompte
-    numeroDecompte: null,           // String - Format: DEC-AAAAMMJJ-XXXX
+    // ========================================
+    // FOURNISSEUR
+    // ========================================
+    fournisseur: {
+        nom: null,                 // String - Nom du fournisseur
+        categorie: null,           // String - telecom|energie|services|etc
+        numeroClient: null,        // String - Notre numéro chez eux
+        siren: null                // String - SIREN du fournisseur
+    },
     
-    // Type de décompte
-    typeDecompte: 'individuel',     // String - 'individuel' ou 'groupe'
+    // ========================================
+    // MONTANTS
+    // ========================================
+    montantHT: 0,                  // number - Montant HT
+    montantTVA: 0,                 // number - Montant TVA
+    montantTTC: 0,                 // number - Montant TTC
+    tauxTVA: 20,                   // number - Taux de TVA
+    
+    // ========================================
+    // DATES
+    // ========================================
+    dateFacture: null,             // Timestamp - Date de la facture
+    dateEcheance: null,            // Timestamp - Date d'échéance
+    dateReception: null,           // Timestamp - Date de réception/upload
+    
+    // Période facturée (pour abonnements)
+    periodeDebut: null,            // Timestamp ou null
+    periodeFin: null,              // Timestamp ou null
+    
+    // ========================================
+    // PAIEMENT
+    // ========================================
+    aPayer: false,                 // boolean - Sélectionné à l'upload
+    statutPaiement: 'nouvelle',    // String - nouvelle|a_payer|payee|etc
+    datePaiement: null,            // Timestamp ou null
+    modePaiement: null,            // String ou null
+    referenceVirement: null,       // String ou null
     
     // ========================================
     // ORGANISATION
     // ========================================
-    
-    // Société destinataire (professionnel de santé)
-    societe: 'ORIXIS SAS',          // String - Nom complet de la société
-    
-    // Magasin où l'achat a été fait
-    codeMagasin: null,              // String - Code magasin (ex: '9PAR')
-    
-    // Magasin qui a uploadé le document
-    magasinUploadeur: null,         // String - Code magasin uploadeur
-    
-    // Prestataire tiers-payant
-    prestataireTP: null,            // String ou null - Réseau de soins (SANTECLAIR, etc.)
+    societe: null,                 // String - Notre société
+    codeMagasin: null,             // String - Magasin concerné
+    magasinUploadeur: null,        // String - Qui a uploadé
     
     // ========================================
-    // CLIENT
+    // DOCUMENTS
     // ========================================
-    
-    // Informations du client (structure complète même si vide)
-    client: {
-        id: null,                   // String ou null - ID client si existant
-        nom: null,                  // String ou null - Nom de famille
-        prenom: null,               // String ou null - Prénom
-        numeroSecuriteSociale: null // String ou null - NSS (13 ou 15 chiffres)
-    },
-    
-    // ========================================
-    // DONNÉES FINANCIÈRES
-    // ========================================
-    
-    // Organisme mutuelle payeur
-    mutuelle: null,                 // String ou null - Nom de la mutuelle
-    
-    // Montant remboursé au client
-    montantRemboursementClient: 0,  // number - Montant en euros
-    
-    // Montant total du virement
-    montantVirement: 0,             // number - Montant total en euros
-    
-    // Nombre de clients dans le décompte
-    nombreClients: 1,               // number - 1 pour individuel, >1 pour groupe
-    
-    // Date du virement bancaire
-    dateVirement: null,             // Timestamp ou null - Date du virement effectué
+    documents: [],                 // Array<Object> - PDFs uploadés
+    // Structure d'un document:
+    // {
+    //     nom: String,
+    //     nomOriginal: String,
+    //     chemin: String,
+    //     url: String,
+    //     taille: Number,
+    //     type: String,
+    //     hash: String,
+    //     dateUpload: Timestamp
+    // }
     
     // ========================================
-    // DATES DE WORKFLOW
+    // WORKFLOW
     // ========================================
+    statut: 'nouvelle',            // String - Statut global
     
+    // ========================================
+    // DATES DU WORKFLOW
+    // ========================================
     dates: {
-        // Date de création du décompte
-        creation: null,             // Timestamp - Toujours rempli
-        
-        // Date de transmission à l'IA
-        transmissionIA: null,       // Timestamp ou null
-        
-        // Date de fin de traitement
-        traitementEffectue: null,   // Timestamp ou null
-        
-        // Date de passage en manuel
-        traitementManuel: null,     // Timestamp ou null
-        
-        // Date de rapprochement bancaire
-        rapprochementBancaire: null // Timestamp ou null
+        creation: null,            // Timestamp
+        analyse: null,             // Timestamp - Analyse IA
+        verification: null,        // Timestamp - Vérification
+        paiement: null,            // Timestamp - Paiement
+        pointage: null             // Timestamp - Rapprochement
     },
     
     // ========================================
     // INTERVENANTS
     // ========================================
-    
     intervenants: {
-        // Créateur du décompte
         creePar: {
-            id: null,               // String - ID utilisateur
-            nom: null,              // String - Nom
-            prenom: null,           // String - Prénom
-            role: null              // String - Rôle (technicien, admin, etc.)
+            id: null,              // String
+            nom: null,             // String
+            prenom: null,          // String
+            role: null             // String
         },
-        
-        // Personne qui a traité
-        traitePar: null,            // Object ou null - Même structure que creePar
-        
-        // Personne qui a rapproché
-        rapprochePar: null          // Object ou null - Même structure que creePar
+        verifiePar: null,          // Object ou null
+        payePar: null,             // Object ou null
+        pointePar: null            // Object ou null
     },
-    
-    // ========================================
-    // DOCUMENTS
-    // ========================================
-    
-    // Documents uploadés (PDF, images)
-    documents: [],                  // Array<Object> - Liste des documents
-    /* Structure d'un document:
-    {
-        nom: 'DM_ORIXIS_20250208_143029_550e8400.pdf',
-        nomOriginal: 'decompte-janvier.pdf',
-        chemin: 'decomptes-mutuelles/ORIXIS/inbox/2025/02/08/...',
-        url: 'https://storage.googleapis.com/...',
-        taille: 245687,
-        type: 'application/pdf',
-        hash: 'a3f5b8c9d1e2...',
-        dateUpload: Timestamp
-    }
-    */
-    
-    // ========================================
-    // RÉFÉRENCES
-    // ========================================
-    
-    // ID du virement bancaire
-    virementId: null,               // String ou null - Format: VIR-AAAA-MM-XXX
-    
-    // ========================================
-    // WORKFLOW
-    // ========================================
-    
-    // Statut actuel du décompte
-    statut: 'nouveau',              // String - nouveau|traitement_ia|traitement_effectue|traitement_manuel|rapprochement_bancaire|supprime
-    
-    // Motif si traitement manuel
-    motifTraitementManuel: null,    // String ou null - Raison du passage en manuel
     
     // ========================================
     // HISTORIQUE
     // ========================================
+    historique: [],                // Array<Object>
+    // Structure d'une entrée historique:
+    // {
+    //     date: Timestamp,
+    //     action: String,
+    //     details: String,
+    //     timestamp: Number,
+    //     utilisateur: {
+    //         id: String,
+    //         nom: String,
+    //         prenom: String,
+    //         role: String
+    //     }
+    // }
     
-    // Historique complet des actions
-    historique: []                  // Array<Object> - Liste des actions
-    /* Structure d'une entrée historique:
-    {
-        date: Timestamp,            // Date de l'action
-        action: 'creation',         // Type d'action
-        details: 'Description',     // Détails de l'action
-        timestamp: 1234567890,      // Timestamp en millisecondes
-        utilisateur: {              // Utilisateur qui a fait l'action
-            id: 'user-123',
-            nom: 'DUPONT',
-            prenom: 'Jean',
-            role: 'technicien'
-        }
-    }
-    */
-};
-
-// ========================================
-// TEMPLATE D'UNE ENTRÉE HISTORIQUE
-// ========================================
-
-export const HISTORIQUE_ENTRY_TEMPLATE = {
-    date: null,                     // Timestamp
-    action: null,                   // String - Type d'action
-    details: null,                  // String - Description
-    timestamp: null,                // number - Millisecondes depuis epoch
-    utilisateur: {                  // Object - Utilisateur
-        id: null,                   // String
-        nom: null,                  // String
-        prenom: null,               // String
-        role: null                  // String
+    // ========================================
+    // DONNÉES BRUTES IA
+    // ========================================
+    iaData: {
+        reponseGPT: null,          // Object - Réponse JSON complète de GPT
+        dateAnalyse: null,         // Timestamp - Date de l'analyse
+        modeleIA: null,            // String - Modèle utilisé (gpt-4o-mini)
+        erreurIA: null             // String - Erreur si échec
     }
 };
 
@@ -189,114 +139,110 @@ export const HISTORIQUE_ENTRY_TEMPLATE = {
 // RÈGLES DE VALIDATION
 // ========================================
 
-export const DECOMPTE_RULES = {
-    // Champs obligatoires
-    required: [
-        'numeroDecompte',
-        'societe',
-        'codeMagasin',
-        'statut',
-        'typeDecompte'
-    ],
-    
-    // Valeurs énumérées
+export const FACTURE_FOURNISSEUR_RULES = {
+    required: ['numeroInterne', 'documents', 'statut'],
+    unique: ['numeroInterne'],
     enum: {
-        typeDecompte: ['individuel', 'groupe'],
-        statut: [
-            'nouveau',
-            'traitement_ia',
-            'traitement_effectue',
-            'traitement_manuel',
-            'rapprochement_bancaire',
-            'supprime'
-        ]
+        statut: ['nouvelle', 'a_payer', 'deja_payee', 'payee', 'a_pointer', 'pointee', 'en_retard', 'annulee'],
+        statutPaiement: ['nouvelle', 'a_payer', 'deja_payee', 'payee', 'a_pointer', 'pointee', 'en_retard', 'annulee'],
+        modePaiement: ['virement', 'prelevement', 'cheque', 'cb', 'especes'],
+        'fournisseur.categorie': ['telecom', 'energie', 'services', 'informatique', 'fournitures', 'autre']
     },
-    
-    // Validations spécifiques
-    validations: {
-        numeroDecompte: /^DEC-\d{8}-\d{4}$/,
-        numeroSecuriteSociale: /^[12]\d{12}(\d{2})?$/,
-        virementId: /^VIR-\d{4}-\d{2}-\d{3}$/
-    },
-    
-    // Limites
-    limits: {
-        maxDocuments: 10,
-        maxFileSize: 10 * 1024 * 1024, // 10MB
-        maxHistoriqueEntries: 100
+    validation: {
+        montantTTC: 'montantTTC >= 0',
+        tauxTVA: 'tauxTVA >= 0 && tauxTVA <= 100',
+        numeroInterne: '/^FF-\\d{8}-\\d{4}$/'
     }
 };
+
+// ========================================
+// INDEX FIRESTORE RECOMMANDÉS
+// ========================================
+
+export const FACTURE_FOURNISSEUR_INDEXES = [
+    {
+        fields: ['statut', 'dateFacture'],
+        name: 'idx_statut_date',
+        description: 'Pour filtrer par statut et trier par date'
+    },
+    {
+        fields: ['fournisseur.nom', 'dateFacture'],
+        name: 'idx_fournisseur_date',
+        description: 'Pour filtrer par fournisseur et trier par date'
+    },
+    {
+        fields: ['codeMagasin', 'statut'],
+        name: 'idx_magasin_statut',
+        description: 'Pour filtrer par magasin et statut'
+    },
+    {
+        fields: ['numeroInterne'],
+        name: 'idx_numero_interne',
+        unique: true,
+        description: 'Index unique sur le numéro interne'
+    },
+    {
+        fields: ['aPayer', 'dateEcheance'],
+        name: 'idx_a_payer_echeance',
+        description: 'Pour trouver les factures à payer par échéance'
+    }
+];
 
 // ========================================
 // HELPERS DE CRÉATION
 // ========================================
 
 /**
- * Créer un nouveau décompte avec les valeurs par défaut
- * @returns {Object} Nouveau décompte basé sur le template
+ * Créer une nouvelle facture avec le template
  */
-export function createNewDecompte() {
-    return JSON.parse(JSON.stringify(DECOMPTE_TEMPLATE));
-}
-
-/**
- * Créer une nouvelle entrée historique
- * @param {string} action - Type d'action
- * @param {string} details - Détails de l'action
- * @param {Object} utilisateur - Utilisateur qui fait l'action
- * @returns {Object} Nouvelle entrée historique
- */
-export function createHistoriqueEntry(action, details, utilisateur) {
+export function createNewFacture(overrides = {}) {
     return {
-        date: new Date(),
-        action: action,
-        details: details,
-        timestamp: Date.now(),
-        utilisateur: utilisateur || {
-            id: 'unknown',
-            nom: 'Système',
-            prenom: '',
-            role: 'system'
-        }
+        ...JSON.parse(JSON.stringify(FACTURE_FOURNISSEUR_TEMPLATE)),
+        ...overrides
     };
 }
 
 /**
- * Valider qu'un objet respecte le template
- * @param {Object} decompte - Décompte à valider
- * @returns {Object} Résultat de validation { valid: boolean, errors: [] }
+ * Valider une facture contre les règles
  */
-export function validateDecompte(decompte) {
+export function validateFacture(facture) {
     const errors = [];
     
-    // Vérifier les champs obligatoires
-    DECOMPTE_RULES.required.forEach(field => {
-        if (!decompte[field]) {
-            errors.push(`Champ obligatoire manquant: ${field}`);
+    // Vérifier les champs requis
+    for (const field of FACTURE_FOURNISSEUR_RULES.required) {
+        if (!facture[field]) {
+            errors.push(`Le champ ${field} est requis`);
         }
-    });
+    }
     
     // Vérifier les énumérations
-    Object.entries(DECOMPTE_RULES.enum).forEach(([field, values]) => {
-        if (decompte[field] && !values.includes(decompte[field])) {
-            errors.push(`Valeur invalide pour ${field}: ${decompte[field]}`);
-        }
-    });
-    
-    // Vérifier les formats avec regex
-    Object.entries(DECOMPTE_RULES.validations).forEach(([field, regex]) => {
+    for (const [field, values] of Object.entries(FACTURE_FOURNISSEUR_RULES.enum)) {
         const value = field.includes('.') 
-            ? field.split('.').reduce((obj, key) => obj?.[key], decompte)
-            : decompte[field];
+            ? field.split('.').reduce((obj, key) => obj?.[key], facture)
+            : facture[field];
             
-        if (value && !regex.test(value)) {
-            errors.push(`Format invalide pour ${field}: ${value}`);
+        if (value && !values.includes(value)) {
+            errors.push(`${field} doit être parmi: ${values.join(', ')}`);
         }
-    });
+    }
+    
+    // Vérifier le format du numéro interne
+    if (facture.numeroInterne && !/^FF-\d{8}-\d{4}$/.test(facture.numeroInterne)) {
+        errors.push('Format de numeroInterne invalide (FF-AAAAMMJJ-XXXX)');
+    }
+    
+    // Vérifier les montants
+    if (facture.montantTTC < 0) {
+        errors.push('Le montant TTC ne peut pas être négatif');
+    }
+    
+    if (facture.tauxTVA < 0 || facture.tauxTVA > 100) {
+        errors.push('Le taux de TVA doit être entre 0 et 100');
+    }
     
     return {
         valid: errors.length === 0,
-        errors: errors
+        errors
     };
 }
 
@@ -305,10 +251,9 @@ export function validateDecompte(decompte) {
 // ========================================
 
 export default {
-    DECOMPTE_TEMPLATE,
-    HISTORIQUE_ENTRY_TEMPLATE,
-    DECOMPTE_RULES,
-    createNewDecompte,
-    createHistoriqueEntry,
-    validateDecompte
+    FACTURE_FOURNISSEUR_TEMPLATE,
+    FACTURE_FOURNISSEUR_RULES,
+    FACTURE_FOURNISSEUR_INDEXES,
+    createNewFacture,
+    validateFacture
 };

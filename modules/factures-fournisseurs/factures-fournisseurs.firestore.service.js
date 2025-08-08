@@ -9,7 +9,7 @@
 // ========================================
 
 import { db } from '../../src/services/firebase.service.js';
-import { FACTURE_FOURNISSEUR_TEMPLATE } from './factures-fournisseurs.firestore.template.js';
+import { FACTURE_FOURNISSEUR_TEMPLATE } from './factures-fournisseurs.template.js';
 
 // ========================================
 // CONFIGURATION
