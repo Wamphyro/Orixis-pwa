@@ -356,7 +356,30 @@ async handleFilesDrop(files) {
                 }
                 
                 // ✅ NIVEAU 2 : Vérifier dans la base de données
-                const doublonDB = await this.config.checkDuplicate(file, hash);
+                let doublonDB = null;
+                try {
+                    doublonDB = await this.config.checkDuplicate(file, hash);
+                } catch (error) {
+                    console.error(`⚠️ Erreur vérification DB pour ${file.name}:`, error);
+                    
+                    // Notifier l'utilisateur mais ne pas bloquer
+                    if (window.toast) {
+                        window.toast.warning(`Vérification impossible pour ${file.name}`);
+                    }
+                    
+                    // Demander quoi faire
+                    const continuer = confirm(
+                        `⚠️ VÉRIFICATION IMPOSSIBLE\n\n` +
+                        `Impossible de vérifier si "${file.name}" existe déjà.\n` +
+                        `Erreur: ${error.message || 'Connexion échouée'}\n\n` +
+                        `Voulez-vous ajouter le fichier quand même ?`
+                    );
+                    
+                    if (!continuer) {
+                        console.log(`⏭️ Fichier ${file.name} ignoré (erreur vérification)`);
+                        continue;
+                    }
+                }
                 
                 if (doublonDB) {
                     const continuer = confirm(
@@ -486,7 +509,8 @@ async handleFilesDrop(files) {
                                             name="selection-${this.id}-${index}" 
                                             value="${option.value}"
                                             ${currentSelection === option.value ? 'checked' : ''}
-                                            onchange="window.pdfUploaderWidgets['${this.id}'].updateSelection(${index}, '${option.value}')">
+                                            data-selection-index="${index}" 
+                                            data-selection-value="${option.value}">
                                         <span class="option-label option-${option.value}">
                                             ${option.label}
                                         </span>
@@ -626,7 +650,7 @@ async removeFile(index) {
                         <span class="file-size">${this.formatFileSize(file.size)}</span>
                         ${this.config.allowRemoveFiles ? `
                             <button class="btn btn-delete-icon summary-file-remove" 
-                                    onclick="window.pdfUploaderWidgets['${this.id}'].removeFile(${index})"
+                                    data-remove-index="${index}"
                                     title="Supprimer ce fichier">
                             </button>
                         ` : ''}
@@ -680,12 +704,23 @@ async removeFile(index) {
         if (saveButton) {
             saveButton.addEventListener('click', () => this.save());
         }
+        // Délégation d'événements pour les éléments dynamiques
+        this.elements.modal.addEventListener('change', (e) => {
+            // Gestion des sélections
+            if (e.target.matches('[data-selection-index]')) {
+                const index = parseInt(e.target.dataset.selectionIndex);
+                const value = e.target.dataset.selectionValue;
+                this.updateSelection(index, value);
+            }
+        });
         
-        // Enregistrer globalement pour les callbacks inline
-        if (!window.pdfUploaderWidgets) {
-            window.pdfUploaderWidgets = {};
-        }
-        window.pdfUploaderWidgets[this.id] = this;
+        this.elements.modal.addEventListener('click', (e) => {
+            // Gestion des suppressions
+            if (e.target.matches('[data-remove-index]')) {
+                const index = parseInt(e.target.dataset.removeIndex);
+                this.removeFile(index);
+            }
+        });
     }
     
     /**
@@ -815,11 +850,6 @@ async removeFile(index) {
         // Retirer du DOM
         if (this.elements.overlay && this.elements.overlay.parentNode) {
             this.elements.overlay.parentNode.removeChild(this.elements.overlay);
-        }
-        
-        // Nettoyer la référence globale
-        if (window.pdfUploaderWidgets && window.pdfUploaderWidgets[this.id]) {
-            delete window.pdfUploaderWidgets[this.id];
         }
         
         // Réinitialiser état

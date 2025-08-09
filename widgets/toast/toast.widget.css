@@ -1,145 +1,82 @@
 /* ========================================
-   TOAST.WIDGET.CSS - Styles du widget Toast
-   Chemin: /widgets/toast/toast.widget.css
-   
-   DESCRIPTION:
-   Styles pour le widget de notifications toast.
-   Design glassmorphism avec gradients colorés.
-   Support des animations et transitions.
-   
-   STRUCTURE:
-   1. VARIABLES ET CONFIGURATION
-   2. CONTAINER PRINCIPAL
-   3. TOAST BASE
-   4. TYPES DE TOASTS
-   5. COMPOSANTS INTERNES
-   6. ANIMATIONS
-   7. POSITIONS
-   8. THÈMES
-   9. TAILLES
-   10. RESPONSIVE
-   
-   MODIFICATIONS:
-   - 08/02/2025 : Création initiale selon guide v2.0
-   
-   AUTEUR: Assistant Claude
-   VERSION: 1.0.0
+   TOAST.WIDGET.CSS - Styles COMPLETS v2.0
    ======================================== */
 
 /* ========================================
-   SECTION 1 : VARIABLES ET CONFIGURATION
+   STYLES DE BASE (v1.0) - OBLIGATOIRES !
    ======================================== */
 
-:root {
-    /* Couleurs par type */
-    --toast-success-start: #10b981;
-    --toast-success-end: #34d399;
-    --toast-error-start: #ef4444;
-    --toast-error-end: #f87171;
-    --toast-warning-start: #f59e0b;
-    --toast-warning-end: #fbbf24;
-    --toast-info-start: #3b82f6;
-    --toast-info-end: #60a5fa;
-    
-    /* Espacements */
-    --toast-gap: 12px;
-    --toast-padding: 12px 20px;
-    
-    /* Transitions */
-    --toast-transition: all 0.3s ease;
-}
-
-/* ========================================
-   SECTION 2 : CONTAINER PRINCIPAL
-   ======================================== */
-
-/* Container de base */
+/* Container principal */
 .toast-widget-container {
     position: fixed;
     z-index: 100000;
     display: flex;
     flex-direction: column;
-    gap: var(--toast-gap);
+    gap: 12px;
     pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
 }
 
-/* État chargé (anti-FOUC) */
-.toast-widget-container.loaded {
-    opacity: 1;
-}
+/* Positions */
+.position-top-right { top: 20px; right: 20px; }
+.position-top-left { top: 20px; left: 20px; }
+.position-bottom-right { bottom: 20px; right: 20px; flex-direction: column-reverse; }
+.position-bottom-left { bottom: 20px; left: 20px; flex-direction: column-reverse; }
 
-/* ========================================
-   SECTION 3 : TOAST BASE
-   ======================================== */
-
+/* Toast base */
 .toast {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: var(--toast-padding);
+    padding: 12px 20px;
     border-radius: 8px;
     font-weight: 500;
     color: white;
     pointer-events: auto;
     position: relative;
-    transition: var(--toast-transition);
+    min-width: 280px;
+    max-width: 450px;
+    transition: all 0.3s ease;
     overflow: hidden;
 }
 
-/* Hover effect */
 .toast:hover {
     transform: translateX(-5px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
 }
 
-/* ========================================
-   SECTION 4 : TYPES DE TOASTS
-   ======================================== */
-
-/* SUCCESS */
+/* Types de toasts */
 .toast-success {
-    background: linear-gradient(135deg, var(--toast-success-start) 0%, var(--toast-success-end) 100%);
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
-/* ERROR */
 .toast-error {
-    background: linear-gradient(135deg, var(--toast-error-start) 0%, var(--toast-error-end) 100%);
+    background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
     box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
-/* WARNING */
 .toast-warning {
-    background: linear-gradient(135deg, var(--toast-warning-start) 0%, var(--toast-warning-end) 100%);
+    background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
     box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
 }
 
-/* INFO */
 .toast-info {
-    background: linear-gradient(135deg, var(--toast-info-start) 0%, var(--toast-info-end) 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
-/* ========================================
-   SECTION 5 : COMPOSANTS INTERNES
-   ======================================== */
-
-/* Icône */
+/* Composants internes */
 .toast-icon {
     font-size: 18px;
     flex-shrink: 0;
 }
 
-/* Message */
 .toast-message {
     flex: 1;
     font-size: 14px;
     line-height: 1.4;
 }
 
-/* Bouton fermer */
 .toast-close {
     background: none;
     border: none;
@@ -176,10 +113,6 @@
     to { width: 0%; }
 }
 
-/* ========================================
-   SECTION 6 : ANIMATIONS
-   ======================================== */
-
 /* Animation d'entrée */
 @keyframes slideIn {
     from {
@@ -192,109 +125,103 @@
     }
 }
 
-/* Animation spéciale erreur */
-.toast-error {
-    animation: slideIn 0.3s ease, shake 0.5s ease 0.3s;
-}
-
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
-}
-
-/* Désactiver animations */
-.no-animation .toast {
-    animation: none !important;
-}
-
 /* ========================================
-   SECTION 7 : POSITIONS
+   NOUVEAUX STYLES v2.0 - ACTIONS
    ======================================== */
 
-/* Top Right (défaut) */
-.position-top-right {
-    top: 20px;
-    right: 20px;
+/* Container des actions */
+.toast-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Top Left */
-.position-top-left {
-    top: 20px;
-    left: 20px;
-}
-
-/* Bottom Right */
-.position-bottom-right {
-    bottom: 20px;
-    right: 20px;
-    flex-direction: column-reverse;
-}
-
-/* Bottom Left */
-.position-bottom-left {
-    bottom: 20px;
-    left: 20px;
-    flex-direction: column-reverse;
-}
-
-/* ========================================
-   SECTION 8 : THÈMES
-   ======================================== */
-
-/* Theme solid */
-.theme-solid .toast {
-    background: #333;
-}
-
-.theme-solid .toast-success { background: var(--toast-success-start); }
-.theme-solid .toast-error { background: var(--toast-error-start); }
-.theme-solid .toast-warning { background: var(--toast-warning-start); }
-.theme-solid .toast-info { background: var(--toast-info-start); }
-
-/* Theme glass */
-.theme-glass .toast {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-/* ========================================
-   SECTION 9 : TAILLES
-   ======================================== */
-
-/* Small */
-.size-sm .toast {
-    padding: 8px 14px;
+/* Boutons d'action */
+.toast-action-btn {
+    padding: 4px 12px;
+    border: none;
+    border-radius: 4px;
     font-size: 12px;
-    min-width: 200px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    flex: 1;
 }
 
-.size-sm .toast-icon {
-    font-size: 14px;
+.toast-action-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
 }
 
-/* Medium (défaut) */
-.size-md .toast {
-    padding: 12px 20px;
-    min-width: 280px;
-    max-width: 450px;
+.toast-action-btn.primary {
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
 }
 
-/* Large */
-.size-lg .toast {
-    padding: 16px 24px;
-    font-size: 16px;
-    min-width: 350px;
-    max-width: 550px;
+.toast-action-btn.danger {
+    background: rgba(255, 0, 0, 0.3);
 }
 
-.size-lg .toast-icon {
-    font-size: 22px;
+.toast-action-btn.success {
+    background: rgba(0, 255, 0, 0.3);
 }
 
 /* ========================================
-   SECTION 10 : RESPONSIVE
+   NOUVEAUX STYLES v2.0 - PRIORITÉS
+   ======================================== */
+
+.toast.priority-critical {
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    animation: criticalPulse 1s ease-in-out infinite;
+}
+
+@keyframes criticalPulse {
+    0%, 100% { 
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+    }
+    50% { 
+        box-shadow: 0 4px 20px rgba(239, 68, 68, 0.6);
+    }
+}
+
+.toast.priority-high {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.toast.priority-low {
+    opacity: 0.9;
+}
+
+/* ========================================
+   NOUVEAUX STYLES v2.0 - HTML SUPPORT
+   ======================================== */
+
+.toast-html {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.toast-html strong {
+    font-weight: 600;
+}
+
+.toast-html a {
+    color: inherit;
+    text-decoration: underline;
+    opacity: 0.9;
+}
+
+.toast-html a:hover {
+    opacity: 1;
+}
+
+/* ========================================
+   RESPONSIVE
    ======================================== */
 
 @media (max-width: 480px) {
@@ -307,22 +234,12 @@
         min-width: auto;
         max-width: 100%;
     }
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-    .toast {
-        border: 1px solid rgba(255, 255, 255, 0.1);
+    
+    .toast-actions {
+        flex-direction: column;
+    }
+    
+    .toast-action-btn {
+        width: 100%;
     }
 }
-
-/* Impression */
-@media print {
-    .toast-widget-container {
-        display: none;
-    }
-}
-
-/* ========================================
-   FIN DU FICHIER
-   ======================================== */

@@ -1,31 +1,62 @@
 /* ========================================
-   HEADER.WIDGET.CSS - Styles du widget Header
+   HEADER.WIDGET.CSS - Enhanced Glassmorphism
+   Chemin: widgets/header/header.widget.css
    ======================================== */
 
-/* Reset et structure principale */
+/* ========================================
+   STRUCTURE PRINCIPALE
+   ======================================== */
 .header-widget {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     min-height: 70px;
-    height: auto;
-    padding: 15px 0;  /* AJOUT : padding vertical */
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    box-shadow: 0 2px 20px rgba(102, 126, 234, 0.4);
+    padding: 10px 0;  /* Réduit de 15px à 10px */
     z-index: 1000;
+    transition: all 0.3s ease;
 }
 
+/* Theme gradient (par défaut) */
+.header-widget.theme-gradient {
+    background: transparent;
+}
+
+/* Theme solid (optionnel) */
+.header-widget.theme-solid {
+    background: white;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+}
+
+.header-widget.theme-solid .header-content * {
+    color: #1a202c !important;
+}
+
+.header-widget.theme-solid .header-search-input {
+    background: #f3f4f6;
+    border-color: #e5e7eb;
+    color: #1a202c;
+}
+
+.header-widget.theme-solid .header-search-input::placeholder {
+    color: #9ca3af;
+}
+
+/* Contenu principal */
 .header-content {
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;  /* Centre tout verticalement */
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
     padding: 0 30px;
-    min-height: 70px;  /* Hauteur minimum */
+    min-height: 70px;
+    gap: 15px;
+    position: relative;
+    z-index: 100;  /* Au-dessus des breadcrumbs */
 }
 
-/* Partie gauche */
+/* ========================================
+   SECTION GAUCHE
+   ======================================== */
 .header-left {
     justify-self: start;
     display: flex;
@@ -33,110 +64,691 @@
     gap: 20px;
 }
 
-/* Partie droite */
-.header-right {
-    grid-column: 3;
-    justify-self: end;
+/* Logo */
+.header-logo {
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 14px;
     display: flex;
     align-items: center;
-    gap: 15px;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
-/* GROUPE TITRE */
-.header-title-group {
+.header-logo:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+.header-logo svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* Titre principal */
+.header-brand {
     position: absolute;
     left: 50%;
-    top: 50%;  /* ← AJOUTE ÇA */
-    transform: translate(-50%, -50%);  /* ← CHANGE ÇA */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    text-align: center;
-}
-
-/* NOUVEAU : Ligne titre + icône */
-.header-title-line {
-    display: flex;
-    align-items: center;
-    gap: 10px;  /* Espace entre icône et titre */
-}
-
-.header-icon {
-    font-size: 28px;
-    line-height: 1;
-    /* PAS de margin-bottom */
-}
-
-.header-title {
-    margin: 0;
-    font-size: 22px;
-    font-weight: 600;
+    transform: translateX(-50%);
+    font-size: 24px;
+    font-weight: 700;
     color: white;
-    line-height: 1.2;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin: 0;
+    white-space: nowrap;
 }
 
-.header-subtitle {
-    font-size: 13px;
-    font-weight: 400;
-    color: rgba(255, 255, 255, 0.9);
-    letter-spacing: 0.3px;
-    margin: 0;
+/* Bouton retour */
+.header-back-btn {
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    font-family: inherit;
+}
+
+.header-back-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.header-back-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Actions rapides */
+.header-quick-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.header-action-btn {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    position: relative;
+    z-index: 2000;  /* Plus élevé que les breadcrumbs */
+}
+
+.header-action-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.header-action-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: rgba(255, 255, 255, 0.9);
 }
 
 /* ========================================
-   SECTION UTILISATEUR
+   SECTION CENTRALE - RECHERCHE
    ======================================== */
-.header-user-section {
-    display: flex;
-    align-items: center;
-    gap: 15px;
+.header-center {
+    justify-self: stretch;
+    width: 100%;
+    /* PAS de max-width pour occuper tout l'espace */
+    margin: 0;  /* Pas de marge, le gap du grid s'en occupe */
 }
 
-.header-user-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 7px 14px 7px 7px;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 25px;
-    height: 46px;
+.header-search-wrapper {
+    position: relative;
 }
 
-.header-avatar-placeholder {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+.header-search-wrapper::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 17px;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+.header-search-wrapper:focus-within::before {
+    opacity: 1;
+}
+
+.header-search-input {
+    width: 100%;
+    padding: 12px 20px 12px 48px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.95);
+    transition: all 0.2s;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    font-family: inherit;
+}
+
+.header-search-input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.header-search-input:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+.header-search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: transform 0.2s;
+    pointer-events: none;
+}
+
+.header-search-wrapper:focus-within .header-search-icon {
+    transform: translateY(-50%) scale(1.1);
+}
+
+.header-search-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke: rgba(255, 255, 255, 0.8);
+}
+
+/* Suggestions de recherche */
+.header-search-suggestions {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    max-height: 300px;
+    overflow-y: auto;
+    display: none;
+    z-index: 1002;
+}
+
+.header-search-suggestions.active {
+    display: block;
+}
+
+.search-suggestion-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.search-suggestion-item:hover {
+    background: #f3f4f6;
+}
+
+.search-suggestion-item svg {
+    width: 16px;
+    height: 16px;
+    stroke: #6b7280;
+}
+
+.header-title-group {
+    text-align: center;
+}
+
+.header-brand-centered {
+    font-size: 24px;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin: 0;
+}
+
+/* Quand titre + recherche */
+.header-center .header-search-wrapper {
+    width: 100%;
+    /* PAS de max-width pour prendre toute la largeur */
+}
+
+/* Ligne dédiée au titre */
+.header-title-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 8px 30px 5px;  /* Réduit : 8px en haut, 5px en bas */
+    width: 100%;
+}
+
+.header-title-row .header-title-group {
+    text-align: center;
+}
+
+.header-title-row .header-brand-centered {
+    font-size: 26px;  /* Légèrement plus petit */
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    margin: 0;
+}
+
+.header-title-row .header-subtitle-centered {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 4px 0 0 0;
+    font-weight: 300;
+}
+
+/* Ajuster le padding quand il y a un titre centré */
+.header-widget.has-centered-title .header-content {
+    padding-top: 5px;
+}
+
+/* ========================================
+   SECTION DROITE
+   ======================================== */
+.header-right {
+    justify-self: end;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* Indicateurs */
+.header-indicators {
+    display: flex;
+    gap: 12px;
+}
+
+.header-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    font-size: 12px;
+    color: white;
+    transition: all 0.2s;
+    white-space: nowrap !important;  /* ✅ FORCE SUR UNE LIGNE */
+    min-width: fit-content !important;  /* ✅ S'ADAPTE AU CONTENU */
+}
+
+/* SVG des indicateurs - IMPORTANT */
+.header-indicator svg {
+    width: 12px !important;
+    height: 12px !important;
+    flex-shrink: 0;
+    display: block;
+}
+
+/* Forcer l'affichage des cercles */
+.header-indicator svg circle {
+    fill-opacity: 1 !important;
+    stroke-opacity: 1 !important;
+}
+
+.header-indicator.online svg circle:nth-child(2) {
+    animation: pulse-ring 2s infinite;
+}
+
+.header-indicator.warning svg circle:nth-child(2) {
+    animation: pulse-warning 1.5s infinite;
+}
+
+@keyframes pulse-ring {
+    0% {
+        r: 2;
+        opacity: 1;
+    }
+    50% {
+        r: 4;
+        opacity: 0.5;
+    }
+    100% {
+        r: 6;
+        opacity: 0;
+    }
+}
+
+@keyframes pulse-warning {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Notifications */
+.header-notification-btn {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
-    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.header-notification-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.header-notification-btn svg {
+    width: 22px;
+    height: 22px;
+    stroke: rgba(255, 255, 255, 0.9);
+}
+
+.header-notification-btn.has-notifications {
+    animation: bell-ring 2s infinite;
+}
+
+@keyframes bell-ring {
+    0%, 100% { transform: rotate(0); }
+    5%, 15% { transform: rotate(-10deg); }
+    10%, 20% { transform: rotate(10deg); }
+}
+
+.header-notif-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
     color: white;
+    font-size: 10px;
+    font-weight: bold;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+    border: 2px solid rgba(255, 255, 255, 0.9);
+}
+
+/* Dropdown notifications */
+.header-notifications-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 360px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    display: none;
+    z-index: 1002;
+}
+
+.header-notifications-dropdown.active {
+    display: block;
+}
+
+.notifications-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.notifications-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.notifications-clear {
+    font-size: 12px;
+    color: #6b7280;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.notifications-clear:hover {
+    color: #ef4444;
+}
+
+.notifications-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.notification-item {
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.notification-item:hover {
+    background: #f9fafb;
+}
+
+.notification-item.unread {
+    background: #eff6ff;
+}
+
+.notification-content {
+    display: flex;
+    gap: 12px;
+}
+
+.notification-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
 }
 
-.header-user-details {
+.notification-icon.info {
+    background: #dbeafe;
+}
+
+.notification-icon.success {
+    background: #d1fae5;
+}
+
+.notification-icon.warning {
+    background: #fed7aa;
+}
+
+.notification-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.notification-text {
+    flex: 1;
+}
+
+.notification-message {
+    font-size: 14px;
+    color: #1f2937;
+    margin-bottom: 4px;
+}
+
+.notification-time {
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+/* Menu utilisateur */
+.header-user-menu {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 14px 6px 6px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 22px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    max-width: 250px;  /* Limiter la largeur */
+    overflow: hidden;   /* Cacher le débordement */
+}
+
+.header-user-menu:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.header-user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
     justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+}
+
+.header-user-avatar.with-image {
+    padding: 0;
+    overflow: hidden;
+}
+
+.header-user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.header-user-avatar.placeholder {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.header-user-info {
+    text-align: left;
+    flex: 1;
+    min-width: 0;  /* Important pour que text-overflow fonctionne */
+    overflow: hidden;
 }
 
 .header-user-name {
     font-size: 13px;
     font-weight: 600;
-    color: white;
-    line-height: 1;
-    margin: 0;
-    margin-bottom: 3px;
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;  /* Ajoute "..." si le texte est trop long */
 }
 
-.header-user-magasin {
+.header-user-role {
     font-size: 11px;
-    opacity: 0.85;
-    line-height: 1;
-    margin: 0;
+    color: rgba(255, 255, 255, 0.75);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;  /* Ajoute "..." si le texte est trop long */
+}
+
+/* Dropdown menu utilisateur */
+.header-user-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 240px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    display: none;
+    z-index: 1002;
+}
+
+.header-user-dropdown.active {
+    display: block;
+}
+
+.user-dropdown-header {
+    padding: 16px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.user-dropdown-email {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
+.user-dropdown-menu {
+    padding: 8px;
+}
+
+.user-dropdown-item {
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #374151;
+    text-decoration: none;
+}
+
+.user-dropdown-item:hover {
+    background: #f3f4f6;
+}
+
+.user-dropdown-item.danger {
+    color: #dc2626;
+}
+
+.user-dropdown-item svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+}
+
+/* ========================================
+   BREADCRUMBS (Optionnel)
+   ======================================== */
+.header-breadcrumbs {
+    padding: 8px 30px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    position: relative;
+    z-index: 1;  /* Mettre un z-index bas */
+}
+
+.breadcrumb-item {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.breadcrumb-item:hover {
+    color: white;
+}
+
+.breadcrumb-separator {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 10px;
+}
+
+.breadcrumb-current {
+    color: white;
+    font-weight: 500;
 }
 
 /* ========================================
@@ -158,30 +770,71 @@
     transition: width 0.3s ease;
 }
 
-/* ========================================
-   BODY PADDING
-   ======================================== */
-body {
-    padding-top: 100px;  /* Plus d'espace car header plus haut */
+/* Titre centré */
+.header-brand-centered {
+    font-size: 26px;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin: 0;
+    text-align: center;
+}
+
+.header-subtitle-centered {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 4px 0 0 0;
+    text-align: center;
 }
 
 /* ========================================
    RESPONSIVE
    ======================================== */
+@media (max-width: 1024px) {
+    .header-content {
+        grid-template-columns: auto 1fr auto;
+    }
+    
+    .header-center {
+        justify-self: stretch;
+        margin: 0 20px;
+    }
+    
+    .header-indicators {
+        display: none;
+    }
+}
+
 @media (max-width: 768px) {
     .header-content {
         padding: 0 15px;
+        grid-template-columns: 1fr auto;
     }
     
-    .header-title {
+    .header-center {
+        display: none;
+    }
+    
+    .header-brand {
         font-size: 18px;
     }
     
-    .header-subtitle {
-        font-size: 11px;
-    }
-    
-    .header-user-magasin {
+    .header-quick-actions {
         display: none;
     }
+    
+    .header-user-role {
+        display: none;
+    }
+}
+
+/* ========================================
+   BODY PADDING
+   ======================================== */
+body.has-header {
+    padding-top: 100px;
+}
+
+body.has-header.with-breadcrumbs {
+    padding-top: 130px;
 }

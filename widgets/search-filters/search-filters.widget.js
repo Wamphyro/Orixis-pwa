@@ -127,18 +127,24 @@ export class SearchFiltersWidget {
      * Charge le CSS avec timestamp anti-cache
      */
     loadCSS() {
-        const cssId = 'search-filters-widget-css';
-        const existing = document.getElementById(cssId);
-        if (existing) existing.remove();
-        
-        const link = document.createElement('link');
-        link.id = cssId;
-        link.rel = 'stylesheet';
-        link.href = `/widgets/search-filters/search-filters.widget.css?v=${Date.now()}`;
-        document.head.appendChild(link);
-        
-        console.log('✅ CSS SearchFiltersWidget chargé');
-    }
+            // Charger les styles communs (buttons, badges, modal)
+            import('/src/utils/widget-styles-loader.js').then(module => {
+                module.loadWidgetStyles();
+            });
+            
+            // Charger le CSS spécifique du widget
+            const cssId = 'search-filters-widget-css';
+            const existing = document.getElementById(cssId);
+            if (existing) existing.remove();
+            
+            const link = document.createElement('link');
+            link.id = cssId;
+            link.rel = 'stylesheet';
+            link.href = `/widgets/search-filters/search-filters.widget.css?v=${Date.now()}`;
+            document.head.appendChild(link);
+            
+            console.log('✅ CSS SearchFiltersWidget chargé');
+        }
     
     /**
      * Initialisation asynchrone
@@ -518,8 +524,8 @@ export class SearchFiltersWidget {
             searchQuery: '',
             filteredOptions: [...(config.options || [])],
             highlightedIndex: -1,
-            config: config,
-            protected: false
+            config: config
+            // Supprimé : protected
         };
         
         // Créer la structure DOM
@@ -590,12 +596,16 @@ export class SearchFiltersWidget {
      */
     attachDropdownEvents(dropdown) {
         // Toggle au clic sur le trigger
-        dropdown.trigger.addEventListener('click', () => {
+        dropdown.trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
             this.toggleDropdown(dropdown);
         });
         
-        // Sélection d'option (délégation)
+        // Sélection d'option (délégation) avec stopPropagation
         dropdown.panel.addEventListener('click', (e) => {
+            // Empêcher la fermeture quand on clique dans le panel
+            e.stopPropagation();
+            
             const optionEl = e.target.closest('.widget-dropdown-option');
             if (optionEl && !optionEl.classList.contains('disabled')) {
                 const index = parseInt(optionEl.dataset.index);
@@ -617,26 +627,16 @@ export class SearchFiltersWidget {
             this.handleDropdownKeyboard(dropdown, e);
         });
         
-        // Fermeture clic extérieur
-        const closeHandler = (e) => {
-            // Si dropdown protégé, ignorer
-            if (dropdown.protected) return;
-            
-            // Vérifier si le clic est vraiment en dehors
-            if (dropdown.element.contains(e.target) || 
-                dropdown.panel.contains(e.target)) {
-                return;
-            }
-            
-            // Fermer seulement si ouvert
-            if (dropdown.isOpen) {
+        // Fermeture clic extérieur SIMPLIFIÉE
+        dropdown.closeHandler = (e) => {
+            // Si le clic est en dehors du dropdown complet
+            if (!dropdown.element.contains(e.target) && dropdown.isOpen) {
                 this.closeDropdown(dropdown);
             }
         };
         
-        // Attacher le handler immédiatement mais avec protection
-        document.addEventListener('click', closeHandler, true);
-        dropdown.closeHandler = closeHandler;
+        // Utiliser capture false pour une gestion plus simple
+        document.addEventListener('click', dropdown.closeHandler, false);
     }
     
     /**
@@ -778,12 +778,8 @@ export class SearchFiltersWidget {
                 dropdown.value.push(value);
             }
             
-            // Protéger contre la fermeture temporairement
-            dropdown.protected = true;
-            setTimeout(() => {
-                dropdown.protected = false;
-            }, 100);
             // NE PAS FERMER en mode multiple !
+            // Pas besoin de protection, on gère avec stopPropagation
         } else {
             // Mode simple : sélectionner et fermer
             dropdown.value = value;
@@ -858,11 +854,7 @@ export class SearchFiltersWidget {
             setTimeout(() => dropdown.searchInput.focus(), 100);
         }
         
-        // Protection temporaire contre la fermeture
-        dropdown.protected = true;
-        setTimeout(() => {
-            dropdown.protected = false;
-        }, 200);
+        // Plus besoin de protection, on gère avec stopPropagation
     }
     
     /**

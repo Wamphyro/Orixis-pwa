@@ -67,9 +67,6 @@
     --transition-normal: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Import des boutons externes - CHEMIN CORRIGÉ */
-@import url('../../src/css/components/buttons.css');
-
 /* Extension bouton ghost purple si manquant */
 .btn-ghost-purple {
     background: rgba(102, 126, 234, 0.15);

@@ -189,18 +189,24 @@ export class DataGridWidget {
      * Charge le CSS avec timestamp anti-cache
      */
     loadCSS() {
-        const cssId = 'data-grid-widget-css';
-        const existing = document.getElementById(cssId);
-        if (existing) existing.remove();
-        
-        const link = document.createElement('link');
-        link.id = cssId;
-        link.rel = 'stylesheet';
-        link.href = `/widgets/data-grid/data-grid.widget.css?v=${Date.now()}`;
-        document.head.appendChild(link);
-        
-        console.log('✅ CSS DataGridWidget chargé');
-    }
+            // Charger les styles communs (buttons, badges, modal)
+            import('/src/utils/widget-styles-loader.js').then(module => {
+                module.loadWidgetStyles();
+            });
+            
+            // Charger le CSS spécifique du widget
+            const cssId = 'data-grid-widget-css';
+            const existing = document.getElementById(cssId);
+            if (existing) existing.remove();
+            
+            const link = document.createElement('link');
+            link.id = cssId;
+            link.rel = 'stylesheet';
+            link.href = `/widgets/data-grid/data-grid.widget.css?v=${Date.now()}`;
+            document.head.appendChild(link);
+            
+            console.log('✅ CSS DataGridWidget chargé');
+        }
     
     /**
      * Initialisation asynchrone
@@ -1404,10 +1410,19 @@ export class DataGridWidget {
     /**
      * Obtenir les lignes sélectionnées
      */
-    getSelectedRows() {
+    getSelection() {
         return Array.from(this.state.selectedRows).map(index => 
             this.state.filteredData[index]
         );
+    }
+    
+    /**
+     * Alias pour compatibilité
+     * @deprecated Utiliser getSelection() à la place
+     */
+    getSelectedRows() {
+        console.warn('getSelectedRows() est déprécié, utiliser getSelection()');
+        return this.getSelection();
     }
     
     /**

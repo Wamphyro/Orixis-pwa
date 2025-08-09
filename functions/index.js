@@ -65,11 +65,10 @@ exports.analyzeDocument = onRequest(
             effort: "low"
           },
           text: {
-            verbosity: "low"
-          },
-          temperature: 0.1,
-          max_output_tokens: 4000,
-          response_format: { type: "json_object" }
+            verbosity: "low",
+            format: { type: "json_object" }
+          }
+          // PAS de temperature ni max_output_tokens avec GPT-5 !
         };
         
         console.log(`📤 Requête GPT-5-mini (${text ? "texte" : "images"})...`);

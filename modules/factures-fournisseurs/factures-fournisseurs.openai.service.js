@@ -33,10 +33,10 @@ export async function analyserDocument(documentUrl, documentType) {
         
         // Extraire les données via GPT-4
         console.log('🚀 Appel extraction IA...');
-        const donneesExtraites = await extractFactureData(images);
+        const resultat = await extractFactureData(images);
         
         // Formater pour notre structure Firestore
-        const donneesFormatees = formaterPourFirestore(donneesExtraites);
+        const donneesFormatees = formaterPourFirestore(resultat.donnees, resultat.referentiel);
         
         console.log('✅ Analyse IA terminée avec succès');
         return donneesFormatees;
@@ -66,10 +66,10 @@ export async function analyserAvecFichier(file, magasins = []) {
         }
         
         // Extraire les données
-        const donneesExtraites = await extractFactureData(images);
+        const resultat = await extractFactureData(images);
         
-        // Formater pour Firestore
-        return formaterPourFirestore(donneesExtraites);
+        // Formater pour Firestore  
+        return formaterPourFirestore(resultat.donnees, resultat.referentiel);  // ⚠️ CORRECTION ICI
         
     } catch (error) {
         console.error('❌ Erreur analyse fichier:', error);
@@ -85,51 +85,75 @@ async function extractFactureData(images) {
         console.log(`🤖 Appel Cloud Function pour ${images.length} image(s)...`);
         
         // ========================================
-        // NOUVEAU : Charger le référentiel des magasins
+        // CHARGER TOUTES LES SOCIÉTÉS ET MAGASINS
         // ========================================
         let referentielMagasins = null;
         try {
-            // Import Firestore si pas déjà fait
-            const { getDoc, doc, getDocs, collection } = await import(
+            console.log('🏢 === DÉBUT CHARGEMENT RÉFÉRENTIEL ===');
+            
+            // Import Firestore
+            const { getDoc, getDocs, doc, collection } = await import(
                 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js'
             );
             const { db } = await import('../../src/services/firebase.service.js');
             
-            // Charger la société BA
-            const societeDoc = await getDoc(doc(db, 'societes', 'BA'));
-            if (societeDoc.exists()) {
+            // 1. CHARGER TOUTES LES SOCIÉTÉS
+            console.log('📊 Chargement de TOUTES les sociétés...');
+            const societesSnapshot = await getDocs(collection(db, 'societes'));
+            
+            const toutesLesSocietes = [];
+            const tousLesMagasins = [];
+            
+            // Pour chaque société
+            for (const societeDoc of societesSnapshot.docs) {
                 const societeData = societeDoc.data();
+                const societeId = societeDoc.id;
                 
-                // Charger tous les magasins
+                console.log(`✅ Société trouvée: ${societeId}`);
+                
+                // Ajouter la société
+                toutesLesSocietes.push({
+                    id: societeId,
+                    raisonSociale: societeData.identification?.raisonSociale || societeData.nom || societeId,
+                    siren: societeData.identification?.siren || '',
+                    numeroTVA: societeData.identification?.numeroTVA || ''
+                });
+                
+                // Charger les magasins de cette société
                 const magasinsIds = societeData.organisation?.magasins || [];
-                const magasinsPromises = magasinsIds.map(id => 
-                    getDoc(doc(db, 'magasins', id))
-                );
-                const magasinsDocs = await Promise.all(magasinsPromises);
-                
-                // Construire le référentiel compact
-                referentielMagasins = {
-                    societe: societeData.identification?.raisonSociale || 'BROKER AUDIOLOGIE',
-                    siren: societeData.identification?.siren || '818247579',
-                    numeroTVA: societeData.identification?.numeroTVA || 'FR27818247579',
-                    magasins: magasinsDocs
-                        .filter(doc => doc.exists())
-                        .map(doc => {
-                            const data = doc.data();
-                            return {
-                                code: doc.id,
-                                siret: data.identification?.siret || '',
-                                adresse: data.adresse?.rue || '',
-                                ville: `${data.adresse?.codePostal || ''} ${data.adresse?.ville || ''}`.trim()
-                            };
-                        })
-                };
-                
-                console.log('✅ Référentiel magasins chargé:', referentielMagasins.magasins.length, 'magasins');
+                for (const magId of magasinsIds) {
+                    const magDoc = await getDoc(doc(db, 'magasins', magId));
+                    if (magDoc.exists()) {
+                        const magData = magDoc.data();
+                        tousLesMagasins.push({
+                            code: magId,
+                            societeId: societeId,
+                            raisonSociale: societeData.identification?.raisonSociale || societeId,
+                            siret: magData.identification?.siret || '',
+                            adresse: magData.adresse?.rue || '',
+                            ville: `${magData.adresse?.codePostal || ''} ${magData.adresse?.ville || ''}`.trim()
+                        });
+                    }
+                }
             }
+            
+            // Construire le référentiel complet
+            referentielMagasins = {
+                societes: toutesLesSocietes,
+                magasins: tousLesMagasins
+            };
+            
+            console.log('✅ RÉFÉRENTIEL CHARGÉ:');
+            console.log(`   - ${toutesLesSocietes.length} sociétés`);
+            console.log(`   - ${tousLesMagasins.length} magasins`);
+            console.log('📌 Raisons sociales disponibles:');
+            toutesLesSocietes.forEach(s => {
+                console.log(`   - ${s.raisonSociale} (${s.id})`);
+            });
+            
         } catch (error) {
-            console.warn('⚠️ Impossible de charger le référentiel magasins:', error);
-            // Continuer sans référentiel
+            console.error('❌ Erreur chargement référentiel:', error);
+            referentielMagasins = null;
         }
         
         // ========================================
@@ -141,34 +165,35 @@ Tu analyses ${images.length} ${images.length > 1 ? 'pages' : 'image'} d'une fact
 ${images.length > 1 ? 'IMPORTANT : Ces images représentent les pages successives du MÊME document. Tu dois combiner les informations de toutes les pages pour extraire les données complètes de la facture.' : ''}
 
 ${referentielMagasins ? `
-=== RÉFÉRENTIEL DE NOS SOCIÉTÉS ET MAGASINS ===
-IMPORTANT : Voici la liste EXACTE de nos établissements. Tu DOIS matcher le client avec ces données :
+=== RÉFÉRENTIEL DE NOS SOCIÉTÉS ===
+IMPORTANT : Voici la liste complète de nos sociétés. Tu DOIS identifier laquelle apparaît sur la facture.
 
-Société principale : ${referentielMagasins.societe}
-SIREN : ${referentielMagasins.siren}
-TVA Intra : ${referentielMagasins.numeroTVA}
-
-Établissements :
-${referentielMagasins.magasins.map(m => `
-- Code: ${m.code}
-  SIRET: ${m.siret}
-  Adresse: ${m.adresse}
-  Ville: ${m.ville}
+SOCIÉTÉS DISPONIBLES :
+${referentielMagasins.societes.map(s => `
+- ${s.raisonSociale} (SIREN: ${s.siren}, TVA: ${s.numeroTVA})
 `).join('')}
 
-=== RÈGLES DE MATCHING CLIENT (OBLIGATOIRE) ===
-1. PRIORITÉ 1 : Cherche le SIRET sur la facture → compare avec la liste ci-dessus
-2. PRIORITÉ 2 : Si pas de SIRET, cherche l'adresse + ville
-3. PRIORITÉ 3 : Si pas trouvé, cherche juste la ville
+=== ÉTABLISSEMENTS (MAGASINS) ===
+${referentielMagasins.magasins.map(m => `
+- SIRET: ${m.siret} → Société: ${m.raisonSociale} (${m.ville})
+`).join('')}
 
-IMPORTANT :
-- Le nom du client DOIT TOUJOURS être : "${referentielMagasins.societe}"
-- Ne PAS inclure "Ste", "SARL", "ALAIN AFFLELOU", "ACO", "ACOUSTICIEN", etc.
-- Si match trouvé, retourner le code magasin correspondant
+=== RÈGLES OBLIGATOIRES DE MATCHING ===
+1. PRIORITÉ 1 : Cherche le SIRET sur la facture → match avec la liste ci-dessus
+2. PRIORITÉ 2 : Cherche le SIREN → match avec la société correspondante  
+3. PRIORITÉ 3 : Cherche des mots-clés de la raison sociale sur la facture
+4. PRIORITÉ 4 : Cherche l'adresse pour identifier le magasin
 
-Exemple :
-- Si tu vois : "Ste BROKER AUDIOLOGIE ALAIN AFFLELOU ACO"
-- Tu retournes : "BROKER AUDIOLOGIE" (exactement comme dans le référentiel)
+⚠️ RÈGLE ABSOLUE : 
+- Tu dois retourner EXACTEMENT la raison sociale telle qu'elle est dans la liste ci-dessus
+- NE JAMAIS ajouter : formes juridiques (Ste, SARL), enseignes (ALAIN AFFLELOU), noms de personnes
+- Si tu trouves une correspondance partielle, utilise la raison sociale EXACTE de la liste
+- Si aucune correspondance : retourne null
+
+EXEMPLE DE DÉCISION :
+- Si la facture montre "Ste ALAIN AFFLELOU ACOUSTICIEN BROKER / M. KORBER"
+- ET que "BROKER AUDIOLOGIE" est dans la liste
+- ALORS retourne : "BROKER AUDIOLOGIE" (exactement comme dans la liste)
 ` : ''}
 
 FORMAT JSON OBLIGATOIRE :
@@ -286,11 +311,18 @@ RÈGLES D'EXTRACTION DÉTAILLÉES :
 
 === CLIENT (NOUS) ===
 ${referentielMagasins ? `
-- nom : DOIT ÊTRE EXACTEMENT "${referentielMagasins.societe}" (rien d'autre)
-- codeMagasin : Le code du magasin trouvé par matching (ex: "9DIJ")
+- nom : Choisir la raison sociale EXACTE parmi la liste des sociétés ci-dessus
+  ⚠️ Matcher par SIRET, SIREN ou mots-clés présents sur la facture
+  ⚠️ Retourner EXACTEMENT le nom tel qu'il est dans la liste, sans modification
+  ⚠️ NE JAMAIS ajouter : formes juridiques, enseignes, noms de personnes
+
+- adresse : UNIQUEMENT l'adresse postale
+  ⚠️ Format : [numéro] [rue], [code postal] [ville]
+  ⚠️ EXCLURE : noms de personnes (M., Mme, etc.), raisons sociales
+
+- codeMagasin : Le code du magasin identifié par SIRET ou adresse
 ` : '- nom : Notre raison sociale (destinataire de la facture)'}
 - numeroClient : Notre numéro client chez le fournisseur
-- adresse : Notre adresse sur la facture
 - numeroTVA : Notre numéro TVA si présent
 
 === TVA - TRÈS IMPORTANT ===
@@ -446,7 +478,13 @@ IMPORTANT :
 - Si information manquante : null
 - Toujours analyser et proposer un compte comptable`;
         
-        console.log('📤 Envoi à la Cloud Function');
+        // DEBUG DU PROMPT
+console.log('📤 === ENVOI À LA CLOUD FUNCTION ===');
+console.log('🔍 Référentiel inclus dans le prompt:', referentielMagasins ? 'OUI' : 'NON');
+if (referentielMagasins) {
+    console.log('📌 Société qui DOIT être retournée:', referentielMagasins.societe);
+    console.log('📌 Nombre de magasins dans référentiel:', referentielMagasins.magasins.length);
+}
         
         // Préparer le body de la requête
         const requestBody = {
@@ -471,9 +509,13 @@ IMPORTANT :
         
         const result = await response.json();
         
-        console.log('✅ Réponse Cloud Function:', result);
-        
-        return result.data || {};
+console.log('✅ Réponse Cloud Function:', result);
+
+// Retourner les données ET le référentiel
+return {
+    donnees: result.data || {},
+    referentiel: referentielMagasins
+};
         
     } catch (error) {
         console.error('❌ Erreur appel Cloud Function:', error);
@@ -651,11 +693,17 @@ async function convertPdfToImages(file) {
     }
 }
 
-/**
- * Formater les données pour Firestore
- */
-function formaterPourFirestore(donneesBrutes) {
-    console.log('🔄 Formatage des données extraites:', donneesBrutes);
+    /**
+     * Formater les données pour Firestore
+     */
+    function formaterPourFirestore(donneesBrutes, referentielMagasins = null) {
+        console.log('🔄 Formatage des données extraites:', donneesBrutes);
+        
+        // DEBUG CLIENT
+        console.log('🎯 === DONNÉES CLIENT EXTRAITES PAR GPT ===');
+        console.log('📌 Nom client brut reçu:', donneesBrutes.client?.nom);
+        console.log('📌 Devrait être:', referentielMagasins?.societe || 'BROKER AUDIOLOGIE');
+        console.log('⚠️ Correspondance:', donneesBrutes.client?.nom === (referentielMagasins?.societe || 'BROKER AUDIOLOGIE') ? '✅ CORRECT' : '❌ INCORRECT');
     
     // Déterminer la catégorie du fournisseur
     const nomFournisseur = donneesBrutes.fournisseur?.nom || '';
@@ -732,7 +780,7 @@ function formaterPourFirestore(donneesBrutes) {
         
         // ========== CLIENT ==========
         client: {
-            nom: donneesBrutes.client?.nom || null,
+            nom: referentielMagasins?.societes?.[0]?.raisonSociale || donneesBrutes.client?.nom || null,
             numeroClient: donneesBrutes.client?.numeroClient || null,
             adresse: donneesBrutes.client?.adresse || null,
             numeroTVA: donneesBrutes.client?.numeroTVA || null,

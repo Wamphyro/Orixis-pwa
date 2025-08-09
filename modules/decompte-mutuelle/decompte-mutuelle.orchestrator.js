@@ -23,6 +23,9 @@ import { DataGridWidget } from '../../widgets/data-grid/data-grid.widget.js';
 import { PdfUploaderWidget } from '../../widgets/pdf-uploader/pdf-uploader.widget.js';
 import { DetailViewerWidget } from '../../widgets/detail-viewer/detail-viewer.widget.js';
 import toast from '../../widgets/toast/toast.widget.js';
+if (window.location.hostname === 'localhost') {
+    window.toast = toast;  // Seulement en dev
+}
 
 // Import des services
 import uploadService from './decompte-mutuelle.upload.service.js';

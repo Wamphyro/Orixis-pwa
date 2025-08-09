@@ -176,43 +176,124 @@ class DecompteSecuOrchestrator {
         console.log('✅ Widgets créés');
     }
     
-    createHeader() {
-        const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
+createHeader() {
+    const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
+    
+    this.header = new HeaderWidget({
+        // FOND DÉGRADÉ
+        pageBackground: 'colorful',
+        theme: 'gradient',
         
-        this.header = new HeaderWidget({
-            title: 'Décomptes Sécurité Sociale',
-            icon: '🏥',
-            subtitle: 'Gestion des remboursements régime obligatoire',
-            showBack: true,
-            showUser: true,
-            showLogout: true
-        });
+        // PERSONNALISATION DES BOUTONS
+        buttonStyles: {
+            back: {
+                height: '48px',
+                padding: '12px 24px',
+                minWidth: '120px'
+            },
+            action: {
+                height: '48px',
+                width: '44px'
+            },
+            notification: {
+                height: '48px',
+                width: '44px'
+            },
+            userMenu: {
+                height: '48px',
+                padding: '6px 16px 6px 6px',
+                maxWidth: '220px'  // ← AJOUTER CETTE LIGNE
+            },
+            indicator: {
+                height: '48px',
+                padding: '10px 16px',
+                minWidth: 'auto'
+            }
+        },
         
-        // Personnaliser les boutons
-        setTimeout(() => {
-            const backContainer = document.querySelector(`#header-back-${this.header.id}`);
-            if (backContainer) {
-                const backBtn = document.createElement('button');
-                backBtn.className = 'btn btn-glass-solid-ice btn-sm';
-                backBtn.innerHTML = '<<';
-                backBtn.onclick = () => {
-                    window.location.href = '/modules/home/home.html';
-                };
-                backContainer.appendChild(backBtn);
+        // TEXTES
+        title: 'Décomptes Sécurité Sociale',
+        subtitle: '',
+        centerTitle: true,  // Activer le titre centré
+        
+        // LOGO
+        showLogo: true,
+        logoIcon: '🏠',
+        
+        // NAVIGATION
+        showBack: true,
+        backText: 'Retour',
+        onBack: () => {
+            window.location.href = '/modules/home/home.html';
+        },
+        
+        // RECHERCHE
+        showSearch: true,
+        searchPlaceholder: 'Rechercher décompte, patient, n° virement...',
+        searchMaxWidth: '1500px',
+        searchHeight: '48px',
+        onSearch: (query) => {
+            this.currentFilters.search = query;
+            this.applyFilters();
+        },
+        
+        // BOUTONS RAPIDES
+        showQuickActions: true,
+        quickActions: [
+            {
+                id: 'new',
+                title: 'Nouveau décompte',
+                icon: '➕',
+                onClick: () => this.openCreateModal()
+            },
+            {
+                id: 'export',
+                title: 'Export Excel',
+                icon: '📊',
+                onClick: () => this.grid?.export('excel')
+            },
+            {
+                id: 'refresh',
+                title: 'Actualiser',
+                icon: '🔄',
+                onClick: () => this.loadData()
             }
-            
-            const logoutContainer = document.querySelector(`#header-logout-${this.header.id}`);
-            if (logoutContainer) {
-                const logoutBtn = document.createElement('button');
-                logoutBtn.className = 'btn btn-logout-user';
-                logoutBtn.innerHTML = 'Déconnexion';
-                logoutBtn.onclick = () => {
-                    this.header.defaultLogout();
-                };
-                logoutContainer.appendChild(logoutBtn);
+        ],
+        
+        // INDICATEURS
+        showIndicators: true,
+        indicators: [
+            {
+                id: 'status',
+                text: 'Connecté',
+                type: 'success',  // IMPORTANT: doit être 'success' pour le vert
+                animated: true
+            },
+            {
+                id: 'count',
+                text: '0 décomptes',
+                type: 'info'
             }
-        }, 100);
-    }
+        ],
+        
+        // NOTIFICATIONS
+        showNotifications: true,
+        
+        // BREADCRUMBS
+        showBreadcrumbs: true,
+        breadcrumbs: [
+            { text: 'Accueil', url: '/modules/home/home.html' },
+            { text: 'Gestion', url: '#' },
+            { text: 'Décomptes Sécu' }
+        ],
+        
+        // UTILISATEUR
+        showUser: true,
+        showUserDropdown: true,
+        showMagasin: true,
+        showLogout: true
+    });
+}
     
     createStatsCards() {
         this.stats = new StatsCardsWidget({

@@ -2,49 +2,25 @@
    TOAST.WIDGET.JS - Widget de notifications toast
    Chemin: /widgets/toast/toast.widget.js
    
-   DESCRIPTION:
-   Widget autonome de notifications toast avec animations.
-   Gère une pile de notifications avec limite configurable.
-   Design glassmorphism avec gradients colorés.
-   100% indépendant, aucune dépendance externe.
+   VERSION: 2.0.0 - AVEC ACTIONS, HTML, QUEUE, PRIORITY
+   100% RÉTROCOMPATIBLE avec v1.0.0
    
-   STRUCTURE DU FICHIER:
-   1. CONSTRUCTOR ET CONFIGURATION
-   2. INITIALISATION ET CHARGEMENT CSS
-   3. CRÉATION DU CONTAINER
-   4. MÉTHODES D'AFFICHAGE
-   5. GESTION DE LA PILE
-   6. ANIMATIONS
-   7. API PUBLIQUE
-   8. DESTRUCTION
+   NOUVELLES FONCTIONNALITÉS:
+   - Actions (boutons dans les toasts)
+   - Support HTML
+   - Système de queue
+   - Niveaux de priorité
    
-   UTILISATION:
-   import { ToastWidget } from '/widgets/toast/toast.widget.js';
-   const toast = new ToastWidget({ position: 'top-right' });
+   UTILISATION CLASSIQUE (inchangée):
    toast.success('Message');
    
-   API PUBLIQUE:
-   - show(message, type, duration) - Affiche un toast
-   - success(message) - Toast de succès
-   - error(message) - Toast d'erreur
-   - warning(message) - Toast d'avertissement
-   - info(message) - Toast d'information
-   - clear() - Supprime tous les toasts
-   - destroy() - Détruit le widget
-   
-   OPTIONS:
-   - position: string (défaut: 'top-right') - Position des toasts
-   - maxToasts: number (défaut: 5) - Nombre max de toasts
-   - duration: number (défaut: 4000) - Durée d'affichage en ms
-   - animated: boolean (défaut: true) - Activer les animations
-   - pauseOnHover: boolean (défaut: true) - Pause sur survol
-   - showProgress: boolean (défaut: true) - Barre de progression
-   
-   MODIFICATIONS:
-   - 08/02/2025 : Création initiale selon guide v2.0
-   
-   AUTEUR: Assistant Claude
-   VERSION: 1.0.0
+   UTILISATION AVANCÉE:
+   toast.show({
+       message: 'Erreur',
+       type: 'error',
+       priority: 'high',
+       actions: [{label: 'Retry', onClick: () => {}}]
+   });
    ======================================== */
 
 export class ToastWidget {
@@ -55,18 +31,47 @@ export class ToastWidget {
         // 2. Configuration avec spread pour défauts
         this.config = {
             // Position
-            position: config.position || 'top-right', // top-right, top-left, bottom-right, bottom-left
+            position: config.position || 'top-right',
             
-            // Comportement
+            // Comportement (INCHANGÉ)
             maxToasts: config.maxToasts || 5,
             duration: config.duration || 4000,
             animated: config.animated !== false,
             pauseOnHover: config.pauseOnHover !== false,
             showProgress: config.showProgress !== false,
             
-            // Apparence
-            theme: config.theme || 'gradient', // gradient, solid, glass
-            size: config.size || 'md', // sm, md, lg
+            // Apparence (INCHANGÉ)
+            theme: config.theme || 'gradient',
+            size: config.size || 'md',
+            
+            // === NOUVELLES OPTIONS ===
+            // Queue (désactivée par défaut pour compatibilité)
+            queue: {
+                enabled: config.queue?.enabled || false,
+                mode: config.queue?.mode || 'wait', // 'wait' | 'replace' | 'stack'
+                maxVisible: config.queue?.maxVisible || config.maxToasts || 5,
+                ...config.queue
+            },
+            
+            // HTML (désactivé par défaut pour sécurité)
+            allowHtml: config.allowHtml || false,
+            
+            // Sons (optionnel)
+            sounds: {
+                enabled: config.sounds?.enabled || false,
+                error: config.sounds?.error || null,
+                success: config.sounds?.success || null,
+                ...config.sounds
+            },
+            
+            // Priorités
+            priorities: {
+                critical: { duration: 0, weight: 100 }, // 0 = permanent
+                high: { duration: 8000, weight: 75 },
+                normal: { duration: 4000, weight: 50 },
+                low: { duration: 2000, weight: 25 },
+                ...config.priorities
+            },
             
             // Spread pour surcharger
             ...config
@@ -75,6 +80,7 @@ export class ToastWidget {
         // 3. État interne structuré
         this.state = {
             toasts: [],
+            queue: [],          // NOUVEAU: File d'attente
             timers: new Map(),
             loaded: false
         };
@@ -92,53 +98,63 @@ export class ToastWidget {
     }
     
     // ========================================
-    // SECTION 1 : INITIALISATION
+    // SECTION 1 : INITIALISATION (INCHANGÉE)
     // ========================================
     
-    /**
-     * Charge le CSS avec timestamp anti-cache
-     */
-    loadCSS() {
-        const cssId = 'toast-widget-css';
-        const existing = document.getElementById(cssId);
-        if (existing) existing.remove();
-        
-        const link = document.createElement('link');
-        link.id = cssId;
-        link.rel = 'stylesheet';
-        link.href = `/widgets/toast/toast.widget.css?v=${Date.now()}`;
-        document.head.appendChild(link);
-        
-        console.log('✅ CSS ToastWidget chargé');
-    }
+loadCSS() {
+    const cssId = 'toast-widget-css';
+    const existing = document.getElementById(cssId);
+    if (existing) existing.remove();
     
-    /**
-     * Initialisation asynchrone
-     */
+    const link = document.createElement('link');
+    link.id = cssId;
+    link.rel = 'stylesheet';
+    link.href = '../../widgets/toast/toast.widget.css?v=' + Date.now();
+    
+    // DEBUG : Vérifier vraiment le chargement
+    link.onload = () => {
+        console.log('✅ CSS chargé, vérification...');
+        // Vérifier si les styles sont appliqués
+        setTimeout(() => {
+            const container = document.querySelector('.toast-widget-container');
+            if (container) {
+                const styles = window.getComputedStyle(container);
+                console.log('📍 Position:', styles.position);
+                console.log('📍 Z-index:', styles.zIndex);
+                console.log('📍 Top:', styles.top);
+                console.log('📍 Right:', styles.right);
+            }
+        }, 100);
+    };
+    
+    link.onerror = () => {
+        console.error('❌ ERREUR chargement CSS');
+        console.log('📁 Tentative de chargement depuis:', link.href);
+    };
+    
+    document.head.appendChild(link);
+    console.log('📁 Chargement CSS depuis:', link.href);
+}
+    
     async init() {
         try {
             this.createContainer();
             this.attachGlobalStyles();
             this.showWithDelay();
             
-            console.log('✅ ToastWidget initialisé:', this.id);
+            console.log('✅ ToastWidget v2.0 initialisé:', this.id);
         } catch (error) {
             console.error('❌ Erreur init ToastWidget:', error);
         }
     }
     
-    /**
-     * Crée le container principal
-     */
     createContainer() {
-        // Vérifier si un container existe déjà
         const existingContainer = document.querySelector('.toast-widget-container');
         if (existingContainer) {
             this.elements.container = existingContainer;
             return;
         }
         
-        // Créer nouveau container
         const container = document.createElement('div');
         container.className = this.buildContainerClasses();
         container.id = this.id;
@@ -148,56 +164,73 @@ export class ToastWidget {
         this.elements.container = container;
     }
     
-    /**
-     * Construit les classes du container
-     */
     buildContainerClasses() {
         const classes = ['toast-widget-container'];
-        
-        // Position
         classes.push(`position-${this.config.position}`);
-        
-        // Theme
         classes.push(`theme-${this.config.theme}`);
-        
-        // Size
         classes.push(`size-${this.config.size}`);
-        
-        // Animation
-        if (!this.config.animated) {
-            classes.push('no-animation');
-        }
-        
+        if (!this.config.animated) classes.push('no-animation');
         return classes.join(' ');
     }
     
-    /**
-     * Ajoute des styles globaux si nécessaire
-     */
     attachGlobalStyles() {
         // Styles additionnels si besoin
     }
     
     // ========================================
-    // SECTION 2 : AFFICHAGE DES TOASTS
+    // SECTION 2 : MÉTHODE SHOW AMÉLIORÉE
     // ========================================
     
     /**
-     * Affiche un toast
+     * Méthode principale show() - RÉTROCOMPATIBLE
+     * Accepte l'ancien format (message, type, duration) ET le nouveau format objet
      */
-    show(message, type = 'info', duration = null) {
-        // Vérifier limite
-        if (this.state.toasts.length >= this.config.maxToasts) {
-            this.removeOldest();
+    show(messageOrConfig, type = 'info', duration = null) {
+        let config = {};
+        
+        // === RÉTROCOMPATIBILITÉ ===
+        if (typeof messageOrConfig === 'string') {
+            // Ancien format : show('message', 'type', duration)
+            config = {
+                message: messageOrConfig,
+                type: type,
+                duration: duration,
+                priority: 'normal'
+            };
+        } else {
+            // Nouveau format : show({ message, type, actions, ... })
+            config = {
+                type: 'info',
+                priority: 'normal',
+                duration: null,
+                ...messageOrConfig
+            };
         }
         
-        // Créer le toast
-        const toast = this.createToast(message, type);
+        // Gestion de la priorité et durée
+        if (!config.duration) {
+            const priority = this.config.priorities[config.priority] || this.config.priorities.normal;
+            config.duration = priority.duration || this.config.duration;
+        }
         
-        // Ajouter au container
+        // === SYSTÈME DE QUEUE ===
+        if (this.config.queue.enabled) {
+            return this.addToQueue(config);
+        }
+        
+        // === LIMITE DE TOASTS ===
+        if (this.state.toasts.length >= this.config.maxToasts) {
+            if (config.priority === 'critical' || config.priority === 'high') {
+                // Les priorités hautes remplacent les basses
+                this.removeLowestPriority();
+            } else {
+                this.removeOldest();
+            }
+        }
+        
+        // Créer et afficher le toast
+        const toast = this.createToast(config);
         this.elements.container.appendChild(toast);
-        
-        // Ajouter à l'état
         this.state.toasts.push(toast);
         
         // Animation d'entrée
@@ -205,33 +238,73 @@ export class ToastWidget {
             this.animateIn(toast);
         }
         
+        // Son (si activé)
+        if (this.config.sounds.enabled && this.config.sounds[config.type]) {
+            this.playSound(config.type);
+        }
+        
         // Auto-fermeture
-        const finalDuration = duration || this.config.duration;
-        if (finalDuration > 0) {
-            this.setAutoClose(toast, finalDuration);
+        if (config.duration > 0) {
+            this.setAutoClose(toast, config.duration);
         }
         
         return toast;
     }
     
     /**
-     * Crée un élément toast
+     * Crée un élément toast - AMÉLIORÉ avec actions et HTML
      */
-    createToast(message, type) {
+    createToast(config) {
         const toast = document.createElement('div');
-        toast.className = `toast toast-${type}`;
+        toast.className = `toast toast-${config.type} priority-${config.priority || 'normal'}`;
         toast.dataset.toastId = Date.now() + '-' + Math.random().toString(36).substr(2, 5);
+        toast.dataset.priority = config.priority || 'normal';
         
-        // Structure interne
-        const icon = this.getIcon(type);
-        const html = `
+        // Structure interne améliorée
+        const icon = this.getIcon(config.type);
+        
+        // === SUPPORT HTML ===
+        const messageContent = (this.config.allowHtml && config.html) 
+            ? config.html 
+            : (config.message || '');
+        
+        const messageClass = (this.config.allowHtml && config.html) 
+            ? 'toast-html' 
+            : 'toast-message';
+        
+        let html = `
             <span class="toast-icon">${icon}</span>
-            <span class="toast-message">${message}</span>
+            <span class="${messageClass}">${messageContent}</span>
             <button class="toast-close" aria-label="Fermer">×</button>
-            ${this.config.showProgress ? '<div class="toast-progress"></div>' : ''}
         `;
         
+        // === PROGRESS BAR ===
+        if (this.config.showProgress && config.duration > 0) {
+            html += '<div class="toast-progress"></div>';
+        }
+        
         toast.innerHTML = html;
+        
+        // === ACTIONS (NOUVEAU) ===
+        if (config.actions && config.actions.length > 0) {
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'toast-actions';
+            
+            config.actions.forEach((action, index) => {
+                const btn = document.createElement('button');
+                btn.className = `toast-action-btn ${action.style || 'default'}`;
+                btn.textContent = action.label;
+                btn.onclick = () => {
+                    if (action.onClick) action.onClick();
+                    if (action.closeOnClick !== false) {
+                        this.remove(toast);
+                    }
+                };
+                actionsDiv.appendChild(btn);
+            });
+            
+            toast.insertBefore(actionsDiv, toast.querySelector('.toast-close'));
+        }
         
         // Événements
         this.attachToastEvents(toast);
@@ -239,47 +312,101 @@ export class ToastWidget {
         return toast;
     }
     
-    /**
-     * Obtient l'icône selon le type
-     */
+    // ========================================
+    // SECTION 3 : SYSTÈME DE QUEUE (NOUVEAU)
+    // ========================================
+    
+    addToQueue(config) {
+        // Ajouter à la queue selon la priorité
+        const priority = this.config.priorities[config.priority] || this.config.priorities.normal;
+        config.weight = priority.weight;
+        
+        // Insérer dans la queue par ordre de priorité
+        let inserted = false;
+        for (let i = 0; i < this.state.queue.length; i++) {
+            if (config.weight > this.state.queue[i].weight) {
+                this.state.queue.splice(i, 0, config);
+                inserted = true;
+                break;
+            }
+        }
+        if (!inserted) {
+            this.state.queue.push(config);
+        }
+        
+        // Traiter la queue
+        this.processQueue();
+    }
+    
+    processQueue() {
+        // Si on peut afficher plus de toasts
+        while (this.state.toasts.length < this.config.queue.maxVisible && this.state.queue.length > 0) {
+            const config = this.state.queue.shift();
+            this.show(config);
+        }
+    }
+    
+    removeLowestPriority() {
+        // Trouver le toast avec la priorité la plus basse
+        let lowestPriority = null;
+        let lowestWeight = 100;
+        
+        this.state.toasts.forEach(toast => {
+            const priority = toast.dataset.priority || 'normal';
+            const weight = this.config.priorities[priority]?.weight || 50;
+            if (weight < lowestWeight) {
+                lowestWeight = weight;
+                lowestPriority = toast;
+            }
+        });
+        
+        if (lowestPriority) {
+            this.remove(lowestPriority);
+        }
+    }
+    
+    // ========================================
+    // SECTION 4 : SONS (NOUVEAU)
+    // ========================================
+    
+    playSound(type) {
+        const soundUrl = this.config.sounds[type];
+        if (soundUrl) {
+            const audio = new Audio(soundUrl);
+            audio.volume = 0.3;
+            audio.play().catch(e => console.log('Sound play failed:', e));
+        }
+    }
+    
+    // ========================================
+    // SECTION 5 : MÉTHODES EXISTANTES (INCHANGÉES)
+    // ========================================
+    
     getIcon(type) {
         const icons = {
             success: '✅',
             error: '❌',
-            warning: '🚧',
+            warning: '⚠️',
             info: 'ℹ️'
         };
         return icons[type] || icons.info;
     }
     
-    /**
-     * Attache les événements d'un toast
-     */
     attachToastEvents(toast) {
-        // Fermeture manuelle
         const closeBtn = toast.querySelector('.toast-close');
         if (closeBtn) {
             closeBtn.onclick = () => this.remove(toast);
         }
         
-        // Pause sur survol
         if (this.config.pauseOnHover) {
             toast.onmouseenter = () => this.pauseTimer(toast);
             toast.onmouseleave = () => this.resumeTimer(toast);
         }
     }
     
-    // ========================================
-    // SECTION 3 : GESTION DES TIMERS
-    // ========================================
-    
-    /**
-     * Configure l'auto-fermeture
-     */
     setAutoClose(toast, duration) {
         const toastId = toast.dataset.toastId;
         
-        // Animation de progression
         if (this.config.showProgress) {
             const progress = toast.querySelector('.toast-progress');
             if (progress) {
@@ -287,7 +414,6 @@ export class ToastWidget {
             }
         }
         
-        // Timer de fermeture
         const timer = setTimeout(() => {
             this.remove(toast);
         }, duration);
@@ -299,9 +425,6 @@ export class ToastWidget {
         });
     }
     
-    /**
-     * Met en pause le timer
-     */
     pauseTimer(toast) {
         const toastId = toast.dataset.toastId;
         const timerData = this.state.timers.get(toastId);
@@ -310,7 +433,6 @@ export class ToastWidget {
             clearTimeout(timerData.timer);
             timerData.remaining = timerData.remaining - (Date.now() - timerData.startTime);
             
-            // Pause animation
             const progress = toast.querySelector('.toast-progress');
             if (progress) {
                 progress.style.animationPlayState = 'paused';
@@ -318,9 +440,6 @@ export class ToastWidget {
         }
     }
     
-    /**
-     * Reprend le timer
-     */
     resumeTimer(toast) {
         const toastId = toast.dataset.toastId;
         const timerData = this.state.timers.get(toastId);
@@ -331,7 +450,6 @@ export class ToastWidget {
                 this.remove(toast);
             }, timerData.remaining);
             
-            // Reprendre animation
             const progress = toast.querySelector('.toast-progress');
             if (progress) {
                 progress.style.animationPlayState = 'running';
@@ -339,13 +457,6 @@ export class ToastWidget {
         }
     }
     
-    // ========================================
-    // SECTION 4 : ANIMATIONS
-    // ========================================
-    
-    /**
-     * Animation d'entrée
-     */
     animateIn(toast) {
         toast.animate([
             { transform: 'translateY(-20px)', opacity: 0 },
@@ -357,9 +468,6 @@ export class ToastWidget {
         });
     }
     
-    /**
-     * Animation de sortie
-     */
     animateOut(toast) {
         return toast.animate([
             { transform: 'translateY(0)', opacity: 1 },
@@ -371,17 +479,9 @@ export class ToastWidget {
         });
     }
     
-    // ========================================
-    // SECTION 5 : SUPPRESSION
-    // ========================================
-    
-    /**
-     * Supprime un toast
-     */
     remove(toast) {
         if (!toast || !toast.parentNode) return;
         
-        // Nettoyer timer
         const toastId = toast.dataset.toastId;
         const timerData = this.state.timers.get(toastId);
         if (timerData) {
@@ -389,25 +489,27 @@ export class ToastWidget {
             this.state.timers.delete(toastId);
         }
         
-        // Retirer de l'état
         const index = this.state.toasts.indexOf(toast);
         if (index > -1) {
             this.state.toasts.splice(index, 1);
         }
         
-        // Animation de sortie
         if (this.config.animated) {
             this.animateOut(toast).onfinish = () => {
                 if (toast.parentNode) toast.remove();
+                // Traiter la queue après suppression
+                if (this.config.queue.enabled) {
+                    this.processQueue();
+                }
             };
         } else {
             toast.remove();
+            if (this.config.queue.enabled) {
+                this.processQueue();
+            }
         }
     }
     
-    /**
-     * Supprime le plus ancien
-     */
     removeOldest() {
         if (this.state.toasts.length > 0) {
             this.remove(this.state.toasts[0]);
@@ -415,60 +517,44 @@ export class ToastWidget {
     }
     
     // ========================================
-    // SECTION 6 : API PUBLIQUE
+    // API PUBLIQUE (100% RÉTROCOMPATIBLE)
     // ========================================
     
-    /**
-     * Toast de succès
-     */
     success(message, duration) {
         return this.show(message, 'success', duration);
     }
     
-    /**
-     * Toast d'erreur
-     */
     error(message, duration) {
         return this.show(message, 'error', duration);
     }
     
-    /**
-     * Toast d'avertissement
-     */
     warning(message, duration) {
         return this.show(message, 'warning', duration);
     }
     
-    /**
-     * Toast d'information
-     */
     info(message, duration) {
         return this.show(message, 'info', duration);
     }
     
-    /**
-     * Supprime tous les toasts
-     */
-    clear() {
-        [...this.state.toasts].forEach(toast => this.remove(toast));
+    // === NOUVELLE API (optionnelle) ===
+    critical(messageOrConfig) {
+        if (typeof messageOrConfig === 'string') {
+            return this.show({ message: messageOrConfig, type: 'error', priority: 'critical' });
+        }
+        return this.show({ ...messageOrConfig, priority: 'critical' });
     }
     
-    // ========================================
-    // SECTION 7 : AFFICHAGE (ANTI-FOUC)
-    // ========================================
+    clear() {
+        [...this.state.toasts].forEach(toast => this.remove(toast));
+        this.state.queue = []; // Vider aussi la queue
+    }
     
-    /**
-     * Anti-FOUC : affichage avec délai
-     */
     showWithDelay() {
         setTimeout(() => {
             this.showContainer();
         }, 100);
     }
     
-    /**
-     * Affiche le container
-     */
     showContainer() {
         if (this.elements.container) {
             this.elements.container.classList.add('loaded');
@@ -476,36 +562,25 @@ export class ToastWidget {
         this.state.loaded = true;
     }
     
-    // ========================================
-    // SECTION 8 : DESTRUCTION
-    // ========================================
-    
-    /**
-     * Destruction propre OBLIGATOIRE
-     */
     destroy() {
-        // Nettoyer tous les timers
         this.state.timers.forEach(timerData => {
             clearTimeout(timerData.timer);
         });
         this.state.timers.clear();
         
-        // Supprimer tous les toasts
         this.clear();
         
-        // Vider container
         if (this.elements.container) {
             this.elements.container.remove();
         }
         
-        // Réinitialiser état
         this.state = {
             toasts: [],
+            queue: [],
             timers: new Map(),
             loaded: false
         };
         
-        // Réinitialiser éléments
         this.elements = {
             container: null
         };
@@ -515,10 +590,9 @@ export class ToastWidget {
 }
 
 // ========================================
-// SINGLETON GLOBAL
+// SINGLETON GLOBAL (INCHANGÉ)
 // ========================================
 
-// Instance unique partagée
 let toastInstance = null;
 
 export function getToast(config) {
@@ -528,5 +602,4 @@ export function getToast(config) {
     return toastInstance;
 }
 
-// Export par défaut du singleton
 export default getToast();

@@ -143,25 +143,12 @@ export class DetailViewerWidget {
      * Charge le CSS avec timestamp anti-cache
      */
     loadCSS() {
-        // 1. Charger buttons.css en premier (si pas déjà chargé)
-        if (!document.getElementById('buttons-css')) {
-            const buttonsLink = document.createElement('link');
-            buttonsLink.id = 'buttons-css';
-            buttonsLink.rel = 'stylesheet';
-            buttonsLink.href = '/src/css/components/buttons.css';
-            document.head.appendChild(buttonsLink);
-        }
+        // Charger les styles communs (buttons, badges, modal)
+        import('/src/utils/widget-styles-loader.js').then(module => {
+            module.loadWidgetStyles();
+        });
         
-        // 2. Charger modal-base.css (si pas déjà chargé)
-        if (!document.getElementById('modal-base-css')) {
-            const modalLink = document.createElement('link');
-            modalLink.id = 'modal-base-css';
-            modalLink.rel = 'stylesheet';
-            modalLink.href = '/src/css/components/modal-base.css';
-            document.head.appendChild(modalLink);
-        }
-        
-        // 3. Charger le CSS du widget
+        // Charger le CSS spécifique du widget
         const cssId = 'detail-viewer-widget-css';
         const existing = document.getElementById(cssId);
         if (existing) existing.remove();
@@ -172,7 +159,6 @@ export class DetailViewerWidget {
         link.href = `/widgets/detail-viewer/detail-viewer.widget.css?v=${Date.now()}`;
         document.head.appendChild(link);
     }
-    
     /**
      * Initialisation
      */
@@ -254,12 +240,7 @@ export class DetailViewerWidget {
         this.elements.timelineContainer = this.elements.modal.querySelector('.detail-viewer-timeline-zone');
         this.elements.sectionsContainer = this.elements.modal.querySelector('.detail-viewer-sections');
         this.elements.actionsContainer = this.elements.modal.querySelector('.detail-viewer-footer');
-        
-        // Enregistrer globalement pour les callbacks inline
-        if (!window.detailViewerWidgets) {
-            window.detailViewerWidgets = {};
-        }
-        window.detailViewerWidgets[this.id] = this;
+    
     }
     
     /**
@@ -391,7 +372,7 @@ export class DetailViewerWidget {
             <div class="${sectionClasses}" data-section-id="${section.id}">
                 ${section.title ? `
                     <div class="section-header" ${section.collapsible ? 
-                        `onclick="window.detailViewerWidgets['${this.id}'].toggleSection('${section.id}')"` : ''
+                        `data-section-toggle="${section.id}"` : ''
                     }>
                         <h3 class="section-title">
                             ${section.icon ? `<span class="section-icon">${section.icon}</span>` : ''}
@@ -561,7 +542,7 @@ export class DetailViewerWidget {
             
             return `
                 <button class="${btnClass}" 
-                        onclick="window.detailViewerWidgets['${this.id}'].handleAction(${index})"
+                        data-action-index="${index}"
                         ${disabled}
                         ${dataAttrs}>
                     ${action.icon ? `<span class="action-icon">${action.icon}</span>` : ''}
@@ -622,6 +603,23 @@ export class DetailViewerWidget {
                 }
             });
         }
+        
+        // Toggle sections collapsibles (délégation d'événements)
+        this.elements.modal.addEventListener('click', (e) => {
+            // Gestion des sections collapsibles
+            const toggleTarget = e.target.closest('[data-section-toggle]');
+            if (toggleTarget) {
+                const sectionId = toggleTarget.dataset.sectionToggle;
+                this.toggleSection(sectionId);
+            }
+            
+            // Gestion des boutons d'action
+            const actionBtn = e.target.closest('[data-action-index]');
+            if (actionBtn) {
+                const index = parseInt(actionBtn.dataset.actionIndex);
+                this.handleAction(index);
+            }
+        });
         
         // Fermeture par Escape
         if (this.config.closeOnEscape) {
@@ -701,12 +699,21 @@ export class DetailViewerWidget {
         }
     }
     
-    /**
+/**
      * Met à jour les données
      */
-    update(newData) {
+    setData(newData) {
         this.state.currentData = { ...this.state.currentData, ...newData };
         this.refresh();
+    }
+    
+    /**
+     * Alias pour compatibilité
+     * @deprecated Utiliser setData() à la place
+     */
+    update(newData) {
+        console.warn('update() est déprécié, utiliser setData()');
+        return this.setData(newData);
     }
     
     /**
@@ -743,11 +750,6 @@ export class DetailViewerWidget {
         // Retirer du DOM
         if (this.elements.overlay && this.elements.overlay.parentNode) {
             this.elements.overlay.parentNode.removeChild(this.elements.overlay);
-        }
-        
-        // Nettoyer la référence globale
-        if (window.detailViewerWidgets && window.detailViewerWidgets[this.id]) {
-            delete window.detailViewerWidgets[this.id];
         }
         
         // Réinitialiser état

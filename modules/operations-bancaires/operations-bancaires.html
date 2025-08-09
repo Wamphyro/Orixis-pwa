@@ -3,204 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAV Audio - Opérations Bancaires</title>
-    
-    <!-- PWA Meta Tags -->
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="SAV Audio">
-    <link rel="manifest" href="../../manifest.json">
-    <meta name="theme-color" content="#667eea">
-    
-    <!-- ========================================
-         CSS - Les composants chargent leur CSS eux-mêmes
-         ======================================== -->
-    
-    <!-- 1. Base et layout -->
+    <title>Opérations Bancaires</title>
     <link rel="stylesheet" href="../../src/css/main.css">
-
-    <!-- 2. CSS utilitaires partagés -->
-    <link rel="stylesheet" href="../../src/components/ui/common/animation.css">
-    <link rel="stylesheet" href="../../src/components/ui/common/form.css">
-
-    <!-- 3. CSS spécifique au module opérations bancaires -->
-    <link rel="stylesheet" href="./operations-bancaires.css">
     
-    <!-- Note: Les composants UI chargent leur CSS automatiquement via loadStyles() -->
+    <style>
+        .page-loading {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .page-loading.hidden { display: none; }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #0066cc;
+            border-radius: 50%;
+            width: 40px; height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Styles spécifiques opérations */
+        .operations-primary { color: #0066cc; }
+        .operations-secondary { color: #00a0e3; }
+        
+        .stats-container { margin: 100px 20px 20px 20px; }
+        .filters-container { margin: 20px; }
+        .table-container { margin: 20px; }
+        
+        /* Badges catégories */
+        .badge-salaires { background: #d1e7dd; color: #0f5132; }
+        .badge-impots { background: #f8d7da; color: #842029; }
+        .badge-energie { background: #fff3cd; color: #664d03; }
+        .badge-alimentation { background: #ffe6e6; color: #dc3545; }
+        .badge-virement { background: #e6e6ff; color: #4040ff; }
+        .badge-autre { background: #f8f9fa; color: #6c757d; }
+        
+        .montant-credit { color: #28a745; font-weight: 600; }
+        .montant-debit { color: #dc3545; font-weight: 600; }
+        
+        /* ⚡ NOUVEAU : Tooltip personnalisé pour catégories */
+        .categorie-icon {
+            position: relative;
+            cursor: help;
+            display: inline-block;
+        }
+        
+        .categorie-icon::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-5px);
+            background: #333;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: normal;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s;
+            z-index: 9999;
+        }
+        
+        .categorie-icon:hover::before {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(-8px);
+        }
+        
+        /* Petite flèche sous le tooltip */
+        .categorie-icon::after {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #333;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s;
+        }
+        
+        .categorie-icon:hover::after {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(-3px);
+        }
+    </style>
 </head>
 <body>
-    <!-- Container pour le composant AppHeader -->
-    <!-- AppHeader sera injecté ici par JavaScript -->
+    <!-- Loader -->
+    <div class="page-loading" id="pageLoader">
+        <div class="loader"></div>
+    </div>
     
-    <div class="container">
-        <!-- Barre d'actions et statistiques -->
-        <div class="operations-header">
-            <div class="operations-stats">
-                <!-- StatsCards va générer le contenu ici -->
-            </div>
-            
-            <div class="operations-actions">
-                <button class="btn btn-primary btn-with-icon btn-lg pill" onclick="ouvrirModalImport()">
-                    <span>📥</span> Importer CSV
-                </button>
-            </div>
-        </div>
-
-        <!-- Filtres -->
-        <div class="operations-filters section">
-            <!-- DataTableFilters va générer le contenu ici -->
-        </div>
-
-        <!-- Actions groupées (apparaît quand sélection) -->
-        <div class="operations-actions-groupees section" style="display: none;">
-            <!-- Généré dynamiquement -->
-        </div>
-
-        <!-- Container pour DataTable -->
-        <div class="operations-table-container section">
-            <!-- DataTable sera généré ici -->
-        </div>
-    </div>
-
-    <!-- Modal Import CSV -->
-    <div id="modalImportCSV" class="modal" style="display: none;">
-        <div class="modal-content modal-large">
-            <div class="modal-header">
-                <h2>Import de relevé bancaire</h2>
-                <button class="modal-close">&times;</button>
-            </div>
-            
-            <div class="modal-body">
-                <!-- Le contenu sera généré par operations-bancaires.create.js -->
-            </div>
-            
-            <div class="modal-footer">
-                <!-- Les boutons seront ajoutés dynamiquement -->
-            </div>
-        </div>
-    </div>
-
-<!-- Modal Détail Opération -->
-    <div id="modalDetailOperation" class="modal" style="display: none;">
-        <div class="modal-content modal-large">
-            <div class="modal-header">
-                <h2>Détail de l'opération</h2>
-                <h3 id="detailTitreOperation" style="margin: 5px 0 0 0; font-size: 16px; color: #666;"></h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            
-            <div class="modal-body">
-                <!-- Sections principales en 2 colonnes -->
-                <div class="detail-sections">
-                    <!-- Colonne de gauche : Opération + Montants -->
-                    <div class="detail-column-left">
-                        <!-- Section Opération -->
-                        <div class="detail-section">
-                            <h3>📝 Informations de l'opération</h3>
-                            <div id="detailOperation">
-                                <!-- Contenu généré dynamiquement -->
-                            </div>
-                        </div>
-                        
-                        <!-- Section Montants -->
-                        <div class="detail-section">
-                            <h3>💰 Montants</h3>
-                            <div id="detailMontants">
-                                <!-- Contenu généré dynamiquement -->
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Colonne de droite : Compte + Catégorisation -->
-                    <div class="detail-column-right">
-                        <!-- Section Compte -->
-                        <div class="detail-section">
-                            <h3>🏦 Compte bancaire</h3>
-                            <div id="detailCompte">
-                                <!-- Contenu généré dynamiquement -->
-                            </div>
-                        </div>
-                        
-                        <!-- Section Catégorisation -->
-                        <div class="detail-section">
-                            <h3>🏷️ Catégorisation</h3>
-                            <div id="detailCategorisation">
-                                <!-- Contenu généré dynamiquement -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Nouvelle ligne pour Traçabilité et Rapprochement -->
-                <div class="detail-sections" style="margin-top: 20px;">
-                    <!-- Colonne de gauche : Traçabilité -->
-                    <div class="detail-column-left">
-                        <div class="detail-section">
-                            <h3>📋 Traçabilité</h3>
-                            <div id="detailTracabilite">
-                                <!-- Contenu généré dynamiquement -->
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Colonne de droite : Rapprochement -->
-                    <div class="detail-column-right">
-                        <div class="detail-section">
-                            <h3>🔗 Rapprochement</h3>
-                            <div id="detailRapprochement">
-                                <!-- Contenu généré dynamiquement -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Actions en bas -->
-                <div class="detail-actions" id="detailActions">
-                    <!-- Boutons d'action générés selon le statut -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Catégoriser -->
-    <div id="modalCategoriser" class="modal" style="display: none;">
-        <div class="modal-content modal-small">
-            <div class="modal-header">
-                <h2>Catégoriser les opérations</h2>
-                <button class="modal-close">&times;</button>
-            </div>
-            
-            <div class="modal-body">
-                <p id="categoriserInfo"><!-- Nombre d'opérations sélectionnées --></p>
-                <div class="form-group">
-                    <label>Nouvelle catégorie :</label>
-                    <select id="selectCategorie" class="form-select">
-                        <!-- Options générées dynamiquement -->
-                    </select>
-                </div>
-            </div>
-            
-            <div class="modal-footer">
-                <button class="btn btn-ghost btn-pill" onclick="fermerModal('modalCategoriser')">
-                    Annuler
-                </button>
-                <button class="btn btn-success btn-pill" onclick="confirmerCategorisation()">
-                    ✅ Appliquer
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Container pour les dialogs custom -->
-    <div id="dialog-container" class="dialog-container"></div>
-
-    <!-- Footer -->
-    <div class="footer">
-        <p>Orixis - © 2025</p>
-    </div>
-
-    <!-- JavaScript local au module -->
-    <script type="module" src="./operations-bancaires.main.js"></script>
+    <!-- Messages -->
+    <div id="messagesContainer" style="position: fixed; top: 10px; right: 10px; z-index: 1000; max-width: 400px;"></div>
+    
+    <!-- Containers pour widgets -->
+    <div class="stats-container"></div>
+    <div class="filters-container"></div>
+    <div class="table-container"></div>
+    
+    <script type="module">
+        import orchestrator from './operations-bancaires.orchestrator.js';
+        
+        window.addEventListener('load', async () => {
+            console.log('🎯 Initialisation Opérations Bancaires...');
+            await orchestrator.init();
+        });
+        
+        // Export pour debug
+        window.orchestrator = orchestrator;
+    </script>
 </body>
 </html>

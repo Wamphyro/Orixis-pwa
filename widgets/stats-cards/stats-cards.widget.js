@@ -564,10 +564,19 @@ export class StatsCardsWidget {
     }
     
     /**
-     * Retourne les IDs sélectionnés
+     * Retourne les IDs sélectionnés (API unifiée)
+     */
+    getSelection() {
+        return [...this.state.selected];
+    }
+    
+    /**
+     * Alias pour compatibilité
+     * @deprecated Utiliser getSelection() à la place
      */
     getSelected() {
-        return [...this.state.selected];
+        console.warn('getSelected() est déprécié, utiliser getSelection()');
+        return this.getSelection();
     }
     
     // ========================================
@@ -598,6 +607,19 @@ export class StatsCardsWidget {
         
         if (this.config.onUpdate) {
             this.config.onUpdate(cardId, oldValue, value);
+        }
+    }
+    
+    /**
+     * Met à jour une ou plusieurs cartes (API unifiée)
+     */
+    update(cardIdOrValues, value, animate = true) {
+        // Si c'est un objet, mise à jour multiple
+        if (typeof cardIdOrValues === 'object' && !Array.isArray(cardIdOrValues)) {
+            this.updateAll(cardIdOrValues, value); // value devient animate dans ce cas
+        } else {
+            // Mise à jour simple
+            this.updateCard(cardIdOrValues, value, animate);
         }
     }
     
