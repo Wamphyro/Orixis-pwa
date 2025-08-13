@@ -155,47 +155,125 @@ class DecompteOrchestrator {
         console.log('✅ Widgets créés');
     }
     
-    /**
-     * Créer le header
-     */
-    createHeader() {
-        const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
+/**
+ * Créer le header
+ */
+createHeader() {
+    const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
+    
+    this.header = new HeaderWidget({
+        // FOND DÉGRADÉ
+        pageBackground: 'colorful',
+        theme: 'gradient',
         
-        this.header = new HeaderWidget({
-            title: 'Décomptes Mutuelles',
-            icon: '📋',
-            subtitle: 'Gestion des remboursements mutuelles',
-            showBack: true,
-            showUser: true,
-            showLogout: true
-        });
+        // PERSONNALISATION DES BOUTONS
+        buttonStyles: {
+            back: {
+                height: '48px',
+                padding: '12px 24px',
+                minWidth: '120px'
+            },
+            action: {
+                height: '48px',
+                width: '44px'
+            },
+            notification: {
+                height: '48px',
+                width: '44px'
+            },
+            userMenu: {
+                height: '48px',
+                padding: '6px 16px 6px 6px',
+                maxWidth: '220px'
+            },
+            indicator: {
+                height: '48px',
+                padding: '10px 16px',
+                minWidth: 'auto'
+            }
+        },
         
-        // Personnaliser les boutons
-        setTimeout(() => {
-            const backContainer = document.querySelector(`#header-back-${this.header.id}`);
-            if (backContainer) {
-                const backBtn = document.createElement('button');
-                backBtn.className = 'btn btn-glass-solid-ice btn-sm';
-                backBtn.innerHTML = '<<';
-                backBtn.onclick = () => {
-                    console.log('Retour cliqué');
-                    window.location.href = '/modules/home/home.html';
-                };
-                backContainer.appendChild(backBtn);
+        // TEXTES
+        title: 'Décomptes Mutuelles',
+        subtitle: '',
+        centerTitle: true,  // Activer le titre centré
+        
+        // LOGO
+        showLogo: true,
+        logoIcon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
+        
+        // NAVIGATION
+        showBack: true,
+        backText: 'Retour',
+        onBack: () => {
+            window.location.href = '/modules/home/home.html';
+        },
+        
+        // RECHERCHE
+        showSearch: true,
+        searchPlaceholder: 'Rechercher décompte, client, NSS...',
+        searchMaxWidth: '1500px',
+        searchHeight: '48px',
+        onSearch: (query) => {
+            this.currentFilters.search = query;
+            this.applyFilters();
+        },
+        
+        // BOUTONS RAPIDES
+        showQuickActions: true,
+        quickActions: [
+            {
+                id: 'new',
+                title: 'Nouveaux décomptes',
+                icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>',
+                onClick: () => this.openCreateModal()
+            },
+            {
+                id: 'export',
+                title: 'Export Excel',
+                icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line></svg>',
+                onClick: () => this.grid?.export('excel')
+            },
+            {
+                id: 'refresh',
+                title: 'Actualiser',
+                icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>',
+                onClick: () => {
+                    // Force le rechargement complet depuis le serveur (équivalent Cmd+Maj+R)
+                    window.location.reload(true);
+                }
             }
-            
-            const logoutContainer = document.querySelector(`#header-logout-${this.header.id}`);
-            if (logoutContainer) {
-                const logoutBtn = document.createElement('button');
-                logoutBtn.className = 'btn btn-logout-user';
-                logoutBtn.innerHTML = 'Déconnexion';
-                logoutBtn.onclick = () => {
-                    this.header.defaultLogout();
-                };
-                logoutContainer.appendChild(logoutBtn);
+        ],
+        
+        // INDICATEURS
+        showIndicators: true,
+        indicators: [
+            {
+                id: 'status',
+                text: 'Connecté',
+                type: 'success',  // IMPORTANT: doit être 'success' pour le vert
+                animated: true
             }
-        }, 100);
-    }
+        ],
+        
+        // NOTIFICATIONS
+        showNotifications: true,
+        
+        // BREADCRUMBS
+        showBreadcrumbs: true,
+        breadcrumbs: [
+            { text: 'Accueil', url: '/modules/home/home.html' },
+            { text: 'Gestion', url: '#' },
+            { text: 'Décomptes Mutuelles' }
+        ],
+        
+        // UTILISATEUR
+        showUser: true,
+        showUserDropdown: true,
+        showMagasin: true,
+        showLogout: true
+    });
+}
     
     /**
      * Créer les cartes de statistiques

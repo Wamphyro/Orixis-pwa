@@ -353,7 +353,147 @@ export class DetailViewerWidget {
      * Rendu d'une section
      */
     renderSection(section) {
-        // Extraire les champs visibles
+        // Gestion du type 'list' pour les cards
+        if (section.type === 'list' && section.items) {
+            const sectionClasses = [
+                'detail-viewer-section',
+                section.className,
+                section.collapsible && 'section-collapsible',
+                section.collapsed && 'section-collapsed'
+            ].filter(Boolean).join(' ');
+            
+            return `
+                <div class="${sectionClasses}" data-section-id="${section.id}">
+                    ${section.title ? `
+                        <div class="section-header" ${section.collapsible ? 
+                            `data-section-toggle="${section.id}"` : ''
+                        }>
+                            <h3 class="section-title">
+                                ${section.icon ? `<span class="section-icon">${section.icon}</span>` : ''}
+                                ${this.escapeHtml(section.title)}
+                            </h3>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="section-content">
+                        <div class="section-cards-list" style="display: flex; flex-direction: column; gap: 12px;">
+                            ${section.items.map(item => `
+                                <div class="card-item" style="
+                                    padding: 15px;
+                                    background: ${item.highlight === 'success' ? '#f1f8e9' : 
+                                                item.highlight === 'warning' ? '#fff3e0' : 
+                                                '#f5f5f5'};
+                                    border: 2px solid ${item.highlight === 'success' ? '#8bc34a' : 
+                                                        item.highlight === 'warning' ? '#ff9800' : 
+                                                        '#e0e0e0'};
+                                    border-radius: 8px;
+                                ">
+                                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                                        <div style="flex: 1;">
+                                            <div style="font-weight: 600; color: #2c3e50; font-size: 15px; margin-bottom: 8px;">
+                                                ${item.title || ''}
+                                                ${item.badges?.map(badge => `
+                                                    <span style="
+                                                        background: ${badge.color === 'warning' ? '#ff9800' : 
+                                                                    badge.color === 'success' ? '#4caf50' : 
+                                                                    badge.color === 'info' ? '#2196f3' : '#666'};
+                                                        color: white;
+                                                        padding: 2px 8px;
+                                                        border-radius: 4px;
+                                                        font-size: 12px;
+                                                        margin-left: 8px;
+                                                    ">${badge.text}</span>
+                                                `).join('') || ''}
+                                            </div>
+                                            
+                                            ${item.subtitle ? `
+                                                <div style="font-size: 13px; color: #666; margin-bottom: 8px;">
+                                                    ${item.subtitle}
+                                                </div>
+                                            ` : ''}
+                                            
+                                            ${item.fields ? `
+                                                <div style="display: grid; gap: 5px; font-size: 13px;">
+                                                    ${item.fields.map(field => `
+                                                        <div>
+                                                            <span style="color: #999;">${field.label}:</span>
+                                                            <strong>${field.value}</strong>
+                                                        </div>
+                                                    `).join('')}
+                                                </div>
+                                            ` : ''}
+                                            
+                                            ${item.statusBox ? `
+                                                <div style="
+                                                    margin-top: 10px;
+                                                    padding: 10px;
+                                                    background: ${item.statusBox.type === 'success' ? '#e8f5e9' : '#fff8e1'};
+                                                    border-radius: 6px;
+                                                    border-left: 4px solid ${item.statusBox.type === 'success' ? '#4caf50' : '#ff9800'};
+                                                ">
+                                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                                        <span style="font-size: 18px;">${item.statusBox.icon}</span>
+                                                        <div>
+                                                            <div style="font-size: 12px; color: #666;">
+                                                                ${item.statusBox.label}
+                                                            </div>
+                                                            <div style="
+                                                                font-family: monospace;
+                                                                font-size: 14px;
+                                                                font-weight: 600;
+                                                                color: ${item.statusBox.type === 'success' ? '#2e7d32' : '#e65100'};
+                                                            ">
+                                                                ${item.statusBox.value}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ` : ''}
+                                        </div>
+                                        
+                                        ${item.sideContent ? `
+                                            <div style="min-width: 60px; text-align: center;">
+                                                ${item.sideContent}
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Gestion du type 'custom' (pour l'historique)
+        if (section.type === 'custom' && section.customContent) {
+            const sectionClasses = [
+                'detail-viewer-section',
+                section.className,
+                section.collapsible && 'section-collapsible',
+                section.collapsed && 'section-collapsed'
+            ].filter(Boolean).join(' ');
+            
+            return `
+                <div class="${sectionClasses}" data-section-id="${section.id}">
+                    ${section.title ? `
+                        <div class="section-header" ${section.collapsible ? 
+                            `data-section-toggle="${section.id}"` : ''
+                        }>
+                            <h3 class="section-title">
+                                ${section.icon ? `<span class="section-icon">${section.icon}</span>` : ''}
+                                ${this.escapeHtml(section.title)}
+                            </h3>
+                        </div>
+                    ` : ''}
+                    <div class="section-content">
+                        ${section.customContent}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Gestion des sections normales avec fields (Client, Livraison, etc.)
         const visibleFields = (section.fields || []).filter(field => field.visible !== false);
         
         if (visibleFields.length === 0 && !section.customContent) {
@@ -378,21 +518,12 @@ export class DetailViewerWidget {
                             ${section.icon ? `<span class="section-icon">${section.icon}</span>` : ''}
                             ${this.escapeHtml(section.title)}
                         </h3>
-                        ${section.collapsible ? `
-                            <span class="section-toggle">
-                                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                                    <path d="M8 11L3 6h10z"/>
-                                </svg>
-                            </span>
-                        ` : ''}
                     </div>
                 ` : ''}
                 
                 <div class="section-content">
-                    ${section.customContent ? 
-                        section.customContent : 
-                        this.renderSectionFields(visibleFields, section)
-                    }
+                    ${section.customContent || ''}
+                    ${visibleFields.length > 0 ? this.renderSectionFields(visibleFields, section) : ''}
                 </div>
             </div>
         `;
@@ -569,8 +700,8 @@ export class DetailViewerWidget {
             this.config.onAction(action, this.state.currentData, this);
         }
         
-        // Fermer si configuré
-        if (action.closeOnClick !== false && action.style !== 'danger') {
+        // Ne fermer QUE si explicitement demandé
+        if (action.closeOnClick === true) {
             this.close();
         }
     }
@@ -699,12 +830,85 @@ export class DetailViewerWidget {
         }
     }
     
-/**
+    /**
      * Met à jour les données
      */
     setData(newData) {
         this.state.currentData = { ...this.state.currentData, ...newData };
         this.refresh();
+    }
+    
+    /**
+     * Met à jour le contenu du modal sans le fermer ni le détruire
+     * @param {object} newData - Nouvelles données à afficher
+     */
+    updateContent(newData) {
+        // 1. Mettre à jour les données internes
+        this.state.currentData = { ...this.state.currentData, ...newData };
+        
+        // 2. Mettre à jour la configuration si nécessaire
+        if (newData) {
+            // Mettre à jour le sous-titre si fourni
+            if (newData.client) {
+                this.config.subtitle = `${newData.client.prenom} ${newData.client.nom}`;
+            }
+        }
+        
+        // 3. Re-générer uniquement le contenu interne
+        try {
+            // Mettre à jour le sous-titre dans le header
+            const subtitleEl = this.elements.modal.querySelector('.modal-subtitle');
+            if (subtitleEl && this.config.subtitle) {
+                subtitleEl.textContent = this.config.subtitle;
+            }
+            
+            // Mettre à jour la timeline si elle existe
+            if (this.config.timeline.enabled && this.elements.timelineContainer) {
+                const timelineZone = this.elements.modal.querySelector('.detail-viewer-timeline-zone');
+                if (timelineZone) {
+                    timelineZone.innerHTML = this.renderTimeline();
+                }
+            }
+            
+            // Mettre à jour les sections
+            const sectionsContainer = this.elements.modal.querySelector('.detail-viewer-sections');
+            if (sectionsContainer) {
+                sectionsContainer.innerHTML = this.renderSections();
+            }
+            
+            // Mettre à jour les actions dans le footer
+            const footerEl = this.elements.modal.querySelector('.modal-footer');
+            if (footerEl && this.config.actions) {
+                footerEl.innerHTML = this.renderActions();
+            }
+            
+            // 4. Ré-attacher les événements sur les nouvelles sections/actions
+            // (nécessaire car on a remplacé le HTML)
+            this.reattachSectionEvents();
+            
+            console.log('✅ Contenu du modal mis à jour sans fermeture');
+            
+        } catch (error) {
+            console.error('❌ Erreur lors de la mise à jour du contenu:', error);
+            // En cas d'erreur, fallback sur refresh complet
+            this.refresh();
+        }
+    }
+
+    /**
+     * Ré-attache les événements après mise à jour du contenu
+     * (nécessaire car innerHTML détruit les listeners)
+     */
+    reattachSectionEvents() {
+        // Ré-attacher les événements de toggle pour les sections collapsibles
+        const toggleButtons = this.elements.modal.querySelectorAll('[data-section-toggle]');
+        toggleButtons.forEach(btn => {
+            // Retirer l'ancien listener s'il existe
+            btn.replaceWith(btn.cloneNode(true));
+        });
+        
+        // Utiliser la délégation d'événements qui est déjà en place
+        // (elle gère automatiquement les nouveaux éléments)
     }
     
     /**

@@ -3,318 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAV Audio - Commandes</title>
-    
-    <!-- PWA Meta Tags -->
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="SAV Audio">
-    <link rel="manifest" href="../../manifest.json">
-    <meta name="theme-color" content="#667eea">
-    
-    <!-- ========================================
-         CSS - Ordre de chargement optimisé
-         ======================================== -->
-    
-    <!-- 1. Base et layout -->
+    <title>Gestion des Commandes</title>
     <link rel="stylesheet" href="../../src/css/main.css">
-
-    <!-- 2. CSS utilitaires partagés -->
-    <link rel="stylesheet" href="../../src/components/ui/common/animation.css">
-    <link rel="stylesheet" href="../../src/components/ui/common/form.css">
-
-
-    <!-- 4. CSS spécifique au module commandes (local) -->
-    <link rel="stylesheet" href="./commandes.css">
-    <link rel="stylesheet" href="./commandes.print.css">
 </head>
 <body>
-    <!-- Container pour le composant AppHeader -->
-    <!-- AppHeader sera injecté ici par JavaScript -->
+    <!-- ========================================
+         LOADER GLOBAL
+         ======================================== -->
+    <div class="page-loading" id="pageLoader">
+        <div class="loader"></div>
+    </div>
     
-    <div class="container">
-        <!-- Barre d'actions et statistiques -->
-        <div class="commandes-header">
-            <div class="commandes-stats">
-                <!-- StatsCards va générer le contenu ici -->
-            </div>
-            
-            <div class="commandes-actions">
-                <!-- ✅ Bouton avec classe pill pour forme arrondie -->
-                <button class="btn btn-primary btn-with-icon btn-lg pill" onclick="ouvrirNouvelleCommande()">
-                    <span>➕</span> Nouvelle commande
-                </button>
-            </div>
-        </div>
-
-        <!-- Filtres -->
-        <div class="commandes-filters section">
-            <!-- DataTableFilters va générer le contenu ici -->
-        </div>
-
-        <!-- Container pour DataTable -->
-        <div class="commandes-table-container section">
-            <!-- DataTable sera généré ici -->
-        </div>
-    </div>
-
-    <!-- Modal Nouvelle Commande -->
-    <div id="modalNouvelleCommande" class="modal" style="display: none;">
-        <div class="modal-content modal-large">
-            <div class="modal-header">
-                <h2>Nouvelle Commande</h2>
-                <button class="modal-close">&times;</button>
-            </div>
-            
-            <!-- Container pour la Timeline -->
-            <div class="timeline-container" style="margin: 20px 0;">
-                <!-- Timeline sera créée dynamiquement ici -->
-            </div>
-                        
-            <div class="modal-body">
-                <!-- Étape 1 : Sélection client -->
-                <div class="step-content" id="stepContent1">
-                    <h3>Sélection du client</h3>
-                    
-                    <div class="client-search">
-                        <!-- SearchDropdown sera initialisé ici -->
-                    </div>
-                    
-                    <div class="client-selected" id="clientSelected" style="display: none;">
-                        <h4>Client sélectionné :</h4>
-                        <div class="client-info">
-                            <p><strong id="selectedClientName"></strong></p>
-                            <p id="selectedClientInfo"></p>
-                        </div>
-                        <!-- ✅ Bouton lien -->
-                        <button class="btn-link" onclick="changerClient()">Changer de client</button>
-                    </div>
-                    
-                    <div class="divider">OU</div>
-                    
-                    <!-- ✅ Bouton secondaire avec icône et pill -->
-                    <button class="btn btn-secondary btn-with-icon pill" onclick="ouvrirNouveauClient()">
-                        <span>➕</span> Créer un nouveau client
-                    </button>
-                </div>
-                
-                <!-- Étape 2 : Sélection produits -->
-                <div class="step-content hidden" id="stepContent2">
-                    <h3>Sélection des produits</h3>
-                    
-                    <div class="pack-selector">
-                        <label>Utiliser un pack prédéfini</label>
-                        <div id="packTemplate"></div>
-                    </div>
-                    
-                    <div class="divider">OU</div>
-                    
-                    <!-- Recherche produits -->
-                    <div class="product-search">
-                        <!-- SearchDropdown sera initialisé ici -->
-                    </div>
-                    
-                    <!-- Panier temporaire -->
-                    <div class="temp-cart">
-                        <h4>Produits sélectionnés</h4>
-                        <div id="tempCartItems"></div>
-                    </div>
-                </div>
-                
-                <!-- Étape 3 : Infos livraison -->
-                <div class="step-content hidden" id="stepContent3">
-                    <h3>Informations de livraison</h3>
-                    
-                    <div class="form-group">
-                        <label>Type de préparation</label>
-                        <div id="typePreparation"></div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Niveau d'urgence</label>
-                        <div class="urgence-selector">
-                            <!-- Boutons radio générés dynamiquement -->
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Magasin de livraison</label>
-                            <div id="magasinLivraison"></div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Date de livraison souhaitée</label>
-                            <input type="date" id="dateLivraison" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Commentaires (optionnel)</label>
-                        <textarea id="commentaires" rows="3" 
-                                  placeholder="Instructions particulières..."></textarea>
-                    </div>
-                </div>
-                
-                <!-- Étape 4 : Validation -->
-                <div class="step-content hidden" id="stepContent4">
-                    <h3>Récapitulatif de la commande</h3>
-                    
-                    <div class="recap-section">
-                        <h4>Client</h4>
-                        <div id="recapClient"></div>
-                    </div>
-                    
-                    <div class="recap-section">
-                        <h4>Produits</h4>
-                        <div id="recapProduits"></div>
-                    </div>
-                    
-                    <div class="recap-section">
-                        <h4>Livraison</h4>
-                        <div id="recapLivraison"></div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="modal-footer">
-                <!-- ✅ Boutons navigation avec pill -->
-                <button class="btn btn-secondary pill" id="btnPrevStep" onclick="etapePrecedente()" disabled>
-                    ← Précédent
-                </button>
-                <button class="btn btn-primary pill" id="btnNextStep" onclick="etapeSuivante()">
-                    Suivant →
-                </button>
-                <button class="btn btn-success pill hidden" id="btnValiderCommande" onclick="validerCommande()">
-                    ✓ Valider la commande
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Détail Commande -->
-    <div id="modalDetailCommande" class="modal" style="display: none;">
-        <div class="modal-content modal-large">
-            <div class="modal-header">
-                <h2>Détail de la commande <span id="detailNumCommande"></span></h2>
-                <button class="modal-close">&times;</button>
-            </div>
-            
-            <div class="modal-body">
-                <!-- Timeline du statut -->
-                <div class="timeline-container">
-                    <div class="timeline" id="timeline">
-                        <!-- Timeline générée dynamiquement par createOrderTimeline() -->
-                    </div>
-                </div>
-                
-                <!-- Sections détail -->
-                <div class="detail-sections">
-                    <!-- Colonne de gauche : Client + Livraison -->
-                    <div class="detail-column-left">
-                        <!-- Section Client ÉDITABLE -->
-                        <div class="detail-section">
-                            <h3>Informations client</h3>
-                            <div id="detailClient">
-                                <!-- Contenu généré dynamiquement avec icône d'édition -->
-                            </div>
-                        </div>
-                        
-                        <!-- Section Livraison ÉDITABLE -->
-                        <div class="detail-section">
-                            <h3>Informations de livraison</h3>
-                            <div id="detailLivraison">
-                                <!-- Contenu généré dynamiquement avec icône d'édition -->
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Colonne de droite : Produits -->
-                    <div class="detail-column-right">
-                        <!-- Section Produits ÉDITABLE -->
-                        <div class="detail-section">
-                            <h3>Produits commandés</h3>
-                            <div id="detailProduits">
-                                <!-- Contenu généré dynamiquement avec icône d'édition -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Section expédition sur toute la largeur ÉDITABLE -->
-                <div class="detail-section full-width" id="sectionExpedition" style="display: none;">
-                    <h3>Expédition</h3>
-                    <div id="detailExpedition">
-                        <!-- Contenu généré dynamiquement avec icône d'édition -->
-                    </div>
-                </div>
-                
-                <!-- Actions selon le statut -->
-                <div class="detail-actions" id="detailActions">
-                    <!-- Boutons d'action générés selon le statut -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Nouveau Client -->
-    <div id="modalNouveauClient" class="modal" style="display: none;">
-        <div class="modal-content modal-large">
-            <div class="modal-header">
-                <h2>Nouveau Client</h2>
-                <button class="modal-close">&times;</button>
-            </div>
-            
-            <div class="modal-body">
-                <form id="formNouveauClient">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Nom *</label>
-                            <input type="text" id="newClientNom" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Prénom *</label>
-                            <input type="text" id="newClientPrenom" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Téléphone *</label>
-                            <input type="tel" id="newClientTel" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Email</label>
-                            <input type="email" id="newClientEmail">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Magasin de référence *</label>
-                        <div id="newClientMagasin"></div>
-                    </div>
-                </form>
-            </div>
-            
-            <div class="modal-footer">
-                <!-- ✅ Boutons avec pill -->
-                <button class="btn btn-secondary pill" onclick="fermerModal('modalNouveauClient')">
-                    Annuler
-                </button>
-                <button class="btn btn-primary btn-with-icon pill" onclick="creerNouveauClient()">
-                    <span>➕</span> Créer le client
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <div class="footer">
-        <p>Orixis - © 2025</p>
-    </div>
-
-    <!-- JavaScript local au module -->
-    <script type="module" src="./commandes.main.js"></script>
+    <!-- ========================================
+         MESSAGES ET NOTIFICATIONS
+         ======================================== -->
+    <div id="messagesContainer" style="position: fixed; top: 10px; right: 10px; z-index: 1000; max-width: 400px;"></div>
+    
+    <!-- ========================================
+         CONTAINERS POUR LES WIDGETS
+         Minimaliste : les widgets génèrent leur contenu
+         ======================================== -->
+    
+    <!-- Container pour les stats cards -->
+    <div class="stats-container" style="margin: 100px 20px 20px 20px;"></div>
+    
+    <!-- Container pour les filtres -->
+    <div class="filters-container" style="margin: 20px;"></div>
+    
+    <!-- Container pour le tableau -->
+    <div class="table-container" style="margin: 20px;"></div>
+    
+    <!-- ========================================
+         SCRIPT PRINCIPAL
+         Un seul import : l'orchestrateur
+         ======================================== -->
+    <script type="module">
+        // Import de l'orchestrateur qui gère TOUT
+        import orchestrator from './commandes.orchestrator.js';
+        
+        // Lancement de l'application
+        window.addEventListener('load', async () => {
+            console.log('🎯 Initialisation de l\'application Commandes...');
+            await orchestrator.init();
+        });
+        
+        // Export pour debug uniquement (en dev)
+        if (window.location.hostname === 'localhost') {
+            window.orchestrator = orchestrator;
+        }
+    </script>
 </body>
 </html>

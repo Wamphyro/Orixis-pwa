@@ -1,100 +1,136 @@
-// ========================================
-// HEADER.WIDGET.JS - Enhanced Glassmorphism
-// Chemin: widgets/header/header.widget.js
-// ========================================
+/* ========================================
+   HEADER.WIDGET.JS - Widget Header Glassmorphism Enhanced
+   Chemin: widgets/header/header.widget.js
+   
+   DESCRIPTION:
+   Widget header complet avec glassmorphism, recherche, notifications,
+   menu utilisateur, breadcrumbs et indicateurs dynamiques.
+   
+   STRUCTURE DU FICHIER:
+   1. IMPORTS ET CONFIGURATION
+   2. CONSTRUCTEUR ET INITIALISATION
+   3. CHARGEMENT CSS
+   4. RÉCUPÉRATION DONNÉES
+   5. CRÉATION HTML
+   6. INJECTION DOM
+   7. GESTION ÉVÉNEMENTS
+   8. HANDLERS
+   9. GESTION DROPDOWNS
+   10. GESTION NOTIFICATIONS
+   11. MÉTHODES PUBLIQUES
+   12. UTILITAIRES
+   13. AUTO-REFRESH
+   14. DESTRUCTION
+   
+   UTILISATION:
+   import { HeaderWidget } from '/widgets/header/header.widget.js';
+   const header = new HeaderWidget({
+       title: 'Mon Application',
+       showSearch: true,
+       onSearch: (query) => console.log(query)
+   });
+   
+   API PUBLIQUE:
+   - setTitle(title) - Change le titre
+   - setBreadcrumbs(array) - Met à jour les breadcrumbs
+   - updateIndicator(id, updates) - Met à jour un indicateur
+   - addNotification(notif) - Ajoute une notification
+   - showProgress(percent) - Affiche la barre de progression
+   - hideProgress() - Cache la barre de progression
+   - destroy() - Détruit le widget
+   
+   OPTIONS PRINCIPALES:
+   - title: string - Titre de l'application
+   - centerTitle: boolean - Centrer le titre
+   - showSearch: boolean - Afficher la recherche
+   - showNotifications: boolean - Afficher les notifications
+   - showUser: boolean - Afficher le menu utilisateur
+   - buttonStyles: object - Personnalisation des tailles de boutons
+   
+   MODIFICATIONS:
+   - 08/02/2025 : Refactoring complet, suppression code mort
+   - 08/02/2025 : Correction z-index et tooltips
+   - 08/02/2025 : Ajout support maxWidth pour userMenu
+   
+   AUTEUR: SAV Audition
+   VERSION: 2.0.0
+   ======================================== */
 
 import { loadWidgetStyles } from '/src/utils/widget-styles-loader.js';
 
+// ========================================
+// CLASSE PRINCIPALE
+// ========================================
+
 export class HeaderWidget {
     constructor(config = {}) {
-        // ID unique pour le widget
-        this.id = `header-${Date.now()}`;
+        // ========================================
+        // 1. IDENTIFIANT UNIQUE
+        // ========================================
+        this.id = `header-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
         
-        // Charger le CSS
+        // ========================================
+        // 2. CHARGEMENT CSS
+        // ========================================
         this.loadCSS();
         
-        // Configuration complète avec toutes les options
+        // ========================================
+        // 3. CONFIGURATION COMPLÈTE
+        // ========================================
         this.config = {
-            // ===== BASIQUE (existant) =====
+            // === BASIQUE ===
             title: config.title || 'Application',
             subtitle: config.subtitle || '',
-            centerTitle: config.centerTitle || false,  // NOUVELLE OPTION
-            theme: config.theme || 'gradient', // 'gradient' ou 'solid'
+            centerTitle: config.centerTitle || false,
+            theme: config.theme || 'gradient', // 'gradient' | 'solid'
             container: config.container || 'body',
-            position: config.position || 'prepend',
+            position: config.position || 'prepend', // 'prepend' | 'append' | 'replace'
             sticky: config.sticky !== false,
+            pageBackground: config.pageBackground || null, // 'colorful' | 'purple' | null
             
-            // ===== NAVIGATION =====
+            // === NAVIGATION ===
             showBack: config.showBack !== false,
             backUrl: config.backUrl || '/modules/home/home.html',
             backText: config.backText || 'Retour',
             onBack: config.onBack || null,
             
-            // ===== NOUVEAU: LOGO =====
+            // === LOGO ===
             showLogo: config.showLogo || false,
-            logoIcon: config.logoIcon || null, // SVG ou emoji
+            logoIcon: config.logoIcon || null,
             logoUrl: config.logoUrl || '/',
             onLogoClick: config.onLogoClick || null,
             
-            // ===== NOUVEAU: RECHERCHE =====
+            // === RECHERCHE ===
             showSearch: config.showSearch || false,
             searchPlaceholder: config.searchPlaceholder || 'Rechercher...',
             searchDebounce: config.searchDebounce || 300,
             searchMaxWidth: config.searchMaxWidth || '600px',
-            searchHeight: config.searchHeight || '40px',  // ⬅️ AJOUTER CETTE LIGNE
+            searchHeight: config.searchHeight || '40px',
+            showSearchSuggestions: config.showSearchSuggestions || false,
             onSearch: config.onSearch || null,
             
-            // ===== NOUVEAU: ACTIONS RAPIDES =====
+            // === ACTIONS RAPIDES ===
             showQuickActions: config.showQuickActions || false,
-            quickActions: config.quickActions || [
-                {
-                    id: 'new',
-                    title: 'Nouvelle facture',
-                    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="3" width="18" height="18" rx="2"/>
-                        <line x1="12" y1="8" x2="12" y2="16"/>
-                        <line x1="8" y1="12" x2="16" y2="12"/>
-                    </svg>`,
-                    onClick: null
-                },
-                {
-                    id: 'dashboard',
-                    title: 'Dashboard',
-                    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="3" width="7" height="7"/>
-                        <rect x="14" y="3" width="7" height="7"/>
-                        <rect x="14" y="14" width="7" height="7"/>
-                        <rect x="3" y="14" width="7" height="7"/>
-                    </svg>`,
-                    onClick: null
-                }
-            ],
+            quickActions: config.quickActions || [],
             onQuickAction: config.onQuickAction || null,
             
-            // ===== NOUVEAU: INDICATEURS =====
+            // === INDICATEURS ===
             showIndicators: config.showIndicators || false,
-            indicators: config.indicators || [
-                {
-                    id: 'online',
-                    text: 'En ligne',
-                    type: 'success', // success, warning, danger
-                    animated: true
-                }
-            ],
+            indicators: config.indicators || [],
             
-            // ===== NOUVEAU: NOTIFICATIONS =====
+            // === NOTIFICATIONS ===
             showNotifications: config.showNotifications || false,
             notificationCount: config.notificationCount || 0,
             notifications: config.notifications || [],
             onNotificationClick: config.onNotificationClick || null,
             onNotificationClear: config.onNotificationClear || null,
             
-            // ===== NOUVEAU: BREADCRUMBS =====
+            // === BREADCRUMBS ===
             showBreadcrumbs: config.showBreadcrumbs || false,
             breadcrumbs: config.breadcrumbs || [],
             onBreadcrumbClick: config.onBreadcrumbClick || null,
             
-            // ===== UTILISATEUR (amélioré) =====
+            // === UTILISATEUR ===
             showUser: config.showUser !== false,
             showUserDropdown: config.showUserDropdown || false,
             showMagasin: config.showMagasin !== false,
@@ -108,47 +144,51 @@ export class HeaderWidget {
             onUserClick: config.onUserClick || null,
             onLogout: config.onLogout || this.defaultLogout.bind(this),
             
-            // ===== AUTO FEATURES =====
+            // === AUTO FEATURES ===
             autoAuth: config.autoAuth !== false,
             autoRefresh: config.autoRefresh || false,
             refreshInterval: config.refreshInterval || 60000,
             
-            // ===== PERSONNALISATION BOUTONS =====
+            // === PERSONNALISATION BOUTONS ===
             buttonStyles: {
                 back: {
-                    height: config.buttonStyles?.back?.height || '40px',
-                    padding: config.buttonStyles?.back?.padding || '10px 20px',
-                    minWidth: config.buttonStyles?.back?.minWidth || 'auto',
+                    height: '40px',
+                    padding: '10px 20px',
+                    minWidth: 'auto',
                     ...config.buttonStyles?.back
                 },
                 action: {
-                    height: config.buttonStyles?.action?.height || '40px',
-                    width: config.buttonStyles?.action?.width || '40px',
+                    height: '40px',
+                    width: '40px',
                     ...config.buttonStyles?.action
                 },
                 notification: {
-                    height: config.buttonStyles?.notification?.height || '44px',
-                    width: config.buttonStyles?.notification?.width || '44px',
+                    height: '44px',
+                    width: '44px',
                     ...config.buttonStyles?.notification
                 },
                 userMenu: {
-                    height: config.buttonStyles?.userMenu?.height || '44px',
-                    padding: config.buttonStyles?.userMenu?.padding || '6px 14px 6px 6px',
+                    height: '44px',
+                    padding: '6px 14px 6px 6px',
+                    maxWidth: '250px',
                     ...config.buttonStyles?.userMenu
                 },
                 indicator: {
-                    height: config.buttonStyles?.indicator?.height || '36px',
-                    padding: config.buttonStyles?.indicator?.padding || '8px 14px',
+                    height: '36px',
+                    padding: '8px 14px',
+                    minWidth: 'auto',
                     ...config.buttonStyles?.indicator
                 }
             },
             
-            // ===== CALLBACKS ADDITIONNELS =====
+            // === CALLBACKS ===
             onInit: config.onInit || null,
             onDestroy: config.onDestroy || null
         };
         
-        // État interne
+        // ========================================
+        // 4. ÉTAT INTERNE
+        // ========================================
         this.state = {
             userData: null,
             searchQuery: '',
@@ -156,15 +196,32 @@ export class HeaderWidget {
             notificationsOpen: false,
             userMenuOpen: false,
             indicators: [...this.config.indicators],
-            notifications: [...this.config.notifications]
+            notifications: [...this.config.notifications],
+            loaded: false
         };
         
-        // Éléments DOM
-        this.element = null;
+        // ========================================
+        // 5. RÉFÉRENCES DOM
+        // ========================================
+        this.elements = {
+            container: null,
+            mainElement: null,
+            searchInput: null,
+            notificationBadge: null,
+            notificationBtn: null,
+            userMenu: null,
+            progressBar: null
+        };
+        
+        // ========================================
+        // 6. TIMERS
+        // ========================================
         this.searchTimeout = null;
         this.refreshTimer = null;
         
-        // Initialiser
+        // ========================================
+        // 7. INITIALISATION
+        // ========================================
         this.init();
     }
     
@@ -172,28 +229,35 @@ export class HeaderWidget {
     // CHARGEMENT CSS
     // ========================================
     
+    /**
+     * Charge les styles du widget avec anti-cache
+     */
     loadCSS() {
         // Charger les styles communs
         loadWidgetStyles();
         
         // Charger le CSS spécifique
         const cssId = 'header-widget-enhanced-css';
-        if (!document.getElementById(cssId)) {
-            const link = document.createElement('link');
-            link.id = cssId;
-            link.rel = 'stylesheet';
-            link.href = `/widgets/header/header.widget.css?v=${Date.now()}`;
-            document.head.appendChild(link);
-        }
+        const existing = document.getElementById(cssId);
+        if (existing) existing.remove();
+        
+        const link = document.createElement('link');
+        link.id = cssId;
+        link.rel = 'stylesheet';
+        link.href = `/widgets/header/header.widget.css?v=${Date.now()}`;
+        document.head.appendChild(link);
     }
     
     // ========================================
     // INITIALISATION
     // ========================================
     
+    /**
+     * Initialisation asynchrone du widget
+     */
     async init() {
         try {
-            // Récupérer les données utilisateur
+            // Récupérer les données utilisateur si auth activée
             if (this.config.autoAuth) {
                 this.state.userData = await this.getUserData();
                 if (!this.state.userData) {
@@ -203,27 +267,21 @@ export class HeaderWidget {
                 }
             }
             
-            // Créer le HTML
+            // Créer et injecter le HTML
             this.createElement();
-            
-            // Injecter dans le DOM
             this.inject();
             
-            // Attacher les événements
+            // Configurer les interactions
             this.attachEvents();
-
-            // Attacher les événements
-            this.attachEvents();
-            
-            // Configurer les tooltips globaux
             this.setupTooltips();
+            this.setupDropdowns();
             
-            // Charger les notifications depuis localStorage
+            // Charger les données
             if (this.config.showNotifications) {
                 this.loadNotifications();
             }
             
-            // Démarrer l'auto-refresh
+            // Démarrer l'auto-refresh si activé
             if (this.config.autoRefresh) {
                 this.startAutoRefresh();
             }
@@ -231,12 +289,15 @@ export class HeaderWidget {
             // Animation d'entrée
             this.animate();
             
+            // Marquer comme chargé
+            this.state.loaded = true;
+            
             // Callback d'initialisation
             if (this.config.onInit) {
                 this.config.onInit(this);
             }
             
-            console.log('✅ HeaderWidget Enhanced initialisé');
+            console.log('✅ HeaderWidget initialisé:', this.id);
             
         } catch (error) {
             console.error('❌ Erreur init HeaderWidget:', error);
@@ -247,6 +308,10 @@ export class HeaderWidget {
     // RÉCUPÉRATION DONNÉES UTILISATEUR
     // ========================================
     
+    /**
+     * Récupère les données utilisateur depuis localStorage
+     * @returns {Object|null} Données utilisateur ou null
+     */
     async getUserData() {
         const auth = localStorage.getItem('sav_auth');
         if (!auth) return null;
@@ -292,19 +357,15 @@ export class HeaderWidget {
     // CRÉATION DU HTML
     // ========================================
     
+    /**
+     * Crée l'élément HTML principal du header
+     */
     createElement() {
         const html = `
-            <header class="header-widget theme-${this.config.theme} ${this.config.sticky ? 'sticky' : ''}" 
+            <header class="header-widget theme-${this.config.theme} ${this.config.sticky ? 'sticky' : ''} ${this.config.centerTitle ? 'has-centered-title' : ''}" 
                     id="${this.id}">
                 
-                ${this.config.centerTitle ? 
-                    `<div class="header-title-row">
-                        <div class="header-title-group">
-                            <h1 class="header-brand-centered">${this.config.title}</h1>
-                            ${this.config.subtitle ? `<p class="header-subtitle-centered">${this.config.subtitle}</p>` : ''}
-                        </div>
-                    </div>` : ''
-                }
+                ${this.config.centerTitle ? this.createTitleRow() : ''}
                 
                 <div class="header-content">
                     <!-- Section gauche -->
@@ -314,23 +375,7 @@ export class HeaderWidget {
                     
                     <!-- Section centrale -->
                     <div class="header-center">
-                        ${this.config.showSearch ? 
-                            `<div class="header-search-wrapper">
-                                <span class="header-search-icon">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <circle cx="11" cy="11" r="8"/>
-                                        <path d="m21 21-4.35-4.35"/>
-                                    </svg>
-                                </span>
-                                <input type="text" 
-                                       class="header-search-input" 
-                                       placeholder="${this.config.searchPlaceholder}"
-                                       data-action="search">
-                                ${this.config.showSearchSuggestions ? 
-                                    '<div class="header-search-suggestions" data-dropdown="search"></div>' : ''
-                                }
-                            </div>` : ''
-                        }
+                        ${this.createCenterContent()}
                     </div>
                     
                     <!-- Section droite -->
@@ -339,7 +384,6 @@ export class HeaderWidget {
                     </div>
                 </div>
                 
-                <!-- Breadcrumbs (optionnel) -->
                 ${this.config.showBreadcrumbs ? this.createBreadcrumbs() : ''}
                 
                 <!-- Barre de progression -->
@@ -351,16 +395,33 @@ export class HeaderWidget {
         
         const temp = document.createElement('div');
         temp.innerHTML = html;
-        this.element = temp.firstElementChild;
+        this.elements.mainElement = temp.firstElementChild;
     }
     
+    /**
+     * Crée la ligne de titre centrée
+     */
+    createTitleRow() {
+        return `
+            <div class="header-title-row">
+                <div class="header-title-group">
+                    <h1 class="header-brand-centered">${this.config.title}</h1>
+                    ${this.config.subtitle ? `<p class="header-subtitle-centered">${this.config.subtitle}</p>` : ''}
+                </div>
+            </div>
+        `;
+    }
+    
+    /**
+     * Crée la section gauche du header
+     */
     createLeftSection() {
         let html = '';
         
         // Logo
         if (this.config.showLogo && this.config.logoIcon) {
             html += `
-                <div class="header-logo" data-action="logo">
+                <div class="header-logo" data-action="logo" data-tooltip="Accueil">
                     ${this.config.logoIcon}
                 </div>
             `;
@@ -402,75 +463,113 @@ export class HeaderWidget {
         return html;
     }
     
-    createRightSection() {
-        let html = '';
+    /**
+     * Crée le contenu de la section centrale
+     */
+    createCenterContent() {
+        if (!this.config.showSearch) return '';
         
-        // Indicateurs
-        if (this.config.showIndicators && this.state.indicators.length > 0) {
-            html += '<div class="header-indicators">';
-            this.state.indicators.forEach(indicator => {
-                const typeClass = indicator.type === 'warning' ? 'warning' : 'online';
-                html += `
-                    <div class="header-indicator ${typeClass}">
-                        ${this.createIndicatorIcon(indicator.type)}
-                        <span>${indicator.text}</span>
-                    </div>
-                `;
-            });
-            html += '</div>';
-        }
-        
-        // Notifications
-        if (this.config.showNotifications) {
-            const count = this.state.notifications.filter(n => !n.read).length;
-            html += `
-                <button class="header-notification-btn ${count > 0 ? 'has-notifications' : ''}" 
-                        data-action="notifications">
+        return `
+            <div class="header-search-wrapper">
+                <span class="header-search-icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.35-4.35"/>
                     </svg>
-                    ${count > 0 ? `<span class="header-notif-badge">${count}</span>` : ''}
-                </button>
-                ${this.createNotificationsDropdown()}
-            `;
-        }
-        
-        // Menu utilisateur
-        if (this.config.showUser && this.state.userData) {
-            html += `
-                <div class="header-user-menu" data-action="user">
-                    ${this.createUserAvatar()}
-                    <div class="header-user-info">
-                        <div class="header-user-name">${this.state.userData.nomComplet}</div>
-                        ${this.config.showMagasin ? `
-                            <div class="header-user-role">
-                                ${this.state.userData.role} • ${this.state.userData.magasin}
-                            </div>
-                        ` : ''}
-                    </div>
-                </div>
-                ${this.config.showUserDropdown ? this.createUserDropdown() : ''}
-            `;
-        }
-        
-        return html;
+                </span>
+                <input type="text" 
+                       class="header-search-input" 
+                       placeholder="${this.config.searchPlaceholder}"
+                       data-action="search">
+                ${this.config.showSearchSuggestions ? 
+                    '<div class="header-search-suggestions" data-dropdown="search"></div>' : ''
+                }
+            </div>
+        `;
     }
     
+/**
+ * Crée la section droite du header
+ */
+createRightSection() {
+    let html = '';
+    
+    // Indicateurs
+    if (this.config.showIndicators && this.state.indicators.length > 0) {
+        html += '<div class="header-indicators">';
+        this.state.indicators.forEach(indicator => {
+            const typeClass = indicator.type === 'warning' ? 'warning' : 
+                             indicator.type === 'danger' ? 'danger' : 
+                             indicator.type === 'info' ? 'info' : 'success';
+            html += `
+                <div class="header-indicator ${typeClass}" data-indicator-id="${indicator.id}">
+                    ${this.createIndicatorIcon(indicator.type)}
+                    <span>${indicator.text}</span>
+                </div>
+            `;
+        });
+        html += '</div>';
+    }
+    
+    // Notifications - SANS DROPDOWN
+    if (this.config.showNotifications) {
+        const count = this.state.notifications.filter(n => !n.read).length;
+        html += `
+            <button class="header-notification-btn ${count > 0 ? 'has-notifications' : ''}" 
+                    data-action="notifications"
+                    data-tooltip="${count} notification(s)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                ${count > 0 ? `<span class="header-notif-badge">${count > 99 ? '99+' : count}</span>` : ''}
+            </button>
+        `;
+    }
+    
+    // Menu utilisateur - SANS DROPDOWN
+    if (this.config.showUser && this.state.userData) {
+        html += `
+            <div class="header-user-menu" data-action="user" data-tooltip="${this.state.userData.nomComplet}">
+                ${this.createUserAvatar()}
+                <div class="header-user-info">
+                    <div class="header-user-name">${this.state.userData.nomComplet}</div>
+                    ${this.config.showMagasin ? `
+                        <div class="header-user-role">
+                            ${this.state.userData.role} • ${this.state.userData.magasin}
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }
+    
+    return html;
+}
+    
+    /**
+     * Crée l'icône d'indicateur
+     */
     createIndicatorIcon(type) {
         const color = type === 'success' ? '#48bb78' : 
-                    type === 'warning' ? '#fbbf24' : 
-                    '#ef4444';
+                     type === 'warning' ? '#fbbf24' : 
+                     type === 'danger' ? '#ef4444' :
+                     '#3b82f6';
         
         return `
             <svg viewBox="0 0 24 24" fill="none">
                 <circle cx="12" cy="12" r="4" fill="${color}" opacity="0.3"/>
                 <circle cx="12" cy="12" r="2" fill="${color}"/>
-                <circle cx="12" cy="12" r="6" stroke="${color}" stroke-width="1" opacity="0.2"/>
+                ${type === 'success' || type === 'warning' ? 
+                    `<circle cx="12" cy="12" r="6" stroke="${color}" stroke-width="1" opacity="0.2"/>` : ''
+                }
             </svg>
         `;
     }
     
+    /**
+     * Crée l'avatar utilisateur
+     */
     createUserAvatar() {
         if (this.state.userData.avatar) {
             return `
@@ -478,15 +577,17 @@ export class HeaderWidget {
                     <img src="${this.state.userData.avatar}" alt="${this.state.userData.nomComplet}">
                 </div>
             `;
-        } else {
-            return `
-                <div class="header-user-avatar placeholder">
-                    ${this.state.userData.initiales}
-                </div>
-            `;
         }
+        return `
+            <div class="header-user-avatar placeholder">
+                ${this.state.userData.initiales}
+            </div>
+        `;
     }
     
+    /**
+     * Crée le dropdown des notifications
+     */
     createNotificationsDropdown() {
         return `
             <div class="header-notifications-dropdown" data-dropdown="notifications">
@@ -499,13 +600,16 @@ export class HeaderWidget {
                 <div class="notifications-list">
                     ${this.state.notifications.length > 0 ? 
                         this.state.notifications.map(notif => this.createNotificationItem(notif)).join('') :
-                        '<div style="padding: 20px; text-align: center; color: #9ca3af;">Aucune notification</div>'
+                        '<div class="empty-state">Aucune notification</div>'
                     }
                 </div>
             </div>
         `;
     }
     
+    /**
+     * Crée un élément de notification
+     */
     createNotificationItem(notif) {
         const iconClass = notif.type || 'info';
         const iconColor = iconClass === 'success' ? '#10b981' :
@@ -532,6 +636,9 @@ export class HeaderWidget {
         `;
     }
     
+    /**
+     * Crée le dropdown du menu utilisateur
+     */
     createUserDropdown() {
         return `
             <div class="header-user-dropdown" data-dropdown="user">
@@ -542,7 +649,7 @@ export class HeaderWidget {
                 <div class="user-dropdown-menu">
                     ${this.config.userMenuItems.map(item => {
                         if (item.type === 'separator') {
-                            return '<hr style="margin: 8px 0; border: none; border-top: 1px solid #e5e7eb;">';
+                            return '<hr class="dropdown-separator">';
                         }
                         return `
                             <a class="user-dropdown-item ${item.danger ? 'danger' : ''}" 
@@ -558,6 +665,9 @@ export class HeaderWidget {
         `;
     }
     
+    /**
+     * Crée les breadcrumbs
+     */
     createBreadcrumbs() {
         if (!this.config.breadcrumbs || this.config.breadcrumbs.length === 0) {
             return '';
@@ -591,139 +701,153 @@ export class HeaderWidget {
     // INJECTION DANS LE DOM
     // ========================================
     
-inject() {
-    const container = typeof this.config.container === 'string' 
-        ? document.querySelector(this.config.container)
-        : this.config.container;
-        
-    if (!container) {
-        console.error('❌ Container non trouvé:', this.config.container);
-        return;
-    }
-    
-    switch (this.config.position) {
-        case 'prepend':
-            container.insertBefore(this.element, container.firstChild);
-            break;
-        case 'append':
-            container.appendChild(this.element);
-            break;
-        case 'replace':
-            container.innerHTML = '';
-            container.appendChild(this.element);
-            break;
-    }
-    
-    // Appliquer le fond de page si demandé
-    if (this.config.pageBackground) {
-        // Retirer les anciens fonds
-        document.body.classList.remove('with-gradient-background', 'with-gradient-purple');
-        
-        // Appliquer le nouveau fond
-        if (this.config.pageBackground === 'colorful') {
-            document.body.classList.add('with-gradient-background');
-        } else if (this.config.pageBackground === 'purple') {
-            document.body.classList.add('with-gradient-purple');
+    /**
+     * Injecte le widget dans le DOM
+     */
+    inject() {
+        const container = typeof this.config.container === 'string' 
+            ? document.querySelector(this.config.container)
+            : this.config.container;
+            
+        if (!container) {
+            console.error('❌ Container non trouvé:', this.config.container);
+            return;
         }
-    }
-    
-    // Ajuster le padding du body
-    if (this.config.sticky && this.config.container === 'body') {
-        document.body.classList.add('has-header');
-        if (this.config.showBreadcrumbs) {
-            document.body.classList.add('with-breadcrumbs');
+        
+        // Stocker la référence
+        this.elements.container = container;
+        
+        // Injecter selon la position
+        switch (this.config.position) {
+            case 'prepend':
+                container.insertBefore(this.elements.mainElement, container.firstChild);
+                break;
+            case 'append':
+                container.appendChild(this.elements.mainElement);
+                break;
+            case 'replace':
+                container.innerHTML = '';
+                container.appendChild(this.elements.mainElement);
+                break;
         }
+        
+        // Appliquer le fond de page si configuré
+        if (this.config.pageBackground) {
+            document.body.classList.remove('with-gradient-background', 'with-gradient-purple');
+            
+            if (this.config.pageBackground === 'colorful') {
+                document.body.classList.add('with-gradient-background');
+            } else if (this.config.pageBackground === 'purple') {
+                document.body.classList.add('with-gradient-purple');
+            }
+        }
+        
+        // Ajuster le padding du body si sticky
+        if (this.config.sticky && this.config.container === 'body') {
+            document.body.classList.add('has-header');
+            if (this.config.showBreadcrumbs) {
+                document.body.classList.add('with-breadcrumbs');
+            }
+        }
+        
+        // Appliquer les styles personnalisés des boutons
+        this.applyButtonStyles();
+        
+        // Stocker les références aux éléments importants
+        this.elements.searchInput = this.elements.mainElement.querySelector('[data-action="search"]');
+        this.elements.notificationBadge = this.elements.mainElement.querySelector('.header-notif-badge');
+        this.elements.notificationBtn = this.elements.mainElement.querySelector('.header-notification-btn');
+        this.elements.userMenu = this.elements.mainElement.querySelector('.header-user-menu');
+        this.elements.progressBar = this.elements.mainElement.querySelector('.header-progress-bar');
     }
     
-// Appliquer les styles personnalisés
-    this.applyButtonStyles();
-}
+    /**
+     * Applique les styles personnalisés des boutons
+     */
+    applyButtonStyles() {
+        const styleId = `header-styles-${this.id}`;
+        
+        // Retirer l'ancien style si existe
+        const existingStyle = document.getElementById(styleId);
+        if (existingStyle) existingStyle.remove();
+        
+        // Créer le nouveau style
+        const style = document.createElement('style');
+        style.id = styleId;
+        
+        const bs = this.config.buttonStyles;
+        
+        style.textContent = `
+            /* ========================================
+               STYLES PERSONNALISÉS - ${this.id}
+               ======================================== */
+            
+            /* Bouton retour */
+            #${this.id} .header-back-btn {
+                height: ${bs.back.height} !important;
+                padding: ${bs.back.padding} !important;
+                min-width: ${bs.back.minWidth} !important;
+                white-space: nowrap !important;
+            }
+            
+            /* Actions rapides */
+            #${this.id} .header-action-btn {
+                height: ${bs.action.height} !important;
+                width: ${bs.action.width} !important;
+            }
+            
+            /* Notification */
+            #${this.id} .header-notification-btn {
+                height: ${bs.notification.height} !important;
+                width: ${bs.notification.width} !important;
+            }
+            
+            /* Menu utilisateur */
+            #${this.id} .header-user-menu {
+                height: ${bs.userMenu.height} !important;
+                padding: ${bs.userMenu.padding} !important;
+                ${bs.userMenu.maxWidth ? `max-width: ${bs.userMenu.maxWidth} !important;` : ''}
+            }
+            
+            /* Indicateurs */
+            #${this.id} .header-indicator {
+                height: ${bs.indicator.height} !important;
+                padding: ${bs.indicator.padding} !important;
+                min-width: ${bs.indicator.minWidth || 'fit-content'} !important;
+            }
+            
+            /* Avatar adaptatif */
+            #${this.id} .header-user-avatar {
+                width: calc(${bs.userMenu.height} - 8px) !important;
+                height: calc(${bs.userMenu.height} - 8px) !important;
+            }
+            
+            /* Hauteur de la barre de recherche */
+            #${this.id} .header-search-input {
+                height: ${this.config.searchHeight} !important;
+            }
 
-// ========================================
-// STYLES PERSONNALISÉS - Application dynamique
-// Applique les styles de boutons configurés
-// ========================================
-applyButtonStyles() {
-    const styleId = `header-styles-${this.id}`;
-    
-    // Retirer l'ancien style si existe
-    const existingStyle = document.getElementById(styleId);
-    if (existingStyle) existingStyle.remove();
-    
-    // Créer le nouveau style
-    const style = document.createElement('style');
-    style.id = styleId;
-    
-    const bs = this.config.buttonStyles;
-    
-    style.textContent = `
-        /* ========================================
-           STYLES PERSONNALISÉS DES BOUTONS - ${this.id}
-           ======================================== */
+            /* Alignement global */
+            #${this.id} .header-left,
+            #${this.id} .header-center,
+            #${this.id} .header-right {
+                align-items: center !important;
+            }
+        `;
         
-        /* Bouton retour */
-        #${this.id} .header-back-btn {
-            height: ${bs.back.height} !important;
-            padding: ${bs.back.padding} !important;
-            min-width: ${bs.back.minWidth} !important;
-            white-space: nowrap !important;
-        }
-        
-        /* Actions rapides */
-        #${this.id} .header-action-btn {
-            height: ${bs.action.height} !important;
-            width: ${bs.action.width} !important;
-        }
-        
-        /* Notification */
-        #${this.id} .header-notification-btn {
-            height: ${bs.notification.height} !important;
-            width: ${bs.notification.width} !important;
-        }
-        
-        /* Menu utilisateur - CORRECTION AJOUTÉE */
-        #${this.id} .header-user-menu {
-            height: ${bs.userMenu.height} !important;
-            padding: ${bs.userMenu.padding} !important;
-            ${bs.userMenu.maxWidth ? `max-width: ${bs.userMenu.maxWidth} !important;` : ''}
-        }
-        
-        /* Indicateurs */
-        #${this.id} .header-indicator {
-            height: ${bs.indicator.height} !important;
-            padding: ${bs.indicator.padding} !important;
-            min-width: ${bs.indicator.minWidth || 'fit-content'} !important;
-        }
-        
-        /* Avatar adaptatif */
-        #${this.id} .header-user-avatar {
-            width: calc(${bs.userMenu.height} - 8px) !important;
-            height: calc(${bs.userMenu.height} - 8px) !important;
-        }
-        
-        /* Hauteur de la barre de recherche */
-        #${this.id} .header-search-input {
-            height: ${this.config.searchHeight} !important;
-        }
-
-        /* Alignement global */
-        #${this.id} .header-left,
-        #${this.id} .header-center,
-        #${this.id} .header-right {
-            align-items: center !important;
-        }
-    `;
-    
-    document.head.appendChild(style);
-}
+        document.head.appendChild(style);
+    }
     
     // ========================================
     // GESTION DES ÉVÉNEMENTS
     // ========================================
     
+    /**
+     * Attache tous les événements au widget
+     */
     attachEvents() {
-        // Délégation d'événements sur le header
-        this.element.addEventListener('click', (e) => {
+        // Délégation d'événements sur le header principal
+        this.elements.mainElement.addEventListener('click', (e) => {
             const action = e.target.closest('[data-action]');
             if (!action) return;
             
@@ -755,23 +879,20 @@ applyButtonStyles() {
         });
         
         // Événements de recherche
-        if (this.config.showSearch) {
-            const searchInput = this.element.querySelector('[data-action="search"]');
-            if (searchInput) {
-                searchInput.addEventListener('input', (e) => {
-                    this.handleSearch(e.target.value);
-                });
-                
-                searchInput.addEventListener('focus', () => {
-                    if (this.config.showSearchSuggestions) {
-                        this.showSearchSuggestions();
-                    }
-                });
-            }
+        if (this.elements.searchInput) {
+            this.elements.searchInput.addEventListener('input', (e) => {
+                this.handleSearch(e.target.value);
+            });
+            
+            this.elements.searchInput.addEventListener('focus', () => {
+                if (this.config.showSearchSuggestions) {
+                    this.showSearchSuggestions();
+                }
+            });
         }
         
         // Clic sur notification
-        this.element.addEventListener('click', (e) => {
+        this.elements.mainElement.addEventListener('click', (e) => {
             const notifItem = e.target.closest('.notification-item');
             if (notifItem) {
                 const notifId = notifItem.dataset.notificationId;
@@ -781,7 +902,7 @@ applyButtonStyles() {
         
         // Clic sur breadcrumb
         if (this.config.showBreadcrumbs) {
-            this.element.addEventListener('click', (e) => {
+            this.elements.mainElement.addEventListener('click', (e) => {
                 const crumb = e.target.closest('[data-breadcrumb-index]');
                 if (crumb) {
                     e.preventDefault();
@@ -793,21 +914,8 @@ applyButtonStyles() {
         
         // Fermer les dropdowns au clic extérieur
         document.addEventListener('click', (e) => {
-            if (!this.element.contains(e.target)) {
+            if (!this.elements.mainElement.contains(e.target)) {
                 this.closeAllDropdowns();
-            }
-        });
-        
-        // Gestion des tooltips
-        this.element.querySelectorAll('.header-action-btn[data-tooltip]').forEach(btn => {
-            const tooltip = btn.querySelector('.header-tooltip');
-            if (tooltip) {
-                btn.addEventListener('mouseenter', () => {
-                    tooltip.style.display = 'block';
-                });
-                btn.addEventListener('mouseleave', () => {
-                    tooltip.style.display = 'none';
-                });
             }
         });
         
@@ -818,9 +926,8 @@ applyButtonStyles() {
                 this.handleBackClick();
             }
             // Alt + S : Focus recherche
-            if (e.altKey && e.key === 's' && this.config.showSearch) {
-                const searchInput = this.element.querySelector('[data-action="search"]');
-                if (searchInput) searchInput.focus();
+            if (e.altKey && e.key === 's' && this.elements.searchInput) {
+                this.elements.searchInput.focus();
             }
             // Alt + N : Notifications
             if (e.altKey && e.key === 'n' && this.config.showNotifications) {
@@ -832,67 +939,234 @@ applyButtonStyles() {
             }
         });
     }
+    
+    /**
+     * Configure le système de tooltips globaux
+     */
+    setupTooltips() {
+        // Créer un conteneur de tooltips global s'il n'existe pas
+        let tooltipContainer = document.getElementById('header-tooltips-container');
+        if (!tooltipContainer) {
+            tooltipContainer = document.createElement('div');
+            tooltipContainer.id = 'header-tooltips-container';
+            tooltipContainer.style.cssText = 'position: fixed; z-index: 1005; pointer-events: none;';
+            document.body.appendChild(tooltipContainer);
+        }
+        
+        // Pour chaque élément avec tooltip
+        this.elements.mainElement.querySelectorAll('[data-tooltip]').forEach(btn => {
+            const tooltipText = btn.getAttribute('data-tooltip');
+            if (!tooltipText) return;
+            
+            // Créer le tooltip dans le body
+            const tooltip = document.createElement('div');
+            tooltip.className = 'header-global-tooltip';
+            tooltip.textContent = tooltipText;
+            tooltip.style.cssText = `
+                position: fixed;
+                padding: 6px 12px;
+                background: rgba(0, 0, 0, 0.9);
+                color: white;
+                font-size: 12px;
+                border-radius: 6px;
+                white-space: nowrap;
+                display: none;
+                pointer-events: none;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+                z-index: 1005;
+            `;
+            tooltipContainer.appendChild(tooltip);
+            
+            // Positionner au survol
+            btn.addEventListener('mouseenter', () => {
+                const rect = btn.getBoundingClientRect();
+                tooltip.style.left = rect.left + rect.width/2 + 'px';
+                tooltip.style.top = rect.bottom + 8 + 'px';
+                tooltip.style.transform = 'translateX(-50%)';
+                tooltip.style.display = 'block';
+            });
+            
+            btn.addEventListener('mouseleave', () => {
+                tooltip.style.display = 'none';
+            });
+            
+            // Stocker la référence pour le nettoyage
+            btn._tooltip = tooltip;
+        });
+    }
 
-// ========================================
-// GESTION DES TOOLTIPS GLOBAUX
-// Système centralisé de tooltips au niveau body
-// ========================================
-setupTooltips() {
-    // Créer un conteneur de tooltips global s'il n'existe pas
-    let tooltipContainer = document.getElementById('header-tooltips-container');
-    if (!tooltipContainer) {
-        tooltipContainer = document.createElement('div');
-        tooltipContainer.id = 'header-tooltips-container';
-        tooltipContainer.style.cssText = 'position: fixed; z-index: 1005; pointer-events: none;';
-        document.body.appendChild(tooltipContainer);
+/**
+ * Configure les dropdowns globaux (hors contexte comme les tooltips)
+ */
+setupDropdowns() {
+    // Créer un conteneur de dropdowns global s'il n'existe pas
+    let dropdownContainer = document.getElementById('header-dropdowns-container');
+    if (!dropdownContainer) {
+        dropdownContainer = document.createElement('div');
+        dropdownContainer.id = 'header-dropdowns-container';
+        document.body.appendChild(dropdownContainer);
     }
     
-    // Pour chaque élément avec tooltip (pas seulement les action-btn)
-    this.element.querySelectorAll('[data-tooltip]').forEach(btn => {
-        const tooltipText = btn.getAttribute('data-tooltip');
-        if (!tooltipText) return;
-        
-        // Créer le tooltip dans le body
-        const tooltip = document.createElement('div');
-        tooltip.className = 'header-global-tooltip';
-        tooltip.textContent = tooltipText;
-        tooltip.style.cssText = `
-            position: fixed;
-            padding: 6px 12px;
-            background: rgba(0, 0, 0, 0.9);
-            color: white;
-            font-size: 12px;
-            border-radius: 6px;
-            white-space: nowrap;
-            display: none;
-            pointer-events: none;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-            z-index: 1005;
+    // Créer le dropdown notifications si nécessaire
+    if (this.config.showNotifications) {
+        const notifDropdown = document.createElement('div');
+        notifDropdown.className = 'glass-dropdown glass-notifications';  // ← CLASSES DIFFÉRENTES
+        notifDropdown.setAttribute('data-dropdown', 'notifications');
+        notifDropdown.innerHTML = `
+            <div class="glass-dropdown-header">
+                <span class="glass-dropdown-title">Notifications</span>
+                <span class="glass-dropdown-action" data-action="clear-notifications">
+                    Tout marquer comme lu
+                </span>
+            </div>
+            <div class="glass-dropdown-list">
+                ${this.state.notifications.length > 0 ? 
+                    this.state.notifications.map(notif => `
+                        <div class="glass-notif-item ${notif.read ? '' : 'unread'}" 
+                             data-notification-id="${notif.id}">
+                            <div class="glass-notif-icon ${notif.type || 'info'}">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <path d="M12 6v6l4 2"/>
+                                </svg>
+                            </div>
+                            <div class="glass-notif-content">
+                                <div class="glass-notif-message">${notif.message}</div>
+                                <div class="glass-notif-time">${this.formatTime(notif.timestamp)}</div>
+                            </div>
+                        </div>
+                    `).join('') :
+                    '<div class="glass-empty">Aucune notification</div>'
+                }
+            </div>
         `;
-        tooltipContainer.appendChild(tooltip);
+        dropdownContainer.appendChild(notifDropdown);
+        this.elements.notificationDropdown = notifDropdown;
+    }
+    
+    // Créer le dropdown user si nécessaire
+    if (this.config.showUserDropdown && this.state.userData) {
+        const userDropdown = document.createElement('div');
+        userDropdown.className = 'glass-dropdown glass-user';  // ← CLASSES DIFFÉRENTES
+        userDropdown.setAttribute('data-dropdown', 'user');
+        userDropdown.innerHTML = `
+            <div class="glass-dropdown-header">
+                <div class="glass-user-name">${this.state.userData.nomComplet}</div>
+                <div class="glass-user-email">${this.state.userData.email}</div>
+            </div>
+            <div class="glass-dropdown-menu">
+                ${this.config.userMenuItems.map(item => {
+                    if (item.type === 'separator') {
+                        return '<hr class="glass-separator">';
+                    }
+                    return `
+                        <a class="glass-menu-item ${item.danger ? 'danger' : ''}" 
+                           data-action="user-menu" 
+                           data-menu-id="${item.id}">
+                            <span>${item.icon}</span>
+                            <span>${item.text}</span>
+                        </a>
+                    `;
+                }).join('')}
+            </div>
+        `;
+        dropdownContainer.appendChild(userDropdown);
+        this.elements.userDropdown = userDropdown;
+    }
+    
+    // Attacher les événements sur le conteneur global
+    dropdownContainer.addEventListener('click', (e) => {
+        const action = e.target.closest('[data-action]');
+        if (!action) return;
         
-        // Positionner au survol
-        btn.addEventListener('mouseenter', () => {
-            const rect = btn.getBoundingClientRect();
-            tooltip.style.left = rect.left + rect.width/2 + 'px';
-            tooltip.style.top = rect.bottom + 8 + 'px';
-            tooltip.style.transform = 'translateX(-50%)';
-            tooltip.style.display = 'block';
-        });
+        const actionType = action.dataset.action;
         
-        btn.addEventListener('mouseleave', () => {
-            tooltip.style.display = 'none';
-        });
+        switch (actionType) {
+            case 'clear-notifications':
+                this.clearNotifications();
+                break;
+            case 'user-menu':
+                this.handleUserMenuItem(action.dataset.menuId);
+                break;
+        }
         
-        // Stocker la référence pour le nettoyage
-        btn._tooltip = tooltip;
+        // Gérer aussi les clics sur les notifications
+        const notifItem = e.target.closest('.glass-notif-item');
+        if (notifItem) {
+            const notifId = notifItem.dataset.notificationId;
+            this.handleNotificationClick(notifId);
+        }
     });
+}
+
+/**
+ * Bascule l'affichage des notifications
+ */
+toggleNotifications() {
+    if (!this.elements.notificationDropdown) return;
+    
+    const btn = this.elements.notificationBtn;
+    const dropdown = this.elements.notificationDropdown;
+    
+    const isOpen = dropdown.classList.contains('active');
+    
+    this.closeAllDropdowns();
+    
+    if (!isOpen) {
+        // Positionner le dropdown par rapport au bouton
+        const rect = btn.getBoundingClientRect();
+        dropdown.style.top = (rect.bottom + 8) + 'px';
+        dropdown.style.right = (window.innerWidth - rect.right) + 'px';
+        dropdown.classList.add('active');
+        this.state.notificationsOpen = true;
+    }
+}
+
+/**
+ * Bascule l'affichage du menu utilisateur
+ */
+toggleUserMenu() {
+    if (!this.elements.userDropdown) return;
+    
+    const menu = this.elements.userMenu;
+    const dropdown = this.elements.userDropdown;
+    
+    const isOpen = dropdown.classList.contains('active');
+    
+    this.closeAllDropdowns();
+    
+    if (!isOpen) {
+        // Positionner le dropdown par rapport au menu
+        const rect = menu.getBoundingClientRect();
+        dropdown.style.top = (rect.bottom + 8) + 'px';
+        dropdown.style.right = (window.innerWidth - rect.right) + 'px';
+        dropdown.classList.add('active');
+        this.state.userMenuOpen = true;
+    }
+}
+
+/**
+ * Ferme tous les dropdowns
+ */
+closeAllDropdowns() {
+    if (this.elements.notificationDropdown) {
+        this.elements.notificationDropdown.classList.remove('active');
+    }
+    if (this.elements.userDropdown) {
+        this.elements.userDropdown.classList.remove('active');
+    }
+    
+    this.state.notificationsOpen = false;
+    this.state.userMenuOpen = false;
 }
     
     // ========================================
     // HANDLERS D'ÉVÉNEMENTS
     // ========================================
     
+    /**
+     * Gère le clic sur le logo
+     */
     handleLogoClick() {
         if (this.config.onLogoClick) {
             this.config.onLogoClick();
@@ -901,6 +1175,9 @@ setupTooltips() {
         }
     }
     
+    /**
+     * Gère le clic sur le bouton retour
+     */
     handleBackClick() {
         if (this.config.onBack) {
             this.config.onBack();
@@ -909,6 +1186,9 @@ setupTooltips() {
         }
     }
     
+    /**
+     * Gère le clic sur une action rapide
+     */
     handleQuickAction(actionId) {
         const action = this.config.quickActions.find(a => a.id === actionId);
         if (!action) return;
@@ -920,6 +1200,9 @@ setupTooltips() {
         }
     }
     
+    /**
+     * Gère la recherche avec debounce
+     */
     handleSearch(query) {
         this.state.searchQuery = query;
         
@@ -932,6 +1215,9 @@ setupTooltips() {
         }, this.config.searchDebounce);
     }
     
+    /**
+     * Gère le clic sur une notification
+     */
     handleNotificationClick(notifId) {
         const notif = this.state.notifications.find(n => n.id === notifId);
         if (!notif) return;
@@ -945,6 +1231,9 @@ setupTooltips() {
         }
     }
     
+    /**
+     * Gère le clic sur un breadcrumb
+     */
     handleBreadcrumbClick(index) {
         const crumb = this.config.breadcrumbs[index];
         if (this.config.onBreadcrumbClick) {
@@ -954,6 +1243,9 @@ setupTooltips() {
         }
     }
     
+    /**
+     * Gère le clic sur un élément du menu utilisateur
+     */
     handleUserMenuItem(menuId) {
         const item = this.config.userMenuItems.find(i => i.id === menuId);
         if (!item) return;
@@ -973,37 +1265,72 @@ setupTooltips() {
     // GESTION DES DROPDOWNS
     // ========================================
     
+    /**
+     * Bascule l'affichage des notifications
+     */
     toggleNotifications() {
-        const dropdown = this.element.querySelector('[data-dropdown="notifications"]');
-        if (!dropdown) return;
+        if (!this.elements.notificationDropdown) return;
         
-        const isOpen = dropdown.classList.contains('active');
+        const btn = this.elements.notificationBtn;
+        const dropdown = this.elements.notificationDropdown;
+        
+        const isOpen = dropdown.style.display === 'block';
         
         this.closeAllDropdowns();
         
         if (!isOpen) {
-            dropdown.classList.add('active');
+            // Positionner le dropdown par rapport au bouton
+            const rect = btn.getBoundingClientRect();
+            dropdown.style.top = (rect.bottom + 8) + 'px';
+            dropdown.style.right = (window.innerWidth - rect.right) + 'px';
+            dropdown.style.display = 'block';
             this.state.notificationsOpen = true;
         }
     }
     
+    /**
+     * Bascule l'affichage du menu utilisateur
+     */
     toggleUserMenu() {
-        const dropdown = this.element.querySelector('[data-dropdown="user"]');
-        if (!dropdown) return;
+        if (!this.elements.userDropdown) return;
         
-        const isOpen = dropdown.classList.contains('active');
+        const menu = this.elements.userMenu;
+        const dropdown = this.elements.userDropdown;
+        
+        const isOpen = dropdown.style.display === 'block';
         
         this.closeAllDropdowns();
         
         if (!isOpen) {
-            dropdown.classList.add('active');
+            // Positionner le dropdown par rapport au menu
+            const rect = menu.getBoundingClientRect();
+            dropdown.style.top = (rect.bottom + 8) + 'px';
+            dropdown.style.right = (window.innerWidth - rect.right) + 'px';
+            dropdown.style.display = 'block';
             this.state.userMenuOpen = true;
         }
     }
     
+    /**
+     * Affiche les suggestions de recherche
+     */
+    showSearchSuggestions() {
+        const dropdown = this.elements.mainElement.querySelector('[data-dropdown="search"]');
+        if (dropdown && this.state.searchSuggestions.length > 0) {
+            dropdown.classList.add('active');
+        }
+    }
+    
+    /**
+     * Ferme tous les dropdowns
+     */
     closeAllDropdowns() {
-        const dropdowns = this.element.querySelectorAll('[data-dropdown]');
-        dropdowns.forEach(d => d.classList.remove('active'));
+        if (this.elements.notificationDropdown) {
+            this.elements.notificationDropdown.style.display = 'none';
+        }
+        if (this.elements.userDropdown) {
+            this.elements.userDropdown.style.display = 'none';
+        }
         
         this.state.notificationsOpen = false;
         this.state.userMenuOpen = false;
@@ -1013,6 +1340,9 @@ setupTooltips() {
     // GESTION DES NOTIFICATIONS
     // ========================================
     
+    /**
+     * Charge les notifications depuis localStorage
+     */
     loadNotifications() {
         const saved = localStorage.getItem('header_notifications');
         if (saved) {
@@ -1025,10 +1355,16 @@ setupTooltips() {
         }
     }
     
+    /**
+     * Sauvegarde les notifications dans localStorage
+     */
     saveNotifications() {
         localStorage.setItem('header_notifications', JSON.stringify(this.state.notifications));
     }
     
+    /**
+     * Ajoute une notification
+     */
     addNotification(notif) {
         const notification = {
             id: notif.id || `notif-${Date.now()}`,
@@ -1043,6 +1379,9 @@ setupTooltips() {
         this.updateNotifications();
     }
     
+    /**
+     * Marque toutes les notifications comme lues
+     */
     clearNotifications() {
         this.state.notifications.forEach(n => n.read = true);
         this.updateNotifications();
@@ -1052,35 +1391,42 @@ setupTooltips() {
         }
     }
     
+    /**
+     * Met à jour l'affichage des notifications
+     */
     updateNotifications() {
         this.saveNotifications();
         this.updateNotificationBadge();
         this.updateNotificationsList();
     }
     
+    /**
+     * Met à jour le badge de notifications
+     */
     updateNotificationBadge() {
-        const badge = this.element.querySelector('.header-notif-badge');
-        const btn = this.element.querySelector('.header-notification-btn');
         const count = this.state.notifications.filter(n => !n.read).length;
         
-        if (badge) {
+        if (this.elements.notificationBadge) {
             if (count > 0) {
-                badge.textContent = count > 99 ? '99+' : count;
-                badge.style.display = 'flex';
-                btn?.classList.add('has-notifications');
+                this.elements.notificationBadge.textContent = count > 99 ? '99+' : count;
+                this.elements.notificationBadge.style.display = 'flex';
+                this.elements.notificationBtn?.classList.add('has-notifications');
             } else {
-                badge.style.display = 'none';
-                btn?.classList.remove('has-notifications');
+                this.elements.notificationBadge.style.display = 'none';
+                this.elements.notificationBtn?.classList.remove('has-notifications');
             }
         }
     }
     
+    /**
+     * Met à jour la liste des notifications
+     */
     updateNotificationsList() {
-        const list = this.element.querySelector('.notifications-list');
+        const list = this.elements.mainElement.querySelector('.notifications-list');
         if (!list) return;
         
         if (this.state.notifications.length === 0) {
-            list.innerHTML = '<div style="padding: 20px; text-align: center; color: #9ca3af;">Aucune notification</div>';
+            list.innerHTML = '<div class="empty-state">Aucune notification</div>';
         } else {
             list.innerHTML = this.state.notifications
                 .map(notif => this.createNotificationItem(notif))
@@ -1092,20 +1438,34 @@ setupTooltips() {
     // MÉTHODES PUBLIQUES
     // ========================================
     
+    /**
+     * Change le titre du header
+     */
     setTitle(title) {
         this.config.title = title;
-        const titleEl = this.element.querySelector('.header-brand');
-        if (titleEl) titleEl.textContent = title;
+        
+        // Mettre à jour tous les endroits où le titre apparaît
+        const brandEl = this.elements.mainElement.querySelector('.header-brand');
+        if (brandEl) brandEl.textContent = title;
+        
+        const brandCenteredEl = this.elements.mainElement.querySelector('.header-brand-centered');
+        if (brandCenteredEl) brandCenteredEl.textContent = title;
     }
     
+    /**
+     * Met à jour les breadcrumbs
+     */
     setBreadcrumbs(breadcrumbs) {
         this.config.breadcrumbs = breadcrumbs;
-        const container = this.element.querySelector('.header-breadcrumbs');
+        const container = this.elements.mainElement.querySelector('.header-breadcrumbs');
         if (container) {
             container.outerHTML = this.createBreadcrumbs();
         }
     }
     
+    /**
+     * Met à jour un indicateur
+     */
     updateIndicator(indicatorId, updates) {
         const indicator = this.state.indicators.find(i => i.id === indicatorId);
         if (indicator) {
@@ -1114,15 +1474,20 @@ setupTooltips() {
         }
     }
     
+    /**
+     * Met à jour tous les indicateurs
+     */
     updateIndicators() {
-        const container = this.element.querySelector('.header-indicators');
+        const container = this.elements.mainElement.querySelector('.header-indicators');
         if (!container) return;
         
         container.innerHTML = '';
         this.state.indicators.forEach(indicator => {
-            const typeClass = indicator.type === 'warning' ? 'warning' : 'online';
+            const typeClass = indicator.type === 'warning' ? 'warning' : 
+                             indicator.type === 'danger' ? 'danger' : 
+                             indicator.type === 'info' ? 'info' : 'success';
             container.innerHTML += `
-                <div class="header-indicator ${typeClass}">
+                <div class="header-indicator ${typeClass}" data-indicator-id="${indicator.id}">
                     ${this.createIndicatorIcon(indicator.type)}
                     <span>${indicator.text}</span>
                 </div>
@@ -1130,18 +1495,23 @@ setupTooltips() {
         });
     }
     
+    /**
+     * Affiche la barre de progression
+     */
     showProgress(percent = 0) {
-        const progress = this.element.querySelector('.header-progress');
-        const bar = this.element.querySelector('.header-progress-bar');
+        const progress = this.elements.mainElement.querySelector('.header-progress');
         
-        if (progress && bar) {
+        if (progress && this.elements.progressBar) {
             progress.style.display = 'block';
-            bar.style.width = `${percent}%`;
+            this.elements.progressBar.style.width = `${percent}%`;
         }
     }
     
+    /**
+     * Cache la barre de progression
+     */
     hideProgress() {
-        const progress = this.element.querySelector('.header-progress');
+        const progress = this.elements.mainElement.querySelector('.header-progress');
         if (progress) {
             progress.style.display = 'none';
         }
@@ -1151,6 +1521,9 @@ setupTooltips() {
     // MÉTHODES UTILITAIRES
     // ========================================
     
+    /**
+     * Formate un timestamp en texte relatif
+     */
     formatTime(timestamp) {
         const now = Date.now();
         const diff = now - timestamp;
@@ -1168,6 +1541,9 @@ setupTooltips() {
         return date.toLocaleDateString('fr-FR');
     }
     
+    /**
+     * Action de déconnexion par défaut
+     */
     defaultLogout() {
         if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
             localStorage.removeItem('sav_auth');
@@ -1175,6 +1551,9 @@ setupTooltips() {
         }
     }
     
+    /**
+     * Redirige vers la page de connexion
+     */
     redirectToLogin() {
         window.location.href = '/index.html';
     }
@@ -1183,12 +1562,18 @@ setupTooltips() {
     // AUTO-REFRESH
     // ========================================
     
+    /**
+     * Démarre l'auto-refresh
+     */
     startAutoRefresh() {
         this.refreshTimer = setInterval(() => {
             this.refresh();
         }, this.config.refreshInterval);
     }
     
+    /**
+     * Rafraîchit les données utilisateur
+     */
     async refresh() {
         if (this.config.autoAuth) {
             const newUserData = await this.getUserData();
@@ -1204,10 +1589,12 @@ setupTooltips() {
         }
     }
     
+    /**
+     * Met à jour la section utilisateur
+     */
     updateUserSection() {
-        const userMenu = this.element.querySelector('.header-user-menu');
-        if (userMenu) {
-            userMenu.innerHTML = `
+        if (this.elements.userMenu) {
+            this.elements.userMenu.innerHTML = `
                 ${this.createUserAvatar()}
                 <div class="header-user-info">
                     <div class="header-user-name">${this.state.userData.nomComplet}</div>
@@ -1225,14 +1612,17 @@ setupTooltips() {
     // ANIMATIONS
     // ========================================
     
+    /**
+     * Animation d'entrée du widget
+     */
     animate() {
-        this.element.style.opacity = '0';
-        this.element.style.transform = 'translateY(-20px)';
+        this.elements.mainElement.style.opacity = '0';
+        this.elements.mainElement.style.transform = 'translateY(-20px)';
         
         setTimeout(() => {
-            this.element.style.transition = 'all 0.3s ease';
-            this.element.style.opacity = '1';
-            this.element.style.transform = 'translateY(0)';
+            this.elements.mainElement.style.transition = 'all 0.3s ease';
+            this.elements.mainElement.style.opacity = '1';
+            this.elements.mainElement.style.transform = 'translateY(0)';
         }, 10);
     }
     
@@ -1240,6 +1630,9 @@ setupTooltips() {
     // DESTRUCTION
     // ========================================
     
+    /**
+     * Détruit proprement le widget
+     */
     destroy() {
         // Arrêter les timers
         clearTimeout(this.searchTimeout);
@@ -1250,21 +1643,56 @@ setupTooltips() {
         if (tooltipContainer) {
             tooltipContainer.remove();
         }
+
+        // Dans destroy(), après le nettoyage des tooltips
+        const dropdownContainer = document.getElementById('header-dropdowns-container');
+        if (dropdownContainer) {
+            dropdownContainer.remove();
+        }
+        
+        // Retirer les styles personnalisés
+        const customStyle = document.getElementById(`header-styles-${this.id}`);
+        if (customStyle) {
+            customStyle.remove();
+        }
         
         // Retirer du DOM
-        if (this.element) {
-            this.element.remove();
+        if (this.elements.mainElement) {
+            this.elements.mainElement.remove();
         }
         
         // Retirer les classes du body
-        document.body.classList.remove('has-header', 'with-breadcrumbs');
+        document.body.classList.remove('has-header', 'with-breadcrumbs', 'with-gradient-background', 'with-gradient-purple');
+        
+        // Réinitialiser l'état
+        this.state = {
+            userData: null,
+            searchQuery: '',
+            searchSuggestions: [],
+            notificationsOpen: false,
+            userMenuOpen: false,
+            indicators: [],
+            notifications: [],
+            loaded: false
+        };
+        
+        // Réinitialiser les éléments
+        this.elements = {
+            container: null,
+            mainElement: null,
+            searchInput: null,
+            notificationBadge: null,
+            notificationBtn: null,
+            userMenu: null,
+            progressBar: null
+        };
         
         // Callback de destruction
         if (this.config.onDestroy) {
             this.config.onDestroy(this);
         }
         
-        console.log('🗑️ HeaderWidget détruit');
+        console.log('🗑️ HeaderWidget détruit:', this.id);
     }
 }
 

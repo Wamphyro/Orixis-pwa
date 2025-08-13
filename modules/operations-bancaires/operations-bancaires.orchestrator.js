@@ -84,13 +84,17 @@ class OperationsBancairesOrchestrator {
             search: '',
             type: '',
             categorie: '',
-            compte: '',
+            magasin: '',  // ⚡ CHANGÉ de 'compte' à 'magasin'
             periode: 'all',
             pointees: null
         };
         
         // Sélection multiple
         this.selection = new Set();
+        
+        // Listes dynamiques
+        this.magasinsDynamiques = new Set();  // ⚡ CHANGÉ de 'comptesDynamiques' à 'magasinsDynamiques'
+        this.categoriesDynamiques = new Set();
         
         // Comptes et catégories dynamiques
         this.comptesDynamiques = new Set();
@@ -163,49 +167,163 @@ class OperationsBancairesOrchestrator {
         // DataGrid
         this.createDataGrid();
         
-        // Ajouter les boutons d'action
-        this.addActionButtons();
-        
         console.log('✅ Widgets créés');
     }
     
-    createHeader() {
-        const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
+/**
+ * Créer le header
+ */
+createHeader() {
+    const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
+    
+    this.header = new HeaderWidget({
+        // FOND DÉGRADÉ
+        pageBackground: 'colorful',
+        theme: 'gradient',
         
-        this.header = new HeaderWidget({
-            title: 'Opérations Bancaires',
-            icon: '🏦',
-            subtitle: 'Gestion des mouvements bancaires',
-            showBack: true,
-            showUser: true,
-            showLogout: true
-        });
-        
-        // Personnaliser les boutons
-        setTimeout(() => {
-            const backContainer = document.querySelector(`#header-back-${this.header.id}`);
-            if (backContainer) {
-                const backBtn = document.createElement('button');
-                backBtn.className = 'btn btn-glass-solid-ice btn-sm';
-                backBtn.innerHTML = '<<';
-                backBtn.onclick = () => {
-                    window.location.href = '/modules/home/home.html';
-                };
-                backContainer.appendChild(backBtn);
+        // PERSONNALISATION DES BOUTONS
+        buttonStyles: {
+            back: {
+                height: '48px',
+                padding: '12px 24px',
+                minWidth: '120px'
+            },
+            action: {
+                height: '48px',
+                width: '44px'
+            },
+            notification: {
+                height: '48px',
+                width: '44px'
+            },
+            userMenu: {
+                height: '48px',
+                padding: '6px 16px 6px 6px',
+                maxWidth: '220px'
+            },
+            indicator: {
+                height: '48px',
+                padding: '10px 16px',
+                minWidth: 'auto'
             }
+        },
+        
+        // TEXTES
+        title: 'Opérations Bancaires',
+        subtitle: '',
+        centerTitle: true,  // Activer le titre centré
+        
+        // LOGO
+        showLogo: true,
+        logoIcon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
+        
+        // NAVIGATION
+        showBack: true,
+        backText: 'Retour',
+        onBack: () => {
+            window.location.href = '/modules/home/home.html';
+        },
+        
+        // RECHERCHE
+        showSearch: true,
+        searchPlaceholder: 'Rechercher référence, libellé, montant...',
+        searchMaxWidth: '1500px',
+        searchHeight: '48px',
+        onSearch: (query) => {
+            this.currentFilters.search = query;
+            this.applyFilters();
+        },
+        
+        // BOUTONS RAPIDES
+        showQuickActions: true,
+        quickActions: [
+            {
+                id: 'import',
+                title: 'Importer CSV',
+                icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>',
+                onClick: () => this.openImportModal()
+            },
+            {
+                id: 'export',
+                title: 'Export Excel',
+                icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line></svg>',
+                onClick: () => this.grid?.export('excel')
+            },
+            {
+                id: 'stats',
+                title: 'Statistiques',
+                icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line></svg>',
+                onClick: () => this.showStatistiques()
+            },
+            {
+                id: 'reset',
+                title: 'Réinitialiser',
+                icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>',
+                onClick: () => this.resetAllFilters()
+            },
+            {
+                id: 'refresh',
+                title: 'Actualiser',
+                icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>',
+                onClick: () => {
+                    // Force le rechargement complet depuis le serveur (équivalent Cmd+Maj+R)
+                    window.location.reload(true);
+                }
+            }
+        ],
+        
+
+        // INDICATEURS
+        showIndicators: true,
+        indicators: [
+            {
+                id: 'status',
+                text: 'Connecté',
+                type: 'success',  // IMPORTANT: doit être 'success' pour le vert
+                animated: true
+            }
+        ],
+        
+        // NOTIFICATIONS
+        showNotifications: true,
+        
+        // BREADCRUMBS
+        showBreadcrumbs: true,
+        breadcrumbs: [
+            { text: 'Accueil', url: '/modules/home/home.html' },
+            { text: 'Finance', url: '#' },
+            { text: 'Opérations Bancaires' }
+        ],
+        
+        // UTILISATEUR
+        showUser: true,
+        showUserDropdown: true,
+        showMagasin: true,
+        showLogout: true
+    });
+    
+    // Mettre à jour le compteur et le solde après chargement
+    this.updateHeaderIndicators = () => {
+        if (this.header && this.operationsData) {
+            // Nombre d'opérations
+            this.header.updateIndicator('count', `${this.operationsData.length} opérations`);
             
-            const logoutContainer = document.querySelector(`#header-logout-${this.header.id}`);
-            if (logoutContainer) {
-                const logoutBtn = document.createElement('button');
-                logoutBtn.className = 'btn btn-logout-user';
-                logoutBtn.innerHTML = 'Déconnexion';
-                logoutBtn.onclick = () => {
-                    this.header.defaultLogout();
-                };
-                logoutContainer.appendChild(logoutBtn);
-            }
-        }, 100);
-    }
+            // Calcul du solde
+            const solde = this.operationsData.reduce((sum, op) => {
+                const montant = parseFloat(op.montant) || 0;
+                return op.type === 'credit' ? sum + montant : sum - montant;
+            }, 0);
+            
+            const soldeFormat = new Intl.NumberFormat('fr-FR', {
+                style: 'currency',
+                currency: 'EUR'
+            }).format(solde);
+            
+            this.header.updateIndicator('balance', `Solde: ${soldeFormat}`, 
+                solde >= 0 ? 'success' : 'danger');
+        }
+    };
+}
     
     createStatsCards() {
         this.stats = new StatsCardsWidget({
@@ -238,15 +356,8 @@ class OperationsBancairesOrchestrator {
             showWrapper: true,
             wrapperStyle: 'card',
             wrapperTitle: 'Filtres',
-            resetButton: true,
-            resetButtonClass: 'btn btn-glass-orange',
+            resetButton: false,
             filters: [
-                { 
-                    type: 'search', 
-                    key: 'search', 
-                    placeholder: 'Rechercher (libellé, montant, référence)...' 
-                },
-                // ⚡ FILTRE TYPE SUPPRIMÉ ICI
                 { 
                     type: 'select', 
                     key: 'categorie', 
@@ -258,10 +369,10 @@ class OperationsBancairesOrchestrator {
                 },
                 { 
                     type: 'select', 
-                    key: 'compte', 
-                    label: 'Compte',
+                    key: 'magasin',  // ⚡ CHANGÉ de 'compte' à 'magasin'
+                    label: 'Magasin',   // ⚡ CHANGÉ de 'Compte' à 'Magasin'
                     options: [
-                        { value: '', label: 'Tous les comptes' }
+                        { value: '', label: 'Tous les magasins' }  // ⚡ CHANGÉ
                     ]
                 },
                 { 
@@ -282,30 +393,10 @@ class OperationsBancairesOrchestrator {
                 
                 this.currentFilters = { 
                     ...this.currentFilters, 
-                    search: values.search || '',
-                    // type: values.type || '',  // ⚡ SUPPRIMÉ
                     categorie: values.categorie || '',
-                    compte: values.compte || '',
+                    magasin: values.magasin || '',  // ⚡ CHANGÉ de 'compte' à 'magasin'
                     periode: values.periode || 'all'
                 };
-                
-                this.applyFilters();
-            },
-            onReset: () => {
-                console.log('Réinitialisation des filtres');
-                this.currentFilters = {
-                    search: '',
-                    type: '',
-                    categorie: '',
-                    compte: '',
-                    periode: 'all',
-                    pointees: null,
-                    cartesActives: []  // ⚡ AJOUTER CETTE LIGNE !
-                };
-                
-                if (this.stats) {
-                    this.stats.deselectAll();
-                }
                 
                 this.applyFilters();
             }
@@ -451,52 +542,6 @@ createDataGrid() {
         });
     }, 100);
 }
-
-/**
- * Ajouter les boutons d'action
- */
-addActionButtons() {
-    setTimeout(() => {
-        const actionsZone = document.querySelector('.data-grid-export-buttons');
-        if (actionsZone) {
-            const buttons = [
-                { 
-                    text: '📥 Importer CSV', 
-                    class: 'btn btn-glass-blue btn-lg', 
-                    action: () => this.openImportModal()
-                },
-                { 
-                    text: '🏷️ Catégoriser sélection', 
-                    class: 'btn btn-glass-purple btn-lg', 
-                    action: () => this.categoriserSelection()
-                },
-                { 
-                    text: '✓ Pointer sélection', 
-                    class: 'btn btn-glass-green btn-lg', 
-                    action: () => this.pointerSelection()
-                },
-                { 
-                    text: '📄 Export CSV', 
-                    class: 'btn btn-glass-blue btn-lg', 
-                    action: () => this.grid.export('csv')
-                },
-                { 
-                    text: '📊 Export Excel', 
-                    class: 'btn btn-glass-blue btn-lg', 
-                    action: () => this.grid.export('excel')
-                }
-            ];
-            
-            buttons.forEach(btn => {
-                const button = document.createElement('button');
-                button.className = btn.class;
-                button.innerHTML = btn.text;
-                button.onclick = btn.action;
-                actionsZone.appendChild(button);
-            });
-        }
-    }, 100);
-}
     
     // ========================================
     // CHARGEMENT DES DONNÉES
@@ -537,20 +582,20 @@ addActionButtons() {
     }
     
     updateDynamicLists() {
-        this.comptesDynamiques.clear();
+        this.magasinsDynamiques.clear();  // ⚡ CHANGÉ
         this.categoriesDynamiques.clear();
         
         this.operationsData.forEach(op => {
-            if (op.compte) this.comptesDynamiques.add(op.compte);
+            if (op.codeMagasin) this.magasinsDynamiques.add(op.codeMagasin);  // ⚡ CHANGÉ
             if (op.categorie) this.categoriesDynamiques.add(op.categorie);
         });
         
-        console.log('📊 Comptes détectés:', Array.from(this.comptesDynamiques));
+        console.log('📊 Magasins détectés:', Array.from(this.magasinsDynamiques));  // ⚡ CHANGÉ
         console.log('📊 Catégories détectées:', Array.from(this.categoriesDynamiques));
     }
     
     updateFilterOptions() {
-        // Mettre à jour les options de catégories
+        // Créer les options de catégories
         const categorieOptions = [{ value: '', label: 'Toutes catégories' }];
         this.categoriesDynamiques.forEach(cat => {
             const config = CONFIG.CATEGORIES[cat];
@@ -562,18 +607,35 @@ addActionButtons() {
             }
         });
         
-        // Mettre à jour les options de comptes
-        const compteOptions = [{ value: '', label: 'Tous les comptes' }];
-        this.comptesDynamiques.forEach(compte => {
-            compteOptions.push({
-                value: compte,
-                label: `•••${compte.slice(-4)}`
+        // Créer les options de magasins
+        const magasinOptions = [{ value: '', label: 'Tous les magasins' }];
+        this.magasinsDynamiques.forEach(magasin => {
+            magasinOptions.push({
+                value: magasin,
+                label: magasin === '-' ? 'Non défini' : magasin
             });
         });
         
-        // Mettre à jour les filtres
-        if (this.filters) {
-            // TODO: Méthode pour mettre à jour les options dynamiquement
+        console.log('📋 Options catégories:', categorieOptions.length - 1);
+        console.log('📋 Options magasins:', magasinOptions.length - 1);
+        
+        // Mettre à jour les dropdowns dynamiquement (même méthode que factures-fournisseurs)
+        if (this.filters && this.filters.state && this.filters.state.dropdowns) {
+            // Mettre à jour le dropdown catégorie
+            if (this.filters.state.dropdowns.categorie) {
+                const categorieDropdown = this.filters.state.dropdowns.categorie;
+                categorieDropdown.config.options = categorieOptions;
+                categorieDropdown.filteredOptions = [...categorieOptions];
+                this.filters.renderDropdownOptions(categorieDropdown);
+            }
+            
+            // Mettre à jour le dropdown magasin
+            if (this.filters.state.dropdowns.magasin) {
+                const magasinDropdown = this.filters.state.dropdowns.magasin;
+                magasinDropdown.config.options = magasinOptions;
+                magasinDropdown.filteredOptions = [...magasinOptions];
+                this.filters.renderDropdownOptions(magasinDropdown);
+            }
         }
     }
     
@@ -753,6 +815,47 @@ async handleImport(data) {
     // AFFICHAGE DÉTAIL
     // ========================================
     
+    /**
+     * Afficher les statistiques détaillées
+     */
+    showStatistiques() {
+        // TODO: Ouvrir une modal avec des statistiques détaillées
+        this.showInfo('Statistiques détaillées - Fonctionnalité en développement');
+    }
+    
+    /**
+     * Réinitialiser tous les filtres
+     */
+    resetAllFilters() {
+        console.log('🔄 Réinitialisation de tous les filtres');
+        
+        // Réinitialiser les filtres
+        this.currentFilters = {
+            search: '',
+            type: '',
+            categorie: '',
+            magasin: '',  // ⚡ CHANGÉ de 'compte' à 'magasin'
+            periode: 'all',
+            pointees: null,
+            cartesActives: []
+        };
+        
+        // Désélectionner toutes les cartes stats
+        if (this.stats) {
+            this.stats.deselectAll();
+        }
+        
+        // Réinitialiser les valeurs dans le widget de filtres
+        if (this.filters) {
+            this.filters.reset();
+        }
+        
+        // Appliquer les filtres réinitialisés
+        this.applyFilters();
+        
+        this.showInfo('Filtres réinitialisés');
+    }
+
     openDetailModal(row) {
         const formatMontant = (m) => new Intl.NumberFormat('fr-FR', {
             style: 'currency',
@@ -884,29 +987,55 @@ async handleImport(data) {
         console.log('🔍 Application des filtres:', this.currentFilters);
         
         this.filteredData = this.operationsData.filter(operation => {
-            // Filtre recherche
+            // Filtre recherche - CHERCHE DANS TOUTES LES COLONNES
             if (this.currentFilters.search) {
                 const search = this.currentFilters.search.toLowerCase();
-                const libelle = (operation.libelle || '').toLowerCase();
-                const reference = (operation.reference || '').toLowerCase();
-                const montant = (operation.montant || '').toString();
                 
-                if (!libelle.includes(search) && 
-                    !reference.includes(search) && 
-                    !montant.includes(search)) {
+                // Formatter la date pour la recherche
+                const dateStr = operation.date ? new Date(operation.date).toLocaleDateString('fr-FR') : '';
+                
+                // Récupérer le label de la catégorie
+                const categConfig = CONFIG.CATEGORIES[operation.categorie] || CONFIG.CATEGORIES.autre;
+                const categorieLabel = categConfig.label.toLowerCase();
+                
+                // Formatter le montant pour la recherche
+                const montantStr = Math.abs(operation.montant || 0).toString();
+                const montantFormate = this.formaterMontant(operation.montant).toLowerCase();
+                
+                // Statut pointée
+                const statut = operation.pointee ? 'pointée' : 'en attente';
+                
+                // Chercher dans TOUTES les colonnes
+                const searchIn = [
+                    dateStr,                                    // Date
+                    (operation.libelle || '').toLowerCase(),    // Libellé
+                    (operation.reference || '').toLowerCase(),  // Référence
+                    categorieLabel,                             // Catégorie (label)
+                    operation.categorie || '',                  // Catégorie (clé)
+                    montantStr,                                 // Montant (nombre)
+                    montantFormate,                             // Montant (formaté)
+                    operation.compte || '',                     // Compte
+                    (operation.codeMagasin || '').toLowerCase(), // Magasin
+                    statut,                                      // Statut
+                    operation.banque || ''                      // Banque
+                ].join(' ');
+                
+                if (!searchIn.includes(search)) {
                     return false;
                 }
             }
             
-            // Filtre catégorie
+            // ⚡ FILTRE CATÉGORIE - AJOUTÉ
             if (this.currentFilters.categorie && operation.categorie !== this.currentFilters.categorie) {
                 return false;
             }
             
-            // Filtre compte
-            if (this.currentFilters.compte && operation.compte !== this.currentFilters.compte) {
+            // ⚡ FILTRE MAGASIN
+            if (this.currentFilters.magasin && operation.codeMagasin !== this.currentFilters.magasin) {
                 return false;
             }
+            
+            // ⚡ FILTRE COMPTE SUPPRIMÉ - Cette section a été retirée
             
             // Filtre cartes actives
             if (this.currentFilters.cartesActives && this.currentFilters.cartesActives.length > 0) {
@@ -966,7 +1095,7 @@ async handleImport(data) {
         this.updateGrid();
         console.log(`✅ ${this.filteredData.length} opérations affichées`);
     }
-    
+
     updateStats() {
         if (!this.stats) return;
         

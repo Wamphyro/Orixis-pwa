@@ -170,130 +170,137 @@ class DecompteSecuOrchestrator {
         // DataGrid
         this.createDataGrid();
         
-        // Ajouter les boutons d'action
-        this.addActionButtons();
-        
         console.log('✅ Widgets créés');
     }
     
-createHeader() {
-    const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
-    
-    this.header = new HeaderWidget({
-        // FOND DÉGRADÉ
-        pageBackground: 'colorful',
-        theme: 'gradient',
+    createHeader() {
+        const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
         
-        // PERSONNALISATION DES BOUTONS
-        buttonStyles: {
-            back: {
-                height: '48px',
-                padding: '12px 24px',
-                minWidth: '120px'
+        this.header = new HeaderWidget({
+            // FOND DÉGRADÉ
+            pageBackground: 'colorful',
+            theme: 'gradient',
+            
+            // PERSONNALISATION DES BOUTONS
+            buttonStyles: {
+                back: {
+                    height: '48px',
+                    padding: '12px 24px',
+                    minWidth: '120px'
+                },
+                action: {
+                    height: '48px',
+                    width: '44px'
+                },
+                notification: {
+                    height: '48px',
+                    width: '44px'
+                },
+                userMenu: {
+                    height: '48px',
+                    padding: '6px 16px 6px 6px',
+                    maxWidth: '220px'
+                },
+                indicator: {
+                    height: '48px',
+                    padding: '10px 16px',
+                    minWidth: 'auto'
+                }
             },
-            action: {
-                height: '48px',
-                width: '44px'
+            
+            // TEXTES
+            title: 'Décomptes Sécurité Sociale',
+            subtitle: '',
+            centerTitle: true,
+            
+            // LOGO
+            showLogo: true,
+            logoIcon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
+            
+            // NAVIGATION
+            showBack: true,
+            backText: 'Retour',
+            onBack: () => {
+                window.location.href = '/modules/home/home.html';
             },
-            notification: {
-                height: '48px',
-                width: '44px'
+            
+            // RECHERCHE
+            showSearch: true,
+            searchPlaceholder: 'Rechercher décompte, patient, virement, NSS, caisse...',
+            searchMaxWidth: '1500px',
+            searchHeight: '48px',
+            onSearch: (query) => {
+                this.currentFilters.search = query;
+                this.applyFilters();
             },
-            userMenu: {
-                height: '48px',
-                padding: '6px 16px 6px 6px',
-                maxWidth: '220px'  // ← AJOUTER CETTE LIGNE
-            },
-            indicator: {
-                height: '48px',
-                padding: '10px 16px',
-                minWidth: 'auto'
-            }
-        },
-        
-        // TEXTES
-        title: 'Décomptes Sécurité Sociale',
-        subtitle: '',
-        centerTitle: true,  // Activer le titre centré
-        
-        // LOGO
-        showLogo: true,
-        logoIcon: '🏠',
-        
-        // NAVIGATION
-        showBack: true,
-        backText: 'Retour',
-        onBack: () => {
-            window.location.href = '/modules/home/home.html';
-        },
-        
-        // RECHERCHE
-        showSearch: true,
-        searchPlaceholder: 'Rechercher décompte, patient, n° virement...',
-        searchMaxWidth: '1500px',
-        searchHeight: '48px',
-        onSearch: (query) => {
-            this.currentFilters.search = query;
-            this.applyFilters();
-        },
-        
-        // BOUTONS RAPIDES
-        showQuickActions: true,
-        quickActions: [
-            {
-                id: 'new',
-                title: 'Nouveau décompte',
-                icon: '➕',
-                onClick: () => this.openCreateModal()
-            },
-            {
-                id: 'export',
-                title: 'Export Excel',
-                icon: '📊',
-                onClick: () => this.grid?.export('excel')
-            },
-            {
-                id: 'refresh',
-                title: 'Actualiser',
-                icon: '🔄',
-                onClick: () => this.loadData()
-            }
-        ],
-        
-        // INDICATEURS
-        showIndicators: true,
-        indicators: [
-            {
-                id: 'status',
-                text: 'Connecté',
-                type: 'success',  // IMPORTANT: doit être 'success' pour le vert
-                animated: true
-            },
-            {
-                id: 'count',
-                text: '0 décomptes',
-                type: 'info'
-            }
-        ],
-        
-        // NOTIFICATIONS
-        showNotifications: true,
-        
-        // BREADCRUMBS
-        showBreadcrumbs: true,
-        breadcrumbs: [
-            { text: 'Accueil', url: '/modules/home/home.html' },
-            { text: 'Gestion', url: '#' },
-            { text: 'Décomptes Sécu' }
-        ],
-        
-        // UTILISATEUR
-        showUser: true,
-        showUserDropdown: true,
-        showMagasin: true,
-        showLogout: true
-    });
-}
+            
+            // BOUTONS RAPIDES
+            showQuickActions: true,
+            quickActions: [
+                {
+                    id: 'new',
+                    title: 'Nouveau décompte',
+                    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>',
+                    onClick: () => this.openCreateModal()
+                },
+                {
+                    id: 'export',
+                    title: 'Export Excel',
+                    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line></svg>',
+                    onClick: () => this.grid?.export('excel')
+                },
+                {
+                    id: 'stats',
+                    title: 'Statistiques',
+                    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line></svg>',
+                    onClick: () => this.showStatistiques()
+                },
+                {
+                    id: 'reset',
+                    title: 'Réinitialiser',
+                    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>',
+                    onClick: () => this.resetAllFilters()
+                },
+                {
+                    id: 'refresh',
+                    title: 'Actualiser',
+                    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>',
+                    onClick: () => {
+                        // Force le rechargement complet depuis le serveur (équivalent Cmd+Maj+R)
+                        window.location.reload(true);
+                    }
+                }
+            ],
+            
+            // INDICATEURS - UNIQUEMENT LE STATUS CONNECTÉ
+            showIndicators: true,
+            indicators: [
+                {
+                    id: 'status',
+                    text: 'Connecté',
+                    type: 'success',
+                    animated: true
+                }
+            ],
+            
+            // NOTIFICATIONS
+            showNotifications: true,
+            
+            // BREADCRUMBS
+            showBreadcrumbs: true,
+            breadcrumbs: [
+                { text: 'Accueil', url: '/modules/home/home.html' },
+                { text: 'Gestion', url: '#' },
+                { text: 'Décomptes Sécu' }
+            ],
+            
+            // UTILISATEUR
+            showUser: true,
+            showUserDropdown: true,
+            showMagasin: true,
+            showLogout: true
+        });
+    }
     
     createStatsCards() {
         this.stats = new StatsCardsWidget({
@@ -325,14 +332,8 @@ createHeader() {
             showWrapper: true,
             wrapperStyle: 'card',
             wrapperTitle: 'Filtres',
-            resetButton: true,
-            resetButtonClass: 'btn btn-glass-orange',
+            resetButton: false,  // Pas de bouton reset ici
             filters: [
-                { 
-                    type: 'search', 
-                    key: 'search', 
-                    placeholder: 'Rechercher (bénéficiaire, n° virement, caisse)...' 
-                },
                 { 
                     type: 'select', 
                     key: 'caisse', 
@@ -358,8 +359,9 @@ createHeader() {
                     options: [
                         { value: 'all', label: 'Toutes' },
                         { value: 'today', label: "Aujourd'hui" },
-                        { value: 'week', label: 'Cette semaine' },
-                        { value: 'month', label: 'Ce mois' }
+                        { value: 'week', label: '7 derniers jours' },
+                        { value: 'month', label: '30 derniers jours' },
+                        { value: 'year', label: 'Cette année' }
                     ]
                 }
             ],
@@ -367,29 +369,11 @@ createHeader() {
                 console.log('Filtres appliqués:', values);
                 
                 this.currentFilters = { 
-                    ...this.currentFilters, 
-                    search: values.search || '',
+                    ...this.currentFilters,
                     caisse: values.caisse || '',
                     magasin: values.magasin || '',
-                    periode: values.periode || 'all',
-                    statuts: this.currentFilters.statuts
+                    periode: values.periode || 'all'
                 };
-                
-                this.applyFilters();
-            },
-            onReset: () => {
-                console.log('Réinitialisation des filtres');
-                this.currentFilters = {
-                    search: '',
-                    statuts: [],
-                    caisse: '',
-                    magasin: '',
-                    periode: 'all'
-                };
-                
-                if (this.stats) {
-                    this.stats.deselectAll();
-                }
                 
                 this.applyFilters();
             }
@@ -520,39 +504,6 @@ createHeader() {
         });
     }
     
-    addActionButtons() {
-        setTimeout(() => {
-            const actionsZone = document.querySelector('.data-grid-export-buttons');
-            if (actionsZone) {
-                const buttons = [
-                    { 
-                        text: '➕ Nouveau décompte', 
-                        class: 'btn btn-glass-blue btn-lg', 
-                        action: () => this.openCreateModal()
-                    },
-                    { 
-                        text: '📄 Export CSV', 
-                        class: 'btn btn-glass-blue btn-lg', 
-                        action: () => this.grid.export('csv')
-                    },
-                    { 
-                        text: '📊 Export Excel', 
-                        class: 'btn btn-glass-blue btn-lg', 
-                        action: () => this.grid.export('excel')
-                    }
-                ];
-                
-                buttons.forEach(btn => {
-                    const button = document.createElement('button');
-                    button.className = btn.class;
-                    button.innerHTML = btn.text;
-                    button.onclick = btn.action;
-                    actionsZone.appendChild(button);
-                });
-            }
-        }, 100);
-    }
-    
     // ========================================
     // CHARGEMENT DES DONNÉES
     // ========================================
@@ -642,8 +593,8 @@ createHeader() {
             // Mettre à jour l'affichage
             this.updateStats();
             this.applyFilters();
-            
-            this.hideLoader();
+        
+        this.hideLoader();
             
         } catch (error) {
             this.hideLoader();
@@ -1290,6 +1241,71 @@ openVirementDetailModal(virementRow) {
 }
 
 /**
+ * Réinitialiser tous les filtres
+ */
+resetAllFilters() {
+    console.log('🔄 Réinitialisation de tous les filtres');
+    
+    // Réinitialiser les filtres
+    this.currentFilters = {
+        search: '',
+        statuts: [],
+        caisse: '',
+        magasin: '',
+        periode: 'all'
+    };
+    
+    // Désélectionner toutes les cartes stats
+    if (this.stats) {
+        this.stats.deselectAll();
+    }
+    
+    // Réinitialiser les valeurs dans le widget de filtres
+    if (this.filters) {
+        this.filters.reset();
+    }
+    
+    // Réinitialiser la barre de recherche du header
+    if (this.header && this.header.clearSearch) {
+        this.header.clearSearch();
+    }
+    
+    // Appliquer les filtres réinitialisés
+    this.applyFilters();
+    
+    this.showInfo('Filtres réinitialisés');
+}
+
+/**
+ * Afficher les statistiques détaillées
+ */
+showStatistiques() {
+    // Calculer les statistiques
+    const stats = {
+        totalVirements: this.decomptesData.length,
+        montantTotal: this.decomptesData.reduce((sum, v) => sum + (v.montantVirement || 0), 0),
+        totalPatients: this.decomptesData.reduce((sum, v) => sum + (v.nombreBeneficiaires || 0), 0),
+        parCaisse: {},
+        parMagasin: {},
+        parStatut: {}
+    };
+    
+    // Grouper par caisse
+    this.decomptesData.forEach(v => {
+        const caisse = v.caissePrimaire || 'Non définie';
+        if (!stats.parCaisse[caisse]) {
+            stats.parCaisse[caisse] = { count: 0, montant: 0 };
+        }
+        stats.parCaisse[caisse].count++;
+        stats.parCaisse[caisse].montant += (v.montantVirement || 0);
+    });
+    
+    // TODO: Ouvrir une modal avec des graphiques détaillés
+    console.log('📊 Statistiques:', stats);
+    this.showInfo('Statistiques détaillées - Fonctionnalité en développement');
+}
+
+/**
  * Action rapide de rapprochement depuis le tableau
  */
 async rapprocher(row) {
@@ -1315,51 +1331,80 @@ async rapprocher(row) {
     applyFilters() {
         console.log('🔍 Application des filtres:', this.currentFilters);
         
-        this.filteredData = this.decomptesData.filter(decompte => {
-            // Filtre recherche
+        this.filteredData = this.decomptesData.filter(virement => {
+            // FILTRE RECHERCHE GLOBALE - CHERCHE DANS TOUTES LES COLONNES
             if (this.currentFilters.search) {
                 const search = this.currentFilters.search.toLowerCase();
-                const numero = (decompte.numeroDecompte || '').toLowerCase();
-                const numeroVirement = (decompte.numeroVirement || '').toLowerCase();
-                const caisse = (decompte.caissePrimaire || '').toLowerCase();
                 
-                // Recherche dans les bénéficiaires
-                let foundInBeneficiaires = false;
-                if (decompte.beneficiaires && Array.isArray(decompte.beneficiaires)) {
-                    foundInBeneficiaires = decompte.beneficiaires.some(b => {
-                        const nom = `${b.prenom || ''} ${b.nom || ''}`.toLowerCase();
-                        return nom.includes(search);
-                    });
+                // Formatter la date pour la recherche
+                const dateStr = virement.dateVirement ? 
+                    new Date(virement.dateVirement.toDate ? virement.dateVirement.toDate() : virement.dateVirement)
+                        .toLocaleDateString('fr-FR') : '';
+                
+                // Formatter le montant pour la recherche
+                const montantStr = Math.abs(virement.montantVirement || 0).toString();
+                const montantFormate = this.formaterMontant(virement.montantVirement).toLowerCase();
+                
+                // Statut de rapprochement
+                const statutRapprochement = virement.statutRapprochement === 'rapproche' ? 'rapproché' :
+                                            virement.statutRapprochement === 'en_attente' ? 'en attente' :
+                                            virement.statutRapprochement === 'ecart' ? 'écart' : '';
+                
+                // Construire la chaîne de recherche des bénéficiaires
+                let beneficiairesStr = '';
+                if (virement.beneficiaires && Array.isArray(virement.beneficiaires)) {
+                    beneficiairesStr = virement.beneficiaires.map(b => {
+                        return [
+                            b.prenom || '',
+                            b.nom || '',
+                            b.numeroSecuriteSociale || '',
+                            (b.montantRemboursement || 0).toString(),
+                            b.nombreAppareils ? `${b.nombreAppareils} appareil` : ''
+                        ].join(' ');
+                    }).join(' ').toLowerCase();
                 }
                 
-                if (!numero.includes(search) && 
-                    !numeroVirement.includes(search) && 
-                    !caisse.includes(search) &&
-                    !foundInBeneficiaires) {
+                // Chercher dans TOUTES les colonnes
+                const searchIn = [
+                    dateStr,                                        // Date virement
+                    (virement.numeroDecompte || '').toLowerCase(),  // N° Décompte
+                    (virement.numeroVirement || '').toLowerCase(),  // Réf. Virement
+                    (virement.caissePrimaire || '').toLowerCase(),  // Caisse
+                    (virement.codeMagasin || '').toLowerCase(),     // Magasin
+                    (virement.societe || '').toLowerCase(),         // Société
+                    montantStr,                                     // Montant (nombre)
+                    montantFormate,                                 // Montant (formaté)
+                    (virement.nombreBeneficiaires || 0).toString(), // Nombre patients
+                    statutRapprochement,                            // Statut rapprochement
+                    beneficiairesStr,                               // Tous les bénéficiaires
+                    virement.statut || ''                           // Statut général
+                ].join(' ');
+                
+                if (!searchIn.includes(search)) {
                     return false;
                 }
             }
             
-            // Filtre statuts
+            // Filtre statuts (cartes)
             if (this.currentFilters.statuts && this.currentFilters.statuts.length > 0) {
-                if (!this.currentFilters.statuts.includes(decompte.statut)) {
+                if (!this.currentFilters.statuts.includes(virement.statut)) {
                     return false;
                 }
             }
             
             // Filtre caisse
-            if (this.currentFilters.caisse && decompte.caissePrimaire !== this.currentFilters.caisse) {
+            if (this.currentFilters.caisse && virement.caissePrimaire !== this.currentFilters.caisse) {
                 return false;
             }
             
             // Filtre magasin
-            if (this.currentFilters.magasin && decompte.codeMagasin !== this.currentFilters.magasin) {
+            if (this.currentFilters.magasin && virement.codeMagasin !== this.currentFilters.magasin) {
                 return false;
             }
             
             // Filtre période
-            if (this.currentFilters.periode !== 'all' && decompte.dateVirement) {
-                const date = decompte.dateVirement.toDate ? decompte.dateVirement.toDate() : new Date(decompte.dateVirement);
+            if (this.currentFilters.periode !== 'all' && virement.dateVirement) {
+                const date = virement.dateVirement.toDate ? virement.dateVirement.toDate() : new Date(virement.dateVirement);
                 const now = new Date();
                 
                 switch (this.currentFilters.periode) {
@@ -1375,8 +1420,12 @@ async rapprocher(row) {
                         break;
                     case 'month':
                         const monthAgo = new Date();
-                        monthAgo.setMonth(monthAgo.getMonth() - 1);
+                        monthAgo.setDate(monthAgo.getDate() - 30);
                         if (date < monthAgo) return false;
+                        break;
+                    case 'year':
+                        const yearStart = new Date(now.getFullYear(), 0, 1);
+                        if (date < yearStart) return false;
                         break;
                 }
             }
@@ -1385,10 +1434,9 @@ async rapprocher(row) {
         });
         
         // Mettre à jour le grid
-        if (this.grid) {
-            this.grid.setData(this.filteredData);
-            console.log(`✅ ${this.filteredData.length} décomptes affichés`);
-        }
+        this.updateGrid();
+        
+        console.log(`✅ ${this.filteredData.length} virements affichés`);
     }
     
     updateStats() {
@@ -1408,6 +1456,12 @@ async rapprocher(row) {
         };
         
         this.stats.updateAll(cardsData);
+    }
+
+    updateGrid() {
+        if (this.grid) {
+            this.grid.setData(this.filteredData);
+        }
     }
     
     updateFilterOptions() {
@@ -1523,6 +1577,11 @@ async rapprocher(row) {
     showWarning(message) {
         toast.warning(message);
         console.log('⚠️', message);
+    }
+    
+    showInfo(message) {
+        toast.info(message);
+        console.log('ℹ️', message);
     }
 }
 

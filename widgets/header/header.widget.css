@@ -1,18 +1,50 @@
 /* ========================================
-   HEADER.WIDGET.CSS - Enhanced Glassmorphism
+   HEADER.WIDGET.CSS - Styles Glassmorphism Enhanced
    Chemin: widgets/header/header.widget.css
+   
+   DESCRIPTION:
+   Styles pour le widget header avec effet glassmorphism,
+   support des thèmes gradient/solid et responsive.
+   
+   STRUCTURE DU FICHIER:
+   1. STRUCTURE PRINCIPALE
+   2. SECTION GAUCHE
+   3. SECTION CENTRALE - RECHERCHE
+   4. SECTION DROITE
+   5. DROPDOWNS GLASSMORPHISM (HORS CONTEXTE)
+   6. BREADCRUMBS
+   7. BARRE DE PROGRESSION
+   8. ANIMATIONS
+   9. RESPONSIVE
+   10. UTILITAIRES ET BODY
+   
+   HIÉRARCHIE Z-INDEX:
+   - 1000 : Header principal
+   - 1001 : Breadcrumbs
+   - 1002 : Contenu header
+   - 1003 : Boutons d'action
+   - 10000 : Dropdowns (hors contexte)
+   
+   MODIFICATIONS:
+   - 08/02/2025 : Refactoring complet, réorganisation
+   - 08/02/2025 : Dropdowns glassmorphism hors contexte
+   - 08/02/2025 : Suppression des anciens styles dropdowns
+   
+   AUTEUR: SAV Audition
+   VERSION: 3.0.0
    ======================================== */
 
 /* ========================================
-   STRUCTURE PRINCIPALE
+   1. STRUCTURE PRINCIPALE
    ======================================== */
+
 .header-widget {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     min-height: 70px;
-    padding: 10px 0;  /* Réduit de 15px à 10px */
+    padding: 10px 0;
     z-index: 1000;
     transition: all 0.3s ease;
 }
@@ -51,12 +83,47 @@
     min-height: 70px;
     gap: 15px;
     position: relative;
-    z-index: 100;  /* Au-dessus des breadcrumbs */
+    z-index: 1002;
+}
+
+/* Ligne de titre centré (optionnel) */
+.header-title-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 8px 30px 5px;
+    width: 100%;
+}
+
+.header-title-row .header-title-group {
+    text-align: center;
+}
+
+.header-brand-centered {
+    font-size: 26px;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    margin: 0;
+    text-align: center;
+}
+
+.header-subtitle-centered {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 4px 0 0 0;
+    font-weight: 300;
+    text-align: center;
+}
+
+.header-widget.has-centered-title .header-content {
+    padding-top: 5px;
 }
 
 /* ========================================
-   SECTION GAUCHE
+   2. SECTION GAUCHE
    ======================================== */
+
 .header-left {
     justify-self: start;
     display: flex;
@@ -90,7 +157,7 @@
     height: 24px;
 }
 
-/* Titre principal */
+/* Titre principal (non centré) */
 .header-brand {
     position: absolute;
     left: 50%;
@@ -154,7 +221,7 @@
     transition: all 0.2s;
     border: none;
     position: relative;
-    z-index: 2000;  /* Plus élevé que les breadcrumbs */
+    z-index: 1003;
 }
 
 .header-action-btn:hover {
@@ -169,13 +236,13 @@
 }
 
 /* ========================================
-   SECTION CENTRALE - RECHERCHE
+   3. SECTION CENTRALE - RECHERCHE
    ======================================== */
+
 .header-center {
     justify-self: stretch;
     width: 100%;
-    /* PAS de max-width pour occuper tout l'espace */
-    margin: 0;  /* Pas de marge, le gap du grid s'en occupe */
+    margin: 0;
 }
 
 .header-search-wrapper {
@@ -246,98 +313,10 @@
     stroke: rgba(255, 255, 255, 0.8);
 }
 
-/* Suggestions de recherche */
-.header-search-suggestions {
-    position: absolute;
-    top: calc(100% + 8px);
-    left: 0;
-    right: 0;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-    max-height: 300px;
-    overflow-y: auto;
-    display: none;
-    z-index: 1002;
-}
-
-.header-search-suggestions.active {
-    display: block;
-}
-
-.search-suggestion-item {
-    padding: 12px 16px;
-    cursor: pointer;
-    transition: background 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.search-suggestion-item:hover {
-    background: #f3f4f6;
-}
-
-.search-suggestion-item svg {
-    width: 16px;
-    height: 16px;
-    stroke: #6b7280;
-}
-
-.header-title-group {
-    text-align: center;
-}
-
-.header-brand-centered {
-    font-size: 24px;
-    font-weight: 700;
-    color: white;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin: 0;
-}
-
-/* Quand titre + recherche */
-.header-center .header-search-wrapper {
-    width: 100%;
-    /* PAS de max-width pour prendre toute la largeur */
-}
-
-/* Ligne dédiée au titre */
-.header-title-row {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 8px 30px 5px;  /* Réduit : 8px en haut, 5px en bas */
-    width: 100%;
-}
-
-.header-title-row .header-title-group {
-    text-align: center;
-}
-
-.header-title-row .header-brand-centered {
-    font-size: 26px;  /* Légèrement plus petit */
-    font-weight: 700;
-    color: white;
-    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-    margin: 0;
-}
-
-.header-title-row .header-subtitle-centered {
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.85);
-    margin: 4px 0 0 0;
-    font-weight: 300;
-}
-
-/* Ajuster le padding quand il y a un titre centré */
-.header-widget.has-centered-title .header-content {
-    padding-top: 5px;
-}
-
 /* ========================================
-   SECTION DROITE
+   4. SECTION DROITE
    ======================================== */
+
 .header-right {
     justify-self: end;
     display: flex;
@@ -364,53 +343,45 @@
     font-size: 12px;
     color: white;
     transition: all 0.2s;
-    white-space: nowrap !important;  /* ✅ FORCE SUR UNE LIGNE */
-    min-width: fit-content !important;  /* ✅ S'ADAPTE AU CONTENU */
+    white-space: nowrap;
+    min-width: fit-content;
 }
 
-/* SVG des indicateurs - IMPORTANT */
+/* Types d'indicateurs */
+.header-indicator.success {
+    background: rgba(72, 187, 120, 0.2);
+    border-color: rgba(72, 187, 120, 0.3);
+}
+
+.header-indicator.warning {
+    background: rgba(251, 191, 36, 0.2);
+    border-color: rgba(251, 191, 36, 0.3);
+}
+
+.header-indicator.danger {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.header-indicator.info {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+/* SVG des indicateurs */
 .header-indicator svg {
-    width: 12px !important;
-    height: 12px !important;
+    width: 12px;
+    height: 12px;
     flex-shrink: 0;
     display: block;
 }
 
-/* Forcer l'affichage des cercles */
 .header-indicator svg circle {
-    fill-opacity: 1 !important;
-    stroke-opacity: 1 !important;
+    fill-opacity: 1;
+    stroke-opacity: 1;
 }
 
-.header-indicator.online svg circle:nth-child(2) {
-    animation: pulse-ring 2s infinite;
-}
-
-.header-indicator.warning svg circle:nth-child(2) {
-    animation: pulse-warning 1.5s infinite;
-}
-
-@keyframes pulse-ring {
-    0% {
-        r: 2;
-        opacity: 1;
-    }
-    50% {
-        r: 4;
-        opacity: 0.5;
-    }
-    100% {
-        r: 6;
-        opacity: 0;
-    }
-}
-
-@keyframes pulse-warning {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-}
-
-/* Notifications */
+/* Bouton notifications */
 .header-notification-btn {
     position: relative;
     width: 44px;
@@ -426,6 +397,7 @@
     cursor: pointer;
     transition: all 0.2s;
     border: none;
+    z-index: 1003;
 }
 
 .header-notification-btn:hover {
@@ -441,12 +413,6 @@
 
 .header-notification-btn.has-notifications {
     animation: bell-ring 2s infinite;
-}
-
-@keyframes bell-ring {
-    0%, 100% { transform: rotate(0); }
-    5%, 15% { transform: rotate(-10deg); }
-    10%, 20% { transform: rotate(10deg); }
 }
 
 .header-notif-badge {
@@ -468,115 +434,6 @@
     border: 2px solid rgba(255, 255, 255, 0.9);
 }
 
-/* Dropdown notifications */
-.header-notifications-dropdown {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    width: 360px;
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-    display: none;
-    z-index: 1002;
-}
-
-.header-notifications-dropdown.active {
-    display: block;
-}
-
-.notifications-header {
-    padding: 16px 20px;
-    border-bottom: 1px solid #e5e7eb;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.notifications-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: #1f2937;
-}
-
-.notifications-clear {
-    font-size: 12px;
-    color: #6b7280;
-    cursor: pointer;
-    transition: color 0.2s;
-}
-
-.notifications-clear:hover {
-    color: #ef4444;
-}
-
-.notifications-list {
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-.notification-item {
-    padding: 12px 20px;
-    cursor: pointer;
-    transition: background 0.2s;
-    border-bottom: 1px solid #f3f4f6;
-}
-
-.notification-item:hover {
-    background: #f9fafb;
-}
-
-.notification-item.unread {
-    background: #eff6ff;
-}
-
-.notification-content {
-    display: flex;
-    gap: 12px;
-}
-
-.notification-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.notification-icon.info {
-    background: #dbeafe;
-}
-
-.notification-icon.success {
-    background: #d1fae5;
-}
-
-.notification-icon.warning {
-    background: #fed7aa;
-}
-
-.notification-icon svg {
-    width: 18px;
-    height: 18px;
-}
-
-.notification-text {
-    flex: 1;
-}
-
-.notification-message {
-    font-size: 14px;
-    color: #1f2937;
-    margin-bottom: 4px;
-}
-
-.notification-time {
-    font-size: 12px;
-    color: #9ca3af;
-}
-
 /* Menu utilisateur */
 .header-user-menu {
     display: flex;
@@ -591,8 +448,9 @@
     cursor: pointer;
     transition: all 0.2s;
     position: relative;
-    max-width: 250px;  /* Limiter la largeur */
-    overflow: hidden;   /* Cacher le débordement */
+    max-width: 250px;
+    overflow: hidden;
+    z-index: 1003;
 }
 
 .header-user-menu:hover {
@@ -631,7 +489,7 @@
 .header-user-info {
     text-align: left;
     flex: 1;
-    min-width: 0;  /* Important pour que text-overflow fonctionne */
+    min-width: 0;
     overflow: hidden;
 }
 
@@ -642,7 +500,7 @@
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;  /* Ajoute "..." si le texte est trop long */
+    text-overflow: ellipsis;
 }
 
 .header-user-role {
@@ -650,70 +508,209 @@
     color: rgba(255, 255, 255, 0.75);
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;  /* Ajoute "..." si le texte est trop long */
-}
-
-/* Dropdown menu utilisateur */
-.header-user-dropdown {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    width: 240px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-    display: none;
-    z-index: 1002;
-}
-
-.header-user-dropdown.active {
-    display: block;
-}
-
-.user-dropdown-header {
-    padding: 16px;
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.user-dropdown-email {
-    font-size: 12px;
-    color: #6b7280;
-    margin-top: 4px;
-}
-
-.user-dropdown-menu {
-    padding: 8px;
-}
-
-.user-dropdown-item {
-    padding: 10px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: #374151;
-    text-decoration: none;
-}
-
-.user-dropdown-item:hover {
-    background: #f3f4f6;
-}
-
-.user-dropdown-item.danger {
-    color: #dc2626;
-}
-
-.user-dropdown-item svg {
-    width: 18px;
-    height: 18px;
-    stroke: currentColor;
+    text-overflow: ellipsis;
 }
 
 /* ========================================
-   BREADCRUMBS (Optionnel)
+   5. DROPDOWNS GLASSMORPHISM (HORS CONTEXTE)
    ======================================== */
+
+/* Container global pour les dropdowns */
+#header-dropdowns-container {
+    position: fixed;
+    z-index: 10000;
+    pointer-events: none;
+}
+
+/* Base des dropdowns glass */
+.glass-dropdown {
+    position: fixed;
+    background: rgba(30, 30, 40, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3),
+                0 0 80px rgba(255, 255, 255, 0.05) inset;
+    display: none;
+    pointer-events: auto;
+    overflow: hidden;
+}
+
+.glass-dropdown.active {
+    display: block;
+}
+
+.glass-notifications {
+    width: 360px;
+}
+
+.glass-user {
+    width: 240px;
+}
+
+/* Headers des dropdowns */
+.glass-dropdown-header {
+    padding: 16px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-dropdown-title,
+.glass-user-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.glass-dropdown-action {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    transition: color 0.2s;
+    display: block;
+    margin-top: 4px;
+}
+
+.glass-dropdown-action:hover {
+    color: #ef4444;
+}
+
+.glass-user-email {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 4px;
+}
+
+/* Listes dans les dropdowns */
+.glass-dropdown-list {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+/* Items de notification */
+.glass-notif-item {
+    padding: 12px;
+    margin-bottom: 4px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.glass-notif-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.glass-notif-item.unread {
+    background: rgba(59, 130, 246, 0.15);
+}
+
+.glass-notif-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-notif-icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: white;
+}
+
+.glass-notif-content {
+    flex: 1;
+}
+
+.glass-notif-message {
+    font-size: 14px;
+    color: white;
+    margin-bottom: 4px;
+    line-height: 1.4;
+}
+
+.glass-notif-time {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Menu utilisateur */
+.glass-dropdown-menu {
+    padding: 8px;
+}
+
+.glass-menu-item {
+    padding: 10px 12px;
+    margin-bottom: 2px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: white;
+    text-decoration: none;
+}
+
+.glass-menu-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.glass-menu-item.danger {
+    color: #ef4444;
+}
+
+.glass-menu-item.danger:hover {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+}
+
+.glass-separator {
+    margin: 8px 0;
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+}
+
+/* Scrollbar personnalisée pour les dropdowns */
+.glass-dropdown-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.glass-dropdown-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+}
+
+.glass-dropdown-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+.glass-dropdown-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* ========================================
+   6. BREADCRUMBS
+   ======================================== */
+
 .header-breadcrumbs {
     padding: 8px 30px;
     background: rgba(255, 255, 255, 0.1);
@@ -725,7 +722,7 @@
     gap: 8px;
     font-size: 13px;
     position: relative;
-    z-index: 1;  /* Mettre un z-index bas */
+    z-index: 1001;
 }
 
 .breadcrumb-item {
@@ -752,8 +749,9 @@
 }
 
 /* ========================================
-   BARRE DE PROGRESSION
+   7. BARRE DE PROGRESSION
    ======================================== */
+
 .header-progress {
     position: absolute;
     bottom: 0;
@@ -770,26 +768,64 @@
     transition: width 0.3s ease;
 }
 
-/* Titre centré */
-.header-brand-centered {
-    font-size: 26px;
-    font-weight: 700;
-    color: white;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin: 0;
-    text-align: center;
+/* ========================================
+   8. ANIMATIONS
+   ======================================== */
+
+/* Animation cloche */
+@keyframes bell-ring {
+    0%, 100% { transform: rotate(0); }
+    5%, 15% { transform: rotate(-10deg); }
+    10%, 20% { transform: rotate(10deg); }
 }
 
-.header-subtitle-centered {
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.8);
-    margin: 4px 0 0 0;
-    text-align: center;
+/* Animation pulse pour indicateurs */
+@keyframes pulse-ring {
+    0% {
+        r: 2;
+        opacity: 1;
+    }
+    50% {
+        r: 4;
+        opacity: 0.5;
+    }
+    100% {
+        r: 6;
+        opacity: 0;
+    }
+}
+
+@keyframes pulse-warning {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Animation d'entrée */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Animation indicateurs */
+.header-indicator.success svg circle:nth-child(2),
+.header-indicator.online svg circle:nth-child(2) {
+    animation: pulse-ring 2s infinite;
+}
+
+.header-indicator.warning svg circle:nth-child(2) {
+    animation: pulse-warning 1.5s infinite;
 }
 
 /* ========================================
-   RESPONSIVE
+   9. RESPONSIVE
    ======================================== */
+
 @media (max-width: 1024px) {
     .header-content {
         grid-template-columns: auto 1fr auto;
@@ -819,6 +855,10 @@
         font-size: 18px;
     }
     
+    .header-brand-centered {
+        font-size: 20px;
+    }
+    
     .header-quick-actions {
         display: none;
     }
@@ -826,15 +866,67 @@
     .header-user-role {
         display: none;
     }
+    
+    .glass-notifications {
+        width: 300px;
+    }
+    
+    .glass-user {
+        width: 200px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-widget {
+        min-height: 60px;
+    }
+    
+    .header-content {
+        min-height: 60px;
+    }
+    
+    .header-back-btn span {
+        display: none;
+    }
+    
+    .header-user-info {
+        display: none;
+    }
+    
+    .header-user-menu {
+        padding: 6px;
+    }
 }
 
 /* ========================================
-   BODY PADDING
+   10. UTILITAIRES ET BODY
    ======================================== */
+
+/* Body padding pour header fixe */
 body.has-header {
-    padding-top: 100px;
+    padding-top: 90px;
 }
 
 body.has-header.with-breadcrumbs {
     padding-top: 130px;
+}
+
+/* Transitions par défaut */
+.header-widget * {
+    transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+
+/* Focus visible pour accessibilité */
+.header-widget button:focus-visible,
+.header-widget input:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.5);
+    outline-offset: 2px;
+}
+
+/* S'assurer que les éléments interactifs restent cliquables */
+.header-notification-btn,
+.header-user-menu {
+    pointer-events: auto !important;
 }

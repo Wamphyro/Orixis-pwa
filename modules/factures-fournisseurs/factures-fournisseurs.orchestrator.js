@@ -141,53 +141,140 @@ class FactureOrchestrator {
         // DataGrid
         this.createDataGrid();
         
-        // Ajouter les boutons d'action
-        this.addActionButtons();
-        
         console.log('✅ Widgets créés');
     }
     
     /**
      * Créer le header
      */
-    createHeader() {
-        const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
+createHeader() {
+    const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
+    
+    this.header = new HeaderWidget({
+        // FOND DÉGRADÉ
+        pageBackground: 'colorful',
+        theme: 'gradient',
         
-        this.header = new HeaderWidget({
-            title: 'Factures Fournisseurs',
-            icon: '📑',
-            subtitle: 'Gestion des factures',
-            showBack: true,
-            showUser: true,
-            showLogout: true
-        });
+        // PERSONNALISATION DES BOUTONS
+        buttonStyles: {
+            back: {
+                height: '48px',
+                padding: '12px 24px',
+                minWidth: '120px'
+            },
+            action: {
+                height: '48px',
+                width: '44px'
+            },
+            notification: {
+                height: '48px',
+                width: '44px'
+            },
+            userMenu: {
+                height: '48px',
+                padding: '6px 16px 6px 6px',
+                maxWidth: '220px'
+            },
+            indicator: {
+                height: '48px',
+                padding: '10px 16px',
+                minWidth: 'auto'
+            }
+        },
         
-        // Personnaliser les boutons
-        setTimeout(() => {
-            const backContainer = document.querySelector(`#header-back-${this.header.id}`);
-            if (backContainer) {
-                const backBtn = document.createElement('button');
-                backBtn.className = 'btn btn-glass-solid-ice btn-sm';
-                backBtn.innerHTML = '<<';
-                backBtn.onclick = () => {
-                    console.log('Retour cliqué');
-                    window.location.href = '/modules/home/home.html';
-                };
-                backContainer.appendChild(backBtn);
+        // TEXTES
+        title: 'Factures Fournisseurs',
+        subtitle: '',
+        centerTitle: true,  // Activer le titre centré
+        
+        // LOGO
+        showLogo: true,
+        logoIcon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
+        
+        // NAVIGATION
+        showBack: true,
+        backText: 'Retour',
+        onBack: () => {
+            window.location.href = '/modules/home/home.html';
+        },
+        
+        // RECHERCHE
+        showSearch: true,
+        searchPlaceholder: 'Rechercher fournisseur, n° facture, référence...',
+        searchMaxWidth: '1500px',
+        searchHeight: '48px',
+        onSearch: (query) => {
+            this.currentFilters.search = query;
+            this.applyFilters();
+        },
+        
+        // BOUTONS RAPIDES
+        showQuickActions: true,
+        quickActions: [
+            {
+                id: 'new',
+                title: 'Nouvelle facture',
+                icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>',
+                onClick: () => this.openCreateModal()
+            },
+            {
+                id: 'export',
+                title: 'Export Excel',
+                icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line></svg>',
+                onClick: () => this.grid?.export('excel')
+            },
+            {
+                id: 'reset',
+                title: 'Réinitialiser',
+                icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>',
+                onClick: () => this.resetAllFilters()
+            },
+            {
+                id: 'refresh',
+                title: 'Actualiser',
+                icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>',
+                onClick: () => {
+                    // Force le rechargement complet depuis le serveur (équivalent Cmd+Maj+R)
+                    window.location.reload(true);
+                }
             }
-            
-            const logoutContainer = document.querySelector(`#header-logout-${this.header.id}`);
-            if (logoutContainer) {
-                const logoutBtn = document.createElement('button');
-                logoutBtn.className = 'btn btn-logout-user';
-                logoutBtn.innerHTML = 'Déconnexion';
-                logoutBtn.onclick = () => {
-                    this.header.defaultLogout();
-                };
-                logoutContainer.appendChild(logoutBtn);
+        ],
+        
+        // INDICATEURS
+        showIndicators: true,
+        indicators: [
+            {
+                id: 'status',
+                text: 'Connecté',
+                type: 'success',  // IMPORTANT: doit être 'success' pour le vert
+                animated: true
             }
-        }, 100);
-    }
+        ],
+        
+        // NOTIFICATIONS
+        showNotifications: true,
+        
+        // BREADCRUMBS
+        showBreadcrumbs: true,
+        breadcrumbs: [
+            { text: 'Accueil', url: '/modules/home/home.html' },
+            { text: 'Gestion', url: '#' },
+            { text: 'Factures Fournisseurs' }
+        ],
+        
+        // UTILISATEUR
+        showUser: true,
+        showUserDropdown: true,
+        showMagasin: true,
+        showLogout: true
+    });
+    
+    // Mettre à jour les indicateurs après chargement
+    // Fonction vide - plus de mise à jour des indicateurs
+    this.updateHeaderIndicators = () => {
+        // Désactivé - on garde seulement l'indicateur "Connecté"
+    };
+}
     
     /**
      * Créer les cartes de statistiques
@@ -227,14 +314,8 @@ class FactureOrchestrator {
             showWrapper: true,
             wrapperStyle: 'card',
             wrapperTitle: 'Filtres',
-            resetButton: true,
-            resetButtonClass: 'btn btn-glass-orange',
+            resetButton: false,  // Pas de bouton reset ici
             filters: [
-                { 
-                    type: 'search', 
-                    key: 'search', 
-                    placeholder: 'Rechercher (fournisseur, n° facture, référence)...' 
-                },
                 { 
                     type: 'select', 
                     key: 'fournisseur', 
@@ -295,22 +376,6 @@ class FactureOrchestrator {
                 
                 this.applyFilters();
             },
-            onReset: () => {
-                console.log('Réinitialisation de tous les filtres');
-                this.currentFilters = {
-                    search: '',
-                    statuts: [],
-                    fournisseur: '',
-                    compteComptable: '',
-                    magasin: '',
-                    periode: 'all'
-                };
-                // Désélectionner toutes les cartes
-                if (this.stats) {
-                    this.stats.deselectAll();
-                }
-                this.applyFilters();
-            }
         });
     }
     
@@ -440,51 +505,7 @@ class FactureOrchestrator {
             }
         });
     }
-    
-    /**
-     * Ajouter les boutons d'action
-     */
-addActionButtons() {
-    setTimeout(() => {
-        const actionsZone = document.querySelector('.data-grid-export-buttons');
-        if (actionsZone) {
-            const buttons = [
-                { 
-                    text: '➕ Nouvelles factures', 
-                    class: 'btn btn-glass-blue btn-lg', 
-                    action: () => this.openCreateModal()
-                },
-                { 
-                    text: '📊 Export comptable',  // ✅ NOUVEAU BOUTON
-                    class: 'btn btn-glass-purple btn-lg btn-export-comptable', 
-                    action: () => this.exportComptableMultiple(),
-                    disabled: true  // Désactivé par défaut
-                },
-                { 
-                    text: '📄 Export CSV', 
-                    class: 'btn btn-glass-blue btn-lg', 
-                    action: () => this.grid.export('csv')
-                },
-                { 
-                    text: '📊 Export Excel', 
-                    class: 'btn btn-glass-blue btn-lg', 
-                    action: () => this.grid.export('excel')
-                }
-            ];
-            
-            buttons.forEach(btn => {
-                const button = document.createElement('button');
-                button.className = btn.class;
-                button.innerHTML = btn.text;
-                button.onclick = btn.action;
-                if (btn.disabled) button.disabled = true;
-                actionsZone.appendChild(button);
-            });
-        }
-    }, 100);
-}
 
-    
     // ========================================
     // CHARGEMENT DES DONNÉES
     // ========================================
@@ -1527,6 +1548,43 @@ openDetailModal(row) {
     });
 }
 
+/**
+ * Réinitialiser tous les filtres
+ */
+resetAllFilters() {
+    console.log('🔄 Réinitialisation de tous les filtres');
+    
+    // Réinitialiser les filtres
+    this.currentFilters = {
+        search: '',
+        statuts: [],
+        fournisseur: '',
+        compteComptable: '',
+        magasin: '',
+        periode: 'all'
+    };
+    
+    // Désélectionner toutes les cartes stats
+    if (this.stats) {
+        this.stats.deselectAll();
+    }
+    
+    // Réinitialiser les valeurs dans le widget de filtres
+    if (this.filters) {
+        this.filters.reset();
+    }
+    
+    // Réinitialiser la barre de recherche du header
+    if (this.header && this.header.clearSearch) {
+        this.header.clearSearch();
+    }
+    
+    // Appliquer les filtres réinitialisés
+    this.applyFilters();
+    
+    this.showInfo('Filtres réinitialisés');
+}
+
 // ========================================
 // HELPERS SUPPLÉMENTAIRES
 // ========================================
@@ -2162,18 +2220,44 @@ genererCompteFournisseurSimple(nomFournisseur) {
         console.log('🔍 Application des filtres:', this.currentFilters);
         
         this.filteredData = this.facturesData.filter(facture => {
-            // Filtre recherche
+            // FILTRE RECHERCHE GLOBALE - CHERCHE DANS TOUTES LES COLONNES
             if (this.currentFilters.search) {
                 const search = this.currentFilters.search.toLowerCase();
-                const fournisseurNom = facture.fournisseur?.nom?.toLowerCase() || '';
-                const numeroFacture = (facture.numeroFacture || '').toLowerCase();
-                const numeroInterne = (facture.numeroInterne || '').toLowerCase();
-                const referenceVirement = (facture.referenceVirement || '').toLowerCase();
                 
-                if (!fournisseurNom.includes(search) && 
-                    !numeroFacture.includes(search) && 
-                    !numeroInterne.includes(search) &&
-                    !referenceVirement.includes(search)) {
+                // Formatter la date pour la recherche
+                const dateStr = facture.dateFacture ? 
+                    new Date(facture.dateFacture.toDate ? facture.dateFacture.toDate() : facture.dateFacture)
+                        .toLocaleDateString('fr-FR') : '';
+                
+                // Formatter le montant pour la recherche
+                const montantStr = Math.abs(facture.montantTTC || 0).toString();
+                const montantFormate = this.formaterMontant(facture.montantTTC).toLowerCase();
+                
+                // Type de dépense (compte comptable)
+                const typeDepense = facture.comptabilite?.compteComptable || '';
+                const libelleCompte = facture.comptabilite?.libelleCompte || '';
+                const categorieDetectee = facture.comptabilite?.categorieDetectee || '';
+                
+                // Chercher dans TOUTES les colonnes
+                const searchIn = [
+                    dateStr,                                        // Date facture
+                    (facture.numeroFacture || '').toLowerCase(),    // N° Facture
+                    (facture.numeroInterne || '').toLowerCase(),    // N° Interne
+                    (facture.codeMagasin || '').toLowerCase(),      // Magasin
+                    (facture.fournisseur?.nom || '').toLowerCase(), // Fournisseur
+                    (facture.fournisseur?.categorie || '').toLowerCase(), // Catégorie fournisseur
+                    typeDepense.toLowerCase(),                      // Compte comptable
+                    libelleCompte.toLowerCase(),                    // Libellé compte
+                    categorieDetectee.toLowerCase(),                // Catégorie détectée
+                    montantStr,                                     // Montant (nombre)
+                    montantFormate,                                 // Montant (formaté)
+                    (facture.statut || '').toLowerCase(),           // Statut
+                    (facture.referenceVirement || '').toLowerCase(), // Référence virement
+                    (facture.modePaiement || '').toLowerCase(),     // Mode paiement
+                    (facture.societe || '').toLowerCase()           // Société
+                ].join(' ');
+                
+                if (!searchIn.includes(search)) {
                     return false;
                 }
             }
@@ -2362,6 +2446,11 @@ genererCompteFournisseurSimple(nomFournisseur) {
     showWarning(message) {
         toast.warning(message);
         console.log('🚧', message);
+    }
+
+    showInfo(message) {
+        toast.info(message);
+        console.log('ℹ️', message);
     }
 }
 
