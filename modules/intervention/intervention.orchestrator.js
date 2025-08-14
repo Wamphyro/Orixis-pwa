@@ -816,29 +816,22 @@ class InterventionModal {
                 this.options.onSuccess(interventionId, interventionData);
             }
             
-            if (confirm('Voulez-vous démarrer l\'intervention maintenant ?')) {
-                localStorage.setItem('sav_intervention_data', JSON.stringify({
-                    interventionId,
-                    ...interventionData
-                }));
-                
-                window.location.href = 'signature-client.html';
-            }
+            // SUPPRIMÉ : Plus de redirection vers signature-client.html
             
         } catch (error) {
             toast.error('Erreur création : ' + error.message);
             console.error('Erreur complète:', error);
         }
     }
-    
-    close() {
-        if (this.modal) {
-            this.modal.remove();
-            this.modal = null;
+        
+        close() {
+            if (this.modal) {
+                this.modal.remove();
+                this.modal = null;
+            }
+            window.interventionModal = null;
         }
-        window.interventionModal = null;
     }
-}
 
 // Instance globale pour les événements onclick
 let interventionModal = null;
@@ -1468,6 +1461,8 @@ class InterventionOrchestrator {
             ]
         });
         
+        // SUPPRIMÉ : Section signatures
+        
         return sections;
     }
     
@@ -1564,16 +1559,17 @@ class InterventionOrchestrator {
                 return;
             }
             
-            if (!confirm('L\'intervention sera marquée comme terminée. Les signatures seront requises.')) {
+            if (!confirm('Confirmer la fin de l\'intervention ?')) {
                 return;
             }
             
-            localStorage.setItem('sav_intervention_data', JSON.stringify({
-                interventionId: intervention.id,
-                ...intervention
-            }));
+            // Terminer directement sans signatures
+            await InterventionService.changerStatut(intervention.id, 'terminee', {
+                dateTermine: new Date()
+            });
             
-            window.location.href = 'signature-client.html';
+            await this.loadData();
+            this.showSuccess('✅ Intervention terminée avec succès !');
             
         } catch (error) {
             this.showError('Erreur fin intervention : ' + error.message);
