@@ -128,13 +128,13 @@ export const MENU_ITEMS = [
         disabled: false
     },
     {
-        href: '../../pages/guide.html',
+        href: '../guide/guide.html',
         icon: '📚',
         title: 'Guide SAV',
         description: 'Consulter les procédures et protocoles'
     },
     {
-        href: '../../pages/contacts.html',
+        href: '/module/contact/contact.html',
         icon: '📞',
         title: 'Contacts SAV',
         description: 'Numéros et contacts importants'

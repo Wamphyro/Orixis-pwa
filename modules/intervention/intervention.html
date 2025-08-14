@@ -3,97 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAV Audio - Interventions</title>
-    
-    <!-- PWA Meta Tags -->
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="SAV Audio">
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#667eea">
-    
-    <!-- ========================================
-         STYLES PRINCIPAUX
-         ======================================== -->
-    
-    <!-- 1. Base (variables, reset, typography) -->
-    <link rel="stylesheet" href="/src/css/base/variables.css">
-    <link rel="stylesheet" href="/src/css/base/reset.css">
-    <link rel="stylesheet" href="/src/css/base/typography.css">
-    
-    <!-- 2. Layout -->
-    <link rel="stylesheet" href="/src/css/layout/layout.css">
-    
-    <!-- 3. Widgets -->
-    <link rel="stylesheet" href="/widgets/header/header.widget.css">
-    <link rel="stylesheet" href="/widgets/stats-cards/stats-cards.widget.css">
-    <link rel="stylesheet" href="/widgets/search-filters/search-filters.widget.css">
-    <link rel="stylesheet" href="/widgets/data-grid/data-grid.widget.css">
-    <link rel="stylesheet" href="/widgets/modal/modal.widget.css">
-    <link rel="stylesheet" href="/widgets/stepper/stepper.widget.css">
-    <link rel="stylesheet" href="/widgets/detail-viewer/detail-viewer.widget.css">
-    <link rel="stylesheet" href="/widgets/toast/toast.widget.css">
-    
-    <!-- 4. Module spécifique (minimal) -->
-    <link rel="stylesheet" href="intervention.css">
+    <title>Interventions SAV</title>
+    <link rel="stylesheet" href="../../src/css/main.css">
     
     <!-- EmailJS pour l'envoi SAV -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script>
+        // Configuration EmailJS
         (function() {
-            try {
-                emailjs.init("wJtv5MrJPzvMuGSyL");
-                console.log("✅ EmailJS initialisé");
-            } catch(error) {
-                console.error("❌ Erreur EmailJS:", error);
-            }
+            emailjs.init("wJtv5MrJPzvMuGSyL");
         })();
     </script>
+    
+    <!-- Style minimal pour loader uniquement -->
+    <style>
+        .page-loading {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .page-loading.hidden { display: none; }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px; height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Styles pour le modal de création custom */
+        .modal-backdrop {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
 </head>
 <body>
-    <!-- ========================================
-         STRUCTURE MINIMALE DE LA PAGE
-         ======================================== -->
-    
-    <!-- Header (généré par HeaderWidget) -->
-    <div id="header-container"></div>
-    
-    <!-- Container principal -->
-    <div class="container">
-        <!-- Stats Cards -->
-        <div class="stats-container"></div>
-        
-        <!-- Filtres -->
-        <div class="filters-container"></div>
-        
-        <!-- Tableau des interventions -->
-        <div class="table-container"></div>
+    <!-- Loader -->
+    <div class="page-loading hidden" id="pageLoader">
+        <div class="loader"></div>
     </div>
     
-    <!-- Loader global -->
-    <div id="pageLoader" class="page-loader hidden">
-        <div class="loader-content">
-            <div class="spinner"></div>
-            <p>Chargement...</p>
-        </div>
-    </div>
+    <!-- Messages (pour les toasts) -->
+    <div id="messagesContainer" style="position: fixed; top: 10px; right: 10px; z-index: 1000; max-width: 400px;"></div>
     
-    <!-- ========================================
-         SCRIPTS
-         ======================================== -->
+    <!-- Containers pour widgets AVEC LES MÊMES MARGES QUE FACTURES-FOURNISSEURS -->
+    <div class="stats-container" style="margin: 100px 20px 20px 20px;"></div>
+    <div class="filters-container" style="margin: 20px;"></div>
+    <div class="table-container" style="margin: 20px;"></div>
     
-    <!-- Module principal -->
     <script type="module">
+        // Import de l'orchestrateur qui gère TOUT
         import orchestrator from './intervention.orchestrator.js';
         
-        // Initialiser l'application au chargement
-        window.addEventListener('DOMContentLoaded', () => {
-            orchestrator.init();
+        // Lancement de l'application
+        window.addEventListener('load', async () => {
+            console.log('🎯 Initialisation du module Interventions SAV...');
+            await orchestrator.init();
         });
         
-        // Exposer l'orchestrator globalement pour debug
-        window.interventionOrchestrator = orchestrator;
+        // Export pour debug uniquement
+        window.orchestrator = orchestrator;
+        window.interventionModal = null; // Pour le modal custom
     </script>
 </body>
 </html>

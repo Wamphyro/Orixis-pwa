@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacts SAV Audio</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SAV Audio">
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- CSS Principal -->
+    <link rel="stylesheet" href="../../src/css/main.css">
+    
+    <!-- EmailJS pour le modal de contact existant -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script>
+        (function() {
+            try {
+                emailjs.init("wJtv5MrJPzvMuGSyL");
+                console.log("EmailJS initialisé avec succès");
+            } catch(error) {
+                console.error("Erreur initialisation EmailJS:", error);
+            }
+        })();
+    </script>
+    
+    <style>
+        /* ========================================
+           STYLES SPÉCIFIQUES PAGE CONTACTS
+           ======================================== */
+        
+        /* Loader de page */
+        .page-loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(10px);
+        }
+        
+        .page-loading.hidden {
+            display: none;
+        }
+        
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Containers principaux */
+        .stats-container {
+            margin: 100px 20px 20px 20px;
+        }
+        
+        .filters-container {
+            margin: 20px;
+        }
+        
+        .grid-container {
+            margin: 20px;
+            min-height: 400px;
+        }
+        
+        /* Grille de contacts en mode cartes */
+        .contacts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        /* Carte de contact */
+        .contact-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .contact-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .contact-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+        
+        .contact-card:hover::before {
+            opacity: 1;
+        }
+        
+        /* Header de carte */
+        .contact-header {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .contact-avatar {
+            font-size: 48px;
+            margin-right: 15px;
+            position: relative;
+            flex-shrink: 0;
+        }
+        
+        .status-indicator {
+            position: absolute;
+            bottom: 0;
+            right: -2px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .contact-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .contact-info h3 {
+            margin: 0 0 4px 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .contact-role {
+            margin: 0 0 2px 0;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        
+        .contact-department {
+            margin: 0;
+            font-size: 12px;
+            color: #95a5a6;
+            font-weight: 500;
+        }
+        
+        .contact-favoris {
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            color: #ffd700;
+        }
+        
+        .contact-favoris:hover {
+            transform: scale(1.2);
+        }
+        
+        /* Spécialités */
+        .contact-specialites {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 15px;
+            min-height: 28px;
+        }
+        
+        .contact-specialites .badge {
+            padding: 4px 8px;
+            font-size: 11px;
+            border-radius: 4px;
+            background: #e3f2fd;
+            color: #1976d2;
+            white-space: nowrap;
+        }
+        
+        /* Détails de contact */
+        .contact-details {
+            border-top: 1px solid #ecf0f1;
+            padding-top: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            transition: background 0.2s;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .contact-item:hover {
+            background: #f8f9fa;
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+        
+        .contact-icon {
+            font-size: 20px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .contact-text {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .contact-label {
+            font-size: 11px;
+            color: #95a5a6;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+        
+        .contact-value {
+            font-size: 14px;
+            color: #2c3e50;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* Actions de carte */
+        .contact-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            padding-top: 15px;
+            border-top: 1px solid #ecf0f1;
+        }
+        
+        .btn-action {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+        }
+        
+        .btn-action:active {
+            transform: translateY(0);
+        }
+        
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .badge-info {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Tooltip pour copie */
+        .copy-tooltip {
+            position: fixed;
+            background: #333;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 10000;
+        }
+        
+        .copy-tooltip.show {
+            opacity: 1;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .contacts-grid {
+                grid-template-columns: 1fr;
+                padding: 10px;
+            }
+            
+            .contact-card {
+                padding: 15px;
+            }
+            
+            .contact-avatar {
+                font-size: 36px;
+            }
+            
+            .contact-info h3 {
+                font-size: 16px;
+            }
+            
+            .btn-action {
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
+            }
+        }
+        
+        /* Mode sombre (optionnel) */
+        @media (prefers-color-scheme: dark) {
+            .contact-card {
+                background: #2c3e50;
+                color: #ecf0f1;
+            }
+            
+            .contact-info h3 {
+                color: #ecf0f1;
+            }
+            
+            .contact-value {
+                color: #bdc3c7;
+            }
+            
+            .contact-item:hover {
+                background: #34495e;
+            }
+        }
+        
+        /* Section d'urgence */
+        .emergency-section {
+            margin: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe0e0 100%);
+            border-radius: 12px;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .emergency-section h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0 0 15px 0;
+            color: #dc3545;
+        }
+        
+        .emergency-section p {
+            margin: 0;
+            line-height: 1.8;
+            color: #495057;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+            color: #6c757d;
+            border-top: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loader de page -->
+    <div class="page-loading" id="pageLoader">
+        <div class="loader"></div>
+    </div>
+    
+    <!-- Messages toast (gérés par le widget toast) -->
+    <div id="messagesContainer" style="position: fixed; top: 10px; right: 10px; z-index: 1000; max-width: 400px;"></div>
+    
+    <!-- Containers pour les widgets -->
+    <div class="stats-container"></div>
+    <div class="filters-container"></div>
+    <div class="grid-container"></div>
+    
+    <!-- Section d'urgence -->
+    <div class="emergency-section">
+        <h3>
+            <span>⚠️</span>
+            <span>Procédure d'urgence</span>
+        </h3>
+        <p>
+            En cas d'urgence technique nécessitant une intervention immédiate :<br>
+            <strong>1.</strong> Tentez toutes les procédures niveau 1<br>
+            <strong>2.</strong> Documentez le problème avec photos si possible<br>
+            <strong>3.</strong> Contactez l'équipe SAV par téléphone en priorité<br>
+            <strong>4.</strong> Envoyez un email de suivi avec la fiche d'intervention
+        </p>
+    </div>
+    
+    <!-- Footer -->
+    <div class="footer">
+        <p>Orixis - © 2025</p>
+    </div>
+    
+    <!-- Script principal avec module -->
+    <script type="module">
+        import orchestrator from './contacts.orchestrator.js';
+        
+        // Initialiser au chargement de la page
+        window.addEventListener('load', async () => {
+            console.log('🎯 Initialisation page Contacts...');
+            
+            try {
+                await orchestrator.init();
+                console.log('✅ Page contacts initialisée');
+            } catch (error) {
+                console.error('❌ Erreur initialisation:', error);
+            }
+        });
+        
+        // Export pour debug en console
+        window.orchestrator = orchestrator;
+    </script>
+    
+    <!-- Conserver le script du modal existant si nécessaire -->
+    <script src="../src/js/components/contact-modal.js"></script>
+</body>
+</html>
