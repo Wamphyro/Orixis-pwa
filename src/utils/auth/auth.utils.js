@@ -18,7 +18,7 @@
    7. EXPORT
    
    UTILISATION:
-   import { getUserInfo, isAuthenticated } from '/Orixis-pwa/src/utils/business/auth.utils.js';
+   import { getUserInfo, isAuthenticated } from '/src/utils/business/auth.utils.js';
    const user = getUserInfo();
    if (isAuthenticated()) { ... }
    

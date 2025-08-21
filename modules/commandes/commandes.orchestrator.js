@@ -233,7 +233,7 @@ class CommandesOrchestrator {
             showBack: true,
             backText: 'Retour',
             onBack: () => {
-                window.location.href = '/Orixis-pwa/modules/home/home.html';
+                window.location.href = '/modules/home/home.html';
             },
             
             // RECHERCHE
@@ -2648,7 +2648,7 @@ async validerReception(commande) {
 
     imprimerCommande(commande) {
         // Import dynamique du widget
-        import('/Orixis-pwa/widgets/print/print.widget.js').then(module => {
+        import('/widgets/print/print.widget.js').then(module => {
             const PrintWidget = module.default;
             
             // Préparer les données avec les labels

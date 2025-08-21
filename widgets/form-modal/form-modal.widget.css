@@ -29,8 +29,8 @@
    IMPORTS
    ======================================== */
 
-@import url('/Orixis-pwa/src/css/components/modal-base.css');
-@import url('/Orixis-pwa/src/css/components/buttons.css');
+@import url('/src/css/components/modal-base.css');
+@import url('/src/css/components/buttons.css');
 
 /* ========================================
    VARIABLES ET THÈMES

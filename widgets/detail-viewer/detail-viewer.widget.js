@@ -18,7 +18,7 @@
    8. DESTRUCTION
    
    UTILISATION:
-   import { DetailViewerWidget } from '/Orixis-pwa/widgets/detail-viewer/detail-viewer.widget.js';
+   import { DetailViewerWidget } from '/widgets/detail-viewer/detail-viewer.widget.js';
    const viewer = new DetailViewerWidget({
        title: 'Facture #123',
        data: factureData,
@@ -144,7 +144,7 @@ export class DetailViewerWidget {
      */
     loadCSS() {
         // Charger les styles communs (buttons, badges, modal)
-        import('/Orixis-pwa/src/utils/widget-styles-loader.js').then(module => {
+        import('/src/utils/widget-styles-loader.js').then(module => {
             module.loadWidgetStyles();
         });
         
@@ -156,7 +156,7 @@ export class DetailViewerWidget {
         const link = document.createElement('link');
         link.id = cssId;
         link.rel = 'stylesheet';
-        link.href = '/Orixis-pwa/widgets/detail-viewer/detail-viewer.widget.css?v=${Date.now()}`;
+        link.href = `/widgets/detail-viewer/detail-viewer.widget.css?v=${Date.now()}`;
         document.head.appendChild(link);
     }
     /**

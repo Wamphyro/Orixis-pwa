@@ -21,7 +21,7 @@
    10. EXPORT
    
    UTILISATION:
-   import cache from '/Orixis-pwa/src/utils/data/cache.utils.js';
+   import cache from '/src/utils/data/cache.utils.js';
    
    // Cache simple avec TTL
    await cache.get('magasins', fetchMagasins, { ttl: 3600000 });

@@ -992,7 +992,7 @@ class InterventionOrchestrator {
             showBack: true,
             backText: 'Retour',
             onBack: () => {
-                window.location.href = '/Orixis-pwa/modules/home/home.html';
+                window.location.href = '/modules/home/home.html';
             },
             
             // RECHERCHE
@@ -1054,7 +1054,7 @@ class InterventionOrchestrator {
             // BREADCRUMBS
             showBreadcrumbs: true,
             breadcrumbs: [
-                { text: 'Accueil', url: '/Orixis-pwa/modules/home/home.html' },
+                { text: 'Accueil', url: '/modules/home/home.html' },
                 { text: 'SAV', url: '#' },
                 { text: 'Interventions' }
             ],

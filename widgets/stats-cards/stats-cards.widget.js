@@ -9,7 +9,7 @@
    100% autonome, charge son CSS automatiquement.
    
    UTILISATION:
-   import { StatsCardsWidget } from '/Orixis-pwa/widgets/stats-cards/stats-cards.widget.js';
+   import { StatsCardsWidget } from '/widgets/stats-cards/stats-cards.widget.js';
    const stats = new StatsCardsWidget({
        container: '.stats',
        showWrapper: true,        // Active le container englobant
@@ -121,7 +121,7 @@ export class StatsCardsWidget {
         const link = document.createElement('link');
         link.id = cssId;
         link.rel = 'stylesheet';
-        link.href = '/Orixis-pwa/widgets/stats-cards/stats-cards.widget.css?v=${Date.now()}`;
+        link.href = `/widgets/stats-cards/stats-cards.widget.css?v=${Date.now()}`;
         document.head.appendChild(link);
         
         console.log('✅ CSS StatsCardsWidget chargé');

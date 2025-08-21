@@ -23,7 +23,7 @@
    12. EXPORT CENTRALISÉ
    
    UTILISATION:
-   import { STATUTS, COLLECTIONS, SEUILS } from '/Orixis-pwa/src/constants/business.constants.js';
+   import { STATUTS, COLLECTIONS, SEUILS } from '/src/constants/business.constants.js';
    
    if (decompte.statut === STATUTS.NOUVEAU) { }
    collection(db, COLLECTIONS.DECOMPTES_MUTUELLES);

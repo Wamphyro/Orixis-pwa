@@ -21,7 +21,7 @@
    10. EXPORT
    
    UTILISATION:
-   import { exportCSV, exportExcel, exportPDF } from '/Orixis-pwa/src/utils/ui/export.utils.js';
+   import { exportCSV, exportExcel, exportPDF } from '/src/utils/ui/export.utils.js';
    
    // Export CSV
    exportCSV(data, { filename: 'export.csv', columns: {...} });

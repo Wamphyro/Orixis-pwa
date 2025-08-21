@@ -19,7 +19,7 @@
    9. EXPORT
    
    UTILISATION:
-   import { formaterMontant, formaterNSS } from '/Orixis-pwa/src/utils/core/formatters.utils.js';
+   import { formaterMontant, formaterNSS } from '/src/utils/core/formatters.utils.js';
    const montant = formaterMontant(150.50); // "150,50 €"
    const nss = formaterNSS('1850578006048'); // "1 85 05 78 006 048"
    

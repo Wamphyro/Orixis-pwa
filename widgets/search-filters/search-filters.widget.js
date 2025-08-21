@@ -18,7 +18,7 @@
    8. DESTRUCTION
    
    UTILISATION:
-   import { SearchFiltersWidget } from '/Orixis-pwa/widgets/search-filters/search-filters.widget.js';
+   import { SearchFiltersWidget } from '/widgets/search-filters/search-filters.widget.js';
    const filters = new SearchFiltersWidget({
        container: '.filters',
        showWrapper: true,
@@ -128,7 +128,7 @@ export class SearchFiltersWidget {
      */
     loadCSS() {
             // Charger les styles communs (buttons, badges, modal)
-            import('/Orixis-pwa/src/utils/widget-styles-loader.js').then(module => {
+            import('/src/utils/widget-styles-loader.js').then(module => {
                 module.loadWidgetStyles();
             });
             
@@ -140,7 +140,7 @@ export class SearchFiltersWidget {
             const link = document.createElement('link');
             link.id = cssId;
             link.rel = 'stylesheet';
-            link.href = '/Orixis-pwa/widgets/search-filters/search-filters.widget.css?v=${Date.now()}`;
+            link.href = `/widgets/search-filters/search-filters.widget.css?v=${Date.now()}`;
             document.head.appendChild(link);
             
             console.log('✅ CSS SearchFiltersWidget chargé');

@@ -147,7 +147,7 @@ export class WorkflowStatusWidget {
             const link = document.createElement('link');
             link.id = cssId;
             link.rel = 'stylesheet';
-            link.href = '/Orixis-pwa/widgets/workflow-status/workflow-status.widget.css?v=${Date.now()}`;
+            link.href = `/widgets/workflow-status/workflow-status.widget.css?v=${Date.now()}`;
             document.head.appendChild(link);
         }
     }

@@ -20,7 +20,7 @@
    9. EXPORT
    
    UTILISATION:
-   import { safeTimestampToDate, formaterDate } from '/Orixis-pwa/src/utils/core/dates.utils.js';
+   import { safeTimestampToDate, formaterDate } from '/src/utils/core/dates.utils.js';
    const date = safeTimestampToDate(timestamp);
    const formatted = formaterDate(date, 'full');
    

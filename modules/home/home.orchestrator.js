@@ -574,7 +574,7 @@ createHeader() {
                 icon: '🧪',
                 title: 'TEST PAGE WIDGETS',
                 description: 'Environnement de test pour les nouveaux widgets',
-                href: '/Orixis-pwa/modules/test/test-widgets.html',
+                href: '/modules/test/test-widgets.html',
                 permissions: ['clients.view'],
                 category: 'dev',
                 badge: { text: 'Dev', type: 'warning' },

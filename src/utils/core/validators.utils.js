@@ -21,7 +21,7 @@
    10. EXPORT
    
    UTILISATION:
-   import { validerNSS, validerEmail, nettoyerNSS } from '/Orixis-pwa/src/utils/core/validators.utils.js';
+   import { validerNSS, validerEmail, nettoyerNSS } from '/src/utils/core/validators.utils.js';
    const isValid = validerNSS('1850578006048');  // true
    const cleaned = nettoyerNSS('1 85 05 78 006 048');  // '1850578006048'
    const details = extraireInfosNSS('1850578006048');  // {sexe: 'H', annee: 1985, ...}
