@@ -357,11 +357,11 @@ createHeader() {
         notificationCount: this.getNotificationCount(),
         
         // ========================================
-        // UTILISATEUR
+        // UTILISATEUR - MENU PAR DÉFAUT DU WIDGET
         // ========================================
         showUser: true,
         showUserDropdown: true,
-        userMenuItems: this.getUserMenuItems(),
+        // PAS de userMenuItems - le widget utilisera son menu par défaut
         
         // ========================================
         // MAGASIN
@@ -683,47 +683,8 @@ createHeader() {
         
         return indicators;
     }
-    
-    /**
-     * Retourne les items du menu utilisateur
-     * @returns {Array} Liste des items
-     */
-    getUserMenuItems() {
-        return [
-            {
-                label: 'Mon Profil',
-                icon: '👤',
-                onClick: () => window.location.href = '../compte/compte.html'
-            },
-            {
-                label: 'Paramètres',
-                icon: '⚙️',
-                onClick: () => this.showSettings()
-            },
-            {
-                type: 'separator'
-            },
-            {
-                label: 'Documentation',
-                icon: '📚',
-                onClick: () => window.location.href = '../guide/guide.html'
-            },
-            {
-                label: 'Support',
-                icon: '🆘',
-                onClick: () => this.showSupport()
-            },
-            {
-                type: 'separator'
-            },
-            {
-                label: 'Déconnexion',
-                icon: '🚪',
-                onClick: () => this.handleLogout()
-            }
-        ];
-    }
-    
+
+
     // ========================================
     // GESTIONNAIRES D'ÉVÉNEMENTS
     // ========================================
