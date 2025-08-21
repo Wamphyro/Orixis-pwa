@@ -1,0 +1,40 @@
+name: Fix paths and deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Fix all paths for GitHub Pages
+      run: |
+        echo "🔧 Fixing paths for GitHub Pages..."
+        
+        # Fix tous les fichiers JS, HTML et CSS
+        find . -type f \( -name "*.js" -o -name "*.html" -o -name "*.css" \) \
+          -not -path "./.git/*" \
+          -not -path "./node_modules/*" \
+          -not -path "./functions/*" \
+          -exec sed -i \
+            -e 's|"/widgets/|"/Orixis-pwa/widgets/|g' \
+            -e 's|"/src/|"/Orixis-pwa/src/|g' \
+            -e 's|"/modules/|"/Orixis-pwa/modules/|g' \
+            -e 's|"/pages/|"/Orixis-pwa/pages/|g' \
+            -e "s|'/widgets/|'/Orixis-pwa/widgets/|g" \
+            -e "s|'/src/|'/Orixis-pwa/src/|g" \
+            -e "s|'/modules/|'/Orixis-pwa/modules/|g" \
+            -e "s|'/pages/|'/Orixis-pwa/pages/|g" {} +
+            
+        echo "✅ Paths fixed!"
+    
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./
+        publish_branch: gh-pages
