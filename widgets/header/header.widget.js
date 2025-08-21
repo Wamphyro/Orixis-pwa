@@ -244,7 +244,7 @@ export class HeaderWidget {
         const link = document.createElement('link');
         link.id = cssId;
         link.rel = 'stylesheet';
-        link.href = `/widgets/header/header.widget.css?v=${Date.now()}`;
+        link.href = './header.widget.css?v=' + Date.now();
         document.head.appendChild(link);
     }
     
