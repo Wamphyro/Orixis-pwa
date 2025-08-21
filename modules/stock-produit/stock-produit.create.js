@@ -1,82 +1,69 @@
-// ========================================
-// STOCK-PVT.CREATE.JS - Gestion de l'import CSV
-// Chemin: modules/stock-pvt/stock-pvt.create.js
-//
-// DESCRIPTION:
-// Module d'import des stocks PVT
-// Import CSV/Excel avec détection automatique des colonnes
-// Support multi-fichiers (jusqu'à 10 simultanément)
-//
-// ARCHITECTURE:
-// - Upload via DropZone (multi-fichiers)
-// - Analyse parallèle avec détection colonnes
-// - Détection des doublons inter-fichiers
-// - Preview des articles globaux
-// - Import en masse
-//
-// VERSION: 1.0.0
-// DATE: 03/02/2025
-// ========================================
+// ╔════════════════════════════════════════════════════════════════════════════╗
+// ║                         STOCK-PRODUIT.CREATE.JS                            ║
+// ║                      Module Import CSV Multi-fichiers                      ║
+// ╠════════════════════════════════════════════════════════════════════════════╣
+// ║ Module: Gestion import CSV avec preview                                    ║
+// ║ Version: 1.0.0                                                             ║
+// ║ Date: 03/02/2025                                                           ║
+// ╚════════════════════════════════════════════════════════════════════════════╝
 
-import config from './stock-pvt.config.js';
-import { afficherSucces, afficherErreur } from './stock-pvt.main.js';
-import uploadService from './stock-pvt.upload.service.js';
-import firestoreService from './stock-pvt.firestore.service.js';
-import orchestrator from './stock-pvt.orchestrator.js';
+import config from './stock-produit.config.js';
+import uploadService from './stock-produit.upload.service.js';
+import firestoreService from './stock-produit.firestore.service.js';
 
-// ========================================
-// ÉTAT LOCAL DU MODULE
-// ========================================
+// ╔════════════════════════════════════════╗
+// ║     SECTION 1: ÉTAT LOCAL              ║
+// ╚════════════════════════════════════════╝
 
 let importState = {
-    files: [],              // Array de fichiers
-    analyses: [],           // Array des analyses par fichier
-    globalStats: null,      // Stats globales
-    allArticles: [],        // Tous les articles fusionnés
-    doublons: []            // Doublons détectés entre fichiers
+    files: [],              // Fichiers uploadés
+    analyses: [],           // Analyses par fichier
+    globalStats: null,      // Statistiques globales
+    allArticles: [],        // Articles fusionnés
+    doublons: []           // Doublons détectés
 };
 
-// Instance du composant
 let dropzoneImport = null;
 
-// ========================================
-// INITIALISATION DU MODULE
-// ========================================
+// ╔════════════════════════════════════════╗
+// ║   SECTION 2: INITIALISATION            ║
+// ╚════════════════════════════════════════╝
 
 export function initImportStock() {
-    console.log('Module import stock PVT initialisé');
+    console.log('Module import stock audioprothèse initialisé');
     
-    // Préparer les listeners
+    // ─── Exposition globale des fonctions ───
     window.resetImport = resetImport;
 }
 
-// ========================================
-// OUVERTURE MODAL IMPORT
-// ========================================
+// ╔════════════════════════════════════════╗
+// ║   SECTION 3: MODAL IMPORT              ║
+// ╚════════════════════════════════════════╝
+
+// ┌────────────────────────────────────────┐
+// │      OUVERTURE MODAL                   │
+// └────────────────────────────────────────┘
 
 export function ouvrirModalImport() {
     resetImport();
     
-    // Ouvrir la modal
     window.modalManager.open('modalImportCSV');
     
-    // Afficher le formulaire après un court délai
     setTimeout(() => {
         afficherFormulaireImport();
     }, 100);
 }
 
-// ========================================
-// AFFICHAGE FORMULAIRE IMPORT
-// ========================================
+// ┌────────────────────────────────────────┐
+// │      AFFICHAGE FORMULAIRE              │
+// └────────────────────────────────────────┘
 
 function afficherFormulaireImport() {
-    // Mettre à jour le footer avec les boutons
+    // ─── Footer avec boutons ───
     const modalFooter = document.querySelector('#modalImportCSV .modal-footer');
     if (modalFooter) {
         modalFooter.innerHTML = '';
         
-        // Créer les boutons
         const btnAnnuler = new config.Button({
             text: 'Annuler',
             variant: 'ghost',
@@ -93,7 +80,6 @@ function afficherFormulaireImport() {
         });
         btnConfirmer.getElement().id = 'btnConfirmerImport';
         
-        // Ajouter le span pour le count
         const countSpan = document.createElement('span');
         countSpan.id = 'btnImportCount';
         btnConfirmer.getElement().appendChild(countSpan);
@@ -102,7 +88,7 @@ function afficherFormulaireImport() {
         modalFooter.appendChild(btnConfirmer.getElement());
     }
     
-    // Créer la structure moderne avec les 3 zones
+    // ─── Structure modal en 3 zones ───
     const modalBody = document.querySelector('#modalImportCSV .modal-body');
     if (modalBody) {
         modalBody.innerHTML = `
@@ -115,7 +101,7 @@ function afficherFormulaireImport() {
                         </div>
                         <div class="text">
                             <h4>Import intelligent multi-colonnes</h4>
-                            <p>Importez jusqu'à 10 fichiers CSV simultanément ! Détection automatique des colonnes peu importe leur ordre, analyse parallèle, fusion intelligente des stocks.</p>
+                            <p>Importez jusqu'à 10 fichiers CSV simultanément ! Détection automatique : Marque, Libellé, N° Série, Centre, État, Client...</p>
                         </div>
                     </div>
                 </div>
@@ -146,7 +132,7 @@ function afficherFormulaireImport() {
         `;
     }
     
-    // Créer la DropZone après que le HTML soit inséré
+    // ─── Création DropZone ───
     setTimeout(() => {
         if (dropzoneImport) {
             dropzoneImport.destroy();
@@ -157,35 +143,33 @@ function afficherFormulaireImport() {
                 await analyserFichiers(files);
             },
             onRemove: (file, index) => {
-                // Retirer l'analyse correspondante
                 importState.analyses.splice(index, 1);
                 importState.files.splice(index, 1);
-                // Recalculer les stats globales
                 recalculerStatsGlobales();
             }
         });
     }, 100);
 }
 
-// ========================================
-// ANALYSE MULTIPLE DES FICHIERS
-// ========================================
+// ╔════════════════════════════════════════╗
+// ║   SECTION 4: ANALYSE FICHIERS          ║
+// ╚════════════════════════════════════════╝
 
 async function analyserFichiers(files) {
     if (!files || files.length === 0) return;
     
     try {
-        // Ne pas réinitialiser, mais ajouter aux fichiers existants
         const nouveauxFichiers = Array.from(files);
         const fichiersExistants = importState.files || [];
         
-        // Vérifier qu'on ne dépasse pas la limite
+        // ─── Vérification limite 10 fichiers ───
         if (fichiersExistants.length + nouveauxFichiers.length > 10) {
-            afficherErreur(`Maximum 10 fichiers. Vous avez déjà ${fichiersExistants.length} fichier(s).`);
+            // Utiliser la fonction globale
+            window.afficherErreur(`Maximum 10 fichiers. Vous avez déjà ${fichiersExistants.length} fichier(s).`);
             return;
         }
         
-        // Afficher un loader
+        // ─── Affichage loader ───
         const resultatsContent = document.getElementById('resultats-content');
         resultatsContent.innerHTML = `
             <div class="empty-state">
@@ -194,11 +178,11 @@ async function analyserFichiers(files) {
             </div>
         `;
         
-        // Analyser les nouveaux fichiers
+        // ─── Analyse parallèle des fichiers ───
         const promesses = nouveauxFichiers.map(file => uploadService.analyserCSV(file));
         const resultats = await Promise.allSettled(promesses);
         
-        // Ajouter les résultats aux analyses existantes
+        // ─── Traitement résultats ───
         resultats.forEach((result, index) => {
             if (result.status === 'fulfilled') {
                 const analyse = {
@@ -218,21 +202,21 @@ async function analyserFichiers(files) {
             }
         });
         
-        // Ajouter les nouveaux fichiers à la liste
+        // ─── Mise à jour état ───
         importState.files = [...fichiersExistants, ...nouveauxFichiers];
         
-        // Recalculer tout avec tous les fichiers
+        // ─── Recalcul global ───
         recalculerStatsGlobales();
         
     } catch (error) {
         console.error('❌ Erreur analyse multiple:', error);
-        afficherErreur(`Erreur lors de l'analyse: ${error.message}`);
+        window.afficherErreur(`Erreur lors de l'analyse: ${error.message}`);
     }
 }
 
-// ========================================
-// DÉTECTION DES DOUBLONS
-// ========================================
+// ┌────────────────────────────────────────┐
+// │      DÉTECTION DOUBLONS                │
+// └────────────────────────────────────────┘
 
 function detecterDoublons(articles) {
     const articlesMap = new Map();
@@ -240,16 +224,15 @@ function detecterDoublons(articles) {
     const articlesUniques = [];
     
     articles.forEach((article, index) => {
-        // Créer une clé unique basée sur : référence ou (désignation + code barre)
+        // ─── Création clé unique ───
         let key;
-        if (article.reference) {
-            key = `ref_${article.reference}`;
+        if (article.numeroSerie) {
+            key = `serie_${article.numeroSerie}_${article.magasin || ''}`;
         } else {
-            key = `des_${article.designation}_${article.codeBarres || ''}`;
+            key = `libelle_${article.libelle}_${article.magasin || ''}`;
         }
         
         if (articlesMap.has(key)) {
-            // Doublon détecté
             doublons.push({
                 article: article,
                 originalIndex: articlesMap.get(key),
@@ -266,9 +249,9 @@ function detecterDoublons(articles) {
     return { articles: articlesUniques, doublons };
 }
 
-// ========================================
-// RECALCUL DES STATS GLOBALES
-// ========================================
+// ┌────────────────────────────────────────┐
+// │      CALCUL STATS GLOBALES             │
+// └────────────────────────────────────────┘
 
 function recalculerStatsGlobales() {
     if (importState.analyses.length === 0) {
@@ -280,7 +263,6 @@ function recalculerStatsGlobales() {
             </div>
         `;
         
-        // Désactiver le bouton
         const btnConfirmer = document.getElementById('btnConfirmerImport');
         if (btnConfirmer) {
             btnConfirmer.disabled = true;
@@ -288,7 +270,7 @@ function recalculerStatsGlobales() {
         return;
     }
     
-    // Refaire l'analyse globale
+    // ─── Fusion articles ───
     let totalArticles = [];
     importState.analyses.forEach(analyse => {
         if (analyse.status === 'success' && analyse.articles) {
@@ -296,32 +278,32 @@ function recalculerStatsGlobales() {
         }
     });
     
-    // Recalculer les doublons
+    // ─── Détection doublons ───
     const { articles: articlesUniques, doublons } = detecterDoublons(totalArticles);
     importState.allArticles = articlesUniques;
     importState.doublons = doublons;
     importState.globalStats = uploadService.calculateStats(articlesUniques);
     
-    // Réafficher
+    // ─── Affichage résultats ───
     afficherResultatsMultiples();
 }
 
-// ========================================
-// AFFICHAGE DES RÉSULTATS MULTIPLES
-// ========================================
+// ┌────────────────────────────────────────┐
+// │      AFFICHAGE RÉSULTATS               │
+// └────────────────────────────────────────┘
 
 function afficherResultatsMultiples() {
     const resultatsContent = document.getElementById('resultats-content');
     const filesCount = document.getElementById('files-analyzed-count');
     
-    // Mettre à jour le compteur de fichiers
+    // ─── Mise à jour compteur ───
     if (filesCount) {
         const successCount = importState.analyses.filter(a => a.status === 'success').length;
         filesCount.style.display = 'inline-block';
         filesCount.textContent = `${successCount}/${importState.files.length}`;
     }
     
-    // Section 1 : Liste des fichiers analysés
+    // ─── Section 1: Liste fichiers ───
     const filesListHtml = importState.analyses.map(analyse => {
         if (analyse.status === 'success') {
             const colonnesDetectees = analyse.mapping ? analyse.mapping.foundColumns.join(', ') : 'aucune';
@@ -354,7 +336,7 @@ function afficherResultatsMultiples() {
         }
     }).join('');
     
-    // Section 2 : Statistiques globales
+    // ─── Section 2: Stats globales ───
     let globalStatsHtml = '';
     if (importState.globalStats) {
         globalStatsHtml = `
@@ -398,7 +380,7 @@ function afficherResultatsMultiples() {
         `;
     }
     
-    // Section 3 : Aperçu des articles
+    // ─── Section 3: Aperçu articles ───
     let previewHtml = '';
     if (importState.allArticles.length > 0) {
         previewHtml = `
@@ -408,34 +390,28 @@ function afficherResultatsMultiples() {
                     <table class="preview-table">
                         <thead>
                             <tr>
-                                <th>Référence</th>
-                                <th>Désignation</th>
+                                <th>N° Série</th>
+                                <th>Libellé</th>
+                                <th>Marque</th>
                                 <th>Quantité</th>
-                                <th>PA</th>
-                                <th>PV</th>
-                                <th>Marge</th>
+                                <th>Statut</th>
+                                <th>Client</th>
                             </tr>
                         </thead>
                         <tbody>
                             ${importState.allArticles.slice(0, 10).map(article => {
-                                const marge = ((article.prixVente || 0) - (article.prixAchat || 0));
-                                const tauxMarge = article.prixAchat > 0 
-                                    ? ((marge / article.prixAchat) * 100).toFixed(1) 
-                                    : 0;
                                 return `
                                     <tr>
-                                        <td>${escapeHtml(article.reference || 'AUTO')}</td>
-                                        <td class="text-truncate" style="max-width: 200px;" title="${escapeHtml(article.designation || '')}">
-                                            ${escapeHtml(article.designation || '-')}
+                                        <td>${escapeHtml(article.numeroSerie || 'AUTO')}</td>
+                                        <td class="text-truncate" style="max-width: 200px;" title="${escapeHtml(article.libelle || '')}">
+                                            ${escapeHtml(article.libelle || '-')}
                                         </td>
+                                        <td>${escapeHtml(article.marque || '-')}</td>
                                         <td class="text-center ${article.quantite <= 0 ? 'text-danger' : ''}">
                                             ${article.quantite || 0}
                                         </td>
-                                        <td class="text-end">${formatMontant(article.prixAchat || 0)}</td>
-                                        <td class="text-end">${formatMontant(article.prixVente || 0)}</td>
-                                        <td class="text-end ${marge >= 0 ? 'text-success' : 'text-danger'}">
-                                            ${tauxMarge}%
-                                        </td>
+                                        <td>${article.statut || 'STO'}</td>
+                                        <td>${escapeHtml(article.client || '-')}</td>
                                     </tr>
                                 `;
                             }).join('')}
@@ -449,9 +425,8 @@ function afficherResultatsMultiples() {
         `;
     }
     
-    // Composer le HTML final
+    // ─── Composition HTML final ───
     resultatsContent.innerHTML = `
-        <!-- Section fichiers analysés -->
         <div class="result-section">
             <h6>📁 Fichiers analysés</h6>
             <div class="files-analysis-list">
@@ -463,7 +438,7 @@ function afficherResultatsMultiples() {
         ${previewHtml}
     `;
     
-    // Activer le bouton si des articles sont disponibles
+    // ─── Activation bouton import ───
     if (importState.allArticles.length > 0) {
         const btnConfirmer = document.getElementById('btnConfirmerImport');
         const btnCount = document.getElementById('btnImportCount');
@@ -474,7 +449,6 @@ function afficherResultatsMultiples() {
             }
         }
     } else {
-        // Désactiver le bouton si aucun article
         const btnConfirmer = document.getElementById('btnConfirmerImport');
         if (btnConfirmer) {
             btnConfirmer.disabled = true;
@@ -482,52 +456,53 @@ function afficherResultatsMultiples() {
     }
 }
 
-// ========================================
-// CONFIRMATION IMPORT
-// ========================================
+// ╔════════════════════════════════════════╗
+// ║   SECTION 5: CONFIRMATION IMPORT       ║
+// ╚════════════════════════════════════════╝
 
 async function confirmerImport() {
     if (!importState.allArticles || importState.allArticles.length === 0) {
-        afficherErreur('Aucun article à importer');
+        window.afficherErreur('Aucun article à importer');
         return;
     }
     
     try {
-        // Désactiver le bouton
+        // ─── Désactivation bouton ───
         const btnConfirmer = document.getElementById('btnConfirmerImport');
         const texteOriginal = btnConfirmer.innerHTML;
         btnConfirmer.disabled = true;
         btnConfirmer.innerHTML = '⏳ Import en cours...';
         
-        // Importer tous les articles uniques
+        // ─── Import articles ───
         const resultat = await firestoreService.importerArticles(
             importState.allArticles,
-            importState.files[0]?.name // Passer le nom du premier fichier pour ACM
+            importState.files[0]?.name
         );
         
-        // Afficher le résultat
+        // ─── Affichage résultat ───
         const message = `
             ✅ ${resultat.reussies} articles importés
             ${resultat.doublons > 0 ? `\n⚠️ ${resultat.doublons} doublons ignorés` : ''}
             ${resultat.erreurs.length > 0 ? `\n❌ ${resultat.erreurs.length} erreurs` : ''}
         `;
         
-        afficherSucces(message);
+        window.afficherSucces(message);
         
-        // Fermer la modal après succès
+        // ─── Fermeture modal ───
         setTimeout(() => {
             window.modalManager.close('modalImportCSV');
             resetImport();
             
-            // Recharger la liste
-            orchestrator.loadData();
+            // Recharger les données via l'orchestrator
+            if (window.stockProduitOrchestrator) {
+                window.stockProduitOrchestrator.loadData();
+            }
         }, 2000);
         
     } catch (error) {
         console.error('❌ Erreur import:', error);
-        afficherErreur(`Erreur lors de l'import: ${error.message}`);
+        window.afficherErreur(`Erreur lors de l'import: ${error.message}`);
         
-        // Réactiver le bouton
         const btnConfirmer = document.getElementById('btnConfirmerImport');
         if (btnConfirmer) {
             btnConfirmer.disabled = false;
@@ -536,9 +511,9 @@ async function confirmerImport() {
     }
 }
 
-// ========================================
-// RESET
-// ========================================
+// ╔════════════════════════════════════════╗
+// ║   SECTION 6: UTILITAIRES               ║
+// ╚════════════════════════════════════════╝
 
 function resetImport() {
     importState = {
@@ -549,16 +524,11 @@ function resetImport() {
         doublons: []
     };
     
-    // Détruire le composant s'il existe
     if (dropzoneImport) {
         dropzoneImport.destroy();
         dropzoneImport = null;
     }
 }
-
-// ========================================
-// HELPERS
-// ========================================
 
 function formatMontant(montant) {
     return new Intl.NumberFormat('fr-FR', {
@@ -573,15 +543,5 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Assigner la fonction à window après sa définition
+// ─── Exposition globale ───
 window.confirmerImport = confirmerImport;
-
-/* ========================================
-   HISTORIQUE DES MODIFICATIONS
-   
-   [03/02/2025] - Création basée sur operations-bancaires
-   - Import CSV avec détection automatique colonnes
-   - Support multi-fichiers
-   - Détection doublons par référence
-   - Preview articles avant import
-   ======================================== */

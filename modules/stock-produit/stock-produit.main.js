@@ -10,7 +10,7 @@
 // DATE: 03/02/2025
 // ========================================
 
-import { initImportStock, ouvrirModalImport } from './stock-pvt.create.js';
+import { initImportStock, ouvrirModalImport } from './stock-produit.create.js';
 
 // ========================================
 // GESTION DES MESSAGES

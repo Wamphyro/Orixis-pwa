@@ -54,17 +54,20 @@ export class StatsCardsWidget {
             container: config.container || null,
             
             // Apparence
-            size: config.size || 'md',                    // 'sm' | 'md' | 'lg'
-            columns: config.columns || 'auto',            // 'auto' | 2 | 3 | 4 | 6
+            size: config.size || 'md',                    // 'xs' | 'sm' | 'md' | 'lg'
+            columns: config.columns || 'auto',            // 'auto' | 2 | 3 | 4 | 6 | 13
             theme: config.theme || 'default',             // Pour compatibilité
             
-            // ========================================
-            // NOUVEAU : Options du wrapper englobant
-            // ========================================
+            // Options du wrapper englobant
             showWrapper: config.showWrapper || false,     // Afficher un container englobant
             wrapperStyle: config.wrapperStyle || 'card',  // 'card' | 'minimal' | 'bordered'
             wrapperTitle: config.wrapperTitle || '',      // Titre optionnel du wrapper
             wrapperClass: config.wrapperClass || '',      // Classes CSS additionnelles
+            
+            // Options d'adaptation
+            forceOneLine: config.forceOneLine || false,   // Force sur une ligne
+            compact: config.compact || false,             // Mode ultra compact
+            autoFit: config.autoFit || false,             // ⚠️ NOUVEAU : Adaptation automatique
             
             // Comportement
             animated: config.animated !== false,          // Animation des nombres
@@ -91,7 +94,7 @@ export class StatsCardsWidget {
         // Références DOM
         this.elements = {
             container: null,
-            mainContainer: null,  // NOUVEAU : Container principal (avec ou sans wrapper)
+            mainContainer: null,
             wrapper: null,
             cards: {}
         };
@@ -285,12 +288,37 @@ export class StatsCardsWidget {
     buildWrapperClasses() {
         const classes = ['stats-cards-wrapper'];
         
-        // Taille
-        classes.push(`size-${this.config.size}`);
+        // Taille (avec support de 'xs')
+        if (this.config.size === 'xs') {
+            classes.push('size-sm'); // Utiliser sm comme base
+            classes.push('size-xs'); // Ajouter une classe custom
+        } else {
+            classes.push(`size-${this.config.size}`);
+        }
         
-        // Colonnes
-        if (this.config.columns !== 'auto') {
-            classes.push(`cols-${this.config.columns}`);
+        // ⚠️ NOUVEAU : Mode auto-fit (prioritaire)
+        if (this.config.autoFit) {
+            classes.push('auto-fit');
+            // Si autoFit est activé, on ignore forceOneLine et columns
+        } else {
+            // Forcer sur une ligne
+            if (this.config.forceOneLine || this.config.columns === 13) {
+                classes.push('force-one-line');
+            }
+            
+            // Colonnes (avec support de 13)
+            if (this.config.columns && this.config.columns !== 'auto') {
+                if (this.config.columns === 13) {
+                    classes.push('cols-13');
+                } else {
+                    classes.push(`cols-${this.config.columns}`);
+                }
+            }
+        }
+        
+        // Mode compact
+        if (this.config.compact) {
+            classes.push('compact-mode');
         }
         
         // Thème (compatibilité)

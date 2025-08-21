@@ -533,20 +533,20 @@ createHeader() {
                 order: 5
             },
             {
-            id: 'stock-pvt',
-            icon: '📊',
-            title: 'Stock Prés-Ventes',
-            description: 'Gérer le stock et les inventaires prés-ventes',
-            href: '../stock-pvt/stock-pvt.html',
-            permissions: ['stock.view'],
-            category: 'operations',
-            badge: { text: 'Nouveau', type: 'primary' },
-            stats: {
-                value: '0',
-                label: 'Articles',
-                trend: 'stable'
-            },
-            order: 6
+                id: 'stock-produit',
+                icon: '📦',
+                title: 'Stock Produit',
+                description: 'Gérer le stock et les inventaires produits',
+                href: '../stock-produit/stock-produit.html',
+                permissions: ['stock.view'],
+                category: 'operations',
+                badge: { text: 'Nouveau', type: 'primary' },
+                stats: {
+                    value: '0',
+                    label: 'Articles',
+                    trend: 'stable'
+                },
+                order: 6
             },
             {
                 id: 'factures-fournisseurs',

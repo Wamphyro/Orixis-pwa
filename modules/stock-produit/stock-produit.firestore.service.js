@@ -1,71 +1,71 @@
-// ========================================
-// STOCK-PVT.FIRESTORE.SERVICE.JS - 🗄️ SERVICE FIRESTORE
-// Chemin: modules/stock-pvt/stock-pvt.firestore.service.js
-//
-// DESCRIPTION:
-// Service CRUD Firestore pour stock prés-ventes
-// Inclut template, détection catégories et import CSV
-//
-// VERSION: 1.0.0
-// DATE: 03/02/2025
-// ========================================
+// ╔════════════════════════════════════════════════════════════════════════════╗
+// ║                    STOCK-PRODUIT.FIRESTORE.SERVICE.JS                      ║
+// ║                         Service Firestore                                  ║
+// ╠════════════════════════════════════════════════════════════════════════════╣
+// ║ Module: Service CRUD pour Firebase/Firestore                               ║
+// ║ Version: 1.0.0                                                             ║
+// ║ Date: 03/02/2025                                                           ║
+// ╚════════════════════════════════════════════════════════════════════════════╝
 
 import { db } from '../../src/services/firebase.service.js';
 
-// ========================================
-// CONFIGURATION
-// ========================================
+// ╔════════════════════════════════════════╗
+// ║     SECTION 1: CONFIGURATION           ║
+// ╚════════════════════════════════════════╝
 
-const COLLECTION_NAME = 'stockPVT';
+const COLLECTION_NAME = 'stockProduit';
 
-// ========================================
-// TEMPLATE DE DONNÉES
-// ========================================
-
+// ─── TEMPLATE ARTICLE ───
 const PVT_TEMPLATE = {
-    // Identification
-    reference: null,              // String - Référence article
-    designation: null,            // String - Nom/description
-    codeBarres: null,            // String - EAN/GTIN
+    // ─── Identification ───
+    numeroSerie: null,
+    libelle: null,
+    codeBarres: null,
     
-    // Stock
-    quantite: 0,                 // Number - Quantité en stock
-    quantiteMin: 0,              // Number - Stock minimum
-    quantiteMax: 0,              // Number - Stock maximum
-    emplacement: null,           // String - Localisation
+    // ─── Stock ───
+    quantite: 0,
+    quantiteMin: 0,
+    quantiteMax: 0,
+    magasin: null,
     
-    // Prix
-    prixAchat: 0,               // Number - Prix d'achat HT
-    prixVente: 0,               // Number - Prix de vente TTC
-    tauxMarge: 0,               // Number - Taux de marge %
-    montantMarge: 0,            // Number - Marge en euros
+    // ─── Prix ───
+    prixAchat: 0,
+    prixVente: 0,
+    tauxMarge: 0,
+    montantMarge: 0,
     
-    // Classification
-    categorie: null,            // String - Catégorie principale
-    famille: null,              // String - Sous-catégorie
-    fournisseur: null,          // String - Fournisseur
-    marque: null,               // String - Marque
+    // ─── Classification ───
+    categorie: null,
+    famille: null,
+    fournisseur: null,
+    marque: null,
     
-    // Dates
-    dateEntree: null,           // String - Date entrée stock
-    dateDernierMouvement: null, // String - Dernier mouvement
-    datePeremption: null,       // String - DLC/DLUO
+    // ─── Client ───
+    client: null,
     
-    // Statut
-    actif: true,                // Boolean - Article actif
-    enRupture: false,           // Boolean - En rupture
-    aCommander: false,          // Boolean - À commander
+    // ─── Statut (13 statuts possibles) ───
+    statut: 'STO',
     
-    // Import
-    codeMagasin: null,          // String - Code magasin
-    importSource: null,         // String - Fichier source
-    dateImport: null,           // Timestamp - Date import
-    hash: null,                 // String - Hash pour doublons
+    // ─── Dates ───
+    dateEntree: null,
+    dateDernierMouvement: null,
+    datePeremption: null,
     
-    // Workflow
+    // ─── États ───
+    actif: true,
+    enRupture: false,
+    aCommander: false,
+    
+    // ─── Import ───
+    codeMagasin: null,
+    importSource: null,
+    dateImport: null,
+    hash: null,
+    
+    // ─── Workflow ───
     dates: {
-        creation: null,         // Timestamp
-        modification: null      // Timestamp
+        creation: null,
+        modification: null
     },
     
     intervenants: {
@@ -73,66 +73,50 @@ const PVT_TEMPLATE = {
         modifiePar: null
     },
     
-    // Historique
+    // ─── Historique ───
     historique: []
 };
 
-// ========================================
-// RÈGLES DE DÉTECTION DES CATÉGORIES
-// ========================================
-
+// ─── RÈGLES DÉTECTION CATÉGORIES AUDIOPROTHÈSE ───
 const DETECTION_RULES = [
-    // Alimentaire
-    { pattern: /PAIN|BAGUETTE|VIENNOISERIE|CROISSANT/, categorie: 'alimentaire', famille: 'boulangerie' },
-    { pattern: /VIANDE|POULET|BOEUF|PORC|AGNEAU/, categorie: 'alimentaire', famille: 'boucherie' },
-    { pattern: /POISSON|SAUMON|CREVETTE|CRUSTACE/, categorie: 'alimentaire', famille: 'poissonnerie' },
-    { pattern: /FROMAGE|YAOURT|LAIT|BEURRE|CREME/, categorie: 'alimentaire', famille: 'crémerie' },
-    { pattern: /FRUIT|POMME|BANANE|ORANGE|LEGUME/, categorie: 'alimentaire', famille: 'fruits_legumes' },
-    { pattern: /PATES|RIZ|CONSERVE|SAUCE|HUILE/, categorie: 'alimentaire', famille: 'épicerie' },
+    // ─── Appareils auditifs ───
+    { pattern: /audeo|virto|moxi|pure|opn|more|lumity|paradise/i, categorie: 'appareil', famille: 'contour' },
+    { pattern: /ric|rite|receiver/i, categorie: 'appareil', famille: 'ric' },
+    { pattern: /bte|behind/i, categorie: 'appareil', famille: 'bte' },
+    { pattern: /cic|iic|invisible/i, categorie: 'appareil', famille: 'intra' },
     
-    // Boissons
-    { pattern: /EAU|COCA|SODA|JUS|LIMONADE/, categorie: 'boisson', famille: 'soft' },
-    { pattern: /BIERE|VIN|CHAMPAGNE|ALCOOL|WHISKY/, categorie: 'boisson', famille: 'alcool' },
-    { pattern: /CAFE|THE|INFUSION|CHOCOLAT CHAUD/, categorie: 'boisson', famille: 'chaude' },
+    // ─── Piles ───
+    { pattern: /pile|battery|675|312|13|10|duracell|rayovac|powerone/i, categorie: 'pile', famille: 'zinc_air' },
+    { pattern: /rechargeable|lithium/i, categorie: 'pile', famille: 'rechargeable' },
     
-    // Textile
-    { pattern: /CHEMISE|PANTALON|JEAN|ROBE|JUPE/, categorie: 'textile', famille: 'vetement' },
-    { pattern: /CHAUSSURE|BASKET|BOTTE|SANDALE/, categorie: 'textile', famille: 'chaussure' },
-    { pattern: /SAC|CEINTURE|CHAPEAU|ECHARPE/, categorie: 'textile', famille: 'accessoire' },
+    // ─── Entretien ───
+    { pattern: /spray|lingette|pastille|nettoyant|cleaning|cerustop/i, categorie: 'entretien', famille: 'nettoyage' },
+    { pattern: /deshumidificateur|dry|seche/i, categorie: 'entretien', famille: 'sechage' },
     
-    // Électronique
-    { pattern: /TELEPHONE|SMARTPHONE|IPHONE|SAMSUNG/, categorie: 'electronique', famille: 'telephonie' },
-    { pattern: /ORDINATEUR|PC|LAPTOP|TABLETTE|IPAD/, categorie: 'electronique', famille: 'informatique' },
-    { pattern: /TELEVISION|TV|ECRAN|MONITEUR/, categorie: 'electronique', famille: 'audiovisuel' },
-    { pattern: /CABLE|CHARGEUR|BATTERIE|ECOUTEUR/, categorie: 'electronique', famille: 'accessoire' },
+    // ─── Embouts ───
+    { pattern: /embout|dome|tulipe|olive|tip|mould/i, categorie: 'embout', famille: 'standard' },
+    { pattern: /mesure|custom|sur-mesure/i, categorie: 'embout', famille: 'surmesure' },
     
-    // Maison
-    { pattern: /MEUBLE|TABLE|CHAISE|CANAPE|LIT/, categorie: 'maison', famille: 'mobilier' },
-    { pattern: /ASSIETTE|VERRE|COUVERT|CASSEROLE/, categorie: 'maison', famille: 'cuisine' },
-    { pattern: /DRAP|COUETTE|OREILLER|SERVIETTE/, categorie: 'maison', famille: 'linge' },
-    { pattern: /AMPOULE|LAMPE|LUMINAIRE|ECLAIRAGE/, categorie: 'maison', famille: 'eclairage' },
+    // ─── Accessoires connectivité ───
+    { pattern: /chargeur|charger|charge/i, categorie: 'accessoire', famille: 'chargeur' },
+    { pattern: /tv|television|streamer/i, categorie: 'accessoire', famille: 'tv' },
+    { pattern: /phone|telephone|bluetooth/i, categorie: 'accessoire', famille: 'telephone' },
+    { pattern: /roger|microphone|mic/i, categorie: 'accessoire', famille: 'microphone' },
     
-    // Sport
-    { pattern: /BALLON|RAQUETTE|VELO|TROTTINETTE/, categorie: 'sport', famille: 'equipement' },
-    { pattern: /MAILLOT|SHORT SPORT|SURVETEMENT/, categorie: 'sport', famille: 'vetement_sport' },
-    { pattern: /POIDS|HALTERE|TAPIS|ELASTIQUE/, categorie: 'sport', famille: 'fitness' },
-    
-    // Beauté
-    { pattern: /CREME|SERUM|MASQUE|SOIN|LOTION/, categorie: 'beaute', famille: 'soin' },
-    { pattern: /PARFUM|EAU DE TOILETTE|DEODORANT/, categorie: 'beaute', famille: 'parfumerie' },
-    { pattern: /MAQUILLAGE|ROUGE|MASCARA|FOND DE TEINT/, categorie: 'beaute', famille: 'maquillage' },
-    { pattern: /SHAMPOING|GEL DOUCHE|SAVON/, categorie: 'beaute', famille: 'hygiene' }
+    // ─── Protections ───
+    { pattern: /bouchon|protection|anti-bruit|ear|plug/i, categorie: 'protection', famille: 'standard' },
+    { pattern: /musician|musicien|er-/i, categorie: 'protection', famille: 'musicien' }
 ];
 
-// ========================================
-// SERVICE FIRESTORE
-// ========================================
+// ╔════════════════════════════════════════╗
+// ║   SECTION 2: SERVICE FIRESTORE         ║
+// ╚════════════════════════════════════════╝
 
-class StockPVTFirestoreService {
+class StockProduitFirestoreService {
     
-    // ========================================
-    // CRÉATION
-    // ========================================
+    // ┌────────────────────────────────────────┐
+    // │         CRÉATION ARTICLE                │
+    // └────────────────────────────────────────┘
     
     async creerArticle(data) {
         try {
@@ -142,55 +126,56 @@ class StockPVTFirestoreService {
             
             console.log('📦 Création article...');
             
-            // Créer le template de base
             const article = this.createNewArticle();
             
-            // Générer la référence si pas fournie
-            if (!data.reference) {
-                article.reference = await this.genererReference();
+            // ─── Génération référence ───
+            if (!data.numeroSerie) {
+                article.numeroSerie = await this.genererReference();
             } else {
-                article.reference = data.reference;
+                article.numeroSerie = data.numeroSerie;
             }
             
-            // Récupérer les infos utilisateur
+            // ─── Récupération utilisateur ───
             const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
             
-            // Remplir les données
-            article.designation = data.designation;
+            // ─── Données article ───
+            article.libelle = data.libelle;
             article.codeBarres = data.codeBarres || null;
             article.quantite = parseFloat(data.quantite) || 0;
             article.quantiteMin = parseFloat(data.quantiteMin) || 0;
             article.quantiteMax = parseFloat(data.quantiteMax) || 999;
-            article.emplacement = data.emplacement || null;
+            article.magasin = data.magasin || null;
             article.prixAchat = parseFloat(data.prixAchat) || 0;
             article.prixVente = parseFloat(data.prixVente) || 0;
             
-            // Calculer les marges
+            // ─── Calcul marges ───
             if (article.prixAchat > 0 && article.prixVente > 0) {
                 article.montantMarge = article.prixVente - article.prixAchat;
                 article.tauxMarge = ((article.montantMarge / article.prixAchat) * 100).toFixed(2);
             }
             
-            // Catégorisation
-            article.categorie = data.categorie || this.detecterCategorie(data.designation);
+            // ─── Catégorisation ───
+            article.categorie = data.categorie || this.detecterCategorie(data.libelle);
             article.famille = data.famille || null;
             article.fournisseur = data.fournisseur || null;
             article.marque = data.marque || null;
+            article.client = data.client || '-';
+            article.statut = data.statut || 'STO';
             
-            // Dates
+            // ─── Dates ───
             article.dateEntree = data.dateEntree || new Date().toISOString().split('T')[0];
             article.dateDernierMouvement = new Date().toISOString().split('T')[0];
             article.datePeremption = data.datePeremption || null;
             
-            // Statuts
+            // ─── États ───
             article.enRupture = article.quantite <= 0;
             article.aCommander = article.quantite <= article.quantiteMin;
             
-            // Import
+            // ─── Import ───
             article.codeMagasin = data.codeMagasin || '-';
             article.importSource = data.importSource || null;
             
-            // Métadonnées
+            // ─── Métadonnées ───
             article.dates.creation = serverTimestamp();
             article.intervenants.creePar = {
                 id: auth.collaborateur?.id || 'import',
@@ -198,18 +183,18 @@ class StockPVTFirestoreService {
                 prenom: auth.collaborateur?.prenom || 'CSV'
             };
             
-            // Historique initial
+            // ─── Historique ───
             article.historique = [{
                 date: new Date().toISOString(),
                 action: 'creation',
-                details: 'Article importé',
+                details: 'Article créé',
                 utilisateur: article.intervenants.creePar
             }];
             
-            // Créer dans Firestore
+            // ─── Sauvegarde Firestore ───
             const docRef = await addDoc(collection(db, COLLECTION_NAME), article);
             
-            console.log('✅ Article créé:', article.reference, 'ID:', docRef.id);
+            console.log('✅ Article créé:', article.numeroSerie, 'ID:', docRef.id);
             
             return docRef.id;
             
@@ -230,9 +215,9 @@ class StockPVTFirestoreService {
         return `PVT-${dateStr}-${random}`;
     }
     
-    // ========================================
-    // LECTURE
-    // ========================================
+    // ┌────────────────────────────────────────┐
+    // │         LECTURE ARTICLES                │
+    // └────────────────────────────────────────┘
     
     async getArticles(filtres = {}) {
         try {
@@ -243,40 +228,45 @@ class StockPVTFirestoreService {
             let q = collection(db, COLLECTION_NAME);
             const constraints = [];
             
-            // Filtre par catégorie
+            // ─── Application filtres ───
             if (filtres.categorie) {
                 constraints.push(where('categorie', '==', filtres.categorie));
             }
             
-            // Filtre par fournisseur
             if (filtres.fournisseur) {
                 constraints.push(where('fournisseur', '==', filtres.fournisseur));
             }
             
-            // Filtre par magasin
             if (filtres.magasin) {
-                constraints.push(where('codeMagasin', '==', filtres.magasin));
+                constraints.push(where('magasin', '==', filtres.magasin));
             }
             
-            // Filtre rupture
+            if (filtres.client) {
+                constraints.push(where('client', '==', filtres.client));
+            }
+            
+            if (filtres.statut) {
+                constraints.push(where('statut', '==', filtres.statut));
+            }
+            
             if (filtres.enRupture !== undefined) {
                 constraints.push(where('enRupture', '==', filtres.enRupture));
             }
             
-            // Tri par défaut
-            constraints.push(orderBy('designation', 'asc'));
+            // ─── Tri par défaut ───
+            constraints.push(orderBy('libelle', 'asc'));
             
-            // Limite
+            // ─── Limite ───
             if (filtres.limite) {
                 constraints.push(limit(filtres.limite));
             }
             
-            // Appliquer les contraintes
+            // ─── Construction requête ───
             if (constraints.length > 0) {
                 q = query(q, ...constraints);
             }
             
-            // Exécuter la requête
+            // ─── Exécution ───
             const snapshot = await getDocs(q);
             
             const articles = [];
@@ -314,12 +304,11 @@ class StockPVTFirestoreService {
             };
             
             articles.forEach(article => {
-                // Valeurs
                 const qte = article.quantite || 0;
                 stats.valeurStock += qte * (article.prixVente || 0);
                 stats.valeurAchat += qte * (article.prixAchat || 0);
                 
-                // Statuts
+                // ─── États stock ───
                 if (article.enRupture) {
                     stats.enRupture++;
                 } else if (article.aCommander) {
@@ -328,7 +317,7 @@ class StockPVTFirestoreService {
                     stats.stockOk++;
                 }
                 
-                // Par catégorie
+                // ─── Par catégorie ───
                 const cat = article.categorie || 'autre';
                 if (!stats.parCategorie[cat]) {
                     stats.parCategorie[cat] = {
@@ -341,7 +330,7 @@ class StockPVTFirestoreService {
                 stats.parCategorie[cat].valeur += qte * (article.prixVente || 0);
                 stats.parCategorie[cat].quantite += qte;
                 
-                // Par fournisseur
+                // ─── Par fournisseur ───
                 const fourn = article.fournisseur || 'inconnu';
                 if (!stats.parFournisseur[fourn]) {
                     stats.parFournisseur[fourn] = {
@@ -352,7 +341,7 @@ class StockPVTFirestoreService {
                 stats.parFournisseur[fourn].nombre++;
                 stats.parFournisseur[fourn].valeur += qte * (article.prixVente || 0);
                 
-                // Par magasin
+                // ─── Par magasin ───
                 const mag = article.codeMagasin || '-';
                 if (!stats.parMagasin[mag]) {
                     stats.parMagasin[mag] = {
@@ -364,7 +353,6 @@ class StockPVTFirestoreService {
                 stats.parMagasin[mag].valeur += qte * (article.prixVente || 0);
             });
             
-            // Marge globale
             stats.margeGlobale = stats.valeurStock - stats.valeurAchat;
             
             return stats;
@@ -386,9 +374,9 @@ class StockPVTFirestoreService {
         }
     }
     
-    // ========================================
-    // MISE À JOUR
-    // ========================================
+    // ┌────────────────────────────────────────┐
+    // │      MISE À JOUR ARTICLE                │
+    // └────────────────────────────────────────┘
     
     async mettreAJourArticle(articleId, updates) {
         try {
@@ -403,7 +391,7 @@ class StockPVTFirestoreService {
                 prenom: auth.collaborateur?.prenom || ''
             };
             
-            // Recalculer les marges si prix modifiés
+            // ─── Recalcul marges ───
             if (updates.prixAchat !== undefined || updates.prixVente !== undefined) {
                 const pa = updates.prixAchat || 0;
                 const pv = updates.prixVente || 0;
@@ -413,7 +401,7 @@ class StockPVTFirestoreService {
                 }
             }
             
-            // Vérifier les statuts si quantité modifiée
+            // ─── Vérification états ───
             if (updates.quantite !== undefined) {
                 updates.enRupture = updates.quantite <= 0;
                 updates.aCommander = updates.quantite <= (updates.quantiteMin || 0);
@@ -468,9 +456,9 @@ class StockPVTFirestoreService {
         }
     }
     
-    // ========================================
-    // SUPPRESSION
-    // ========================================
+    // ┌────────────────────────────────────────┐
+    // │        SUPPRESSION ARTICLE              │
+    // └────────────────────────────────────────┘
     
     async supprimerArticle(articleId) {
         try {
@@ -488,9 +476,9 @@ class StockPVTFirestoreService {
         }
     }
     
-    // ========================================
-    // IMPORT
-    // ========================================
+    // ┌────────────────────────────────────────┐
+    // │         IMPORT ARTICLES                 │
+    // └────────────────────────────────────────┘
     
     async trouverCodeParACM(nomFichier) {
         if (!nomFichier) return '-';
@@ -500,11 +488,10 @@ class StockPVTFirestoreService {
                 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js'
             );
             
-            // Nettoyer le nom du fichier
             const nomNettoye = nomFichier.replace(/\.[^/.]+$/, '');
             console.log('🔍 Recherche ACM dans le nom:', nomNettoye);
             
-            // Rechercher dans les magasins
+            // ─── Recherche dans magasins ───
             const magasinsSnapshot = await getDocs(collection(db, 'magasins'));
             for (const doc of magasinsSnapshot.docs) {
                 const magasin = doc.data();
@@ -515,7 +502,7 @@ class StockPVTFirestoreService {
                 }
             }
             
-            // Rechercher dans les sociétés
+            // ─── Recherche dans sociétés ───
             const societesSnapshot = await getDocs(collection(db, 'societes'));
             for (const doc of societesSnapshot.docs) {
                 const societe = doc.data();
@@ -537,78 +524,125 @@ class StockPVTFirestoreService {
     
     async importerArticles(articles, nomFichier = null) {
         try {
-            const { collection, addDoc, query, where, limit, getDocs, serverTimestamp } = await import(
+            const { collection, addDoc, query, where, limit, getDocs, serverTimestamp, updateDoc, doc } = await import(
                 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js'
             );
             
-            // Trouver le code magasin depuis le nom du fichier
-            let codeMagasin = '-';
+            // ─── Recherche code magasin ───
+            let codeMagasinACM = '-';
             if (nomFichier) {
-                codeMagasin = await this.trouverCodeParACM(nomFichier);
-                console.log(`🔍 Code magasin trouvé: ${codeMagasin} pour fichier: ${nomFichier}`);
+                codeMagasinACM = await this.trouverCodeParACM(nomFichier);
+                console.log(`🏪 Code magasin ACM trouvé: ${codeMagasinACM} pour fichier: ${nomFichier}`);
             }
             
             const resultats = {
                 reussies: 0,
                 doublons: 0,
+                miseAJour: 0,
                 erreurs: []
             };
             
             for (const article of articles) {
                 try {
-                    // Vérifier si doublon (par référence)
-                    if (article.reference) {
+                    // ─── Normalisation données ───
+                    const articleNormalise = {
+                        numeroSerie: article.numeroSerie || null,
+                        libelle: article.libelle || null,
+                        codeBarres: article.codeBarres || null,
+                        
+                        quantite: parseFloat(article.quantite) || 0,
+                        quantiteMin: 0,
+                        quantiteMax: 999,
+                        magasin: article.magasin || '-',
+                        
+                        prixAchat: parseFloat(article.prixAchat) || 0,
+                        prixVente: parseFloat(article.prixVente) || 0,
+                        tauxMarge: 0,
+                        montantMarge: 0,
+                        
+                        categorie: this.detecterCategorie(article.libelle),
+                        famille: null,
+                        fournisseur: article.fournisseur || '-',
+                        marque: article.marque || '-',
+                        
+                        client: article.client || '-',
+                        
+                        statut: article.statut || 'STO',
+                        
+                        dateEntree: new Date().toISOString().split('T')[0],
+                        dateDernierMouvement: new Date().toISOString().split('T')[0],
+                        datePeremption: null,
+                        
+                        actif: true,
+                        enRupture: false,
+                        aCommander: false
+                    };
+                    
+                    // ─── Vérification états ───
+                    articleNormalise.enRupture = articleNormalise.quantite <= 0;
+                    articleNormalise.aCommander = articleNormalise.quantite <= articleNormalise.quantiteMin;
+                    
+                    // ─── Vérification doublon ───
+                    if (articleNormalise.numeroSerie) {
                         const doublonQuery = query(
                             collection(db, COLLECTION_NAME),
-                            where('reference', '==', article.reference),
-                            where('codeMagasin', '==', codeMagasin),
+                            where('numeroSerie', '==', articleNormalise.numeroSerie),
+                            where('magasin', '==', articleNormalise.magasin),
                             limit(1)
                         );
                         const existant = await getDocs(doublonQuery);
                         
                         if (!existant.empty) {
-                            console.log('⚠️ Doublon détecté:', article.reference);
-                            resultats.doublons++;
+                            const docExistant = existant.docs[0];
+                            const dataExistant = docExistant.data();
+                            
+                            // ─── Mise à jour si statut ou client changé ───
+                            if (dataExistant.statut !== articleNormalise.statut || 
+                                dataExistant.client !== articleNormalise.client) {
+                                console.log(`🔄 Mise à jour: ${articleNormalise.numeroSerie}`);
+                                
+                                await updateDoc(doc(db, COLLECTION_NAME, docExistant.id), {
+                                    statut: articleNormalise.statut,
+                                    client: articleNormalise.client,
+                                    dateDernierMouvement: new Date().toISOString().split('T')[0],
+                                    'dates.modification': serverTimestamp()
+                                });
+                                
+                                resultats.miseAJour++;
+                            } else {
+                                console.log('⚠️ Doublon ignoré:', articleNormalise.numeroSerie);
+                                resultats.doublons++;
+                            }
                             continue;
                         }
                     }
                     
-                    // Générer un hash pour détection doublons sans référence
-                    const hash = this.genererHashArticle(article);
-                    const hashQuery = query(
-                        collection(db, COLLECTION_NAME),
-                        where('hash', '==', hash),
-                        limit(1)
-                    );
-                    const existantHash = await getDocs(hashQuery);
+                    // ─── Génération hash ───
+                    const hash = this.genererHashArticle(articleNormalise);
                     
-                    if (!existantHash.empty) {
-                        console.log('⚠️ Doublon détecté (hash):', article.designation);
-                        resultats.doublons++;
-                        continue;
-                    }
-                    
-                    // Enrichir avec métadonnées
-                    const articleEnrichi = {
-                        ...article,
-                        codeMagasin: codeMagasin,
+                    // ─── Article final ───
+                    const articleFinal = {
+                        ...articleNormalise,
                         hash: hash,
-                        categorie: article.categorie || this.detecterCategorie(article.designation),
-                        dateImport: serverTimestamp(),
+                        
+                        codeMagasin: codeMagasinACM,
                         importSource: nomFichier,
-                        enRupture: (article.quantite || 0) <= 0,
-                        aCommander: (article.quantite || 0) <= (article.quantiteMin || 0),
-                        actif: true,
+                        dateImport: serverTimestamp(),
+                        
                         dates: {
-                            creation: serverTimestamp()
+                            creation: serverTimestamp(),
+                            modification: null
                         },
+                        
                         intervenants: {
                             creePar: {
                                 id: 'import',
                                 nom: 'Import CSV',
                                 prenom: ''
-                            }
+                            },
+                            modifiePar: null
                         },
+                        
                         historique: [{
                             date: new Date().toISOString(),
                             action: 'import',
@@ -616,20 +650,21 @@ class StockPVTFirestoreService {
                         }]
                     };
                     
-                    // Calculer les marges
-                    if (articleEnrichi.prixAchat > 0 && articleEnrichi.prixVente > 0) {
-                        articleEnrichi.montantMarge = articleEnrichi.prixVente - articleEnrichi.prixAchat;
-                        articleEnrichi.tauxMarge = ((articleEnrichi.montantMarge / articleEnrichi.prixAchat) * 100).toFixed(2);
+                    // ─── Calcul marges ───
+                    if (articleFinal.prixAchat > 0 && articleFinal.prixVente > 0) {
+                        articleFinal.montantMarge = articleFinal.prixVente - articleFinal.prixAchat;
+                        articleFinal.tauxMarge = ((articleFinal.montantMarge / articleFinal.prixAchat) * 100).toFixed(2);
                     }
                     
-                    // Sauvegarder
-                    await addDoc(collection(db, COLLECTION_NAME), articleEnrichi);
+                    // ─── Sauvegarde ───
+                    await addDoc(collection(db, COLLECTION_NAME), articleFinal);
                     resultats.reussies++;
+                    console.log(`✅ Importé: ${articleNormalise.numeroSerie || articleNormalise.libelle}`);
                     
                 } catch (error) {
                     console.error('❌ Erreur import article:', error);
                     resultats.erreurs.push({
-                        article: article.designation || article.reference,
+                        article: article.libelle || article.numeroSerie || 'Inconnu',
                         erreur: error.message
                     });
                 }
@@ -645,8 +680,17 @@ class StockPVTFirestoreService {
     }
     
     genererHashArticle(article) {
-        const str = `${article.reference || ''}_${article.designation || ''}_${article.codeBarres || ''}`;
-        return btoa(str).substring(0, 16);
+        const numeroSerie = article.numeroSerie || '';
+        const magasin = article.magasin || '';
+        
+        if (!numeroSerie) {
+            const libelle = article.libelle || '';
+            const hash = `${libelle}_${magasin}`.toLowerCase().trim();
+            return btoa(hash).substring(0, 16);
+        }
+        
+        const hash = `${numeroSerie}_${magasin}`.toLowerCase().trim();
+        return btoa(hash).substring(0, 16);
     }
     
     async getArticleById(id) {
@@ -673,17 +717,17 @@ class StockPVTFirestoreService {
         }
     }
     
-    // ========================================
-    // DÉTECTION DE CATÉGORIE
-    // ========================================
+    // ┌────────────────────────────────────────┐
+    // │      DÉTECTION CATÉGORIE                │
+    // └────────────────────────────────────────┘
     
-    detecterCategorie(designation) {
-        if (!designation) return 'autre';
+    detecterCategorie(libelle) {
+        if (!libelle) return 'autre';
         
-        const designationUpper = designation.toUpperCase();
+        const libelleUpper = libelle.toUpperCase();
         
         for (const rule of DETECTION_RULES) {
-            if (rule.pattern.test(designationUpper)) {
+            if (rule.pattern.test(libelleUpper)) {
                 return rule.categorie;
             }
         }
@@ -692,9 +736,9 @@ class StockPVTFirestoreService {
     }
 }
 
-// ========================================
-// EXPORT SINGLETON
-// ========================================
+// ╔════════════════════════════════════════╗
+// ║      SECTION 3: EXPORT SINGLETON       ║
+// ╚════════════════════════════════════════╝
 
-const service = new StockPVTFirestoreService();
+const service = new StockProduitFirestoreService();
 export default service;

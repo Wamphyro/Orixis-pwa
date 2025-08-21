@@ -1,17 +1,17 @@
-// ========================================
-// STOCK-PVT.ORCHESTRATOR.JS - 🎯 ORCHESTRATEUR PRINCIPAL
-// Chemin: modules/stock-pvt/stock-pvt.orchestrator.js
-//
-// DESCRIPTION:
-// Orchestrateur unique pour stock prés-ventes
-// Basé sur l'architecture des opérations bancaires
-// Gère l'import CSV, catégorisation auto, stock et inventaire
-//
-// VERSION: 1.0.0
-// DATE: 03/02/2025
-// ========================================
+// ╔════════════════════════════════════════════════════════════════════════════╗
+// ║                      STOCK-PRODUIT.ORCHESTRATOR.JS                         ║
+// ║                    Orchestrateur Principal + Utilitaires                   ║
+// ╠════════════════════════════════════════════════════════════════════════════╣
+// ║ Module: Gestion Stock Audioprothèse                                        ║
+// ║ Version: 1.0.0                                                             ║
+// ║ Date: 03/02/2025                                                           ║
+// ╚════════════════════════════════════════════════════════════════════════════╝
 
-// Import des widgets
+// ┌────────────────────────────────────────┐
+// │        SECTION 1: IMPORTS              │
+// └────────────────────────────────────────┘
+
+// ─── WIDGETS ───
 import { HeaderWidget } from '../../widgets/header/header.widget.js';
 import { StatsCardsWidget } from '../../widgets/stats-cards/stats-cards.widget.js';
 import { SearchFiltersWidget } from '../../widgets/search-filters/search-filters.widget.js';
@@ -20,37 +20,41 @@ import { PdfUploaderWidget } from '../../widgets/pdf-uploader/pdf-uploader.widge
 import { DetailViewerWidget } from '../../widgets/detail-viewer/detail-viewer.widget.js';
 import toast from '../../widgets/toast/toast.widget.js';
 
-// Import des services
-import uploadService from './stock-pvt.upload.service.js';
-import firestoreService from './stock-pvt.firestore.service.js';
-
-// Import Firebase
+// ─── SERVICES ───
+import uploadService from './stock-produit.upload.service.js';
+import firestoreService from './stock-produit.firestore.service.js';
 import { initFirebase } from '../../src/services/firebase.service.js';
 
-// ========================================
-// CONFIGURATION
-// ========================================
+// ─── MODULES ───
+import { initImportStock, ouvrirModalImport } from './stock-produit.create.js';
+
+// ╔════════════════════════════════════════╗
+// ║     SECTION 2: CONFIGURATION           ║
+// ╚════════════════════════════════════════╝
 
 const CONFIG = {
-    CATEGORIES: {
-        alimentaire: { label: 'Alimentaire', icon: '🥐', couleur: '#d1e7dd' },
-        boisson: { label: 'Boisson', icon: '🥤', couleur: '#cfe2ff' },
-        textile: { label: 'Textile', icon: '👕', couleur: '#e0cffc' },
-        electronique: { label: 'Électronique', icon: '📱', couleur: '#f8d7da' },
-        maison: { label: 'Maison', icon: '🏠', couleur: '#fff3cd' },
-        sport: { label: 'Sport', icon: '⚽', couleur: '#d2f4ea' },
-        beaute: { label: 'Beauté', icon: '💄', couleur: '#f5e6ff' },
-        autre: { label: 'Autre', icon: '📦', couleur: '#f8f9fa' }
+    // ─── STATUTS WORKFLOW (13 statuts) ───
+    STATUTS: {
+        STO: { label: 'En stock', icon: '📦', color: 'success' },
+        PVT: { label: 'Pré-Vente', icon: '🏷️', color: 'info' },
+        VTE: { label: 'Vendu', icon: '✅', color: 'primary' },
+        RSV: { label: 'Réservé', icon: '🔒', color: 'warning' },
+        PRT: { label: 'En prêt', icon: '📤', color: 'purple' },
+        RETA: { label: 'Retour pour avoir', icon: '↩️', color: 'orange' },
+        EXT: { label: 'Externe', icon: '🌐', color: 'secondary' },
+        RETE: { label: 'Retour pour échange', icon: '🔄', color: 'pink' },
+        AVR: { label: 'Avoir reçu', icon: '✔️', color: 'teal' },
+        ECHR: { label: 'Échange reçu', icon: '🔁', color: 'cyan' },
+        SDEP: { label: 'Sortie dépôt', icon: '📦', color: 'brown' },
+        CMD: { label: 'Commande', icon: '🛒', color: 'deep-purple' },
+        RETF: { label: 'Retour fournisseur', icon: '❌', color: 'danger' }
     },
     
-    STATUTS_STOCK: {
-        OK: { label: 'Stock OK', couleur: 'success', icon: '✅' },
-        BAS: { label: 'Stock bas', couleur: 'warning', icon: '⚠️' },
-        RUPTURE: { label: 'Rupture', couleur: 'danger', icon: '🔴' }
-    }
+    // ─── MARQUES AUDIOPROTHÈSE ───
+    MARQUES: ['PHONAK', 'UNITRON', 'OTICON', 'SIGNIA', 'STARKEY', 'WIDEX', 'RESOUND']
 };
 
-// Import config pour les boutons
+// ─── FACTORY BOUTONS (pour create.js) ───
 const config = {
     Button: class Button {
         constructor(options) {
@@ -72,7 +76,7 @@ const config = {
             <div class="dropzone-area">
                 <input type="file" id="fileInput" multiple accept=".csv,.txt" style="display: none;">
                 <div class="dropzone-content">
-                    <div class="dropzone-icon">📁</div>
+                    <div class="dropzone-icon">📂</div>
                     <div class="dropzone-text">
                         Glissez vos fichiers CSV ici<br>
                         <span class="dropzone-subtext">ou cliquez pour parcourir</span>
@@ -117,58 +121,57 @@ const config = {
     }
 };
 
-// Exporter config pour create.js
-window.stockPVTConfig = config;
+window.stockProduitConfig = config;
 
-// ========================================
-// CLASSE ORCHESTRATEUR
-// ========================================
+// ╔════════════════════════════════════════╗
+// ║   SECTION 3: CLASSE ORCHESTRATEUR      ║
+// ╚════════════════════════════════════════╝
 
-class StockPVTOrchestrator {
+class StockProduitOrchestrator {
     constructor() {
-        // Widgets
+        // ─── WIDGETS ───
         this.header = null;
         this.stats = null;
         this.filters = null;
         this.grid = null;
         
-        // Données
+        // ─── DONNÉES ───
         this.articlesData = [];
         this.statsData = {};
         this.filteredData = [];
         
-        // État des filtres
+        // ─── FILTRES ACTIFS ───
         this.currentFilters = {
             search: '',
             categorie: '',
             fournisseur: '',
             magasin: '',
             statut: '',
-            cartesActives: []
+            statutsActifs: []
         };
         
-        // Sélection multiple
+        // ─── SÉLECTION ───
         this.selection = new Set();
         
-        // Listes dynamiques
+        // ─── LISTES DYNAMIQUES ───
         this.magasinsDynamiques = new Set();
         this.categoriesDynamiques = new Set();
         this.fournisseursDynamiques = new Set();
         
-        // État de l'application
+        // ─── ÉTAT APPLICATION ───
         this.isLoading = false;
     }
     
-    // ========================================
-    // INITIALISATION
-    // ========================================
+    // ┌────────────────────────────────────────┐
+    // │    INITIALISATION PRINCIPALE           │
+    // └────────────────────────────────────────┘
     
     async init() {
         try {
             this.showLoader();
-            console.log('🚀 Initialisation orchestrateur stock PVT...');
+            console.log('🚀 Initialisation orchestrateur stock audioprothèse...');
             
-            // Vérifier l'authentification
+            // ─── Vérification authentification ───
             if (!this.checkAuth()) {
                 this.showError('Vous devez être connecté pour accéder à cette page');
                 setTimeout(() => {
@@ -177,15 +180,49 @@ class StockPVTOrchestrator {
                 return;
             }
             
-            // Initialiser Firebase
+            // ─── Initialisation Firebase ───
             console.log('🔥 Initialisation Firebase...');
             await initFirebase();
             console.log('✅ Firebase initialisé');
             
-            // Créer les widgets
+            // ─── Initialisation module import ───
+            initImportStock();
+            
+            // ─── Exposition fonctions globales ───
+            window.ouvrirModalImportStock = ouvrirModalImport;
+            window.afficherSucces = this.showSuccess.bind(this);
+            window.afficherErreur = this.showError.bind(this);
+            window.afficherAvertissement = this.showWarning.bind(this);
+            window.afficherInfo = this.showInfo.bind(this);
+            
+            // ─── Gestion modales ───
+            if (!window.modalManager) {
+                window.modalManager = {
+                    open: (id) => {
+                        const modal = document.getElementById(id);
+                        if (modal) {
+                            modal.style.display = 'block';
+                            modal.classList.add('show');
+                            document.body.classList.add('modal-open');
+                        }
+                    },
+                    close: (id) => {
+                        const modal = document.getElementById(id);
+                        if (modal) {
+                            modal.style.display = 'none';
+                            modal.classList.remove('show');
+                            document.body.classList.remove('modal-open');
+                        }
+                    }
+                };
+            }
+            
+            window.fermerModal = window.modalManager.close;
+            
+            // ─── Création widgets ───
             await this.createWidgets();
             
-            // Charger les données
+            // ─── Chargement données ───
             await this.loadData();
             
             this.hideLoader();
@@ -203,37 +240,29 @@ class StockPVTOrchestrator {
         return !!auth;
     }
     
-    // ========================================
-    // CRÉATION DES WIDGETS
-    // ========================================
+    // ┌────────────────────────────────────────┐
+    // │         CRÉATION DES WIDGETS           │
+    // └────────────────────────────────────────┘
     
     async createWidgets() {
         console.log('🎨 Création des widgets...');
         
-        // Header
         this.createHeader();
-        
-        // Stats Cards
         this.createStatsCards();
-        
-        // Filtres
         this.createFilters();
-        
-        // DataGrid
         this.createDataGrid();
         
         console.log('✅ Widgets créés');
     }
     
+    // ─── WIDGET: HEADER ───
     createHeader() {
         const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
         
         this.header = new HeaderWidget({
-            // FOND DÉGRADÉ
             pageBackground: 'colorful',
             theme: 'gradient',
             
-            // PERSONNALISATION
             buttonStyles: {
                 back: { height: '48px', padding: '12px 24px', minWidth: '120px' },
                 action: { height: '48px', width: '44px' },
@@ -242,25 +271,21 @@ class StockPVTOrchestrator {
                 indicator: { height: '48px', padding: '10px 16px', minWidth: 'auto' }
             },
             
-            // TEXTES
-            title: 'Stock Prés-Ventes',
+            title: 'Stock Produit',
             subtitle: '',
             centerTitle: true,
             
-            // LOGO
             showLogo: true,
             logoIcon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
             
-            // NAVIGATION
             showBack: true,
             backText: 'Retour',
             onBack: () => {
                 window.location.href = '/modules/home/home.html';
             },
             
-            // RECHERCHE
             showSearch: true,
-            searchPlaceholder: 'Rechercher référence, désignation, code barre...',
+            searchPlaceholder: 'Rechercher numéro série, libellé, marque...',
             searchMaxWidth: '1500px',
             searchHeight: '48px',
             onSearch: (query) => {
@@ -268,7 +293,6 @@ class StockPVTOrchestrator {
                 this.applyFilters();
             },
             
-            // BOUTONS RAPIDES
             showQuickActions: true,
             quickActions: [
                 {
@@ -284,10 +308,10 @@ class StockPVTOrchestrator {
                     onClick: () => this.grid?.export('excel')
                 },
                 {
-                    id: 'inventaire',
-                    title: 'Inventaire',
-                    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11H3v12h6V11z"></path><path d="M15 3H9v8h6V3z"></path><path d="M21 7h-6v16h6V7z"></path></svg>',
-                    onClick: () => this.showInventaire()
+                    id: 'delete',
+                    title: 'Supprimer sélection',
+                    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>',
+                    onClick: () => this.deleteSelected()
                 },
                 {
                     id: 'reset',
@@ -305,7 +329,6 @@ class StockPVTOrchestrator {
                 }
             ],
             
-            // INDICATEURS
             showIndicators: true,
             indicators: [
                 {
@@ -316,31 +339,26 @@ class StockPVTOrchestrator {
                 }
             ],
             
-            // NOTIFICATIONS
             showNotifications: true,
             
-            // BREADCRUMBS
             showBreadcrumbs: true,
             breadcrumbs: [
                 { text: 'Accueil', url: '/modules/home/home.html' },
                 { text: 'Stock', url: '#' },
-                { text: 'Prés-Ventes' }
+                { text: 'Audioprothèse' }
             ],
             
-            // UTILISATEUR
             showUser: true,
             showUserDropdown: true,
             showMagasin: true,
             showLogout: true
         });
         
-        // Mettre à jour les indicateurs après chargement
+        // ─── Mise à jour indicateurs après chargement ───
         this.updateHeaderIndicators = () => {
             if (this.header && this.articlesData) {
-                // Nombre d'articles
                 this.header.updateIndicator('count', `${this.articlesData.length} articles`);
                 
-                // Valeur du stock
                 const valeurStock = this.articlesData.reduce((sum, art) => {
                     return sum + ((art.quantite || 0) * (art.prixVente || 0));
                 }, 0);
@@ -355,28 +373,32 @@ class StockPVTOrchestrator {
         };
     }
     
+    // ─── WIDGET: STATS CARDS (13 statuts) ───
     createStatsCards() {
         this.stats = new StatsCardsWidget({
             container: '.stats-container',
             showWrapper: true,
-            wrapperStyle: 'card',
-            size: 'md',
+            wrapperStyle: 'minimal',
+            size: 'sm',
+            autoFit: true,
             selectionMode: 'multiple',
-            animated: true,
-            cards: [
-                { id: 'total', label: 'Total Articles', icon: '📦', value: 0, color: 'info' },
-                { id: 'valeur', label: 'Valeur Stock', icon: '💰', value: 0, color: 'success' },
-                { id: 'rupture', label: 'En Rupture', icon: '🔴', value: 0, color: 'danger' },
-                { id: 'bas', label: 'Stock Bas', icon: '⚠️', value: 0, color: 'warning' }
-            ],
+            animated: false,
+            cards: Object.entries(CONFIG.STATUTS).map(([key, config]) => ({
+                id: key,
+                label: key,
+                icon: config.icon,
+                value: 0,
+                color: config.color
+            })),
             onSelect: (selectedIds) => {
-                console.log('Filtres par cartes:', selectedIds);
-                this.currentFilters.cartesActives = selectedIds;
+                console.log('Filtres par statuts:', selectedIds);
+                this.currentFilters.statutsActifs = selectedIds;
                 this.applyFilters();
             }
         });
     }
     
+    // ─── WIDGET: FILTRES ───
     createFilters() {
         this.filters = new SearchFiltersWidget({
             container: '.filters-container',
@@ -387,19 +409,10 @@ class StockPVTOrchestrator {
             filters: [
                 { 
                     type: 'select', 
-                    key: 'categorie', 
-                    label: 'Catégorie',
-                    options: [
-                        { value: '', label: 'Toutes catégories' }
-                    ],
-                    searchable: true
-                },
-                { 
-                    type: 'select', 
                     key: 'fournisseur', 
-                    label: 'Fournisseur',
+                    label: 'Client',
                     options: [
-                        { value: '', label: 'Tous fournisseurs' }
+                        { value: '', label: 'Tous les clients' }
                     ],
                     searchable: true
                 },
@@ -410,17 +423,6 @@ class StockPVTOrchestrator {
                     options: [
                         { value: '', label: 'Tous les magasins' }
                     ]
-                },
-                { 
-                    type: 'select', 
-                    key: 'statut', 
-                    label: 'Statut Stock',
-                    options: [
-                        { value: '', label: 'Tous statuts' },
-                        { value: 'ok', label: '✅ Stock OK' },
-                        { value: 'bas', label: '⚠️ Stock bas' },
-                        { value: 'rupture', label: '🔴 Rupture' }
-                    ]
                 }
             ],
             onFilter: (values) => {
@@ -428,10 +430,8 @@ class StockPVTOrchestrator {
                 
                 this.currentFilters = { 
                     ...this.currentFilters, 
-                    categorie: values.categorie || '',
                     fournisseur: values.fournisseur || '',
-                    magasin: values.magasin || '',
-                    statut: values.statut || ''
+                    magasin: values.magasin || ''
                 };
                 
                 this.applyFilters();
@@ -439,6 +439,7 @@ class StockPVTOrchestrator {
         });
     }
     
+    // ─── WIDGET: DATA GRID ───
     createDataGrid() {
         this.grid = new DataGridWidget({
             container: '.table-container',
@@ -456,80 +457,88 @@ class StockPVTOrchestrator {
                     }
                 },
                 { 
-                    key: 'reference', 
-                    label: 'Référence',
+                    key: 'marque', 
+                    label: 'Marque',
                     sortable: true,
                     width: 120,
-                    formatter: (v) => v || 'AUTO'
+                    formatter: (v) => v || '-'
                 },
                 { 
-                    key: 'designation', 
-                    label: 'Désignation',
+                    key: 'libelle', 
+                    label: 'Libellé',
                     sortable: true,
                     width: 300,
                     formatter: (v) => v || '-'
                 },
                 { 
-                    key: 'categorie', 
-                    label: 'Cat.',
-                    width: 60,
-                    html: true,
-                    formatter: (cat) => {
-                        const config = CONFIG.CATEGORIES[cat] || CONFIG.CATEGORIES.autre;
-                        return `<span class="categorie-icon" data-tooltip="${config.label}" style="font-size: 20px;">${config.icon}</span>`;
-                    }
+                    key: 'numeroSerie', 
+                    label: 'N° Série',
+                    sortable: true,
+                    width: 150,
+                    formatter: (v) => v || '-'
+                },
+                { 
+                    key: 'magasin',
+                    label: 'Magasin',
+                    sortable: true,
+                    width: 100,
+                    formatter: (v) => v || '-'
+                },
+                { 
+                    key: 'client',
+                    label: 'Client',
+                    sortable: true,
+                    width: 230,
+                    formatter: (v) => v || '-'
                 },
                 { 
                     key: 'quantite', 
                     label: 'Stock',
                     sortable: true,
-                    width: 80,
+                    width: 70,
                     html: true,
-                    formatter: (qte, row) => {
+                    formatter: (qte) => {
                         let classe = 'stock-ok';
                         if (qte <= 0) classe = 'stock-rupture';
-                        else if (qte <= (row.quantiteMin || 0)) classe = 'stock-bas';
                         return `<span class="${classe}">${qte || 0}</span>`;
                     }
                 },
                 { 
-                    key: 'prixAchat', 
-                    label: 'PA HT',
+                    key: 'statut',
+                    label: 'Statut',
                     sortable: true,
-                    width: 100,
-                    formatter: (v) => this.formaterMontant(v)
-                },
-                { 
-                    key: 'prixVente', 
-                    label: 'PV TTC',
-                    sortable: true,
-                    width: 100,
-                    formatter: (v) => this.formaterMontant(v)
-                },
-                { 
-                    key: 'tauxMarge',
-                    label: 'Marge',
-                    sortable: true,
-                    width: 80,
+                    width: 90,
                     html: true,
-                    formatter: (v) => {
-                        const taux = parseFloat(v) || 0;
-                        const color = taux >= 30 ? 'success' : taux >= 15 ? 'warning' : 'danger';
-                        return `<span class="badge badge-${color}">${taux.toFixed(1)}%</span>`;
+                    formatter: (statut) => {
+                        const statutConfig = {
+                            'STO': '#28a745',
+                            'PVT': '#17a2b8',
+                            'VTE': '#007bff',
+                            'RSV': '#ffc107',
+                            'PRT': '#6f42c1',
+                            'RETA': '#fd7e14',
+                            'EXT': '#6c757d',
+                            'RETE': '#e83e8c',
+                            'AVR': '#20c997',
+                            'ECHR': '#87ceeb',
+                            'SDEP': '#795548',
+                            'CMD': '#9c27b0',
+                            'RETF': '#dc3545'
+                        };
+                        
+                        const code = statut || 'STO';
+                        const color = statutConfig[code] || '#6c757d';
+                        
+                        return `<span style="
+                            background: ${color}; 
+                            color: white; 
+                            padding: 2px 8px; 
+                            border-radius: 4px; 
+                            font-size: 11px;
+                            font-weight: 600;
+                            font-family: monospace;
+                        ">${code}</span>`;
                     }
-                },
-                { 
-                    key: 'fournisseur',
-                    label: 'Fournisseur',
-                    width: 120,
-                    formatter: (v) => v || '-'
-                },
-                { 
-                    key: 'codeMagasin',
-                    label: 'Mag.',
-                    sortable: true,
-                    width: 60,
-                    formatter: (v) => v || '-'
                 },
                 { 
                     type: 'actions',
@@ -559,7 +568,7 @@ class StockPVTOrchestrator {
             }
         });
         
-        // Gérer le select all
+        // ─── Gestion sélection multiple ───
         setTimeout(() => {
             const selectAll = document.getElementById('selectAll');
             if (selectAll) {
@@ -574,7 +583,6 @@ class StockPVTOrchestrator {
                 });
             }
             
-            // Gérer les checkboxes individuelles
             document.addEventListener('click', (e) => {
                 if (e.target.classList.contains('article-checkbox')) {
                     const id = e.target.dataset.id;
@@ -589,36 +597,36 @@ class StockPVTOrchestrator {
         }, 100);
     }
     
-    // ========================================
-    // CHARGEMENT DES DONNÉES
-    // ========================================
+    // ┌────────────────────────────────────────┐
+    // │      GESTION DES DONNÉES               │
+    // └────────────────────────────────────────┘
     
     async loadData() {
         try {
             this.showLoader();
             console.log('📊 Chargement des données...');
             
-            // Charger les articles
+            // ─── Chargement articles ───
             const articles = await firestoreService.getArticles({ limite: 5000 });
             
             this.articlesData = articles;
             console.log(`✅ ${this.articlesData.length} articles chargés`);
             
-            // Charger les stats
+            // ─── Chargement statistiques ───
             this.statsData = await firestoreService.getStatistiques();
             console.log('✅ Statistiques chargées:', this.statsData);
             
-            // Mettre à jour les listes dynamiques
+            // ─── Mise à jour listes dynamiques ───
             this.updateDynamicLists();
             
-            // Mettre à jour les options de filtres
+            // ─── Mise à jour options filtres ───
             this.updateFilterOptions();
             
-            // Mettre à jour l'affichage
+            // ─── Mise à jour affichage ───
             this.updateStats();
             this.applyFilters();
             
-            // Mettre à jour les indicateurs du header
+            // ─── Mise à jour indicateurs header ───
             if (this.updateHeaderIndicators) {
                 this.updateHeaderIndicators();
             }
@@ -634,43 +642,28 @@ class StockPVTOrchestrator {
     
     updateDynamicLists() {
         this.magasinsDynamiques.clear();
-        this.categoriesDynamiques.clear();
         this.fournisseursDynamiques.clear();
         
         this.articlesData.forEach(art => {
-            if (art.codeMagasin) this.magasinsDynamiques.add(art.codeMagasin);
-            if (art.categorie) this.categoriesDynamiques.add(art.categorie);
-            if (art.fournisseur) this.fournisseursDynamiques.add(art.fournisseur);
+            if (art.magasin) this.magasinsDynamiques.add(art.magasin);
+            if (art.client) this.fournisseursDynamiques.add(art.client);
         });
         
         console.log('📊 Magasins détectés:', Array.from(this.magasinsDynamiques));
-        console.log('📊 Catégories détectées:', Array.from(this.categoriesDynamiques));
-        console.log('📊 Fournisseurs détectés:', Array.from(this.fournisseursDynamiques));
+        console.log('📊 Clients détectés:', Array.from(this.fournisseursDynamiques));
     }
     
     updateFilterOptions() {
-        // Créer les options de catégories
-        const categorieOptions = [{ value: '', label: 'Toutes catégories' }];
-        this.categoriesDynamiques.forEach(cat => {
-            const config = CONFIG.CATEGORIES[cat];
-            if (config) {
-                categorieOptions.push({
-                    value: cat,
-                    label: `${config.icon} ${config.label}`
-                });
-            }
-        });
-        
-        // Créer les options de fournisseurs
-        const fournisseurOptions = [{ value: '', label: 'Tous fournisseurs' }];
-        this.fournisseursDynamiques.forEach(fourn => {
+        // ─── Options clients ───
+        const fournisseurOptions = [{ value: '', label: 'Tous les clients' }];
+        this.fournisseursDynamiques.forEach(client => {
             fournisseurOptions.push({
-                value: fourn,
-                label: fourn
+                value: client,
+                label: client
             });
         });
         
-        // Créer les options de magasins
+        // ─── Options magasins ───
         const magasinOptions = [{ value: '', label: 'Tous les magasins' }];
         this.magasinsDynamiques.forEach(magasin => {
             magasinOptions.push({
@@ -679,17 +672,8 @@ class StockPVTOrchestrator {
             });
         });
         
-        // Mettre à jour les dropdowns
+        // ─── Mise à jour dropdowns ───
         if (this.filters && this.filters.state && this.filters.state.dropdowns) {
-            // Catégorie
-            if (this.filters.state.dropdowns.categorie) {
-                const categorieDropdown = this.filters.state.dropdowns.categorie;
-                categorieDropdown.config.options = categorieOptions;
-                categorieDropdown.filteredOptions = [...categorieOptions];
-                this.filters.renderDropdownOptions(categorieDropdown);
-            }
-            
-            // Fournisseur
             if (this.filters.state.dropdowns.fournisseur) {
                 const fournisseurDropdown = this.filters.state.dropdowns.fournisseur;
                 fournisseurDropdown.config.options = fournisseurOptions;
@@ -697,7 +681,6 @@ class StockPVTOrchestrator {
                 this.filters.renderDropdownOptions(fournisseurDropdown);
             }
             
-            // Magasin
             if (this.filters.state.dropdowns.magasin) {
                 const magasinDropdown = this.filters.state.dropdowns.magasin;
                 magasinDropdown.config.options = magasinOptions;
@@ -707,13 +690,13 @@ class StockPVTOrchestrator {
         }
     }
     
-    // ========================================
-    // IMPORT CSV
-    // ========================================
+    // ┌────────────────────────────────────────┐
+    // │         IMPORT CSV                     │
+    // └────────────────────────────────────────┘
     
     openImportModal() {
         const uploader = new PdfUploaderWidget({
-            title: 'Import de fichiers stock',
+            title: 'Import de fichiers stock audioprothèse',
             theme: 'blue',
             mode: 'simple',
             maxFiles: 10,
@@ -721,7 +704,7 @@ class StockPVTOrchestrator {
             description: {
                 icon: '📊',
                 title: 'Import multi-colonnes intelligent',
-                text: 'Déposez jusqu\'à 10 fichiers CSV. Détection automatique des colonnes peu importe leur ordre, catégorisation intelligente des articles.'
+                text: 'Déposez jusqu\'à 10 fichiers CSV. Détection automatique des colonnes : Marque, Libellé, N° Série, Centre, État, Client, etc.'
             },
             saveButtonText: '📦 Importer les articles',
             onSave: async (data) => this.handleImport(data),
@@ -742,21 +725,19 @@ class StockPVTOrchestrator {
                 erreurs: []
             };
             
-            // Traiter chaque fichier
+            // ─── Traitement de chaque fichier ───
             for (let i = 0; i < data.files.length; i++) {
                 const file = data.files[i];
                 
                 try {
                     console.log(`\n📄 Traitement fichier ${i + 1}/${data.files.length}: ${file.name}`);
                     
-                    // Analyser le CSV
                     this.showMessage(`Analyse du fichier ${i + 1}/${data.files.length}...`);
                     const resultatAnalyse = await uploadService.analyserCSV(file);
                     
                     console.log('✅ Fichier analysé:', resultatAnalyse.stats);
-                    console.log('📍 Colonnes détectées:', resultatAnalyse.mapping.foundColumns);
+                    console.log('🔍 Colonnes détectées:', resultatAnalyse.mapping.foundColumns);
                     
-                    // Importer les articles
                     this.showMessage(`Import des articles ${i + 1}/${data.files.length}...`);
                     const resultatImport = await firestoreService.importerArticles(
                         resultatAnalyse.articles,
@@ -788,7 +769,7 @@ class StockPVTOrchestrator {
                 }
             }
             
-            // Afficher le résumé
+            // ─── Affichage résumé ───
             console.log('📊 Résumé de l\'import:', resultats);
             
             const totalImportees = resultats.importees.reduce((sum, r) => sum + r.nombre, 0);
@@ -809,7 +790,7 @@ class StockPVTOrchestrator {
                 });
             }
             
-            // Rafraîchir les données
+            // ─── Rafraîchissement données ───
             await this.loadData();
             
             this.hideLoader();
@@ -824,223 +805,173 @@ class StockPVTOrchestrator {
         }
     }
     
-    // ========================================
-    // ACTIONS SUR SÉLECTION
-    // ========================================
+    // ┌────────────────────────────────────────┐
+    // │      ACTIONS SUR SÉLECTION             │
+    // └────────────────────────────────────────┘
     
-    async mouvementStock() {
+    async deleteSelected() {
         if (this.selection.size === 0) {
-            this.showWarning('Veuillez sélectionner au moins un article');
+            this.showWarning('Veuillez sélectionner au moins un article à supprimer');
             return;
         }
         
-        // TODO: Dialog pour saisir les mouvements
-        this.showInfo('Fonctionnalité en cours de développement');
-    }
-    
-    async categoriserSelection() {
-        if (this.selection.size === 0) {
-            this.showWarning('Veuillez sélectionner au moins un article');
+        const count = this.selection.size;
+        const message = count === 1 
+            ? 'Voulez-vous vraiment supprimer cet article ?' 
+            : `Voulez-vous vraiment supprimer ces ${count} articles ?`;
+        
+        if (!confirm(message)) {
             return;
         }
         
-        // TODO: Dialog pour choisir la catégorie
-        this.showInfo('Fonctionnalité en cours de développement');
+        try {
+            this.showLoader();
+            this.showInfo(`Suppression de ${count} article(s)...`);
+            
+            const promises = [];
+            for (const id of this.selection) {
+                promises.push(firestoreService.supprimerArticle(id));
+            }
+            
+            await Promise.all(promises);
+            
+            this.selection.clear();
+            
+            await this.loadData();
+            
+            this.hideLoader();
+            this.showSuccess(`✅ ${count} article(s) supprimé(s)`);
+            
+        } catch (error) {
+            this.hideLoader();
+            this.showError('Erreur lors de la suppression : ' + error.message);
+            console.error('Erreur suppression:', error);
+        }
     }
     
     updateSelectionInfo() {
-        console.log(`Sélection: ${this.selection.size} article(s)`);
+        console.log(`📝 ${this.selection.size} article(s) sélectionné(s)`);
     }
     
-    // ========================================
-    // AFFICHAGE DÉTAIL
-    // ========================================
+    // ┌────────────────────────────────────────┐
+    // │      AFFICHAGE DÉTAIL                  │
+    // └────────────────────────────────────────┘
     
-    showInventaire() {
-        // TODO: Ouvrir une modal d'inventaire
-        this.showInfo('Module inventaire - Fonctionnalité en développement');
+    openDetailModal(row) {
+        console.log('📋 Ouverture détails article:', row);
+        
+        const sections = [];
+        
+        sections.push({
+            id: 'informations',
+            title: '🦻 Détails Article',
+            fields: [
+                { 
+                    label: 'Numéro de série', 
+                    value: row.numeroSerie || '-',
+                    bold: true 
+                },
+                { 
+                    label: 'Libellé', 
+                    value: row.libelle || '-',
+                    bold: true 
+                },
+                { 
+                    label: 'Marque', 
+                    value: row.marque || '-' 
+                },
+                { 
+                    label: 'Client', 
+                    value: row.client || '-'
+                },
+                { 
+                    label: 'Magasin', 
+                    value: row.magasin || '-'
+                },
+                { 
+                    label: 'Quantité en stock', 
+                    value: row.quantite || 0,
+                    bold: true
+                },
+                {
+                    label: 'Statut',
+                    value: CONFIG.STATUTS[row.statut]?.label || row.statut || 'STO'
+                }
+            ]
+        });
+        
+        if (row.dateEntree) {
+            const d = new Date(row.dateEntree);
+            sections[0].fields.push({
+                label: 'Date d\'entrée',
+                value: d.toLocaleDateString('fr-FR')
+            });
+        }
+        
+        const viewer = new DetailViewerWidget({
+            title: row.libelle || 'Article',
+            subtitle: `N° série: ${row.numeroSerie || '-'}`,
+            data: row,
+            sections: sections,
+            actions: [
+                {
+                    label: 'Fermer',
+                    class: 'btn btn-glass-blue btn-lg',
+                    onClick: () => {
+                        viewer.close();
+                        return true;
+                    }
+                }
+            ],
+            size: 'medium',
+            theme: 'default'
+        });
     }
     
     resetAllFilters() {
         console.log('🔄 Réinitialisation de tous les filtres');
         
-        // Réinitialiser les filtres
         this.currentFilters = {
             search: '',
             categorie: '',
             fournisseur: '',
             magasin: '',
             statut: '',
-            cartesActives: []
+            statutsActifs: []
         };
         
-        // Désélectionner toutes les cartes stats
         if (this.stats) {
             this.stats.deselectAll();
         }
         
-        // Réinitialiser les valeurs dans le widget de filtres
         if (this.filters) {
             this.filters.reset();
         }
         
-        // Appliquer les filtres réinitialisés
         this.applyFilters();
         
         this.showInfo('Filtres réinitialisés');
     }
     
-    openDetailModal(row) {
-        const formatMontant = (m) => new Intl.NumberFormat('fr-FR', {
-            style: 'currency',
-            currency: 'EUR'
-        }).format(m || 0);
-        
-        const formatDate = (date) => {
-            if (!date) return '-';
-            const d = new Date(date);
-            return d.toLocaleDateString('fr-FR');
-        };
-        
-        // Sections
-        const sections = [];
-        
-        // Section 1 : Identification
-        sections.push({
-            id: 'identification',
-            title: '📦 Identification',
-            fields: [
-                { label: 'Référence', value: row.reference || 'AUTO', bold: true },
-                { label: 'Désignation', value: row.designation || '-', bold: true },
-                { label: 'Code-barres', value: row.codeBarres || '-' },
-                { label: 'Marque', value: row.marque || '-' }
-            ]
-        });
-        
-        // Section 2 : Stock
-        const statutStock = row.quantite <= 0 ? '🔴 Rupture' : 
-                          row.quantite <= (row.quantiteMin || 0) ? '⚠️ Stock bas' : 
-                          '✅ Stock OK';
-        sections.push({
-            id: 'stock',
-            title: '📊 Stock',
-            fields: [
-                { 
-                    label: 'Quantité', 
-                    value: row.quantite || 0,
-                    bold: true,
-                    html: true,
-                    formatter: () => {
-                        const color = row.quantite <= 0 ? '#dc3545' : 
-                                    row.quantite <= (row.quantiteMin || 0) ? '#ffc107' : '#28a745';
-                        return `<span style="color: ${color}; font-size: 24px; font-weight: bold;">
-                            ${row.quantite || 0}
-                        </span>`;
-                    }
-                },
-                { label: 'Stock minimum', value: row.quantiteMin || 0 },
-                { label: 'Stock maximum', value: row.quantiteMax || 0 },
-                { label: 'Statut', value: statutStock },
-                { label: 'Emplacement', value: row.emplacement || '-' }
-            ]
-        });
-        
-        // Section 3 : Prix et marge
-        const categorie = CONFIG.CATEGORIES[row.categorie] || CONFIG.CATEGORIES.autre;
-        sections.push({
-            id: 'prix',
-            title: '💰 Prix et marge',
-            fields: [
-                { label: 'Prix d\'achat HT', value: formatMontant(row.prixAchat) },
-                { label: 'Prix de vente TTC', value: formatMontant(row.prixVente), bold: true },
-                { label: 'Marge', value: formatMontant(row.montantMarge || 0) },
-                { label: 'Taux de marge', value: `${row.tauxMarge || 0}%` },
-                { label: 'Catégorie', value: `${categorie.icon} ${categorie.label}` }
-            ]
-        });
-        
-        // Section 4 : Fournisseur
-        sections.push({
-            id: 'fournisseur',
-            title: '🚚 Approvisionnement',
-            fields: [
-                { label: 'Fournisseur', value: row.fournisseur || '-' },
-                { label: 'Date entrée', value: formatDate(row.dateEntree) },
-                { label: 'Dernier mouvement', value: formatDate(row.dateDernierMouvement) },
-                { label: 'Date péremption', value: formatDate(row.datePeremption) || 'N/A' }
-            ]
-        });
-        
-        // Créer le viewer
-        const viewer = new DetailViewerWidget({
-            title: row.designation,
-            subtitle: `Référence: ${row.reference || 'AUTO'}`,
-            data: row,
-            sections: sections,
-            actions: [
-                {
-                    label: '📝 Modifier',
-                    class: 'btn btn-glass-blue btn-lg',
-                    onClick: async (data) => {
-                        // TODO: Dialog pour modifier l'article
-                        this.showInfo('Fonctionnalité en cours');
-                        return false;
-                    }
-                },
-                {
-                    label: '📊 Mouvement stock',
-                    class: 'btn btn-glass-green btn-lg',
-                    onClick: async (data) => {
-                        // TODO: Dialog pour mouvement de stock
-                        this.showInfo('Fonctionnalité en cours');
-                        return false;
-                    }
-                },
-                {
-                    label: '🗑️ Supprimer',
-                    class: 'btn btn-glass-red btn-lg',
-                    onClick: async (data) => {
-                        if (!confirm(`Supprimer l'article "${data.designation}" ?`)) {
-                            return false;
-                        }
-                        
-                        try {
-                            await firestoreService.supprimerArticle(data.id);
-                            this.showSuccess('Article supprimé');
-                            await this.loadData();
-                            viewer.close();
-                            return true;
-                        } catch (error) {
-                            this.showError('Erreur: ' + error.message);
-                            return false;
-                        }
-                    }
-                }
-            ],
-            size: 'large',
-            theme: 'default'
-        });
-    }
-    
-    // ========================================
-    // FILTRAGE ET MISE À JOUR
-    // ========================================
+    // ┌────────────────────────────────────────┐
+    // │      FILTRAGE ET MISE À JOUR           │
+    // └────────────────────────────────────────┘
     
     applyFilters() {
         console.log('🔍 Application des filtres:', this.currentFilters);
         
         this.filteredData = this.articlesData.filter(article => {
-            // Filtre recherche
+            // ─── Filtre recherche ───
             if (this.currentFilters.search) {
                 const search = this.currentFilters.search.toLowerCase();
                 
                 const searchIn = [
-                    (article.reference || '').toLowerCase(),
-                    (article.designation || '').toLowerCase(),
-                    (article.codeBarres || '').toLowerCase(),
-                    (article.fournisseur || '').toLowerCase(),
+                    (article.numeroSerie || '').toLowerCase(),
+                    (article.libelle || '').toLowerCase(),
                     (article.marque || '').toLowerCase(),
-                    (article.emplacement || '').toLowerCase()
+                    (article.magasin || '').toLowerCase(),
+                    (article.client || '').toLowerCase(),
+                    (article.fournisseur || '').toLowerCase()
                 ].join(' ');
                 
                 if (!searchIn.includes(search)) {
@@ -1048,53 +979,21 @@ class StockPVTOrchestrator {
                 }
             }
             
-            // Filtre catégorie
-            if (this.currentFilters.categorie && article.categorie !== this.currentFilters.categorie) {
+            // ─── Filtre client ───
+            if (this.currentFilters.fournisseur && article.client !== this.currentFilters.fournisseur) {
                 return false;
             }
             
-            // Filtre fournisseur
-            if (this.currentFilters.fournisseur && article.fournisseur !== this.currentFilters.fournisseur) {
+            // ─── Filtre magasin ───
+            if (this.currentFilters.magasin && article.magasin !== this.currentFilters.magasin) {
                 return false;
             }
             
-            // Filtre magasin
-            if (this.currentFilters.magasin && article.codeMagasin !== this.currentFilters.magasin) {
-                return false;
-            }
-            
-            // Filtre statut stock
-            if (this.currentFilters.statut) {
-                switch (this.currentFilters.statut) {
-                    case 'rupture':
-                        if (article.quantite > 0) return false;
-                        break;
-                    case 'bas':
-                        if (article.quantite <= 0 || article.quantite > (article.quantiteMin || 0)) return false;
-                        break;
-                    case 'ok':
-                        if (article.quantite <= (article.quantiteMin || 0)) return false;
-                        break;
-                }
-            }
-            
-            // Filtre cartes actives
-            if (this.currentFilters.cartesActives && this.currentFilters.cartesActives.length > 0) {
-                let matchCarte = false;
-                
-                for (const carte of this.currentFilters.cartesActives) {
-                    switch (carte) {
-                        case 'rupture':
-                            if (article.quantite <= 0) matchCarte = true;
-                            break;
-                        case 'bas':
-                            if (article.quantite > 0 && article.quantite <= (article.quantiteMin || 0)) matchCarte = true;
-                            break;
-                    }
-                }
-                
-                if (this.currentFilters.cartesActives.includes('rupture') || this.currentFilters.cartesActives.includes('bas')) {
-                    if (!matchCarte) return false;
+            // ─── Filtre statuts ───
+            if (this.currentFilters.statutsActifs && this.currentFilters.statutsActifs.length > 0) {
+                const statut = article.statut || 'STO';
+                if (!this.currentFilters.statutsActifs.includes(statut)) {
+                    return false;
                 }
             }
             
@@ -1103,94 +1002,100 @@ class StockPVTOrchestrator {
         
         this.updateGrid();
         console.log(`✅ ${this.filteredData.length} articles affichés`);
-            }
-            
-            updateStats() {
-                if (!this.stats) return;
-                
-                const stats = this.statsData;
-                
-                const cardsData = {
-                    total: stats.total || 0,
-                    valeur: this.formaterMontant(stats.valeurStock || 0),
-                    rupture: stats.enRupture || 0,
-                    bas: stats.stockBas || 0
-                };
-                
-                this.stats.updateAll(cardsData);
-            }
-            
-            updateGrid() {
-                if (this.grid) {
-                    this.grid.setData(this.filteredData);
-                }
-            }
-            
-            // ========================================
-            // FORMATTERS
-            // ========================================
-            
-            formaterMontant(montant) {
-                return new Intl.NumberFormat('fr-FR', {
-                    style: 'currency',
-                    currency: 'EUR'
-                }).format(montant || 0);
-            }
-            
-            // ========================================
-            // UI HELPERS
-            // ========================================
-            
-            showLoader() {
-                const loader = document.getElementById('pageLoader');
-                if (loader) loader.classList.remove('hidden');
-            }
-            
-            hideLoader() {
-                const loader = document.getElementById('pageLoader');
-                if (loader) loader.classList.add('hidden');
-            }
-            
-            showMessage(message, type = 'info') {
-                switch(type) {
-                    case 'error':
-                        toast.error(message);
-                        break;
-                    case 'success':
-                        toast.success(message);
-                        break;
-                    case 'warning':
-                        toast.warning(message);
-                        break;
-                    default:
-                        toast.info(message);
-                }
-            }
-            
-            showError(message) {
-                toast.error(message);
-                console.error('❌', message);
-            }
-            
-            showSuccess(message) {
-                toast.success(message);
-                console.log('✅', message);
-            }
-            
-            showWarning(message) {
-                toast.warning(message);
-                console.log('⚠️', message);
-            }
-            
-            showInfo(message) {
-                toast.info(message);
-                console.log('ℹ️', message);
-            }
+    }
+    
+    updateGrid() {
+        if (this.grid) {
+            this.grid.setData(this.filteredData);
         }
+    }
+    
+    updateStats() {
+        if (!this.stats) return;
+        
+        // ─── Comptage par statut ───
+        const compteurStatuts = {};
+        Object.keys(CONFIG.STATUTS).forEach(statut => {
+            compteurStatuts[statut] = 0;
+        });
+        
+        this.articlesData.forEach(article => {
+            const statut = article.statut || 'STO';
+            if (compteurStatuts.hasOwnProperty(statut)) {
+                compteurStatuts[statut]++;
+            }
+        });
+        
+        const cardsData = {};
+        Object.keys(compteurStatuts).forEach(statut => {
+            cardsData[statut] = compteurStatuts[statut];
+        });
+        
+        this.stats.updateAll(cardsData);
+    }
+    
+    // ┌────────────────────────────────────────┐
+    // │      UTILITAIRES MESSAGES              │
+    // └────────────────────────────────────────┘
+    
+    showLoader() {
+        const loader = document.getElementById('pageLoader');
+        if (loader) loader.classList.remove('hidden');
+    }
+    
+    hideLoader() {
+        const loader = document.getElementById('pageLoader');
+        if (loader) loader.classList.add('hidden');
+    }
+    
+    showMessage(message, type = 'info') {
+        switch(type) {
+            case 'error':
+                toast.error(message);
+                break;
+            case 'success':
+                toast.success(message);
+                break;
+            case 'warning':
+                toast.warning(message);
+                break;
+            default:
+                toast.info(message);
+        }
+    }
+    
+    showError(message) {
+        toast.error(message);
+        console.error('❌', message);
+    }
+    
+    showSuccess(message) {
+        toast.success(message);
+        console.log('✅', message);
+    }
+    
+    showWarning(message) {
+        toast.warning(message);
+        console.log('⚠️', message);
+    }
+    
+    showInfo(message) {
+        toast.info(message);
+        console.log('ℹ️', message);
+    }
+    
+    // ─── FORMATTERS ───
+    formaterMontant(montant) {
+        return new Intl.NumberFormat('fr-FR', {
+            style: 'currency',
+            currency: 'EUR'
+        }).format(montant || 0);
+    }
+}
 
-        // ========================================
-        // EXPORT SINGLETON
-        // ========================================
+// ╔════════════════════════════════════════╗
+// ║    SECTION 4: EXPORT SINGLETON         ║
+// ╚════════════════════════════════════════╝
 
-        const orchestrator = new StockPVTOrchestrator();
-        export default orchestrator;
+const orchestrator = new StockProduitOrchestrator();
+export default orchestrator;
