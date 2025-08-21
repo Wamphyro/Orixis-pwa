@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiche Intervention SAV - Aperçu</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SAV Audio">
+    <link rel="manifest" href="../manifest.json">
+    <link rel="apple-touch-icon" href="../assets/images/icon-192.png">
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- CSS CORRIGÉ -->
+<link rel="stylesheet" href="../src/css/main.css">
+<link rel="stylesheet" href="../src/css/shared/ui/button.css">
+<link rel="stylesheet" href="../src/css/print.css">
+</head>
+<body>
+    <!-- Header uniforme -->
+    <div class="app-header no-print">
+        <div class="app-header-content">
+            <div class="app-header-left">
+                <a href="signature-intervenant.html" class="header-back-button">
+                    ← Retour
+                </a>
+            </div>
+            <div class="app-header-center">
+                <h1>📄 Aperçu de la fiche</h1>
+                <p>Vérification avant impression</p>
+            </div>
+            <div class="app-header-right"></div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="print-container" id="content">
+            <!-- Le contenu sera généré dynamiquement -->
+        </div>
+        
+        <div class="action-buttons-print no-print">
+            <button class="btn-print" onclick="window.print()">
+                🖨️ Imprimer la fiche
+            </button>
+            <a href="home.html" class="btn-home">
+                🏠 Retour à l'accueil
+            </a>
+        </div>
+    </div>
+
+    <div class="footer no-print">
+        <p>Orixis - © 2025</p>
+    </div>
+
+    <script>
+        // Vérification d'authentification
+        function checkAuth() {
+            const auth = localStorage.getItem('sav_auth');
+            if (!auth) return false;
+            
+            const authData = JSON.parse(auth);
+            const now = Date.now();
+            
+            if (now - authData.timestamp > authData.expiry) {
+                localStorage.removeItem('sav_auth');
+                return false;
+            }
+            
+            return authData.authenticated;
+        }
+        
+        // Au chargement
+        window.addEventListener('load', () => {
+            if (!checkAuth()) {
+                window.location.href = '../index.html';
+                return;
+            }
+            
+            generatePrintPreview();
+        });
+        
+        // Générer l'aperçu
+        function generatePrintPreview() {
+            const data = localStorage.getItem('sav_intervention_complete');
+            
+            if (!data) {
+                document.getElementById('content').innerHTML = `
+                    <div class="no-data">
+                        <h2>Aucune donnée à afficher</h2>
+                        <p>Veuillez d'abord remplir le formulaire d'intervention.</p>
+                        <br>
+                        <a href="intervention.html">← Retour au formulaire</a>
+                    </div>
+                `;
+                return;
+            }
+            
+            const intervention = JSON.parse(data);
+            const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
+            
+            // Générer le contenu HTML
+            let html = `
+                <div class="fiche-header">
+                    <h2>🔧 FICHE D'INTERVENTION SAV AUDIO</h2>
+                    <p>Contrôle / Nettoyage / Maintenance Niveau 1</p>
+                </div>
+                
+                <div class="info-bar">
+                    <span><strong>Magasin:</strong> ${auth.magasin || 'Non spécifié'}</span>
+                    <span><strong>Généré le:</strong> ${new Date().toLocaleString('fr-FR')}</span>
+                </div>
+                
+                <!-- Informations Client -->
+                <div class="print-section">
+                    <div class="print-section-title">📋 INFORMATIONS CLIENT</div>
+                    <div class="date-time-grid">
+                        <div class="print-info-row">
+                            <span class="print-info-label">Date:</span>
+                            <span class="print-info-value">${formatDate(intervention.date)}</span>
+                        </div>
+                        <div class="print-info-row">
+                            <span class="print-info-label">Heure:</span>
+                            <span class="print-info-value">${intervention.heure || 'Non spécifié'}</span>
+                        </div>
+                    </div>
+                    <div class="print-info-row">
+                        <span class="print-info-label">Nom du client:</span>
+                        <span class="print-info-value">${intervention.nom || 'Non spécifié'}</span>
+                    </div>
+                    <div class="print-info-row">
+                        <span class="print-info-label">Téléphone:</span>
+                        <span class="print-info-value">${intervention.telephone || 'Non spécifié'}</span>
+                    </div>
+                </div>
+                
+                <!-- Type d'appareil -->
+                <div class="print-section">
+                    <div class="print-section-title">🎧 TYPE D'APPAREIL</div>
+                    <div class="device-print-grid">
+                        <div class="device-print-option ${intervention.type_appareil === 'BTE' ? 'selected' : ''}">
+                            BTE Classique
+                        </div>
+                        <div class="device-print-option ${intervention.type_appareil === 'RIC' ? 'selected' : ''}">
+                            RIC/RITE
+                        </div>
+                        <div class="device-print-option ${intervention.type_appareil === 'ITE' ? 'selected' : ''}">
+                            Intra (ITE/CIC)
+                        </div>
+                    </div>
+                    <div class="print-info-row">
+                        <span class="print-info-label">Marque:</span>
+                        <span class="print-info-value">${intervention.marque || 'Non spécifié'}</span>
+                    </div>
+                </div>
+                
+                <!-- Problème décrit -->
+                <div class="print-section">
+                    <div class="print-section-title">❓ PROBLÈME DÉCRIT</div>
+                    <div class="print-checkbox-grid">
+                        ${generateCheckboxes(intervention.problemes, [
+                            'Pas de son',
+                            'Son faible',
+                            'Sifflement',
+                            'Son intermittent',
+                            'Grésille',
+                            'Humidité',
+                            'Inconfort',
+                            'Contrôle routine'
+                        ])}
+                    </div>
+                </div>
+                
+                <!-- Actions réalisées -->
+                <div class="print-section">
+                    <div class="print-section-title">✅ ACTIONS RÉALISÉES</div>
+                    <div class="print-checkbox-grid">
+                        ${generateCheckboxes(intervention.actions, [
+                            'Pile changée',
+                            'Nettoyage complet',
+                            'Filtre changé',
+                            'Dôme remplacé',
+                            'Tube changé',
+                            'Séchage'
+                        ])}
+                    </div>
+                </div>
+                
+                <!-- Résultat -->
+                <div class="print-section">
+                    <div class="print-section-title">📊 RÉSULTAT DE L'INTERVENTION</div>
+                    <div class="print-info-row">
+                        <span class="print-info-label">Résultat:</span>
+                        <span class="print-info-value">${getResultatText(intervention.resultat)}</span>
+                    </div>
+                </div>
+                
+                <!-- Observations -->
+                <div class="print-section">
+                    <div class="print-section-title">💬 OBSERVATIONS</div>
+                    <div class="print-text-area">
+                        ${intervention.observations || 'Aucune observation particulière'}
+                    </div>
+                </div>
+                
+                <!-- Signatures -->
+                <div class="signature-print-section">
+                    <div class="print-section">
+                        <div class="print-section-title">✍️ SIGNATURES</div>
+                        <div class="signature-print-grid">
+                            <div class="signature-print-box">
+                                <span class="signature-print-label">Signature du Client</span>
+                                ${intervention.signatureClient ? 
+                                    `<img src="${intervention.signatureClient}" class="signature-print-image" alt="Signature client">` : 
+                                    '<p style="color: #999; margin-top: 30px;">Non signé</p>'
+                                }
+                            </div>
+                            <div class="signature-print-box">
+                                <span class="signature-print-label">Signature de l'Intervenant</span>
+                                ${intervention.signatureIntervenant ? 
+                                    `<img src="${intervention.signatureIntervenant}" class="signature-print-image" alt="Signature intervenant">` : 
+                                    '<p style="color: #999; margin-top: 30px;">Non signé</p>'
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="print-footer">
+                    Document généré le ${new Date().toLocaleString('fr-FR')} - SAV Audio © 2025<br>
+                    ${auth.magasin || 'Magasin non spécifié'}
+                </div>
+            `;
+            
+            document.getElementById('content').innerHTML = html;
+        }
+        
+        // Fonctions utilitaires
+        function formatDate(dateString) {
+            if (!dateString) return 'Non spécifié';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+        
+        function generateCheckboxes(selected, options) {
+            return options.map(option => `
+                <div class="print-checkbox-item">
+                    <span class="print-checkbox ${selected && selected.includes(option) ? 'checked' : ''}"></span>
+                    <span>${option}</span>
+                </div>
+            `).join('');
+        }
+        
+        function getResultatText(resultat) {
+            const resultats = {
+                'Résolu': '✅ Problème résolu',
+                'Partiel': '⚠️ Amélioration partielle',
+                'SAV': '❌ Sans effet - Escalade SAV',
+                'OK': '🔧 Contrôle OK'
+            };
+            return resultats[resultat] || resultat || 'Non spécifié';
+        }
+        
+        // Gestion de l'impression
+        window.addEventListener('afterprint', function() {
+            // Nettoyer les données après impression si souhaité
+            if (confirm('Impression terminée. Créer une nouvelle intervention ?')) {
+                // Nettoyer les données temporaires
+                localStorage.removeItem('sav_intervention_data');
+                localStorage.removeItem('sav_client_signature');
+                localStorage.removeItem('sav_intervention_complete');
+                
+                // Rediriger vers la page d'intervention
+                window.location.href = 'intervention.html';
+            }
+        });
+    </script>
+</body>
+</html>

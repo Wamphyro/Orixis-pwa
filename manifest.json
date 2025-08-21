@@ -1,0 +1,16 @@
+{
+  "name": "SAV Audio - Orixis",
+  "short_name": "SAV Orixis",
+  "description": "Application de gestion des interventions SAV pour appareils auditifs",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f5f6fa",
+  "theme_color": "#667eea",
+  "orientation": "portrait",
+  "icons": [],
+  "categories": ["business", "medical", "utilities"],
+  "lang": "fr-FR",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "scope": "./"
+}

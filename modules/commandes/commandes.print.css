@@ -1,0 +1,145 @@
+/* ========================================
+   COMMANDES.PRINT.CSS - Styles d'impression
+   Chemin: modules/commandes/commandes.print.css
+   
+   DESCRIPTION:
+   Styles spécifiques pour l'impression des fiches de commande
+   Optimisé pour format A4 et économie d'encre
+   ======================================== */
+
+/* ========================================
+   RESET POUR L'IMPRESSION
+   ======================================== */
+@media print {
+    /* Reset global */
+    * {
+        background: transparent !important;
+        color: black !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+    
+    /* Format A4 */
+    @page {
+        size: A4;
+        margin: 15mm;
+    }
+    
+    /* Éviter les coupures */
+    h1, h2, h3, h4, h5, h6 {
+        page-break-after: avoid;
+        break-after: avoid;
+    }
+    
+    .info-card {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+    
+    /* Masquer les éléments non imprimables */
+    .no-print,
+    .btn,
+    .modal-header button,
+    .modal-footer {
+        display: none !important;
+    }
+    
+    /* Optimisation des couleurs */
+    .badge {
+        border: 1px solid #333 !important;
+        background: white !important;
+        color: #333 !important;
+    }
+    
+    .status-icon {
+        border: 2px solid #333 !important;
+        background: white !important;
+    }
+    
+    .status-item.active .status-icon,
+    .status-item.completed .status-icon {
+        background: #333 !important;
+        color: white !important;
+    }
+    
+    /* Conversion des gradients */
+    svg linearGradient stop {
+        stop-color: #333 !important;
+    }
+    
+    /* Amélioration de la lisibilité */
+    body {
+        font-size: 11pt !important;
+        line-height: 1.4 !important;
+    }
+    
+    .info-label {
+        font-weight: 600 !important;
+    }
+    
+    /* Tableaux optimisés */
+    table {
+        border-collapse: collapse !important;
+        width: 100% !important;
+    }
+    
+    th, td {
+        border: 1px solid #ddd !important;
+        padding: 8px !important;
+    }
+    
+    th {
+        background: #f5f5f5 !important;
+        font-weight: bold !important;
+    }
+    
+    /* Ajustements des marges */
+    .print-container {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+    }
+    
+    /* Footer en bas de page */
+    .print-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        text-align: center;
+        padding: 10px;
+        font-size: 10pt !important;
+    }
+}
+
+/* ========================================
+   STYLES ÉCRAN (PREVIEW)
+   ======================================== */
+@media screen {
+    .print-preview {
+        max-width: 210mm;
+        margin: 20px auto;
+        padding: 20mm;
+        background: white;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        min-height: 297mm;
+    }
+    
+    .print-only {
+        display: none;
+    }
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [04/02/2025] - Création des styles d'impression
+   Solution: Media queries print optimisées
+   Impact: Impression propre et économique
+   
+   NOTES POUR REPRISES FUTURES:
+   - Couleurs converties en N&B automatiquement
+   - Page breaks intelligents
+   - Format A4 avec marges standard
+   ======================================== */

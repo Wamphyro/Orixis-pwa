@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orixis - Connexion</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Orixis">
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
+    
+    <!-- CSS Global -->
+    <link rel="stylesheet" href="../../src/css/main.css">
+    
+    <!-- CSS spécifique au login -->
+    <link rel="stylesheet" href="./login.css">
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-header">
+            <div class="logo">⚙️</div>
+            <h1>Orixis</h1>
+            <p class="subtitle">Connexion sécurisée</p>
+        </div>
+        
+        <div class="login-form">
+            <!-- Sélection utilisateur -->
+            <div class="form-section">
+                <label class="form-label">Sélectionnez votre nom</label>
+                <div id="userDropdown"></div>
+            </div>
+            
+            <!-- Code PIN -->
+            <div class="form-section">
+                <label class="form-label">Code d'accès à 4 chiffres</label>
+                <div class="pin-display">
+                    <div class="pin-dot" data-index="0"></div>
+                    <div class="pin-dot" data-index="1"></div>
+                    <div class="pin-dot" data-index="2"></div>
+                    <div class="pin-dot" data-index="3"></div>
+                </div>
+            </div>
+            
+            <!-- Numpad -->
+            <div id="numpadContainer" class="numpad-section"></div>
+            
+            <!-- Options -->
+            <div class="login-options">
+                <label class="checkbox-container">
+                    <input type="checkbox" id="remember">
+                    <span class="checkbox-label">Mémoriser cet appareil pendant 30 jours</span>
+                </label>
+            </div>
+        </div>
+        
+        <div class="login-footer">
+            <div class="info-box">
+                <span class="info-icon">ℹ️</span>
+                <span>Contactez votre responsable si vous avez oublié votre code</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script principal -->
+    <script type="module" src="./login.main.js"></script>
+</body>
+</html>

@@ -1,0 +1,339 @@
+/* ========================================
+   PROGRESS-OVERVIEW.CSS - Styles du composant ProgressOverview
+   Chemin: src/components/ui/progress-overview/progress-overview.css
+   
+   DESCRIPTION:
+   Styles pour la vue d'ensemble multi-progressions
+   Totalement autonome, préfixé .progress-overview-*
+   
+   STRUCTURE:
+   - Container et layout
+   - Header et titre
+   - Items et barres
+   - Couleurs des barres
+   - Statuts
+   - Animations
+   - Responsive
+   ======================================== */
+
+/* ========================================
+   CONTAINER ET LAYOUT
+   ======================================== */
+
+.progress-overview {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.progress-overview-header {
+    margin-bottom: 20px;
+}
+
+.progress-overview-title {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.progress-overview-divider {
+    height: 1px;
+    background: repeating-linear-gradient(
+        90deg,
+        #6b7280 0,
+        #6b7280 5px,
+        transparent 5px,
+        transparent 10px
+    );
+    opacity: 0.3;
+}
+
+.progress-overview-separator {
+    height: 2px;
+    background: repeating-linear-gradient(
+        90deg,
+        #6b7280,
+        #6b7280 20px,
+        transparent 20px,
+        transparent 40px
+    );
+    margin-top: 20px;
+    opacity: 0.3;
+}
+
+/* ========================================
+   ITEMS
+   ======================================== */
+
+.progress-overview-items {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.progress-overview-item {
+    display: grid;
+    grid-template-columns: 100px 1fr auto;
+    align-items: center;
+    gap: 15px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.progress-overview-item:hover {
+    transform: translateX(5px);
+}
+
+/* Info (label) */
+.progress-overview-info {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.progress-overview-label {
+    font-weight: 600;
+    font-size: 14px;
+    color: #1f2937;
+}
+
+.progress-overview-colon {
+    color: #6b7280;
+}
+
+/* ========================================
+   BARRES DE PROGRESSION
+   ======================================== */
+
+.progress-overview-bar-container {
+    flex: 1;
+}
+
+.progress-overview-bar {
+    width: 100%;
+    background: #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-overview-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 1s ease-out;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Pattern de remplissage */
+.progress-overview-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 10px,
+        rgba(255, 255, 255, 0.1) 10px,
+        rgba(255, 255, 255, 0.1) 20px
+    );
+}
+
+/* Couleurs des barres */
+.progress-overview-fill.bar-red {
+    background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+}
+
+.progress-overview-fill.bar-orange {
+    background: linear-gradient(90deg, #f97316 0%, #ea580c 100%);
+}
+
+.progress-overview-fill.bar-yellow {
+    background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+}
+
+.progress-overview-fill.bar-green {
+    background: linear-gradient(90deg, #34d399 0%, #10b981 100%);
+}
+
+.progress-overview-fill.bar-blue {
+    background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.progress-overview-fill.bar-purple {
+    background: linear-gradient(90deg, #a78bfa 0%, #8b5cf6 100%);
+}
+
+.progress-overview-fill.bar-gray {
+    background: linear-gradient(90deg, #9ca3af 0%, #6b7280 100%);
+}
+
+.progress-overview-fill.bar-default {
+    background: linear-gradient(90deg, #6b7280 0%, #4b5563 100%);
+}
+
+/* ========================================
+   DÉTAILS (Pourcentage + Statut)
+   ======================================== */
+
+.progress-overview-details {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 140px;
+    justify-content: flex-end;
+}
+
+.progress-overview-percentage {
+    font-weight: 700;
+    font-size: 14px;
+    color: #1f2937;
+    min-width: 40px;
+}
+
+.progress-overview-status {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Couleurs des statuts */
+.progress-overview-status.status-danger {
+    color: #dc2626;
+}
+
+.progress-overview-status.status-warning {
+    color: #f59e0b;
+}
+
+.progress-overview-status.status-error {
+    color: #ef4444;
+}
+
+.progress-overview-status.status-success {
+    color: #10b981;
+}
+
+.progress-overview-status.status-default {
+    color: #6b7280;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+@keyframes fillProgress {
+    from {
+        width: 0;
+    }
+}
+
+.progress-overview.animated .progress-overview-fill {
+    animation: fillProgress 1s ease-out;
+}
+
+/* Animation de pulse pour les barres en retard */
+.progress-overview-fill.bar-red {
+    animation: pulse-red 2s ease-in-out infinite;
+}
+
+@keyframes pulse-red {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.8;
+    }
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+    .progress-overview {
+        padding: 15px;
+    }
+    
+    .progress-overview-item {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .progress-overview-info {
+        justify-content: space-between;
+    }
+    
+    .progress-overview-bar-container {
+        width: 100%;
+    }
+    
+    .progress-overview-details {
+        justify-content: space-between;
+        min-width: auto;
+    }
+    
+    .progress-overview-label {
+        font-size: 13px;
+    }
+    
+    .progress-overview-percentage {
+        font-size: 13px;
+    }
+    
+    .progress-overview-status {
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    .progress-overview-title {
+        font-size: 13px;
+    }
+    
+    .progress-overview-items {
+        gap: 12px;
+    }
+    
+    .progress-overview-bar {
+        height: 16px !important;
+    }
+}
+
+/* ========================================
+   DARK MODE (optionnel)
+   ======================================== */
+
+@media (prefers-color-scheme: dark) {
+    .progress-overview {
+        background: #1f2937;
+    }
+    
+    .progress-overview-title {
+        color: #e5e7eb;
+    }
+    
+    .progress-overview-label {
+        color: #f3f4f6;
+    }
+    
+    .progress-overview-bar {
+        background: #374151;
+    }
+    
+    .progress-overview-percentage {
+        color: #e5e7eb;
+    }
+    
+    .progress-overview-divider,
+    .progress-overview-separator {
+        opacity: 0.2;
+    }
+}

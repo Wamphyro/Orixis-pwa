@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guide SAV Audio - Formation</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="SAV Audio">
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- CSS Principal -->
+    <link rel="stylesheet" href="../../src/css/main.css">
+    
+    <!-- Style minimal -->
+    <style>
+        /* Override pour header non-fixe */
+        .header-widget {
+            position: relative !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        /* Désactiver le padding du body ajouté par le header */
+        body.has-header {
+            padding-top: 0 !important;
+        }
+        
+        body.has-header.with-breadcrumbs {
+            padding-top: 0 !important;
+        }
+        
+        /* Reset et base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        
+        /* Loader */
+        .page-loading {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+        .page-loading.hidden { 
+            opacity: 0;
+            pointer-events: none;
+        }
+        .loader-content {
+            text-align: center;
+            color: white;
+        }
+        .loader-icon {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loader-text {
+            font-size: 18px;
+            font-weight: 500;
+            margin-top: 10px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        /* Container principal sans padding car header non-fixe */
+        .main-container {
+            padding-top: 0;
+            padding-bottom: 40px;
+            min-height: 100vh;
+        }
+        
+        /* Container du contenu */
+        .guide-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Menu de navigation horizontal */
+        .guide-nav {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #4b5563;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .nav-item:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .nav-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 500;
+        }
+        
+        .nav-icon {
+            font-size: 20px;
+            margin-right: 10px;
+        }
+        
+        /* Container des sections */
+        .sections-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        /* Section card */
+        .guide-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.5s ease forwards;
+        }
+        
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .section-icon {
+            font-size: 32px;
+            margin-right: 15px;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .section-description {
+            color: #6b7280;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+        
+        /* Cards internes */
+        .device-grid,
+        .tools-grid,
+        .brand-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .device-card,
+        .tool-card,
+        .brand-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 20px;
+            color: white;
+        }
+        
+        .tool-card,
+        .brand-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            color: #374151;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .guide-container {
+                padding: 0 15px;
+            }
+            
+            .nav-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .guide-section {
+                padding: 20px;
+            }
+            
+            .device-grid,
+            .tools-grid,
+            .brand-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Print styles */
+        @media print {
+            .header-widget,
+            .guide-nav {
+                display: none !important;
+            }
+            
+            .main-container {
+                padding-top: 0 !important;
+            }
+            
+            .guide-section {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loader -->
+    <div class="page-loading" id="pageLoader">
+        <div class="loader-content">
+            <div class="loader-icon"></div>
+            <div class="loader-text">Chargement du guide...</div>
+        </div>
+    </div>
+    
+    <!-- Container pour messages toast -->
+    <div id="toastContainer" style="position: fixed; top: 90px; right: 20px; z-index: 10000;"></div>
+    
+    <!-- Container principal avec padding pour le header -->
+    <div class="main-container">
+        <div class="guide-container">
+            <!-- Navigation horizontale -->
+            <div class="guide-nav" id="guideNav">
+                <div class="nav-title">
+                    <span style="margin-right: 10px;">📚</span>
+                    Navigation rapide
+                </div>
+                <div class="nav-grid" id="navGrid">
+                    <!-- Sera rempli dynamiquement -->
+                </div>
+            </div>
+            
+            <!-- Container pour les sections -->
+            <div class="sections-container" id="sectionsContainer">
+                <!-- Sera rempli dynamiquement -->
+            </div>
+        </div>
+    </div>
+    
+    <script type="module">
+        // Import de l'orchestrateur
+        import orchestrator from './guide.orchestrator.js';
+        
+        // Initialisation au chargement
+        window.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 Initialisation du Guide SAV Audio...');
+            
+            try {
+                await orchestrator.init();
+                console.log('✅ Guide initialisé avec succès');
+            } catch (error) {
+                console.error('❌ Erreur initialisation:', error);
+                
+                // Afficher un message d'erreur
+                const container = document.getElementById('sectionsContainer');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="guide-section" style="text-align: center; color: #ef4444;">
+                            <h2>⚠️ Erreur de chargement</h2>
+                            <p style="margin: 20px 0;">${error.message}</p>
+                            <button onclick="location.reload()" 
+                                    style="padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; cursor: pointer;">
+                                Réessayer
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+        });
+        
+        // Export global pour debug
+        window.guideOrchestrator = orchestrator;
+    </script>
+</body>
+</html>

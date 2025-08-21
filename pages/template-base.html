@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAV Audio</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SAV Audio">
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- ========================================
+         CSS - Chargement automatique des composants
+         ======================================== -->
+    
+    <!-- 1. Base et layout -->
+    <link rel="stylesheet" href="../src/css/main.css">
+
+    <!-- 2. Composants UI partagés (chargés automatiquement) -->
+    <link rel="stylesheet" href="../src/css/shared/ui/animation.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/badge.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/form.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/modal.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/dialog.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/notification.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/button.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/app-header.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/stats-cards.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/datatable.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/datatable-filters.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/dropdown-list.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/search-dropdown.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/stepper.css">
+    <link rel="stylesheet" href="../src/css/shared/ui/timeline.css">
+
+    <!-- 3. CSS spécifique de la page (chargé dynamiquement si existe) -->
+    <link id="page-specific-css" rel="stylesheet" href="">
+</head>
+<body>
+    <!-- ========================================
+         TOUT LE CONTENU SERA GÉNÉRÉ DYNAMIQUEMENT ICI
+         ======================================== -->
+    
+    <!-- Container principal pour le PageBuilder -->
+    <div id="app-container">
+        <!-- Header sera injecté ici -->
+        <!-- Stats cards seront injectées ici -->
+        <!-- Filtres seront injectés ici -->
+        <!-- Table sera injectée ici -->
+        <!-- Modules additionnels seront injectés ici -->
+    </div>
+
+    <!-- Container pour les modales (en dehors du flow) -->
+    <div id="modals-container"></div>
+
+    <!-- Container pour les dialogs -->
+    <div id="dialog-container"></div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Orixis - © 2025</p>
+    </div>
+
+    <!-- ========================================
+         SCRIPT DE CHARGEMENT DU TEMPLATE
+         ======================================== -->
+    <script type="module">
+        import { PageBuilder } from '../src/js/core/page-builder.js';
+        
+        // Détection automatique du nom de la page
+        const pathname = window.location.pathname;
+        const pageName = pathname.split('/').pop().replace('.html', '');
+        
+        // Chargement du CSS spécifique si il existe
+        const pageCSS = document.getElementById('page-specific-css');
+        const cssPath = `../src/css/${pageName}/${pageName}.css`;
+        
+        // Vérifier si le CSS existe
+        fetch(cssPath, { method: 'HEAD' })
+            .then(response => {
+                if (response.ok) {
+                    pageCSS.href = cssPath;
+                }
+            })
+            .catch(() => {
+                // Pas de CSS spécifique, c'est OK
+                console.log(`Pas de CSS spécifique pour ${pageName}`);
+            });
+        
+        // Initialisation du PageBuilder
+        window.addEventListener('load', async () => {
+            try {
+                const builder = new PageBuilder();
+                
+                // Charger la configuration
+                await builder.loadConfig(pageName);
+                
+                // Construire la page
+                await builder.init();
+                
+                // Activer les animations après le chargement
+                document.body.classList.add('page-loaded');
+                
+                console.log(`✅ Page ${pageName} initialisée avec succès`);
+                
+            } catch (error) {
+                console.error(`❌ Erreur lors de l'initialisation de la page ${pageName}:`, error);
+                
+                // Afficher un message d'erreur à l'utilisateur
+                document.getElementById('app-container').innerHTML = `
+                    <div class="error-container" style="text-align: center; padding: 50px;">
+                        <h2>⚠️ Erreur de chargement</h2>
+                        <p>Impossible de charger la configuration pour cette page.</p>
+                        <p>Vérifiez que le fichier <code>configs/${pageName}.config.js</code> existe.</p>
+                        <br>
+                        <a href="home.html" class="btn btn-primary">Retour à l'accueil</a>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

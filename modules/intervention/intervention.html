@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interventions SAV</title>
+    <link rel="stylesheet" href="../../src/css/main.css">
+    
+    <!-- EmailJS pour l'envoi SAV -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script>
+        // Configuration EmailJS
+        (function() {
+            emailjs.init("wJtv5MrJPzvMuGSyL");
+        })();
+    </script>
+    
+    <!-- Style minimal pour loader uniquement -->
+    <style>
+        .page-loading {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .page-loading.hidden { display: none; }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px; height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Styles pour le modal de création custom */
+        .modal-backdrop {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loader -->
+    <div class="page-loading hidden" id="pageLoader">
+        <div class="loader"></div>
+    </div>
+    
+    <!-- Messages (pour les toasts) -->
+    <div id="messagesContainer" style="position: fixed; top: 10px; right: 10px; z-index: 1000; max-width: 400px;"></div>
+    
+    <!-- Containers pour widgets AVEC LES MÊMES MARGES QUE FACTURES-FOURNISSEURS -->
+    <div class="stats-container" style="margin: 100px 20px 20px 20px;"></div>
+    <div class="filters-container" style="margin: 20px;"></div>
+    <div class="table-container" style="margin: 20px;"></div>
+    
+    <script type="module">
+        // Import de l'orchestrateur qui gère TOUT
+        import orchestrator from './intervention.orchestrator.js';
+        
+        // Lancement de l'application
+        window.addEventListener('load', async () => {
+            console.log('🎯 Initialisation du module Interventions SAV...');
+            await orchestrator.init();
+        });
+        
+        // Export pour debug uniquement
+        window.orchestrator = orchestrator;
+        window.interventionModal = null; // Pour le modal custom
+    </script>
+</body>
+</html>

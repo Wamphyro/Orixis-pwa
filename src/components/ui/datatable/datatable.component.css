@@ -1,0 +1,317 @@
+/* ========================================
+   DATATABLE.STYLES.CSS - Styles pour le composant DataTable
+   Chemin: src/css/shared/datatable.styles.css
+   
+   NOTE: Ces styles peuvent être intégrés dans commandes-modal.css
+   ou dans un fichier CSS séparé selon votre préférence
+   ======================================== */
+
+/* Wrapper principal */
+.datatable-wrapper {
+    position: relative;
+    background: white;  /* AJOUTER */
+    border-radius: 15px;  /* AJOUTER */
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);  /* AJOUTER */
+    overflow: hidden;  /* AJOUTER */
+}
+
+/* Boutons d'export */
+.datatable-export-buttons {
+    display: flex;
+    gap: 10px;
+    padding: 20px;
+    margin: 0;
+    justify-content: flex-end;
+    background: white;
+    border-radius: 15px 15px 0 0;
+}
+
+
+/* Container */
+.datatable-container {
+    background: transparent;  /* CHANGER white → transparent */
+    border-radius: 0;  /* CHANGER 15px → 0 */
+    padding: 0;
+    overflow: hidden;
+    box-shadow: none;  /* CHANGER → none */
+}
+
+/* Table */
+.datatable-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Header avec gradient (style existant) */
+.datatable-gradient-header thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+/* Header cells */
+.datatable-header {
+    padding: 15px 20px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+    white-space: nowrap;
+    position: relative;
+    user-select: none;
+}
+
+.datatable-header.sortable {
+    cursor: pointer;
+}
+
+.datatable-header.sortable:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Contenu header */
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+/* Icônes de tri */
+.sort-icon {
+    font-size: 12px;
+    opacity: 0.7;
+    transition: all 0.2s;
+}
+
+.sortable.sort-asc .sort-icon,
+.sortable.sort-desc .sort-icon {
+    opacity: 1;
+}
+
+/* Poignée de redimensionnement */
+.resize-handle {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    cursor: col-resize;
+    background: transparent;
+    transition: background 0.2s;
+}
+
+.resize-handle:hover,
+.datatable-header.resizing .resize-handle {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Curseur pendant le redimensionnement */
+body.datatable-resizing {
+    cursor: col-resize !important;
+    user-select: none !important;
+}
+
+/* Lignes du tableau */
+.datatable-table tbody tr {
+    border-bottom: 1px solid #f1f3f5;
+    transition: all 0.2s ease;
+}
+
+.datatable-hover tbody tr:hover {
+    background: #f8f9fa;
+    transform: scale(1.01);
+}
+
+.datatable-striped tbody tr:nth-child(even) {
+    background: #fafbfc;
+}
+
+/* Cellules */
+.datatable-table td {
+    padding: 15px 20px;
+    font-size: 14px;
+    color: #495057;
+}
+
+/* Sélection */
+.datatable-select,
+.datatable-select-all {
+    text-align: center;
+    width: 40px;
+}
+
+.datatable-select input[type="checkbox"],
+.select-all-checkbox {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+}
+
+/* No data */
+.no-data td {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    padding: 40px;
+}
+
+/* Pagination - NOUVEAU STYLE */
+.datatable-pagination {
+    padding: 20px;
+    background: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    margin-top: 0;
+}
+
+.pagination-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+/* Améliorer le sélecteur */
+.pagination-size {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: white;
+    padding: 8px 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    white-space: nowrap; /* Empêche le retour à la ligne */
+    flex-shrink: 0; /* Empêche la compression */
+}
+
+.pagination-size label {
+    margin: 0;
+    font-weight: 500;
+    color: #495057;
+    font-size: 14px;
+    white-space: nowrap; /* AJOUTER - Force le label sur une ligne */
+}
+
+/* Si le problème persiste, ajouter aussi : */
+.page-size-select {
+    padding: 6px 12px;
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    background: white;
+    transition: all 0.2s;
+    width: 70px; /* Largeur fixe réduite */
+    text-align: center; /* Centre le nombre */
+}
+
+.page-size-select:hover {
+    border-color: #667eea;
+}
+
+.page-size-select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Info pagination - centré */
+.pagination-info {
+    font-size: 14px;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+/* Améliorer les contrôles */
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Style moderne pour les boutons */
+.pagination-btn {
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    color: #495057;
+    min-width: auto;
+    font-weight: 500;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: #667eea;
+    border-color: #667eea;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.pagination-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f8f9fa;
+}
+
+.pagination-btn.active {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* Numéros de page */
+.pagination-numbers {
+    display: flex;
+    gap: 4px;
+}
+
+.pagination-numbers .pagination-btn {
+    min-width: 40px;
+    padding: 8px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .pagination-wrapper {
+        justify-content: center;
+        text-align: center;
+    }
+    
+    .pagination-size {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .pagination-info {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .datatable-container {
+        overflow-x: auto;
+    }
+    
+    .datatable-table {
+        min-width: 800px;
+    }
+    
+    .pagination-wrapper {
+        justify-content: center;
+    }
+    
+    .resize-handle {
+        display: none;
+    }
+}

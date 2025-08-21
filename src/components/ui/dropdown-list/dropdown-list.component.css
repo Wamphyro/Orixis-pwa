@@ -1,0 +1,690 @@
+/* ========================================
+   DROPDOWN-LIST.CSS - Styles du composant DropdownList
+   Chemin: src/css/shared/ui/dropdown-list.css
+   
+   DESCRIPTION:
+   Styles pour le composant DropdownList qui remplace les <select> natifs.
+   Inclut le style glassmorphism et toutes les interactions.
+   
+   STRUCTURE:
+   1. Variables & Reset
+   2. Container & Wrapper
+   3. Trigger (bouton principal)
+   4. Panel (dropdown)
+   5. Options
+   6. Recherche
+   7. États et variantes
+   8. Animations
+   9. Mobile & Responsive
+   ======================================== */
+
+/* ========================================
+   VARIABLES & RESET
+   ======================================== */
+:root {
+    --dropdown-border-radius: 12px;
+    --dropdown-padding: 12px 16px;
+    --dropdown-arrow-size: 12px;
+    --dropdown-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --dropdown-shadow: 0 4px 16px rgba(102, 126, 234, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05);
+    --dropdown-shadow-hover: 0 6px 20px rgba(102, 126, 234, 0.15), 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* ========================================
+   CONTAINER & WRAPPER
+   ======================================== */
+.dropdown-list-wrapper {
+    position: relative;
+    width: 100%;
+    font-family: inherit;
+}
+
+/* ========================================
+   TRIGGER (BOUTON PRINCIPAL)
+   ======================================== */
+.dropdown-list-trigger {
+    /* Reset button */
+    appearance: none;
+    border: none;
+    background: none;
+    font: inherit;
+    cursor: pointer;
+    
+    /* Layout */
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--dropdown-padding);
+    
+    /* Style glassmorphism */
+    background-color: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--dropdown-border-radius);
+    box-shadow: var(--dropdown-shadow);
+    
+    /* Texte */
+    color: #2c3e50;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: left;
+    
+    /* Transition */
+    transition: var(--dropdown-transition);
+}
+
+/* Valeur affichée */
+.dropdown-list-value {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Icône dans la valeur */
+.dropdown-value-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+/* Flèche */
+.dropdown-list-arrow {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--dropdown-arrow-size);
+    height: var(--dropdown-arrow-size);
+    margin-left: 12px;
+    color: #667eea;
+    transition: transform 0.3s ease;
+}
+
+.dropdown-list-arrow svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* États du trigger */
+.dropdown-list-trigger:hover {
+    background-color: rgba(255, 255, 255, 0.85);
+    border-color: rgba(102, 126, 234, 0.3);
+    box-shadow: var(--dropdown-shadow-hover);
+    transform: translateY(-1px);
+}
+
+.dropdown-list-trigger:focus {
+    outline: none;
+    border-color: rgba(102, 126, 234, 0.5);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1), var(--dropdown-shadow-hover);
+}
+
+.dropdown-list-trigger:active {
+    transform: translateY(0);
+}
+
+/* État ouvert */
+.dropdown-list-wrapper.open .dropdown-list-trigger {
+    border-color: rgba(102, 126, 234, 0.5);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.dropdown-list-wrapper.open .dropdown-list-arrow {
+    transform: rotate(180deg);
+    color: #764ba2;
+}
+
+/* ========================================
+   PANEL (DROPDOWN)
+   ======================================== */
+.dropdown-list-panel {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    
+    /* Style glassmorphism */
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-top: none;
+    border-radius: 0 0 var(--dropdown-border-radius) var(--dropdown-border-radius);
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.15), 0 2px 8px rgba(0, 0, 0, 0.05);
+    
+    /* Animation */
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    
+    /* Overflow */
+    overflow: hidden;
+}
+
+.dropdown-list-panel.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+/* Panel en position haute */
+.dropdown-list-panel.dropdown-up {
+    top: auto;
+    bottom: 100%;
+    border-radius: var(--dropdown-border-radius) var(--dropdown-border-radius) 0 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    border-bottom: none;
+}
+
+/* ========================================
+   RECHERCHE
+   ======================================== */
+.dropdown-list-search {
+    padding: 12px;
+    border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+    background: rgba(248, 249, 250, 0.5);
+}
+
+.dropdown-list-search-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    transition: var(--dropdown-transition);
+}
+
+.dropdown-list-search-input:focus {
+    outline: none;
+    border-color: rgba(102, 126, 234, 0.5);
+    background: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* ========================================
+   OPTIONS
+   ======================================== */
+.dropdown-list-options {
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Scrollbar personnalisée */
+.dropdown-list-options::-webkit-scrollbar {
+    width: 8px;
+}
+
+.dropdown-list-options::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.dropdown-list-options::-webkit-scrollbar-thumb {
+    background: rgba(102, 126, 234, 0.2);
+    border-radius: 4px;
+}
+
+.dropdown-list-options::-webkit-scrollbar-thumb:hover {
+    background: rgba(102, 126, 234, 0.3);
+}
+
+/* Option individuelle */
+.dropdown-list-option {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.dropdown-list-option:hover {
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.dropdown-list-option.highlighted {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.dropdown-list-option.selected {
+    background: rgba(102, 126, 234, 0.08);
+    color: #667eea;
+    font-weight: 600;
+}
+
+.dropdown-list-option.selected::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(to bottom, #667eea, #764ba2);
+}
+
+.dropdown-list-option.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Contenu de l'option */
+.dropdown-list-option-icon {
+    font-size: 20px;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.dropdown-list-option-label {
+    flex: 1;
+}
+
+.dropdown-list-option-checkmark {
+    margin-left: auto;
+    color: #667eea;
+    font-weight: bold;
+}
+
+/* État vide */
+.dropdown-list-empty {
+    padding: 24px;
+    text-align: center;
+    color: #999;
+    font-style: italic;
+}
+
+/* ========================================
+   ÉTATS ET VARIANTES
+   ======================================== */
+
+/* Désactivé */
+.dropdown-list-wrapper.disabled .dropdown-list-trigger {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: rgba(248, 249, 250, 0.8);
+}
+
+.dropdown-list-wrapper.disabled .dropdown-list-trigger:hover {
+    transform: none;
+    box-shadow: var(--dropdown-shadow);
+}
+
+/* Tailles */
+.dropdown-list-wrapper.dropdown-list-sm .dropdown-list-trigger {
+    padding: 8px 12px;
+    font-size: 13px;
+}
+
+.dropdown-list-wrapper.dropdown-list-sm .dropdown-list-arrow {
+    width: 10px;
+    height: 10px;
+}
+
+.dropdown-list-wrapper.dropdown-list-lg .dropdown-list-trigger {
+    padding: 16px 20px;
+    font-size: 16px;
+    border-radius: 16px;
+}
+
+.dropdown-list-wrapper.dropdown-list-lg .dropdown-list-arrow {
+    width: 14px;
+    height: 14px;
+}
+
+/* ========================================
+   THÈMES
+   ======================================== */
+
+/* Minimal */
+.dropdown-list-wrapper.dropdown-list-minimal .dropdown-list-trigger {
+    background: white;
+    backdrop-filter: none;
+    border: 2px solid #e9ecef;
+    box-shadow: none;
+}
+
+.dropdown-list-wrapper.dropdown-list-minimal .dropdown-list-panel {
+    background: white;
+    backdrop-filter: none;
+    border: 2px solid #e9ecef;
+    border-top: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark */
+.dropdown-list-wrapper.dropdown-list-dark .dropdown-list-trigger {
+    background: rgba(30, 30, 30, 0.9);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #e0e0e0;
+}
+
+.dropdown-list-wrapper.dropdown-list-dark .dropdown-list-panel {
+    background: rgba(30, 30, 30, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #e0e0e0;
+}
+
+.dropdown-list-wrapper.dropdown-list-dark .dropdown-list-option:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+@keyframes dropdownSlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes dropdownSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdown-list-panel.show {
+    animation: dropdownSlideDown 0.3s ease-out;
+}
+
+.dropdown-list-panel.dropdown-up.show {
+    animation: dropdownSlideUp 0.3s ease-out;
+}
+
+/* ========================================
+   MOBILE & RESPONSIVE
+   ======================================== */
+
+/* Backdrop mobile */
+.dropdown-list-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.dropdown-list-wrapper.open .dropdown-list-backdrop {
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
+    /* Panel centré sur mobile */
+    .dropdown-list-wrapper.open .dropdown-list-panel {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: 90% !important;
+        max-width: 400px;
+        max-height: 70vh;
+        border-radius: var(--dropdown-border-radius) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    }
+    
+    .dropdown-list-wrapper.open .dropdown-list-panel.show {
+        animation: dropdownFadeIn 0.3s ease-out;
+    }
+    
+    @keyframes dropdownFadeIn {
+        from {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+    }
+    
+    /* Trigger reste normal sur mobile */
+    .dropdown-list-wrapper.open .dropdown-list-trigger {
+        border-radius: var(--dropdown-border-radius);
+    }
+    
+    /* Options plus grandes sur mobile */
+    .dropdown-list-option {
+        padding: 14px 16px;
+        font-size: 16px;
+    }
+    
+    /* Backdrop visible sur mobile */
+    .dropdown-list-backdrop {
+        display: block;
+    }
+}
+
+@media (max-width: 480px) {
+    .dropdown-list-wrapper.open .dropdown-list-panel {
+        width: 95% !important;
+    }
+}
+
+/* ========================================
+   SUPPORT NAVIGATEURS
+   ======================================== */
+
+/* Fallback sans backdrop-filter */
+@supports not (backdrop-filter: blur(10px)) {
+    .dropdown-list-trigger {
+        background-color: rgba(248, 249, 250, 0.95);
+    }
+    
+    .dropdown-list-panel {
+        background: rgba(255, 255, 255, 0.98);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+}
+
+/* ========================================
+   AJUSTEMENTS POUR DROPDOWNLIST
+   Ajouter à la fin de datatable-filters.css
+   ======================================== */
+
+/* Container des dropdowns dans les filtres */
+.filter-dropdown-container {
+    width: 100%;
+    min-width: 150px;
+}
+
+/* Ajustement de la hauteur des dropdowns pour correspondre aux autres inputs */
+.filter-group.filter-select .dropdown-list-trigger {
+    height: 42px; /* Même hauteur que les inputs de recherche */
+    padding: 10px 16px;
+    font-size: 14px;
+}
+
+/* S'assurer que les dropdowns prennent toute la largeur disponible */
+.filter-group.filter-select .dropdown-list-wrapper {
+    width: 100%;
+}
+
+/* Alignement des icônes dans les dropdowns */
+.filter-group .dropdown-list-option-icon,
+.filter-group .dropdown-value-icon {
+    width: 20px;
+    text-align: center;
+    margin-right: 8px;
+}
+
+/* Ajustement du panel pour les petits écrans */
+@media (max-width: 768px) {
+    .filters-row .dropdown-list-panel {
+        max-width: calc(100vw - 40px) !important;
+    }
+}
+
+/* Style cohérent avec les autres filtres */
+.filters-container .dropdown-list-trigger:hover {
+    border-color: #667eea;
+    background-color: rgba(255, 255, 255, 0.95);
+}
+
+.filters-container .dropdown-list-trigger:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Ajustement de la recherche dans les dropdowns */
+.filters-container .dropdown-list-search-input {
+    font-size: 14px;
+    padding: 8px 12px;
+}
+
+/* Z-index pour que les dropdowns passent au-dessus des autres éléments */
+.filters-container .dropdown-list-panel {
+    z-index: 100;
+}
+
+/* ========================================
+   THÈME HEADER COMPACT POUR LE SÉLECTEUR DE MAGASIN
+   ======================================== */
+.dropdown-list-header-compact {
+    display: inline-block;
+}
+
+.dropdown-list-header-compact .dropdown-list-wrapper {
+    min-width: 140px;
+}
+
+.dropdown-list-header-compact .dropdown-list-trigger {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 6px 12px;
+    font-size: 14px;
+    height: 32px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.dropdown-list-header-compact .dropdown-list-trigger:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.dropdown-list-header-compact .dropdown-list-arrow {
+    color: white;
+    opacity: 0.8;
+}
+
+.dropdown-list-header-compact .dropdown-value-icon {
+    font-size: 14px;
+    margin-right: 4px;
+}
+
+/* Panel du dropdown dans le header */
+.dropdown-list-header-compact .dropdown-list-panel {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    margin-top: 8px;
+}
+
+.dropdown-list-header-compact .dropdown-list-option {
+    color: #2c3e50;
+    padding: 10px 12px;
+    font-size: 14px;
+}
+
+.dropdown-list-header-compact .dropdown-list-option:hover {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.dropdown-list-header-compact .dropdown-list-option.selected {
+    background: rgba(102, 126, 234, 0.15);
+    color: #667eea;
+    font-weight: 600;
+}
+
+.dropdown-list-header-compact .dropdown-list-option-icon {
+    font-size: 16px;
+    margin-right: 8px;
+}
+
+/* Styles pour l'intégration dans le header */
+.header-magasin-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 15px;
+}
+
+.magasin-label {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.magasin-single {
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 0 10px;
+}
+
+/* Ajustements responsive */
+@media (max-width: 768px) {
+    .dropdown-list-header-compact .dropdown-list-wrapper {
+        min-width: 100px;
+    }
+    
+    .dropdown-list-header-compact .dropdown-list-trigger {
+        font-size: 13px;
+        padding: 4px 8px;
+        height: 28px;
+    }
+    
+    .header-magasin-section {
+        margin: 0 8px;
+    }
+}
+
+/* ========================================
+   UTILISATION:
+   
+   Structure HTML générée par le composant :
+   
+   <div class="dropdown-list-wrapper">
+       <button class="dropdown-list-trigger">
+           <span class="dropdown-list-value">Valeur sélectionnée</span>
+           <span class="dropdown-list-arrow">▼</span>
+       </button>
+       <div class="dropdown-list-panel">
+           <div class="dropdown-list-options">
+               <div class="dropdown-list-option selected">Option 1</div>
+               <div class="dropdown-list-option">Option 2</div>
+           </div>
+       </div>
+   </div>
+   ======================================== */

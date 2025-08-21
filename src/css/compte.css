@@ -1,0 +1,756 @@
+/* ========================================
+   COMPTE.CSS - Page Mon Compte uniquement
+   ======================================== */
+
+/* ========================================
+   STRUCTURE DES SECTIONS COMPTE
+   ======================================== */
+.compte-section {
+    margin-bottom: 40px;
+    animation: fadeInUp 0.5s ease;
+}
+
+.compte-section-container {
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.compte-section-container:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.compte-section-header {
+    padding: 25px 30px;
+    background: var(--bg-light);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.compte-section-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.compte-section-content {
+    padding: 30px;
+}
+
+/* ========================================
+   CARTE INFORMATIONS PERSONNELLES
+   ======================================== */
+.user-info-card {
+    width: 100%;
+}
+
+.user-info-content {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.user-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: var(--primary-gradient);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.user-details {
+    flex: 1;
+}
+
+.user-details h3 {
+    font-size: 1.5rem;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+}
+
+.user-role {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    background: var(--bg-light);
+    color: var(--text-dark);
+}
+
+.user-id,
+.current-magasin {
+    color: var(--text-gray);
+    margin: 5px 0;
+}
+
+.magasin-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    background: #f0f3ff;
+    color: var(--primary-color);
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+}
+
+.user-actions {
+    margin-left: auto;
+}
+
+/* ========================================
+   GRILLE DES MAGASINS
+   ======================================== */
+.magasins-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.magasin-card {
+    background: var(--bg-light);
+    border-radius: var(--radius-md);
+    padding: 25px;
+    border: 2px solid var(--border-color);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.magasin-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: #e0e0e0;
+    transition: all 0.3s ease;
+}
+
+.magasin-card.active::before {
+    background: var(--primary-gradient);
+}
+
+.magasin-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-color);
+}
+
+.magasin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.magasin-header h4 {
+    font-size: 1.2rem;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+.badge-active {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.magasin-info p {
+    margin: 8px 0;
+    color: #495057;
+}
+
+.permissions-list {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0 0 0;
+}
+
+.permissions-list li {
+    padding: 4px 0;
+    color: var(--text-gray);
+    font-size: 0.9rem;
+}
+
+.btn-switch-magasin {
+    width: 100%;
+    margin-top: 15px;
+    padding: 10px;
+    background: white;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-switch-magasin:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* ========================================
+   GESTION UTILISATEURS (ADMIN)
+   ======================================== */
+.admin-top-actions {
+    text-align: right;
+    margin-bottom: 20px;
+}
+
+.admin-controls {
+    margin-bottom: 30px;
+    background: var(--bg-light);
+    padding: 20px;
+    border-radius: var(--radius-md);
+}
+
+.search-bar {
+    margin-bottom: 15px;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 16px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    transition: all 0.3s ease;
+}
+
+.search-bar input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 8px 16px;
+    border: 2px solid var(--border-color);
+    background: white;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    position: relative;
+    overflow: hidden;
+}
+
+.filter-btn:hover {
+    border-color: var(--primary-color);
+    background: #f0f3ff;
+}
+
+.filter-btn.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.filter-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.filter-btn:hover::before {
+    left: 100%;
+}
+
+/* ========================================
+   CARTES UTILISATEURS MODERNES
+   ======================================== */
+.user-cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 24px;
+}
+
+.user-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+}
+
+.user-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    background: var(--primary-gradient);
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.card-header .user-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 600;
+    flex-shrink: 0;
+    box-shadow: none;
+}
+
+.user-main-info {
+    flex: 1;
+    color: white;
+}
+
+.user-main-info h3 {
+    margin: 0 0 8px 0;
+    color: white;
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+}
+
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.card-header .role-badge {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+}
+
+.card-body {
+    padding: 24px;
+    background: #fafbfc;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #e1e4e8;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    color: #586069;
+    font-size: 0.875rem;
+}
+
+.info-value {
+    color: #24292e;
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.info-value.editable-magasins {
+    padding: 4px 12px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #e1e4e8;
+}
+
+.card-actions {
+    padding: 16px 24px;
+    background: white;
+    border-top: 1px solid #e1e4e8;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.btn-action {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+.btn-action[style*="display: none"] {
+    display: none !important;
+}
+
+.btn-pin {
+    background: #f0f3ff;
+    color: #667eea;
+    border: 1px solid transparent;
+}
+
+.btn-pin:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-edit {
+    background: #fff4f0;
+    color: #f97316;
+    border: 1px solid transparent;
+}
+
+.btn-edit:hover {
+    background: #f97316;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+}
+
+.btn-save {
+    background: #f0fdf4;
+    color: #22c55e;
+    border: 1px solid transparent;
+}
+
+.btn-save:hover {
+    background: #22c55e;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.btn-delete {
+    background: #fef2f2;
+    color: #ef4444;
+    border: 1px solid transparent;
+}
+
+.btn-delete:hover {
+    background: #ef4444;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* ========================================
+   ÉDITION & MODAL
+   ======================================== */
+.editable {
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.editable[contenteditable="true"] {
+    background: #f0f3ff !important;
+    border: 2px solid var(--primary-color);
+    outline: none;
+    cursor: text;
+}
+
+.editable[contenteditable="true"]:focus {
+    background: white !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+.role-selector {
+    margin-top: 10px;
+}
+
+.role-select {
+    width: auto;
+    padding: 6px 14px;
+    border: 2px solid #e1e4e8;
+    border-radius: 100px;
+    background: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.role-select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.edit-magasins {
+    display: flex;
+    gap: 12px;
+    padding: 4px 0;
+    flex-wrap: wrap;
+}
+
+.edit-magasins label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 6px 14px;
+    background: white;
+    border: 2px solid #e1e4e8;
+    border-radius: 100px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    margin-bottom: 0;
+}
+
+.edit-magasins label:hover {
+    border-color: #667eea;
+    background: #f0f3ff;
+}
+
+.edit-magasins input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.edit-magasins label:has(input:checked) {
+    background: #667eea;
+    border-color: #667eea;
+    color: white;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    border-radius: var(--radius-md);
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    animation: slideIn 0.3s ease;
+}
+
+.modal-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: var(--text-dark);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-gray);
+    padding: 5px;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.magasins-checkboxes {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 8px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    transition: all 0.3s ease;
+    margin-bottom: 0;
+}
+
+.checkbox-label:hover {
+    border-color: var(--primary-color);
+    background: #f0f3ff;
+}
+
+.checkbox-label:has(input:checked) {
+    background: #f0f3ff;
+    border-color: var(--primary-color);
+}
+
+.checkbox-label input[type="checkbox"] {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ========================================
+   RESPONSIVE COMPTE
+   ======================================== */
+@media (max-width: 768px) {
+    .compte-section-header {
+        padding: 20px;
+    }
+    
+    .compte-section-content {
+        padding: 20px;
+    }
+    
+    .user-info-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .user-avatar {
+        margin: 0 auto;
+    }
+    
+    .user-actions {
+        margin: 20px auto 0;
+        width: 100%;
+    }
+    
+    .magasins-grid,
+    .user-cards-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .filter-buttons {
+        justify-content: center;
+    }
+    
+    .card-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    .user-main-info {
+        margin-left: 0;
+        margin-top: 10px;
+    }
+    
+    .admin-top-actions {
+        text-align: center;
+    }
+    
+    .edit-magasins {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .edit-magasins label {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .modal-content {
+        width: 95%;
+        max-width: 95%;
+    }
+}

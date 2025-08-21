@@ -1,0 +1,310 @@
+/* ========================================
+   DATATABLE-FILTERS.CSS - Styles pour le composant de filtres
+   Chemin: src/css/shared/ui/datatable-filters.css
+   
+   STRUCTURE:
+   - Container et layout
+   - Types de filtres (search, select, etc.)
+   - Bouton reset
+   - États et interactions
+   - Responsive
+   ======================================== */
+
+/* Container principal */
+.filters-container {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Wrapper pour structure */
+.filters-wrapper {
+    width: 100%;
+}
+
+/* Formulaire */
+.filters-form {
+    margin: 0;
+}
+
+/* Ligne de filtres */
+.filters-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 15px;
+    min-height: 70px;
+    width: 100%;  /* Important pour que margin-left: auto fonctionne */
+}
+
+/* Bouton reset aligné à droite */
+.btn-reset-filters {
+    flex: 0 0 auto;
+    height: 40px;
+    align-self: flex-end;
+    margin-left: auto;  /* ✅ Ceci pousse le bouton à droite */
+    /* ... reste du style ... */
+}
+
+/* Groupe de filtre */
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    justify-content: flex-end;  /* Pousse le contenu vers le bas */
+}
+
+/* Labels */
+.filter-group label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #495057;
+    margin: 0;
+}
+
+/* ========================================
+   LARGEURS SPÉCIFIQUES
+   ======================================== */
+
+/* Search prend plus de place */
+.filter-group.filter-search {
+    flex: 1 1 300px;  /* Flexible, min 300px */
+}
+
+/* Selects largeur fixe */
+.filter-group.filter-select {
+    flex: 0 0 200px;  /* Fixe à 200px */
+}
+
+/* ========================================
+   INPUTS ET SELECTS UNIFORMES
+   ======================================== */
+
+/* Tous les inputs/selects même style et hauteur */
+.filter-search-input,
+.filter-select-input,
+.filter-date-input {
+    height: 40px;  /* IMPORTANT: Hauteur fixe */
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+/* Focus uniforme */
+.filter-search-input:focus,
+.filter-select-input:focus,
+.filter-date-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* ========================================
+   SEARCH SPÉCIFIQUE
+   ======================================== */
+
+.filter-search-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.filter-search-input {
+    padding-right: 40px;  /* Espace pour l'icône */
+}
+
+.filter-search-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    pointer-events: none;
+}
+
+/* ========================================
+   SELECT SPÉCIFIQUE
+   ======================================== */
+
+.filter-select-input {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 40px;
+}
+/* ========================================
+   BOUTON RESET NEUTRE
+   ======================================== */
+
+.datatable-filters-reset-btn {
+    /* Seulement le positionnement, pas de style */
+    margin-left: auto;
+}
+
+/* ========================================
+   AUTRES TYPES DE FILTRES (pour plus tard)
+   ======================================== */
+
+/* DateRange */
+.filter-daterange-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.filter-daterange-start,
+.filter-daterange-end {
+    flex: 1;
+    height: 40px;
+    padding: 8px 12px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.filter-daterange-separator {
+    color: #6c757d;
+    font-size: 14px;
+    flex: 0 0 auto;
+}
+
+/* Checkbox Group */
+.filter-checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filter-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.filter-checkbox label {
+    font-weight: normal !important;
+    cursor: pointer;
+    user-select: none;
+    margin: 0;
+}
+
+/* ========================================
+   ÉTATS
+   ======================================== */
+
+/* Loading */
+.filters-container.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Disabled */
+.filter-group.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Error */
+.filter-group.error input,
+.filter-group.error select {
+    border-color: #dc3545;
+}
+
+.filter-error-message {
+    color: #dc3545;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 1024px) {
+    .filters-row {
+        flex-wrap: wrap;
+    }
+    
+    .filter-group.filter-search {
+        flex: 1 1 100%;  /* Recherche sur toute la largeur */
+        margin-bottom: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .filters-container {
+        padding: 20px 15px;
+    }
+    
+    .filters-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+    
+    .filter-group {
+        flex: 1 1 100%;
+    }
+    
+    .filter-group.filter-select {
+        flex: 1 1 100%;  /* Full width sur mobile */
+    }
+    
+    .btn-reset-filters {
+        margin-left: 0;
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .filters-container {
+        border-radius: 0;
+        margin-left: -15px;
+        margin-right: -15px;
+    }
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+@keyframes filterSlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.filter-group {
+    animation: filterSlideDown 0.3s ease-out;
+}
+
+/* Effet de pulsation pour les changements */
+.filter-changed {
+    animation: pulse 0.3s ease-out;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}

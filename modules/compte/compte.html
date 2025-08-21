@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Compte - SAV Audio</title>
+    
+    <!-- ========================================
+         META TAGS PWA
+         Configuration pour Progressive Web App
+         ======================================== -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SAV Audio">
+    <link rel="manifest" href="../../manifest.json">
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- ========================================
+         CSS PRINCIPAL
+         Utilisation du CSS global uniquement
+         Pas de CSS custom pour ce module
+         ======================================== -->
+    <link rel="stylesheet" href="../../src/css/main.css">
+    
+    <!-- ========================================
+         STYLES MINIMAUX INLINE
+         Uniquement pour les conteneurs et layout
+         ======================================== -->
+    <style>
+        /* ========================================
+           RESET DU BACKGROUND
+           ======================================== */
+        body {
+            background: #f8f9fa !important;
+            min-height: 100vh;
+        }
+        
+        /* ========================================
+           CONTENEURS PRINCIPAUX
+           ======================================== */
+        .compte-container {
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            margin-top: 20px;
+        }
+        
+        .compte-section {
+            margin-bottom: 30px;
+        }
+        
+        /* ========================================
+           CARTES D'INFORMATION
+           ======================================== */
+        .info-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+            margin-bottom: 20px;
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+        
+        .info-card h3 {
+            margin: 0 0 15px 0;
+            color: #1f2937;
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* ========================================
+           GRILLES DE LAYOUT
+           ======================================== */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .info-label {
+            font-size: 11px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        
+        .info-value {
+            font-size: 16px;
+            color: #1f2937;
+            font-weight: 500;
+        }
+        
+        /* ========================================
+           GRILLE DES PERMISSIONS
+           ======================================== */
+        .permissions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        .permission-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 14px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border-left: 3px solid #e5e7eb;
+            margin-bottom: 10px;
+            transition: all 0.2s ease;
+        }
+        
+        .permission-item:hover {
+            background: #f3f4f6;
+        }
+        
+        .permission-item.granted {
+            border-left-color: #10b981;
+            background: #f0fdf4;
+        }
+        
+        .permission-item.denied {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+        
+        /* ========================================
+           GRILLE DES MAGASINS
+           ======================================== */
+        .magasins-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .magasin-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .magasin-card:hover {
+            border-color: #a5b4fc;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .magasin-card.active {
+            background: #e0e7ff;
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+        
+        .magasin-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .magasin-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        /* ========================================
+           BADGES
+           ======================================== */
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .badge-active {
+            background: #10b981;
+            color: white;
+        }
+        
+        .badge-resp {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        /* ========================================
+           STATS CARDS CUSTOM
+           ======================================== */
+        .stats-cards-wrapper {
+            background: white !important;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border: 1px solid #e5e7eb;
+            margin-bottom: 20px;
+        }
+        
+        .stats-cards-grid {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+            gap: 20px !important;
+        }
+        
+        /* ========================================
+           LOADER
+           ======================================== */
+        .page-loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .page-loading.hidden {
+            display: none;
+        }
+        
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* ========================================
+           DROPDOWN MAGASIN
+           ======================================== */
+        .search-filters-wrapper {
+            background: transparent !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            margin-bottom: 20px;
+        }
+        
+        .search-filters-wrapper .form-group {
+            margin: 0 !important;
+        }
+        
+        .search-filters-wrapper label {
+            color: #6b7280;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        /* ========================================
+           RESPONSIVE
+           ======================================== */
+        @media (max-width: 768px) {
+            .compte-container {
+                padding: 15px;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .permissions-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .magasins-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-cards-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ========================================
+         LOADER DE PAGE
+         Affiché pendant le chargement initial
+         ======================================== -->
+    <div class="page-loading" id="pageLoader">
+        <div class="loader"></div>
+    </div>
+    
+    <!-- ========================================
+         CONTAINER POUR MESSAGES TOAST
+         Position fixe en haut à droite
+         ======================================== -->
+    <div id="messagesContainer" style="position: fixed; top: 10px; right: 10px; z-index: 1000;"></div>
+    
+    <!-- ========================================
+         CONTENEURS POUR WIDGETS
+         Tous les widgets seront injectés dans ces conteneurs
+         par l'orchestrateur
+         ======================================== -->
+    
+    <!-- Main Content Container -->
+    <div class="compte-container">
+        <!-- Titre principal -->
+        <div style="margin-bottom: 25px;">
+            <h2 style="color: #1f2937; font-size: 24px; font-weight: 600; margin: 0;">
+                📊 Vue d'ensemble
+            </h2>
+        </div>
+        
+        <!-- Stats Cards Widget Container -->
+        <div class="stats-container compte-section"></div>
+        
+        <!-- User Info & Groups Container -->
+        <div class="info-container compte-section"></div>
+        
+        <!-- Permissions Container -->
+        <div class="permissions-container compte-section"></div>
+        
+        <!-- Magasins Container -->
+        <div class="magasins-container compte-section"></div>
+    </div>
+    
+    <!-- ========================================
+         SCRIPT D'INITIALISATION
+         Import unique de l'orchestrateur
+         ======================================== -->
+    <script type="module">
+        import orchestrator from './compte.orchestrator.js';
+        
+        // Initialisation immédiate ou au DOMContentLoaded
+        async function initModule() {
+            console.log('🚀 Initialisation module compte...');
+            console.log('📍 Page:', window.location.pathname);
+            console.log('🔐 Auth:', localStorage.getItem('sav_auth') ? 'Présente' : 'Absente');
+            
+            try {
+                await orchestrator.init();
+                console.log('✅ Module compte initialisé avec succès');
+            } catch (error) {
+                console.error('❌ Erreur initialisation module compte:', error);
+            }
+        }
+        
+        // Si le DOM est déjà chargé, init immédiatement
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initModule);
+        } else {
+            // DOM déjà prêt
+            initModule();
+        }
+        
+        // Gestion des erreurs
+        window.addEventListener('unhandledrejection', event => {
+            console.error('⚠️ Promise rejetée:', event.reason);
+        });
+    </script>
+</body>
+</html>

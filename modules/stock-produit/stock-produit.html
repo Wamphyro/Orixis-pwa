@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Audioprothèse - ORIXIS</title>
+    <link rel="stylesheet" href="../../src/css/main.css">
+    
+    <style>
+        /* ─────────────────────────────────── */
+        /*           LOADER DE PAGE             */
+        /* ─────────────────────────────────── */
+        
+        .page-loading {
+            position: fixed;
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .page-loading.hidden { 
+            display: none; 
+        }
+        
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px; 
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* ─────────────────────────────────── */
+        /*          COULEURS ORIXIS             */
+        /* ─────────────────────────────────── */
+        
+        .orixis-primary { 
+            color: #667eea; 
+        }
+        
+        .orixis-secondary { 
+            color: #764ba2; 
+        }
+        
+        /* ─────────────────────────────────── */
+        /*           CONTAINERS                 */
+        /* ─────────────────────────────────── */
+        
+        .stats-container { 
+            margin: 100px 20px 20px 20px; 
+        }
+        
+        .filters-container { 
+            margin: 20px; 
+        }
+        
+        .table-container { 
+            margin: 20px; 
+        }
+        
+        /* ─────────────────────────────────── */
+        /*           ÉTATS DE STOCK             */
+        /* ─────────────────────────────────── */
+        
+        .stock-ok { 
+            color: #28a745; 
+            font-weight: 600; 
+        }
+        
+        .stock-bas { 
+            color: #ffc107; 
+            font-weight: 600; 
+        }
+        
+        .stock-rupture { 
+            color: #dc3545; 
+            font-weight: 600; 
+        }
+        
+        /* ─────────────────────────────────── */
+        /*           RESPONSIVE                 */
+        /* ─────────────────────────────────── */
+        
+        @media (max-width: 768px) {
+            .stats-container,
+            .filters-container,
+            .table-container {
+                margin: 10px;
+            }
+            
+            .stats-container {
+                margin-top: 90px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ──────── LOADER ──────── -->
+    <div class="page-loading" id="pageLoader">
+        <div class="loader"></div>
+    </div>
+    
+    <!-- ──────── MESSAGES TOAST ──────── -->
+    <div id="messagesContainer" 
+         style="position: fixed; 
+                top: 10px; 
+                right: 10px; 
+                z-index: 10000; 
+                max-width: 400px;">
+    </div>
+    
+    <!-- ──────── WIDGETS CONTAINERS ──────── -->
+    <div class="stats-container"></div>
+    <div class="filters-container"></div>
+    <div class="table-container"></div>
+    
+    <!-- ──────── SCRIPTS ──────── -->
+    <script type="module">
+        // Import orchestrateur principal
+        import orchestrator from './stock-produit.orchestrator.js';
+        
+        // Initialisation après chargement DOM
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🎯 Initialisation Stock Audioprothèse ORIXIS...');
+            
+            try {
+                await orchestrator.init();
+                console.log('✅ Module Stock Audioprothèse chargé avec succès');
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement:', error);
+                
+                // Message d'erreur utilisateur
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'alert alert-danger';
+                errorDiv.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 20px; z-index: 10000;';
+                errorDiv.innerHTML = `
+                    <h4>Erreur de chargement</h4>
+                    <p>Impossible de charger le module Stock Audioprothèse.</p>
+                    <p>Veuillez rafraîchir la page ou contacter le support.</p>
+                    <button onclick="location.reload()" class="btn btn-primary mt-2">Rafraîchir</button>
+                `;
+                document.body.appendChild(errorDiv);
+            }
+        });
+        
+        // Export global pour debug (dev uniquement)
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            window.stockProduitOrchestrator = orchestrator;
+            console.log('🔧 Mode développement : orchestrator disponible dans window.stockProduitOrchestrator');
+        }
+    </script>
+</body>
+</html>

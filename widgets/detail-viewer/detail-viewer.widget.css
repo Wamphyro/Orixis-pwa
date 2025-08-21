@@ -1,0 +1,922 @@
+/* ========================================
+   DETAIL-VIEWER.WIDGET.CSS - Styles du widget DetailViewer
+   Chemin: /widgets/detail-viewer/detail-viewer.widget.css
+   
+   DESCRIPTION:
+   Styles pour le widget de visualisation détaillée.
+   Inclut la Timeline intégrée avec le design exact.
+   100% autonome, aucune dépendance externe.
+   
+   STRUCTURE:
+   1. VARIABLES ET THÈMES
+   2. OVERLAY ET MODAL
+   3. HEADER
+   4. BODY ET ZONES
+   5. TIMELINE (COPIE EXACTE)
+   6. SECTIONS ET CHAMPS
+   7. FOOTER ET ACTIONS
+   8. ANIMATIONS
+   9. RESPONSIVE
+   
+   MODIFICATIONS:
+   - 08/02/2025 : Création initiale
+   
+   AUTEUR: Assistant Claude
+   VERSION: 1.0.0
+   ======================================== */
+
+/* ========================================
+   SECTION 2 : SURCHARGES SPÉCIFIQUES
+   ======================================== */
+
+/* Utiliser les classes modal-base avec préfixe detail-viewer */
+.detail-viewer-overlay {
+    /* Hérite de .modal-overlay via modal-base.css */
+}
+
+/* ========================================
+   SECTION 3 : HEADER
+   ======================================== */
+
+.detail-viewer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 28px;
+    border-bottom: 1px solid #e5e7eb;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+}
+
+.detail-viewer-header-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.detail-viewer-title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--dv-text);
+    line-height: 1.2;
+}
+
+.detail-viewer-subtitle {
+    margin: 4px 0 0 0;
+    font-size: 14px;
+    color: var(--dv-text-secondary);
+    line-height: 1.4;
+}
+
+.detail-viewer-close,
+.btn-close {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--dv-text-secondary);
+    border-radius: 8px;
+    transition: var(--dv-transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.detail-viewer-close:hover,
+.btn-close:hover {
+    background: var(--dv-hover);
+    color: var(--dv-text);
+}
+
+/* ========================================
+   SECTION 4 : BODY ET ZONES
+   ======================================== */
+
+.detail-viewer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    padding-top: 20px;  /* Réduire un peu le padding top */
+    background: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Scrollbar personnalisée */
+.detail-viewer-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.detail-viewer-body::-webkit-scrollbar-track {
+    background: var(--dv-hover);
+}
+
+.detail-viewer-body::-webkit-scrollbar-thumb {
+    background: var(--dv-border);
+    border-radius: 4px;
+}
+
+.detail-viewer-body::-webkit-scrollbar-thumb:hover {
+    background: var(--dv-text-secondary);
+}
+
+.detail-viewer-zone {
+    animation: fadeInUp 0.4s ease forwards;
+    opacity: 0;
+}
+
+.detail-viewer-zone:nth-child(1) { animation-delay: 0.1s; }
+.detail-viewer-zone:nth-child(2) { animation-delay: 0.2s; }
+
+/* ========================================
+   SECTION 5 : TIMELINE AMÉLIORÉE
+   ======================================== */
+
+/* Container de la timeline (carte) */
+.detail-viewer-timeline-zone {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 0;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Fix pour orientation undefined (fallback horizontal) */
+.detail-timeline.timeline-undefined {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 140px;
+}
+
+/* Effet de brillance subtil */
+.detail-timeline::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(
+        circle at center,
+        rgba(139, 92, 246, 0.03) 0%,
+        transparent 70%
+    );
+    pointer-events: none;
+}
+
+/* Animation globale */
+.detail-timeline.timeline-animated * {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Timeline horizontale CORRIGÉE */
+.detail-timeline.timeline-horizontal {
+    display: flex;
+    align-items: flex-start;  /* ✅ Alignement en haut */
+    justify-content: center;
+    min-height: 140px;
+    padding: 30px 20px 20px;  /* ✅ Padding ajusté */
+}
+
+.detail-timeline.timeline-horizontal .timeline-connector {
+    position: absolute;
+    top: 58px;  /* ✅ Position fixe au centre de l'icône */
+    left: 10%;
+    right: 10%;
+    height: 3px;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        #e2e8f0 10%,
+        #e2e8f0 90%,
+        transparent 100%
+    );
+    /* ❌ Supprimer transform: translateY(-50%); */
+    z-index: 0;
+}
+
+/* Ligne de progression */
+.detail-timeline.timeline-horizontal .timeline-connector::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: var(--progress, 0%);
+    background: linear-gradient(
+        90deg,
+        #10b981 0%,
+        #34d399 100%
+    );
+    transition: width 0.5s ease;
+}
+
+.detail-timeline.timeline-horizontal .timeline-items {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;  /* ✅ Alignement en haut */
+    width: 100%;
+    position: relative;
+    z-index: 1;
+    padding: 0 20px;
+}
+
+.detail-timeline.timeline-horizontal .timeline-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    max-width: 150px;
+    cursor: default;
+}
+
+/* Timeline verticale */
+.detail-timeline.timeline-vertical {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 24px;
+    min-height: 300px;
+}
+
+.detail-timeline.timeline-vertical .timeline-connector {
+    position: absolute;
+    left: 50%;
+    top: 60px;
+    bottom: 60px;
+    width: 3px;
+    background: linear-gradient(
+        180deg,
+        transparent 0%,
+        #e2e8f0 10%,
+        #e2e8f0 90%,
+        transparent 100%
+    );
+    transform: translateX(-50%);
+    z-index: 0;
+}
+
+.detail-timeline.timeline-vertical .timeline-items {
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+    position: relative;
+    z-index: 1;
+}
+
+/* Icônes et bulles */
+.timeline-icon-wrapper {
+    position: relative;
+    transform: scale(1);
+    transition: transform 0.3s ease;
+}
+
+.timeline-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 600;
+    position: relative;
+    z-index: 2;
+    box-shadow: 
+        0 2px 4px rgba(0, 0, 0, 0.06),
+        0 4px 8px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Contenu avec hauteurs fixes */
+.timeline-content {
+    text-align: center;
+    max-width: 120px;
+    min-height: 70px;  /* ✅ Hauteur minimale fixe */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 2px;
+}
+
+.timeline-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 4px;
+    line-height: 1.2;
+    min-height: 18px;  /* ✅ Hauteur minimale */
+}
+
+.timeline-date {
+    font-size: 11px;
+    color: #94a3b8;
+    line-height: 1.2;
+    min-height: 14px;
+    display: block;
+}
+
+.timeline-description {
+    font-size: 10px;
+    color: #cbd5e1;
+    line-height: 1.2;
+    font-style: italic;
+    margin-top: 2px;
+    opacity: 0.8;
+    min-height: 14px;  /* ✅ Hauteur minimale même si vide */
+}
+
+/* Description plus visible sur les items actifs */
+.timeline-item-active .timeline-description,
+.timeline-item-current .timeline-description {
+    color: #60a5fa;
+    opacity: 1;
+}
+
+.timeline-item-completed .timeline-description {
+    color: #6ee7b7;
+}
+
+/* États des items */
+.timeline-item-completed .timeline-icon {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    border-color: #10b981;
+    color: white;
+}
+
+.timeline-item-completed .timeline-label {
+    color: #047857;
+    font-weight: 500;
+}
+
+.timeline-item-active .timeline-icon,
+.timeline-item-current .timeline-icon {
+    background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+    border-color: #3b82f6;
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 
+        0 4px 12px rgba(59, 130, 246, 0.35),
+        0 8px 24px rgba(59, 130, 246, 0.15);
+}
+
+.timeline-item-active .timeline-label,
+.timeline-item-current .timeline-label {
+    color: #1e40af;
+    font-weight: 700;
+}
+
+.timeline-item-active .timeline-date,
+.timeline-item-current .timeline-date {
+    color: #3b82f6;
+    font-weight: 500;
+}
+
+.timeline-item-pending .timeline-icon {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #94a3b8;
+}
+
+.timeline-item-pending .timeline-label {
+    color: #94a3b8;
+}
+
+.timeline-item-error .timeline-icon {
+    background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+    border-color: #ef4444;
+    color: white;
+}
+
+.timeline-item-warning .timeline-icon {
+    background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+    border-color: #f59e0b;
+    color: white;
+}
+
+/* Animations */
+@keyframes timeline-pulse {
+    0%, 100% {
+        transform: scale(1.1);
+        box-shadow: 
+            0 4px 12px rgba(59, 130, 246, 0.35),
+            0 8px 24px rgba(59, 130, 246, 0.15);
+    }
+    50% {
+        transform: scale(1.2);
+        box-shadow: 
+            0 6px 20px rgba(59, 130, 246, 0.45),
+            0 12px 32px rgba(59, 130, 246, 0.25);
+    }
+}
+
+.detail-timeline.timeline-pulse .timeline-item-active .timeline-icon,
+.detail-timeline.timeline-pulse .timeline-item-current .timeline-icon {
+    animation: timeline-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Animation d'apparition */
+@keyframes timeline-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.detail-timeline.timeline-animated .timeline-item {
+    animation: timeline-fade-in 0.5s ease backwards;
+}
+
+.detail-timeline.timeline-animated .timeline-item:nth-child(1) { animation-delay: 0.1s; }
+.detail-timeline.timeline-animated .timeline-item:nth-child(2) { animation-delay: 0.2s; }
+.detail-timeline.timeline-animated .timeline-item:nth-child(3) { animation-delay: 0.3s; }
+.detail-timeline.timeline-animated .timeline-item:nth-child(4) { animation-delay: 0.4s; }
+.detail-timeline.timeline-animated .timeline-item:nth-child(5) { animation-delay: 0.5s; }
+
+/* Thèmes Timeline */
+.detail-timeline.timeline-minimal {
+    background: white;
+    box-shadow: none;
+}
+
+.detail-timeline.timeline-colorful .timeline-item-completed .timeline-icon {
+    background: linear-gradient(135deg, #10b981 0%, #6ee7b7 100%);
+}
+
+.detail-timeline.timeline-colorful .timeline-item-active .timeline-icon {
+    background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+    border-color: #8b5cf6;
+}
+
+/* Tailles */
+.detail-timeline.timeline-small .timeline-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 20px;
+}
+
+.detail-timeline.timeline-small .timeline-label {
+    font-size: 12px;
+}
+
+.detail-timeline.timeline-large .timeline-icon {
+    width: 68px;
+    height: 68px;
+    font-size: 28px;
+}
+
+.detail-timeline.timeline-large .timeline-label {
+    font-size: 16px;
+}
+
+/* ========================================
+   ANIMATIONS HOVER TIMELINE (sans action clic)
+   ======================================== */
+
+/* Curseur pointer sur les items */
+.detail-timeline .timeline-item {
+    cursor: pointer;
+}
+
+/* Animation de l'icône au survol */
+.detail-timeline .timeline-item:hover .timeline-icon {
+    transform: translateY(-3px) scale(1.1);
+    box-shadow: 
+        0 8px 20px rgba(0, 0, 0, 0.12),
+        0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Animation spéciale pour l'item actif */
+.detail-timeline .timeline-item-active:hover .timeline-icon,
+.detail-timeline .timeline-item-current:hover .timeline-icon {
+    transform: translateY(-3px) scale(1.15);
+    box-shadow: 
+        0 10px 25px rgba(59, 130, 246, 0.4),
+        0 6px 15px rgba(59, 130, 246, 0.3);
+}
+
+/* Animation pour les items complétés */
+.detail-timeline .timeline-item-completed:hover .timeline-icon {
+    transform: translateY(-3px) scale(1.1);
+    box-shadow: 
+        0 8px 20px rgba(16, 185, 129, 0.3),
+        0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+/* Effet de brillance au survol */
+.detail-timeline .timeline-item:hover .timeline-icon::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+    animation: shimmer 0.5s ease;
+}
+
+@keyframes shimmer {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* ========================================
+   ANIMATION CARTE CONTAINER TIMELINE
+   ======================================== */
+
+/* Animation au survol de la carte timeline */
+.detail-viewer-timeline-zone {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: default;
+}
+
+.detail-viewer-timeline-zone:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+/* Effet de brillance au survol (optionnel) */
+.detail-viewer-timeline-zone::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg, 
+        transparent, 
+        rgba(255,255,255,0.1), 
+        transparent
+    );
+    transition: left 0.6s ease;
+    pointer-events: none;
+}
+
+.detail-viewer-timeline-zone:hover::after {
+    left: 100%;
+}
+
+/* ========================================
+   SECTION 6 : SECTIONS ET CHAMPS
+   ======================================== */
+
+.detail-viewer-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.detail-viewer-section {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    transition: var(--dv-transition);
+}
+
+.detail-viewer-section:hover {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+}
+
+/* Header de section */
+.section-header {
+    padding: 16px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: default;
+}
+
+.section-collapsible .section-header {
+    cursor: pointer;
+    user-select: none;
+}
+
+.section-collapsible .section-header:hover {
+    background: var(--dv-hover);
+}
+
+.section-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--dv-text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-icon {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.section-toggle {
+    color: var(--dv-text-secondary);
+    transition: transform 0.3s ease;
+}
+
+.section-collapsed .section-toggle {
+    transform: rotate(-90deg);
+}
+
+/* Contenu de section */
+.section-content {
+    padding: 20px;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+.section-collapsed .section-content {
+    max-height: 0;
+    padding: 0 20px;
+    overflow: hidden;
+}
+
+/* Grille de champs */
+.section-fields.fields-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.section-fields.fields-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.field-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.field-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--dv-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.field-value {
+    font-size: 15px;
+    color: var(--dv-text);
+    line-height: 1.4;
+}
+
+.field-value.value-bold {
+    font-weight: 600;
+}
+
+/* Table de champs */
+.section-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.section-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--dv-border);
+}
+
+.section-table tr:last-child td {
+    border-bottom: none;
+}
+
+.section-table .field-label {
+    width: 40%;
+    background: var(--dv-hover);
+}
+
+/* Badge */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.badge-default {
+    background: var(--dv-primary-bg);
+    color: var(--dv-primary);
+}
+
+.badge-success {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.badge-warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.badge-error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* État vide */
+.detail-viewer-empty {
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--dv-text-secondary);
+    font-size: 14px;
+}
+
+/* ========================================
+   SECTION 7 : FOOTER ET ACTIONS
+   ======================================== */
+
+.detail-viewer-footer {
+    padding: 20px 28px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    background: #f8f9fa;
+}
+
+/* Les styles des boutons viennent du CSS externe */
+.detail-viewer-footer button {
+    min-width: 120px;
+}
+
+.action-icon {
+    margin-right: 6px;
+    font-size: 16px;
+    vertical-align: middle;
+}
+
+/* ========================================
+   SECTION 8 : ANIMATIONS
+   ======================================== */
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.1; }
+    50% { transform: scale(1.1); opacity: 0.2; }
+}
+
+/* Animation d'apparition */
+.detail-viewer-overlay.loaded {
+    opacity: 1;
+}
+
+/* ========================================
+   SECTION 9 : RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+    .detail-viewer-modal {
+        max-width: 100%;
+        height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+    
+    .detail-viewer-header {
+        padding: 16px 20px;
+    }
+    
+    .detail-viewer-title {
+        font-size: 18px;
+    }
+    
+    .detail-viewer-body {
+        padding: 16px;
+    }
+    
+    .detail-viewer-sections {
+        gap: 16px;
+    }
+    
+    .section-fields.fields-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .detail-viewer-footer {
+        flex-direction: column;
+        padding: 16px 20px;
+    }
+    
+    .detail-viewer-footer button {
+        width: 100%;
+    }
+    
+    /* Timeline responsive */
+    .detail-viewer-timeline-zone {
+        margin: 0 -8px 16px -8px;
+        padding: 0;
+    }
+
+    .detail-timeline {
+        padding: 24px 16px;
+    }
+
+    .detail-timeline.timeline-horizontal {
+        overflow-x: auto;
+        padding-bottom: 10px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .detail-timeline.timeline-horizontal .timeline-items {
+        min-width: max-content;
+        padding: 0 10px;
+    }
+
+    .detail-timeline.timeline-horizontal .timeline-item {
+        min-width: 100px;
+    }
+
+    .detail-timeline .timeline-icon {
+        width: 44px;
+        height: 44px;
+        font-size: 20px;
+    }
+
+    .detail-timeline .timeline-label {
+        font-size: 12px;
+    }
+
+    .detail-timeline .timeline-date {
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .detail-viewer-header {
+        padding: 14px 16px;
+    }
+    
+    .detail-viewer-title {
+        font-size: 16px;
+    }
+    
+    .section-header {
+        padding: 12px 16px;
+    }
+    
+    .section-title {
+        font-size: 14px;
+    }
+    
+    .section-content {
+        padding: 16px;
+    }
+    
+    .detail-timeline.timeline-horizontal .timeline-connector {
+        left: 40px;
+        right: 40px;
+    }
+}
+
+/* Masquer les scrollbars sur mobile tout en gardant le scroll */
+.detail-timeline.timeline-horizontal::-webkit-scrollbar {
+    display: none;
+}
+
+.detail-timeline.timeline-horizontal {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+
+
+/* ========================================
+   FIN DU FICHIER
+   ======================================== */

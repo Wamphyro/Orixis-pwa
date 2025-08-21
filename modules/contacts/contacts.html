@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ORIXIS CRM</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Orixis Dashboard">
+    <link rel="manifest" href="../../manifest.json">
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
+    
+    <!-- CSS Global -->
+    <link rel="stylesheet" href="../../src/css/main.css">
+    
+    <!-- Style minimal pour loader -->
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        
+        .page-loading {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .page-loading.hidden { display: none; }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px; height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Container pour le header */
+        .header-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            /* Ne pas mettre de height ici */
+        }
+        
+        /* Container pour les cartes de menu */
+        .menu-container {
+            margin-top: 100px; /* Espace pour le header fixe */
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loader -->
+    <div class="page-loading" id="pageLoader">
+        <div class="loader"></div>
+    </div>
+    
+    <!-- Container pour le header - IMPORTANT : DOIT EXISTER -->
+    <div class="header-container"></div>
+    
+    <!-- Container pour le menu (les cartes) -->
+    <div class="menu-container"></div>
+    
+    <!-- Script principal -->
+    <script type="module">
+        // Import de l'orchestrateur
+        import orchestrator from './home.orchestrator.js';
+        
+        // Attendre que le DOM soit complètement chargé
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Vérifier que le container existe
+                const headerContainer = document.querySelector('.header-container');
+                console.log('🔍 Container header trouvé:', headerContainer);
+                
+                // Initialiser l'orchestrateur
+                await orchestrator.init();
+                
+                // Vérifier après init
+                console.log('🔍 Header après init:', orchestrator.header);
+                console.log('🔍 Container du header:', orchestrator.header?.elements?.container);
+                
+            } catch (error) {
+                console.error('❌ Erreur init:', error);
+            }
+        });
+        
+        // Export pour debug
+        window.homeOrchestrator = orchestrator;
+    </script>
+</body>
+</html>

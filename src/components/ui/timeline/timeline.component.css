@@ -1,0 +1,513 @@
+/* ========================================
+   TIMELINE.COMPONENT.CSS - Styles complets du composant Timeline
+   Chemin: src/components/ui/timeline/timeline.component.css
+   
+   DESCRIPTION:
+   Design moderne et complet pour le composant Timeline.
+   100% autonome - aucun CSS externe nécessaire.
+   ======================================== */
+
+/* ========================================
+   CONTENEUR PRINCIPAL ET WRAPPER
+   ======================================== */
+
+.timeline {
+    position: relative;
+    padding: 32px 24px;
+    user-select: none;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    border-radius: 16px;
+    box-shadow: 
+        0 1px 3px rgba(0, 0, 0, 0.05),
+        0 4px 6px rgba(0, 0, 0, 0.02);
+    margin: 20px 0;
+    overflow: hidden;
+}
+
+/* Effet de brillance subtil */
+.timeline::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(
+        circle at center,
+        rgba(255, 255, 255, 0.1) 0%,
+        transparent 70%
+    );
+    pointer-events: none;
+}
+
+/* Animation globale activée */
+.timeline-animated * {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ========================================
+   ORIENTATIONS
+   ======================================== */
+
+/* Timeline horizontale (défaut) */
+.timeline-horizontal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 140px;
+}
+
+.timeline-horizontal .timeline-connector {
+    position: absolute;
+    top: 50%;
+    left: 60px;
+    right: 60px;
+    height: 3px;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        #e2e8f0 10%,
+        #e2e8f0 90%,
+        transparent 100%
+    );
+    transform: translateY(-50%);
+    z-index: 0;
+}
+
+/* Ligne de progression (derrière les complétés) */
+.timeline-horizontal .timeline-connector::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: var(--progress, 0%);
+    background: linear-gradient(
+        90deg,
+        #10b981 0%,
+        #34d399 100%
+    );
+    transition: width 0.5s ease;
+}
+
+.timeline-horizontal .timeline-items {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    position: relative;
+    z-index: 1;
+    padding: 0 20px;
+}
+
+.timeline-horizontal .timeline-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    max-width: 150px;
+    cursor: default;
+}
+
+/* Timeline verticale */
+.timeline-vertical {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 24px;
+}
+
+.timeline-vertical .timeline-connector {
+    position: absolute;
+    left: 50%;
+    top: 60px;
+    bottom: 60px;
+    width: 3px;
+    background: linear-gradient(
+        180deg,
+        transparent 0%,
+        #e2e8f0 10%,
+        #e2e8f0 90%,
+        transparent 100%
+    );
+    transform: translateX(-50%);
+    z-index: 0;
+}
+
+.timeline-vertical .timeline-items {
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+    position: relative;
+    z-index: 1;
+}
+
+/* ========================================
+   ICÔNES ET BULLES
+   ======================================== */
+
+.timeline-icon-wrapper {
+    position: relative;
+    transform: scale(1);
+    transition: transform 0.3s ease;
+}
+
+.timeline-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 3px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 600;
+    position: relative;
+    z-index: 2;
+    box-shadow: 
+        0 2px 4px rgba(0, 0, 0, 0.06),
+        0 4px 8px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Effet de halo pour l'état actif */
+.timeline-icon::before {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    background: radial-gradient(
+        circle at center,
+        transparent 40%,
+        currentColor 100%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+/* ========================================
+   CONTENU (LABELS ET DATES)
+   ======================================== */
+
+.timeline-content {
+    text-align: center;
+    max-width: 120px;
+}
+
+.timeline-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 4px;
+    line-height: 1.2;
+}
+
+.timeline-date {
+    font-size: 11px;
+    color: #94a3b8;
+    line-height: 1.2;
+    min-height: 14px;  /* AJOUT : Hauteur minimale fixe */
+    display: block;     /* AJOUT : Force le bloc même si vide */
+}
+
+/* ========================================
+   ÉTATS DES ITEMS
+   ======================================== */
+
+/* État complété */
+.timeline-item-completed .timeline-icon {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    border-color: #10b981;
+    color: white;
+}
+
+.timeline-item-completed .timeline-label {
+    color: #047857;
+}
+
+/* État actif/current */
+.timeline-item-active .timeline-icon,
+.timeline-item-current .timeline-icon {
+    background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+    border-color: #3b82f6;
+    color: white;
+    transform: scale(1.15);
+    box-shadow: 
+        0 4px 12px rgba(59, 130, 246, 0.35),
+        0 8px 24px rgba(59, 130, 246, 0.15);
+}
+
+.timeline-item-active .timeline-icon::before,
+.timeline-item-current .timeline-icon::before {
+    opacity: 0.15;
+}
+
+.timeline-item-active .timeline-label,
+.timeline-item-current .timeline-label {
+    color: #1e40af;
+    font-weight: 700;
+}
+
+.timeline-item-active .timeline-date,
+.timeline-item-current .timeline-date {
+    color: #3b82f6;
+}
+
+/* État en attente */
+.timeline-item-pending .timeline-icon {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #94a3b8;
+}
+
+.timeline-item-pending .timeline-label {
+    color: #94a3b8;
+}
+
+.timeline-item-pending .timeline-date {
+    color: #cbd5e1;
+}
+
+/* État désactivé */
+.timeline-item-disabled {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+.timeline-item-disabled .timeline-icon {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+    color: #cbd5e1;
+}
+
+/* État erreur */
+.timeline-item-error .timeline-icon {
+    background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+    border-color: #ef4444;
+    color: white;
+}
+
+.timeline-item-error .timeline-label {
+    color: #b91c1c;
+}
+
+/* État warning */
+.timeline-item-warning .timeline-icon {
+    background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+    border-color: #f59e0b;
+    color: white;
+}
+
+.timeline-item-warning .timeline-label {
+    color: #d97706;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+/* Pulse pour l'élément actif */
+@keyframes timeline-pulse {
+    0%, 100% {
+        transform: scale(1.15);
+        box-shadow: 
+            0 4px 12px rgba(59, 130, 246, 0.35),
+            0 8px 24px rgba(59, 130, 246, 0.15);
+    }
+    50% {
+        transform: scale(1.25);
+        box-shadow: 
+            0 6px 20px rgba(59, 130, 246, 0.45),
+            0 12px 32px rgba(59, 130, 246, 0.25);
+    }
+}
+
+.timeline-pulse .timeline-item-active .timeline-icon,
+.timeline-pulse .timeline-item-current .timeline-icon {
+    animation: timeline-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Animation d'apparition */
+@keyframes timeline-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.timeline-animated .timeline-item {
+    animation: timeline-fade-in 0.5s ease backwards;
+}
+
+.timeline-animated .timeline-item:nth-child(1) { animation-delay: 0.1s; }
+.timeline-animated .timeline-item:nth-child(2) { animation-delay: 0.2s; }
+.timeline-animated .timeline-item:nth-child(3) { animation-delay: 0.3s; }
+.timeline-animated .timeline-item:nth-child(4) { animation-delay: 0.4s; }
+.timeline-animated .timeline-item:nth-child(5) { animation-delay: 0.5s; }
+.timeline-animated .timeline-item:nth-child(6) { animation-delay: 0.6s; }
+
+/* ========================================
+   THÈMES
+   ======================================== */
+
+/* Thème minimal */
+.timeline-minimal {
+    background: white;
+    border: 1px solid #e5e7eb;
+    box-shadow: none;
+}
+
+.timeline-minimal .timeline-icon {
+    box-shadow: none;
+    border-width: 2px;
+}
+
+/* Thème colorful */
+.timeline-colorful .timeline-item-completed .timeline-icon {
+    background: linear-gradient(135deg, #10b981 0%, #6ee7b7 100%);
+}
+
+.timeline-colorful .timeline-item-active .timeline-icon,
+.timeline-colorful .timeline-item-current .timeline-icon {
+    background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+    border-color: #8b5cf6;
+    box-shadow: 
+        0 4px 12px rgba(139, 92, 246, 0.35),
+        0 8px 24px rgba(139, 92, 246, 0.15);
+}
+
+.timeline-colorful .timeline-item-warning .timeline-icon {
+    background: linear-gradient(135deg, #f59e0b 0%, #fcd34d 100%);
+}
+
+.timeline-colorful .timeline-item-error .timeline-icon {
+    background: linear-gradient(135deg, #ef4444 0%, #fca5a5 100%);
+}
+
+/* ========================================
+   TAILLES
+   ======================================== */
+
+/* Small */
+.timeline-small {
+    padding: 20px 16px;
+}
+
+.timeline-small .timeline-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+}
+
+.timeline-small .timeline-label {
+    font-size: 12px;
+}
+
+.timeline-small .timeline-date {
+    font-size: 10px;
+}
+
+/* Large */
+.timeline-large .timeline-icon {
+    width: 72px;
+    height: 72px;
+    font-size: 32px;
+}
+
+.timeline-large .timeline-label {
+    font-size: 16px;
+}
+
+.timeline-large .timeline-date {
+    font-size: 13px;
+}
+
+/* ========================================
+   INTERACTIVITÉ
+   ======================================== */
+
+.timeline-clickable .timeline-item {
+    cursor: pointer;
+}
+
+.timeline-clickable .timeline-item:hover .timeline-icon-wrapper {
+    transform: scale(1.1);
+}
+
+.timeline-clickable .timeline-item:hover .timeline-icon {
+    box-shadow: 
+        0 6px 16px rgba(0, 0, 0, 0.12),
+        0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+    .timeline {
+        padding: 24px 16px;
+        border-radius: 12px;
+    }
+    
+    .timeline-horizontal {
+        overflow-x: auto;
+        padding-bottom: 10px;
+    }
+    
+    .timeline-horizontal .timeline-items {
+        min-width: max-content;
+        padding: 0 10px;
+    }
+    
+    .timeline-horizontal .timeline-item {
+        min-width: 100px;
+    }
+    
+    .timeline-icon {
+        width: 44px;
+        height: 44px;
+        font-size: 20px;
+    }
+    
+    .timeline-label {
+        font-size: 12px;
+    }
+    
+    .timeline-date {
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .timeline {
+        margin: 10px 0;
+    }
+    
+    .timeline-horizontal .timeline-connector {
+        left: 40px;
+        right: 40px;
+    }
+}
+
+/* ========================================
+   UTILITAIRES
+   ======================================== */
+
+/* Masquer les scrollbars sur mobile tout en gardant le scroll */
+.timeline-horizontal::-webkit-scrollbar {
+    display: none;
+}
+
+.timeline-horizontal {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}

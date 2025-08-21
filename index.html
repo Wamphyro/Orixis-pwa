@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAV Audio</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SAV Audio">
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>">
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .loading {
+            text-align: center;
+        }
+        .spinner {
+            font-size: 48px;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading">
+        <div class="spinner">⚙️</div>
+        <p>Redirection en cours...</p>
+    </div>
+
+    <script>
+        // Vérification de l'authentification et redirection
+        (function() {
+            const auth = localStorage.getItem('sav_auth');
+            
+            if (auth) {
+                try {
+                    const authData = JSON.parse(auth);
+                    const now = Date.now();
+                    
+                    // Vérifier si l'authentification est valide
+                    if (authData.authenticated && (now - authData.timestamp <= authData.expiry)) {
+                        // Utilisateur connecté - aller vers home
+                        window.location.replace('modules/home/home.html');
+                        return;
+                    }
+                } catch (e) {
+                    console.error('Erreur parsing auth:', e);
+                }
+            }
+            
+            // Pas connecté ou session expirée - aller vers login
+            window.location.replace('modules/login/login.html');
+        })();
+    </script>
+</body>
+</html>

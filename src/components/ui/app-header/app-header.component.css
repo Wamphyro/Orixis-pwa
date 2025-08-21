@@ -1,0 +1,632 @@
+/* ========================================
+   APP-HEADER.CSS - Styles pour le composant header d'application
+   Chemin: src/components/ui/app-header/app-header.css
+   
+   STRUCTURE:
+   - Anti-FOUC et chargement
+   - Header de base
+   - Layout interne (left, center, right)
+   - Section titre
+   - Styles glassmorphism pour les éléments
+   - États et interactions
+   - Thèmes
+   - Responsive
+   ======================================== */
+
+/* ========================================
+   ANTI-FOUC ET CHARGEMENT
+   ======================================== */
+
+.app-header {
+    /* Anti-FOUC : Masquer initialement */
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Afficher une fois chargé */
+.app-header.loaded {
+    opacity: 1;
+}
+
+/* ========================================
+   HEADER DE BASE
+   ======================================== */
+
+.app-header {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.85) 0%, rgba(118, 75, 162, 0.85) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    color: white;
+    padding: 25px 20px;
+    box-shadow: var(--glass-shadow, none);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.app-header.fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+/* ========================================
+   LAYOUT INTERNE (LEFT, CENTER, RIGHT)
+   ======================================== */
+
+.app-header-content {
+    max-width: 2000px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    position: relative;
+}
+
+.app-header-left {
+    flex: 0 0 200px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.app-header-center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    padding: 0 20px;
+    min-width: 0;
+    z-index: 1;
+}
+
+.app-header-right {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 15px;
+}
+
+/* Empêcher le chevauchement du centre avec les côtés */
+@media (min-width: 769px) {
+    .app-header-left,
+    .app-header-right {
+        z-index: 2;
+    }
+}
+
+/* ========================================
+   SECTION TITRE
+   ======================================== */
+
+.app-header-icon {
+    font-size: 28px;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.app-header-title {
+    font-size: 32px;
+    margin: 0 0 5px 0;
+    color: white;
+    font-weight: 700;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.app-header-subtitle {
+    font-size: 16px;
+    opacity: 0.9;
+    margin: 0;
+    font-weight: 400;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ========================================
+   STYLES GLASSMORPHISM POUR LES ÉLÉMENTS
+   ======================================== */
+
+/* Section utilisateur glassmorphism */
+.header-user-section {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    white-space: nowrap;
+    box-shadow: var(--glass-shadow, none);
+}
+
+.header-user-section:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.35);
+    box-shadow: var(--glass-shadow-hover, none);
+    transform: translateY(-1px);
+}
+
+/* Éléments internes de la section utilisateur */
+.user-name {
+    font-weight: 600;
+    color: white;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.user-store {
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.user-separator {
+    width: 1px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.3);
+    flex-shrink: 0;
+}
+
+/* Icône du bouton retour */
+.back-icon {
+    font-size: 16px;
+    margin-right: 4px;
+}
+
+/* ========================================
+   ÉTATS ET INTERACTIONS
+   ======================================== */
+
+/* État de chargement */
+.app-header.loading {
+    opacity: 0.7;
+}
+
+.app-header.loading * {
+    pointer-events: none;
+}
+
+/* Animation d'apparition */
+.app-header.loaded {
+    animation: slideDown 0.4s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Focus pour accessibilité */
+.header-user-section:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 2px;
+}
+
+/* ========================================
+   INDICATEUR DE CHARGEMENT
+   ======================================== */
+
+.loading-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ========================================
+   THÈMES
+   ======================================== */
+
+/* Thème sombre */
+.app-header.theme-dark {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+}
+
+.theme-dark .header-user-section {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.theme-dark .header-user-section:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Thème success */
+.app-header.theme-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+/* Thème warning */
+.app-header.theme-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    color: #333;
+}
+
+.app-header.theme-warning .app-header-title,
+.app-header.theme-warning .app-header-subtitle,
+.app-header.theme-warning .user-name,
+.app-header.theme-warning .user-store {
+    color: #333;
+}
+
+.theme-warning .header-user-section {
+    background: rgba(0, 0, 0, 0.1);
+    color: #333;
+}
+
+.theme-warning .header-user-section:hover {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+/* Thème minimal */
+.app-header.theme-minimal {
+    background: white;
+    color: #333;
+    border-bottom: 1px solid #e9ecef;
+    box-shadow: var(--glass-shadow, none);
+}
+
+.app-header.theme-minimal .app-header-title,
+.app-header.theme-minimal .app-header-subtitle,
+.app-header.theme-minimal .user-name,
+.app-header.theme-minimal .user-store {
+    color: #333;
+}
+
+.theme-minimal .header-user-section {
+    background: #f8f9fa;
+    color: #333;
+    border: 1px solid #dee2e6;
+    backdrop-filter: none;
+}
+
+.theme-minimal .header-user-section:hover {
+    background: #e9ecef;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 992px) {
+    .app-header-left {
+        flex: 0 0 auto;
+    }
+    
+    .app-header-right {
+        flex: 0 0 auto;
+    }
+    
+    .app-header-center {
+        padding: 0 15px;
+    }
+    
+    .header-user-section {
+        padding: 8px 16px;
+        gap: 10px;
+    }
+    
+    .user-name,
+    .user-store {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 768px) {
+    .app-header {
+        padding: 20px 15px;
+    }
+    
+    .app-header-content {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+        position: static;
+    }
+    
+    .app-header-left,
+    .app-header-center,
+    .app-header-right {
+        position: static;
+        transform: none;
+        flex: initial;
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+    
+    .app-header-left {
+        order: 3;
+    }
+    
+    .app-header-center {
+        order: 1;
+        padding: 0;
+    }
+    
+    .app-header-right {
+        order: 2;
+    }
+    
+    .app-header-title {
+        font-size: 24px;
+    }
+    
+    .app-header-subtitle {
+        font-size: 14px;
+    }
+    
+    .header-user-section {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 12px 16px;
+    }
+    
+    .user-name {
+        font-size: 14px;
+        font-weight: 600;
+    }
+    
+    .user-store {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .app-header {
+        padding: 15px 10px;
+    }
+    
+    .app-header-content {
+        gap: 10px;
+    }
+    
+    .app-header-title {
+        font-size: 20px;
+    }
+    
+    .app-header-subtitle {
+        font-size: 13px;
+    }
+    
+    .header-user-section {
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 10px;
+    }
+    
+    .user-separator {
+        display: none;
+    }
+    
+    .user-store {
+        font-size: 11px;
+        opacity: 0.8;
+    }
+    
+    .app-header-icon {
+        font-size: 20px;
+    }
+}
+
+/* ========================================
+   PRINT
+   ======================================== */
+@media print {
+    .app-header-title,
+    .app-header-subtitle,
+    .user-name,
+    .user-store {
+        color: black !important;
+    }
+    
+    .user-separator {
+        background: #ccc !important;
+    }
+    
+    /* Les boutons dans le header seront masqués via une classe générique */
+    .app-header button {
+        display: none !important;
+    }
+}
+
+/* ========================================
+   UTILITAIRES
+   ======================================== */
+
+/* Masquer le header */
+.app-header.hidden {
+    display: none;
+}
+
+/* Header collapsé */
+.app-header.collapsed {
+    padding: 10px 20px;
+}
+
+.app-header.collapsed .app-header-title {
+    font-size: 20px;
+}
+
+.app-header.collapsed .app-header-subtitle {
+    display: none;
+}
+
+.app-header.collapsed .header-user-section {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+/* Ajustement si header fixe */
+body.header-fixed {
+    padding-top: 100px;
+}
+
+@media (max-width: 768px) {
+    body.header-fixed {
+        padding-top: 140px;
+    }
+}
+
+/* ========================================
+   SECTION MAGASIN DROPDOWN
+   ======================================== */
+
+.header-magasin-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 12px;
+}
+
+.magasin-label {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Styles pour la DropdownList dans le header */
+#magasinDropdownHeader .dropdown-list {
+    min-width: 120px;
+}
+
+#magasinDropdownHeader .dropdown-list-toggle {
+    padding: 6px 14px;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    border-radius: 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#magasinDropdownHeader .dropdown-list-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.35);
+    transform: translateY(-1px);
+}
+
+#magasinDropdownHeader .dropdown-list-toggle:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 2px;
+}
+
+#magasinDropdownHeader .dropdown-list-options {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    color: #333;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: var(--glass-shadow-hover, none);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+#magasinDropdownHeader .dropdown-list-option {
+    color: #333;
+    transition: all 0.2s ease;
+}
+
+#magasinDropdownHeader .dropdown-list-option:hover {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+#magasinDropdownHeader .dropdown-list-option.selected {
+    background: rgba(102, 126, 234, 0.15);
+    color: #667eea;
+    font-weight: 600;
+}
+
+/* Responsive pour la section magasin */
+@media (max-width: 768px) {
+    .header-magasin-section {
+        margin: 0 8px;
+    }
+    
+    .magasin-label {
+        display: none; /* Masquer le label sur mobile */
+    }
+    
+    #magasinDropdownHeader .dropdown-list {
+        min-width: 100px;
+    }
+    
+    #magasinDropdownHeader .dropdown-list-toggle {
+        padding: 5px 10px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-magasin-section {
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 8px;
+    }
+    
+    #magasinDropdownHeader .dropdown-list {
+        width: 100%;
+        max-width: 200px;
+    }
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [30/01/2025] - Création initiale
+   [01/02/2025] - Migration des styles de boutons
+   [29/12/2024] - Restauration des styles glassmorphism
+   - Tous les styles nécessaires sont maintenant dans ce fichier
+   - Le composant est 100% indépendant
+   - Support complet du glassmorphism
+   - Les classes sont injectées par l'orchestrateur
+   
+   NOTES POUR REPRISES FUTURES:
+   - Ce fichier contient TOUS les styles nécessaires
+   - Ne pas dépendre d'autres fichiers CSS
+   - Le composant reste indépendant
+   ======================================== */

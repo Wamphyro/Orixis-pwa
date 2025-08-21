@@ -1,0 +1,522 @@
+/* ========================================
+   BADGE.CSS - Design System Centralisé des Badges
+   Chemin: src/components/ui/badge/badge.component.css
+   
+   DESCRIPTION:
+   Système de design unifié pour TOUS les badges de l'application
+   Style SOFT par défaut (fond léger, texte coloré)
+   
+   ARCHITECTURE:
+   1. Variables & Design Tokens - Configuration globale
+   2. Base - Styles de base pour tous les badges
+   3. Variantes - Couleurs des badges
+   4. Tailles - Dimensions des badges
+   5. Formes - Shapes des badges
+   6. Contextes - Adaptations selon le fond (dark/light)
+   7. États - Avec icône, closable, etc.
+   8. Animations - Pulsation, apparition
+   9. Responsive - Adaptations mobiles
+   
+   Créé le 06/02/2025 : Design soft avec variantes couleur
+   ======================================== */
+
+/* ========================================
+   1. VARIABLES & DESIGN TOKENS
+   Configuration centralisée pour tout modifier d'un coup
+   ======================================== */
+:root {
+    /* === COULEURS SOFT (Fond léger) === */
+    /* Bleu */
+    --badge-blue-bg: #dbeafe;
+    --badge-blue-color: #1e40af;
+    --badge-blue-border: #93c5fd;
+    
+    /* Vert */
+    --badge-green-bg: #d1fae5;
+    --badge-green-color: #065f46;
+    --badge-green-border: #86efac;
+    
+    /* Rouge */
+    --badge-red-bg: #fee2e2;
+    --badge-red-color: #991b1b;
+    --badge-red-border: #fca5a5;
+    
+    /* Jaune */
+    --badge-yellow-bg: #fef3c7;
+    --badge-yellow-color: #92400e;
+    --badge-yellow-border: #fde047;
+    
+    /* Violet */
+    --badge-purple-bg: #ede9fe;
+    --badge-purple-color: #5b21b6;
+    --badge-purple-border: #c4b5fd;
+    
+    /* Orange */
+    --badge-orange-bg: #fed7aa;
+    --badge-orange-color: #9a3412;
+    --badge-orange-border: #fb923c;
+    
+    /* Rose */
+    --badge-pink-bg: #fce7f3;
+    --badge-pink-color: #9f1239;
+    --badge-pink-border: #f9a8d4;
+    
+    /* Gris */
+    --badge-gray-bg: #f3f4f6;
+    --badge-gray-color: #374151;
+    --badge-gray-border: #d1d5db;
+    
+    /* === DIMENSIONS === */
+    --badge-padding-sm: 2px 8px;
+    --badge-padding-md: 4px 12px;
+    --badge-padding-lg: 6px 16px;
+    --badge-font-sm: 11px;
+    --badge-font-md: 13px;
+    --badge-font-lg: 15px;
+    --badge-height-sm: 20px;
+    --badge-height-md: 24px;
+    --badge-height-lg: 28px;
+    
+    /* === BORDER RADIUS === */
+    --badge-radius-default: 6px;
+    --badge-radius-pill: 50px;
+    --badge-radius-square: 2px;
+    
+    /* === ESPACEMENTS === */
+    --badge-icon-gap: 4px;
+    --badge-close-gap: 6px;
+}
+
+/* ========================================
+   2. BASE - Style par défaut de tous les badges
+   ======================================== */
+.badge {
+    /* Structure de base */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--badge-icon-gap);
+    padding: var(--badge-padding-md);
+    min-height: var(--badge-height-md);
+    
+    /* Style soft par défaut (gris) */
+    background: var(--badge-gray-bg);
+    color: var(--badge-gray-color);
+    border: 1px solid var(--badge-gray-border);
+    border-radius: var(--badge-radius-default);
+    
+    /* Typographie par défaut */
+    font-size: var(--badge-font-md);
+    font-weight: 600;
+    font-family: inherit;
+    line-height: 1;
+    white-space: nowrap;
+    
+    /* Comportement */
+    position: relative;
+    user-select: none;
+    transition: all 0.2s ease;
+    
+    /* Alignement dans le texte */
+    vertical-align: middle;
+}
+
+/* Hover subtil */
+.badge:hover {
+    filter: brightness(0.95);
+    transform: translateY(-1px);
+}
+
+/* Badge cliquable */
+.badge.clickable {
+    cursor: pointer;
+}
+
+.badge.clickable:active {
+    transform: translateY(0);
+}
+
+/* ========================================
+   3. VARIANTES - Couleurs des badges
+   ======================================== */
+
+/* === BLEU === */
+.badge-blue {
+    background: var(--badge-blue-bg);
+    color: var(--badge-blue-color);
+    border-color: var(--badge-blue-border);
+}
+
+/* === VERT === */
+.badge-green {
+    background: var(--badge-green-bg);
+    color: var(--badge-green-color);
+    border-color: var(--badge-green-border);
+}
+
+/* === ROUGE === */
+.badge-red {
+    background: var(--badge-red-bg);
+    color: var(--badge-red-color);
+    border-color: var(--badge-red-border);
+}
+
+/* === JAUNE === */
+.badge-yellow {
+    background: var(--badge-yellow-bg);
+    color: var(--badge-yellow-color);
+    border-color: var(--badge-yellow-border);
+}
+
+/* === VIOLET === */
+.badge-purple {
+    background: var(--badge-purple-bg);
+    color: var(--badge-purple-color);
+    border-color: var(--badge-purple-border);
+}
+
+/* === ORANGE === */
+.badge-orange {
+    background: var(--badge-orange-bg);
+    color: var(--badge-orange-color);
+    border-color: var(--badge-orange-border);
+}
+
+/* === ROSE === */
+.badge-pink {
+    background: var(--badge-pink-bg);
+    color: var(--badge-pink-color);
+    border-color: var(--badge-pink-border);
+}
+
+/* === GRIS (par défaut) === */
+.badge-gray {
+    background: var(--badge-gray-bg);
+    color: var(--badge-gray-color);
+    border-color: var(--badge-gray-border);
+}
+
+/* ========================================
+   4. TAILLES - Dimensions des badges
+   ======================================== */
+
+/* === SMALL === */
+.badge-sm {
+    padding: var(--badge-padding-sm);
+    font-size: var(--badge-font-sm);
+    min-height: var(--badge-height-sm);
+    border-radius: 4px;
+}
+
+.badge-sm .badge-icon {
+    font-size: 10px;
+}
+
+.badge-sm .badge-close {
+    font-size: 12px;
+    margin-left: 4px;
+}
+
+/* === LARGE === */
+.badge-lg {
+    padding: var(--badge-padding-lg);
+    font-size: var(--badge-font-lg);
+    min-height: var(--badge-height-lg);
+    border-radius: 8px;
+}
+
+.badge-lg .badge-icon {
+    font-size: 16px;
+}
+
+.badge-lg .badge-close {
+    font-size: 18px;
+    margin-left: 8px;
+}
+
+/* ========================================
+   5. FORMES - Shapes des badges
+   ======================================== */
+
+/* === PILL === */
+.badge-pill {
+    border-radius: var(--badge-radius-pill);
+    padding-left: 14px;
+    padding-right: 14px;
+}
+
+.badge-pill.badge-sm {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.badge-pill.badge-lg {
+    padding-left: 18px;
+    padding-right: 18px;
+}
+
+/* === SQUARE === */
+.badge-square {
+    border-radius: var(--badge-radius-square);
+}
+
+/* === CIRCLE (pour compteurs) === */
+.badge-circle {
+    border-radius: 50%;
+    width: var(--badge-height-md);
+    height: var(--badge-height-md);
+    padding: 0;
+}
+
+.badge-circle.badge-sm {
+    width: var(--badge-height-sm);
+    height: var(--badge-height-sm);
+}
+
+.badge-circle.badge-lg {
+    width: var(--badge-height-lg);
+    height: var(--badge-height-lg);
+}
+
+/* ========================================
+   6. CONTEXTES - Adaptations selon le fond
+   ======================================== */
+
+/* === SUR FOND SOMBRE === */
+.badge.on-dark {
+    /* Inverser les couleurs pour meilleure visibilité */
+    filter: brightness(1.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.badge-blue.on-dark {
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.badge-green.on-dark {
+    background: rgba(34, 197, 94, 0.2);
+    color: #86efac;
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.badge-red.on-dark {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.badge-yellow.on-dark {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fde047;
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+.badge-purple.on-dark {
+    background: rgba(139, 92, 246, 0.2);
+    color: #c4b5fd;
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+.badge-orange.on-dark {
+    background: rgba(251, 146, 60, 0.2);
+    color: #fdba74;
+    border-color: rgba(251, 146, 60, 0.3);
+}
+
+.badge-pink.on-dark {
+    background: rgba(236, 72, 153, 0.2);
+    color: #f9a8d4;
+    border-color: rgba(236, 72, 153, 0.3);
+}
+
+.badge-gray.on-dark {
+    background: rgba(156, 163, 175, 0.2);
+    color: #e5e7eb;
+    border-color: rgba(156, 163, 175, 0.3);
+}
+
+/* === SUR FOND CLAIR === */
+.badge.on-light {
+    /* Styles par défaut déjà optimisés pour fond clair */
+}
+
+/* ========================================
+   7. ÉTATS - États spéciaux
+   ======================================== */
+
+/* === AVEC ICÔNE === */
+.badge-icon {
+    display: inline-flex;
+    align-items: center;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.badge-icon img {
+    width: 14px;
+    height: 14px;
+}
+
+/* === AVEC BOUTON FERMETURE === */
+.badge-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: var(--badge-close-gap);
+    cursor: pointer;
+    opacity: 0.6;
+    font-size: 14px;
+    line-height: 1;
+    transition: opacity 0.2s;
+}
+
+.badge-close:hover {
+    opacity: 1;
+}
+
+/* === AVEC DOT (indicateur) === */
+.badge-dot {
+    padding-left: 8px;
+}
+
+.badge-dot::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    margin-right: 6px;
+    animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* === BADGE COMPTEUR === */
+.badge-count {
+    min-width: 20px;
+    padding: 2px 6px;
+    font-size: 11px;
+}
+
+/* === DISABLED === */
+.badge.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* ========================================
+   8. ANIMATIONS
+   ======================================== */
+
+/* === PULSATION === */
+.badge-pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 currentColor; }
+    70% { box-shadow: 0 0 0 6px rgba(0, 0, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
+}
+
+/* === APPARITION === */
+.badge-appear {
+    animation: appear 0.3s ease;
+}
+
+@keyframes appear {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* === DISPARITION === */
+.badge-disappear {
+    animation: disappear 0.3s ease forwards;
+}
+
+@keyframes disappear {
+    to {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+}
+
+/* ========================================
+   9. GROUPES - Groupes de badges
+   ======================================== */
+.badge-group {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.badge-group-vertical {
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+/* ========================================
+   10. RESPONSIVE - Adaptations mobiles
+   ======================================== */
+@media (max-width: 768px) {
+    .badge {
+        font-size: 12px;
+        padding: 3px 10px;
+    }
+    
+    .badge-sm {
+        font-size: 10px;
+        padding: 2px 6px;
+    }
+    
+    .badge-lg {
+        font-size: 14px;
+        padding: 5px 14px;
+    }
+    
+    .badge-group {
+        gap: 4px;
+    }
+}
+
+/* ========================================
+   11. UTILITAIRES - Classes helper
+   ======================================== */
+
+/* Badge inline dans du texte */
+.badge-inline {
+    margin: 0 4px;
+    vertical-align: baseline;
+}
+
+/* Badge fixé en position absolute */
+.badge-fixed {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+}
+
+/* Badge avec ombre */
+.badge-shadow {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Badge outline (bordure seulement) */
+.badge-outline {
+    background: transparent !important;
+    border-width: 2px;
+}

@@ -1,0 +1,481 @@
+/* ========================================
+   LOGIN.CSS - Styles du module login
+   Chemin: modules/login/login.css
+   
+   DESCRIPTION:
+   Styles pour le module de connexion avec intégration
+   du composant Numpad autonome
+   
+   STRUCTURE:
+   - Variables et configuration
+   - Styles de base
+   - Container principal
+   - Header
+   - Formulaire
+   - Affichage PIN
+   - Intégration Numpad
+   - Options et footer
+   - États et animations
+   - Responsive et accessibilité
+   
+   DÉPENDANCES:
+   - main.css (styles globaux)
+   - numpad.component.css (via le composant)
+   ======================================== */
+
+/* ========================================
+   VARIABLES ET CONFIGURATION
+   ======================================== */
+:root {
+    --login-primary: #667eea;
+    --login-secondary: #764ba2;
+    --login-gradient: linear-gradient(135deg, var(--login-primary) 0%, var(--login-secondary) 100%);
+    --login-text: #1a1a1a;
+    --login-text-muted: #6c757d;
+    --login-border: #e9ecef;
+    --login-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+}
+
+/* ========================================
+   STYLES DE BASE
+   ======================================== */
+* {
+    box-sizing: border-box;
+}
+
+body.login-page {
+    background: var(--login-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ========================================
+   CONTAINER PRINCIPAL
+   ======================================== */
+.login-container {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 24px;
+    box-shadow: var(--login-shadow);
+    width: 100%;
+    max-width: 460px;
+    padding: 0;
+    overflow: visible;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease forwards;
+    position: relative;
+    z-index: 1;
+}
+
+/* ========================================
+   HEADER
+   ======================================== */
+.login-header {
+    text-align: center;
+    padding: 48px 40px 32px;
+    background: rgba(102, 126, 234, 0.03);
+    border-bottom: 1px solid rgba(102, 126, 234, 0.08);
+}
+
+.logo {
+    font-size: 72px;
+    margin-bottom: 16px;
+    display: inline-block;
+    animation: logoEntry 0.8s ease 0.2s both;
+}
+
+.login-header h1 {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--login-text);
+    margin: 0 0 8px;
+    letter-spacing: -0.5px;
+}
+
+.subtitle {
+    font-size: 16px;
+    color: var(--login-text-muted);
+    margin: 0;
+}
+
+/* ========================================
+   FORMULAIRE
+   ======================================== */
+.login-form {
+    padding: 40px;
+}
+
+.form-section {
+    margin-bottom: 32px;
+    position: relative;
+}
+
+/* Réserver l'espace pour le dropdown */
+.form-section:has(#userDropdown) {
+    min-height: 80px;
+}
+
+.form-label {
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--login-text);
+    margin-bottom: 12px;
+}
+
+/* ========================================
+   DROPDOWN UTILISATEUR
+   ======================================== */
+#userDropdown {
+    width: 100%;
+    position: relative;
+    min-height: 48px;
+}
+
+#userDropdown .dropdown-list {
+    position: relative;
+    z-index: 10;
+}
+
+/* ========================================
+   AFFICHAGE PIN
+   ======================================== */
+.pin-display {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.pin-dot {
+    width: 64px;
+    height: 72px;
+    background: white;
+    border: 2px solid var(--login-border);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: bold;
+    color: var(--login-primary);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.pin-dot.filled {
+    background: var(--login-gradient);
+    color: white;
+    border-color: transparent;
+    transform: scale(1.05);
+    box-shadow: 
+        0 8px 24px rgba(102, 126, 234, 0.3),
+        inset 0 -2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.pin-dot.filled::before {
+    content: '•';
+}
+
+/* ========================================
+   SECTION NUMPAD
+   ======================================== */
+.numpad-section {
+    margin: 32px -8px;
+}
+
+/* ========================================
+   ADAPTATIONS THEME LOGIN POUR NUMPAD
+   ======================================== */
+/* Adapter le numpad pour qu'il s'intègre dans le formulaire */
+.numpad-overlay.theme-login {
+    position: static !important;
+    background: transparent !important;
+}
+
+.numpad-container.theme-login {
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+/* Masquer les éléments non nécessaires pour le login */
+.theme-login .numpad-header,
+.theme-login .numpad-display,
+.theme-login .numpad-footer {
+    display: none !important;
+}
+
+/* Adapter les couleurs au thème login */
+.theme-login .numpad-btn {
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(10px);
+}
+
+.theme-login .numpad-btn:hover {
+    background: rgba(102, 126, 234, 0.08) !important;
+}
+
+.theme-login .numpad-clear {
+    background: rgba(255, 243, 205, 0.8) !important;
+}
+
+.theme-login .numpad-backspace {
+    background: rgba(255, 218, 218, 0.8) !important;
+}
+
+
+/* ========================================
+   OPTIONS
+   ======================================== */
+.login-options {
+    margin: 32px 0 0;
+    padding-top: 24px;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-container input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    cursor: pointer;
+    accent-color: var(--login-primary);
+}
+
+.checkbox-label {
+    font-size: 14px;
+    color: var(--login-text-muted);
+}
+
+/* ========================================
+   FOOTER
+   ======================================== */
+.login-footer {
+    padding: 0 40px 40px;
+}
+
+.info-box {
+    background: #e7f3ff;
+    border: 1px solid #b3d9ff;
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-size: 14px;
+    color: #0066cc;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.info-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+/* ========================================
+   ÉTATS ET FEEDBACK
+   ======================================== */
+.login-container.shake {
+    animation: shake 0.5s ease;
+}
+
+.login-container.success {
+    animation: pulse 0.5s ease;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes logoEntry {
+    from {
+        opacity: 0;
+        transform: scale(0.5) rotate(-180deg);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) rotate(0);
+    }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+    20%, 40%, 60%, 80% { transform: translateX(10px); }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 480px) {
+    .login-container {
+        margin: 0;
+    }
+    
+    .login-header {
+        padding: 36px 24px 24px;
+    }
+    
+    .login-form {
+        padding: 24px;
+    }
+    
+    .logo {
+        font-size: 56px;
+    }
+    
+    .login-header h1 {
+        font-size: 28px;
+    }
+    
+    .pin-dot {
+        width: 52px;
+        height: 60px;
+        font-size: 28px;
+    }
+    
+    /* Adaptation numpad mobile */
+    .numpad-container.theme-login .numpad-btn {
+        height: 52px;
+        font-size: 20px;
+    }
+    
+    .numpad-container.theme-login .numpad-grid {
+        gap: 8px;
+    }
+}
+
+/* ========================================
+   DARK MODE
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+    body.login-page {
+        background: linear-gradient(135deg, #4a5bc0 0%, #5a3a82 100%);
+    }
+}
+
+/* ========================================
+   ACCESSIBILITÉ - REDUCED MOTION
+   ======================================== */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ========================================
+   LOADER SIMPLE
+   ======================================== */
+.login-loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.login-loading-content {
+    background: white;
+    padding: 32px;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.login-spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid var(--login-border);
+    border-top-color: var(--login-primary);
+    border-radius: 50%;
+    margin: 0 auto 16px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ========================================
+   NOTIFICATIONS
+   ======================================== */
+.login-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 16px 24px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+    z-index: 10000;
+}
+
+.login-notification.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.login-notification.success {
+    background: #28a745;
+}
+
+.login-notification.error {
+    background: #dc3545;
+}
+
+.login-notification.warning {
+    background: #ffc107;
+    color: #212529;
+}
+
+.login-notification.info {
+    background: #17a2b8;
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [05/08/2025] - Intégration Numpad autonome
+   Solution: Thème login pour adapter le composant
+   Impact: Suppression du numpad custom
+   
+   NOTES POUR REPRISES FUTURES:
+   - Le numpad utilise son propre CSS via loadStyles()
+   - Les styles theme-login adaptent le composant
+   - Ne pas dupliquer les styles du composant
+   ======================================== */

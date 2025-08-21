@@ -1,0 +1,512 @@
+/* ========================================
+   ANALYSIS-PROGRESS.WIDGET.CSS - Styles du widget de progression
+   Chemin: /widgets/analysis-progress/analysis-progress.widget.css
+   
+   DESCRIPTION:
+   Styles modernes avec effet glassmorphism pour le widget de progression.
+   Gère l'empilement, les animations et les différents états.
+   
+   STRUCTURE:
+   1. VARIABLES
+   2. CONTAINER PRINCIPAL
+   3. GLASSMORPHISM
+   4. HEADER
+   5. BARRE DE PROGRESSION
+   6. ÉTAPES
+   7. ÉTATS (success, error)
+   8. ANIMATIONS
+   9. RESPONSIVE
+   
+   VERSION: 1.0.0
+   ======================================== */
+
+/* ========================================
+   SECTION 1 : VARIABLES
+   ======================================== */
+
+:root {
+    --progress-bg: rgba(255, 255, 255, 0.95);
+    --progress-glass-bg: rgba(255, 255, 255, 0.1);
+    --progress-glass-border: rgba(255, 255, 255, 0.2);
+    --progress-blur: 20px;
+    
+    --progress-primary: #667eea;
+    --progress-success: #48bb78;
+    --progress-error: #f56565;
+    
+    --progress-text: #2d3748;
+    --progress-text-light: #718096;
+    
+    --progress-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    --progress-width: min(90%, 600px);
+}
+
+/* ========================================
+   SECTION 2 : CONTAINER PRINCIPAL
+   ======================================== */
+
+.analysis-progress-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    width: var(--progress-width);
+    z-index: 10000;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+
+.analysis-progress-container.visible {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* ========================================
+   SECTION 3 : GLASSMORPHISM
+   ======================================== */
+
+.analysis-progress-wrapper {
+    background: var(--progress-glass-bg);
+    backdrop-filter: blur(var(--progress-blur));
+    -webkit-backdrop-filter: blur(var(--progress-blur));
+    border: 1px solid var(--progress-glass-border);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: var(--progress-shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Effet de brillance */
+.analysis-progress-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transition: left 0.5s;
+}
+
+.analysis-progress-container.visible .analysis-progress-wrapper::before {
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* Theme solid (sans glass) */
+.theme-solid .analysis-progress-wrapper {
+    background: var(--progress-bg);
+    backdrop-filter: none;
+    border: 1px solid #e2e8f0;
+}
+
+/* ========================================
+   SECTION 4 : HEADER
+   ======================================== */
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.progress-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--progress-text);
+}
+
+.progress-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Spinner animé */
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(102, 126, 234, 0.2);
+    border-top-color: var(--progress-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Checkmark pour succès */
+.checkmark {
+    color: var(--progress-success);
+    font-size: 24px;
+    animation: checkIn 0.3s ease;
+}
+
+@keyframes checkIn {
+    0% { transform: scale(0) rotate(-45deg); }
+    50% { transform: scale(1.2) rotate(10deg); }
+    100% { transform: scale(1) rotate(0); }
+}
+
+/* Icône erreur */
+.error-icon {
+    color: var(--progress-error);
+    font-size: 20px;
+    animation: shake 0.5s;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Bouton fermer */
+.progress-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: var(--progress-text-light);
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+    opacity: 0.6;
+}
+
+.progress-close:hover {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.05);
+}
+
+/* ========================================
+   SECTION 5 : BARRE DE PROGRESSION
+   ======================================== */
+
+.progress-subtitle {
+    font-size: 13px;
+    color: var(--progress-text-light);
+    margin-bottom: 12px;
+}
+
+.progress-message {
+    font-size: 14px;
+    color: var(--progress-text);
+    margin-bottom: 16px;
+    min-height: 20px;
+    transition: color 0.3s;
+}
+
+.progress-message.error {
+    color: var(--progress-error);
+    font-weight: 500;
+}
+
+.progress-bar-container {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 8px;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 100px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 100px;
+    width: 0%;
+    transition: width 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Effet de brillance sur la barre */
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    animation: progressShimmer 1.5s infinite;
+}
+
+@keyframes progressShimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Glow effect */
+.progress-glow {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    width: 30px;
+    height: 20px;
+    background: radial-gradient(
+        ellipse at center,
+        rgba(102, 126, 234, 0.5),
+        transparent
+    );
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.progress-bar.almost-done .progress-glow {
+    opacity: 1;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: translateY(-50%) scale(1); }
+    50% { transform: translateY(-50%) scale(1.5); }
+}
+
+.progress-percent {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--progress-primary);
+    min-width: 45px;
+    text-align: right;
+}
+
+/* ========================================
+   SECTION 6 : ÉTAPES
+   ======================================== */
+
+.progress-steps {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.progress-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--progress-text-light);
+    opacity: 0.5;
+    transition: all 0.3s;
+}
+
+.progress-step.active {
+    opacity: 1;
+    color: var(--progress-primary);
+}
+
+.progress-step.completed {
+    opacity: 1;
+    color: var(--progress-success);
+}
+
+.step-number {
+    width: 24px;
+    height: 24px;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    background: white;
+    transition: all 0.3s;
+}
+
+.progress-step.active .step-number {
+    background: var(--progress-primary);
+    color: white;
+    border-color: var(--progress-primary);
+}
+
+.progress-step.completed .step-number {
+    background: var(--progress-success);
+    color: white;
+    border-color: var(--progress-success);
+}
+
+.progress-step.completed .step-number::after {
+    content: '✓';
+    font-size: 14px;
+}
+
+.progress-step.completed .step-number::before {
+    display: none;
+}
+
+.step-label {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ========================================
+   SECTION 7 : ÉTATS
+   ======================================== */
+
+/* État succès */
+.analysis-progress-container.success .progress-fill {
+    background: linear-gradient(90deg, #48bb78, #38a169);
+}
+
+.analysis-progress-container.success .progress-percent {
+    color: var(--progress-success);
+}
+
+.analysis-progress-container.success .analysis-progress-wrapper {
+    border-color: rgba(72, 187, 120, 0.3);
+    background: rgba(240, 255, 244, 0.95);
+}
+
+/* État erreur */
+.analysis-progress-container.error .progress-fill {
+    background: linear-gradient(90deg, #f56565, #e53e3e);
+}
+
+.analysis-progress-container.error .progress-percent {
+    color: var(--progress-error);
+}
+
+.analysis-progress-container.error .analysis-progress-wrapper {
+    border-color: rgba(245, 101, 101, 0.3);
+    background: rgba(255, 245, 245, 0.95);
+}
+
+/* ========================================
+   SECTION 8 : ANIMATIONS
+   ======================================== */
+
+/* Animation d'entrée */
+@keyframes slideDown {
+    from {
+        transform: translateX(-50%) translateY(-100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Animation de sortie */
+@keyframes slideUp {
+    from {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(-50%) translateY(-100px);
+        opacity: 0;
+    }
+}
+
+/* ========================================
+   SECTION 9 : RESPONSIVE
+   ======================================== */
+
+/* Tablette */
+@media (max-width: 768px) {
+    :root {
+        --progress-width: 95%;
+    }
+    
+    .analysis-progress-wrapper {
+        padding: 20px;
+        border-radius: 16px;
+    }
+    
+    .progress-steps {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    
+    .step-label {
+        display: none;
+    }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+    .analysis-progress-container {
+        top: 10px;
+    }
+    
+    .analysis-progress-wrapper {
+        padding: 16px;
+        border-radius: 12px;
+    }
+    
+    .progress-title {
+        font-size: 14px;
+    }
+    
+    .progress-message {
+        font-size: 13px;
+    }
+    
+    .progress-bar {
+        height: 6px;
+    }
+    
+    .progress-steps {
+        display: none;
+    }
+}
+
+/* Mode sombre (optionnel) */
+@media (prefers-color-scheme: dark) {
+    .theme-glass .analysis-progress-wrapper {
+        background: rgba(0, 0, 0, 0.5);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .theme-glass .progress-title,
+    .theme-glass .progress-message {
+        color: white;
+    }
+    
+    .theme-glass .progress-bar {
+        background: rgba(255, 255, 255, 0.1);
+    }
+}

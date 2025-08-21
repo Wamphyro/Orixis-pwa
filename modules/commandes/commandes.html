@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Commandes</title>
+    <link rel="stylesheet" href="../../src/css/main.css">
+</head>
+<body>
+    <!-- ========================================
+         LOADER GLOBAL
+         ======================================== -->
+    <div class="page-loading" id="pageLoader">
+        <div class="loader"></div>
+    </div>
+    
+    <!-- ========================================
+         MESSAGES ET NOTIFICATIONS
+         ======================================== -->
+    <div id="messagesContainer" style="position: fixed; top: 10px; right: 10px; z-index: 1000; max-width: 400px;"></div>
+    
+    <!-- ========================================
+         CONTAINERS POUR LES WIDGETS
+         Minimaliste : les widgets génèrent leur contenu
+         ======================================== -->
+    
+    <!-- Container pour les stats cards -->
+    <div class="stats-container" style="margin: 100px 20px 20px 20px;"></div>
+    
+    <!-- Container pour les filtres -->
+    <div class="filters-container" style="margin: 20px;"></div>
+    
+    <!-- Container pour le tableau -->
+    <div class="table-container" style="margin: 20px;"></div>
+    
+    <!-- ========================================
+         SCRIPT PRINCIPAL
+         Un seul import : l'orchestrateur
+         ======================================== -->
+    <script type="module">
+        // Import de l'orchestrateur qui gère TOUT
+        import orchestrator from './commandes.orchestrator.js';
+        
+        // Lancement de l'application
+        window.addEventListener('load', async () => {
+            console.log('🎯 Initialisation de l\'application Commandes...');
+            await orchestrator.init();
+        });
+        
+        // Export pour debug uniquement (en dev)
+        if (window.location.hostname === 'localhost') {
+            window.orchestrator = orchestrator;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAV Audio - Administration</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SAV Audio">
+    <link rel="manifest" href="../../manifest.json">
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- ========================================
+         CSS - Ordre de chargement optimisé
+         ======================================== -->
+    
+    <!-- 1. Base et layout -->
+    <link rel="stylesheet" href="../../src/css/main.css">
+
+    <!-- 2. CSS utilitaires partagés -->
+    <link rel="stylesheet" href="../../src/components/ui/common/animation.css">
+    <link rel="stylesheet" href="../../src/components/ui/common/form.css">
+    <link rel="stylesheet" href="../../src/components/ui/button/button.css">
+
+    <!-- 3. Composants UI -->
+    <link rel="stylesheet" href="../../src/components/ui/modal/modal.css">
+    <link rel="stylesheet" href="../../src/components/ui/dialog/dialog.css">
+    <link rel="stylesheet" href="../../src/components/ui/notification/notification.css">
+    <link rel="stylesheet" href="../../src/components/ui/datatable/datatable.css">
+    <link rel="stylesheet" href="../../src/components/ui/badge/badge.css">
+    <link rel="stylesheet" href="../../src/components/ui/app-header/app-header.css">
+
+    <!-- 4. CSS spécifique au module admin -->
+    <link rel="stylesheet" href="./admin.css">
+</head>
+<body>
+    <!-- Container pour le composant AppHeader -->
+    <!-- AppHeader sera injecté ici par JavaScript -->
+    
+    <div class="container">
+        <!-- Navigation par onglets -->
+        <div class="admin-tabs">
+            <button class="tab-button active" data-tab="groupes">
+                👥 Groupes
+            </button>
+            <button class="tab-button" data-tab="utilisateurs">
+                👤 Utilisateurs
+            </button>
+            <button class="tab-button" data-tab="pages">
+                📄 Pages & Permissions
+            </button>
+        </div>
+
+        <!-- Contenu des onglets -->
+        <div class="tab-content">
+            <!-- ONGLET GROUPES -->
+            <div id="tab-groupes" class="tab-pane active">
+                <div class="tab-header">
+                    <h2>Gestion des Groupes</h2>
+                    <button class="btn btn-primary btn-pill" onclick="ouvrirModalGroupe()">
+                        ➕ Nouveau groupe
+                    </button>
+                </div>
+                
+                <div class="groupes-container">
+                    <!-- Liste des groupes générée dynamiquement -->
+                </div>
+            </div>
+
+            <!-- ONGLET UTILISATEURS -->
+            <div id="tab-utilisateurs" class="tab-pane">
+                <div class="tab-header">
+                    <h2>Gestion des Utilisateurs</h2>
+                    <div class="tab-actions">
+                        <input type="text" 
+                               id="searchUsers" 
+                               class="search-input" 
+                               placeholder="🔍 Rechercher un utilisateur...">
+                        <button class="btn btn-primary btn-pill" onclick="ouvrirModalUtilisateur()">
+                            ➕ Nouvel utilisateur
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="users-table-container">
+                    <!-- DataTable des utilisateurs -->
+                </div>
+            </div>
+
+            <!-- ONGLET PAGES -->
+            <div id="tab-pages" class="tab-pane">
+                <div class="tab-header">
+                    <h2>Gestion des Pages & Permissions</h2>
+                    <button class="btn btn-primary btn-pill" onclick="ouvrirModalPage()">
+                        ➕ Nouvelle page
+                    </button>
+                </div>
+                
+                <div class="pages-container">
+                    <!-- Liste des pages et permissions -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL GROUPE -->
+    <div id="modalGroupe" class="modal" style="display: none;">
+        <div class="modal-content modal-medium">
+            <div class="modal-header">
+                <h2 id="modalGroupeTitre">Nouveau Groupe</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <form id="formGroupe">
+                    <div class="form-group">
+                        <label>Nom du groupe *</label>
+                        <input type="text" 
+                               id="groupeNom" 
+                               class="form-control" 
+                               placeholder="Ex: Techniciens SAV"
+                               required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="groupeDescription" 
+                                  class="form-control" 
+                                  rows="3"
+                                  placeholder="Description du groupe..."></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Icône</label>
+                            <select id="groupeIcon" class="form-control">
+                                <option value="👥">👥 Groupe</option>
+                                <option value="🔧">🔧 Techniciens</option>
+                                <option value="📊">📊 Managers</option>
+                                <option value="👑">👑 Admins</option>
+                                <option value="🏪">🏪 Magasin</option>
+                                <option value="⭐">⭐ VIP</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Couleur</label>
+                            <input type="color" 
+                                   id="groupeCouleur" 
+                                   class="form-control color-picker"
+                                   value="#667eea">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Permissions</label>
+                        <div id="groupePermissions" class="permissions-matrix">
+                            <!-- Matrice de permissions générée dynamiquement -->
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn btn-ghost btn-pill" onclick="fermerModalGroupe()">
+                    Annuler
+                </button>
+                <button class="btn btn-primary btn-pill" onclick="sauvegarderGroupe()">
+                    💾 Enregistrer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL UTILISATEUR -->
+    <div id="modalUtilisateur" class="modal" style="display: none;">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2 id="modalUtilisateurTitre">Nouvel Utilisateur</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <form id="formUtilisateur">
+                    <!-- Informations personnelles -->
+                    <div class="form-section">
+                        <h3>👤 Informations personnelles</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Prénom *</label>
+                                <input type="text" 
+                                       id="userPrenom" 
+                                       class="form-control" 
+                                       required>
+                            </div>
+                            <div class="form-group">
+                                <label>Nom *</label>
+                                <input type="text" 
+                                       id="userNom" 
+                                       class="form-control" 
+                                       required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Code PIN *</label>
+                                <input type="text" 
+                                       id="userPin" 
+                                       class="form-control" 
+                                       pattern="[0-9]{4}"
+                                       maxlength="4"
+                                       placeholder="4 chiffres"
+                                       required>
+                            </div>
+                            <div class="form-group">
+                                <label>Rôle</label>
+                                <select id="userRole" class="form-control">
+                                    <option value="technicien">Technicien</option>
+                                    <option value="responsable">Responsable</option>
+                                    <option value="admin">Administrateur</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Groupes -->
+                    <div class="form-section">
+                        <h3>👥 Groupes</h3>
+                        <div id="userGroupes" class="multi-select-container">
+                            <!-- Multi-select des groupes -->
+                        </div>
+                    </div>
+                    
+                    <!-- Magasins autorisés -->
+                    <div class="form-section">
+                        <h3>🏪 Magasins autorisés</h3>
+                        <div id="userMagasins" class="magasins-matrix">
+                            <!-- Matrice des magasins -->
+                        </div>
+                    </div>
+                    
+                    <!-- Permissions directes -->
+                    <div class="form-section">
+                        <h3>🔐 Permissions directes (override)</h3>
+                        <p class="form-help">Ces permissions s'ajoutent ou remplacent celles des groupes</p>
+                        <div id="userPermissionsDirectes" class="permissions-matrix">
+                            <!-- Matrice de permissions -->
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn btn-ghost btn-pill" onclick="fermerModalUtilisateur()">
+                    Annuler
+                </button>
+                <button class="btn btn-primary btn-pill" onclick="sauvegarderUtilisateur()">
+                    💾 Enregistrer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PAGE -->
+    <div id="modalPage" class="modal" style="display: none;">
+        <div class="modal-content modal-medium">
+            <div class="modal-header">
+                <h2>Nouvelle Page</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <form id="formPage">
+                    <div class="form-group">
+                        <label>Identifiant technique *</label>
+                        <input type="text" 
+                               id="pageId" 
+                               class="form-control" 
+                               pattern="[a-z0-9-]+"
+                               placeholder="ex: commandes"
+                               required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Nom d'affichage *</label>
+                        <input type="text" 
+                               id="pageNom" 
+                               class="form-control" 
+                               placeholder="ex: Gestion des Commandes"
+                               required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="pageDescription" 
+                                  class="form-control" 
+                                  rows="2"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Icône</label>
+                        <input type="text" 
+                               id="pageIcon" 
+                               class="form-control" 
+                               placeholder="ex: 📦"
+                               maxlength="2">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Actions disponibles</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="actionView" checked> Voir
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="actionCreate"> Créer
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="actionEdit"> Modifier
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="actionDelete"> Supprimer
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="actionExport"> Exporter
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn btn-ghost btn-pill" onclick="fermerModalPage()">
+                    Annuler
+                </button>
+                <button class="btn btn-primary btn-pill" onclick="sauvegarderPage()">
+                    💾 Enregistrer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container pour les dialogs custom -->
+    <div id="dialog-container" class="dialog-container"></div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Orixis - © 2025</p>
+    </div>
+
+    <!-- JavaScript local au module -->
+    <script type="module" src="./admin.main.js"></script>
+</body>
+</html>

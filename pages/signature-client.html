@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signature Client - SAV Audio</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SAV Audio">
+    <link rel="manifest" href="../manifest.json">
+    <link rel="apple-touch-icon" href="../assets/images/icon-192.png">
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- CSS CORRIGÉ -->
+<link rel="stylesheet" href="../src/css/main.css">
+<link rel="stylesheet" href="../src/css/shared/ui/button.css">
+<link rel="stylesheet" href="../src/css/shared/ui/form.css">
+<link rel="stylesheet" href="../src/css/signature.css">
+</head>
+<body>
+    <!-- Header uniforme -->
+    <div class="app-header">
+        <div class="app-header-content">
+            <div class="app-header-left">
+                <a href="intervention.html" class="header-back-button">
+                    ← Retour
+                </a>
+            </div>
+            <div class="app-header-center">
+                <h1>✍️ Signature Client</h1>
+                <p>Validation de l'intervention par le client</p>
+            </div>
+            <div class="app-header-right"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="signature-container">
+            <div class="instructions">
+                <h2>👤 Signature du Client</h2>
+                <p>Veuillez faire signer le client pour valider l'intervention</p>
+                <p><strong>Tournez l'appareil en mode paysage pour plus de confort</strong></p>
+            </div>
+            
+            <!-- Résumé de l'intervention -->
+            <div class="info-summary">
+                <h3>📋 Résumé de l'intervention</h3>
+                <div id="intervention-summary">
+                    <!-- Sera rempli dynamiquement -->
+                </div>
+            </div>
+            
+            <!-- Zone de signature -->
+            <div class="signature-wrapper">
+                <canvas id="signatureCanvas"></canvas>
+            </div>
+            
+            <div class="signature-actions">
+                <button type="button" class="btn-clear" id="clearBtn">
+                    🗑️ Effacer
+                </button>
+                <button type="button" class="btn-validate" id="validateBtn" disabled>
+                    Valider et continuer →
+                </button>
+            </div>
+            
+            <div class="warning-text">
+                ⚠️ En signant, le client reconnaît que l'intervention a été effectuée selon les termes décrits ci-dessus.
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Orixis - © 2025</p>
+    </div>
+
+    <script>
+        // Canvas de signature
+        let canvas;
+        let ctx;
+        let isDrawing = false;
+        let hasDrawn = false;
+        
+        // Vérification d'authentification
+        function checkAuth() {
+            const auth = localStorage.getItem('sav_auth');
+            if (!auth) return false;
+            
+            const authData = JSON.parse(auth);
+            const now = Date.now();
+            
+            if (now - authData.timestamp > authData.expiry) {
+                localStorage.removeItem('sav_auth');
+                return false;
+            }
+            
+            return authData.authenticated;
+        }
+        
+        // Initialisation
+        window.addEventListener('load', () => {
+            if (!checkAuth()) {
+                window.location.href = '../index.html';
+                return;
+            }
+            
+            // Vérifier qu'une intervention existe
+            const intervention = localStorage.getItem('sav_intervention_data');
+            if (!intervention) {
+                alert('Aucune intervention en cours');
+                window.location.href = 'intervention.html';
+                return;
+            }
+            
+            displayInterventionSummary(JSON.parse(intervention));
+            initializeSignature();
+        });
+        
+        // Afficher le résumé de l'intervention
+        function displayInterventionSummary(intervention) {
+            const summary = document.getElementById('intervention-summary');
+            
+            const rows = [
+                { label: 'Client', value: intervention.nom || 'Non spécifié' },
+                { label: 'Date', value: formatDate(intervention.date) },
+                { label: 'Appareil', value: `${intervention.type_appareil || ''} - ${intervention.marque || ''}` },
+                { label: 'Problème(s)', value: intervention.problemes?.join(', ') || 'Non spécifié' },
+                { label: 'Action(s)', value: intervention.actions?.join(', ') || 'Non spécifié' },
+                { label: 'Résultat', value: getResultatLabel(intervention.resultat) }
+            ];
+            
+            summary.innerHTML = rows.map(row => `
+                <div class="info-row">
+                    <span class="info-label">${row.label}:</span>
+                    <span class="info-value">${row.value}</span>
+                </div>
+            `).join('');
+        }
+        
+        // Formater la date
+        function formatDate(dateStr) {
+            if (!dateStr) return 'Non spécifiée';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('fr-FR');
+        }
+        
+        // Obtenir le libellé du résultat
+        function getResultatLabel(resultat) {
+            const resultats = {
+                'Résolu': '✅ Problème résolu',
+                'Partiel': '⚠️ Amélioration partielle',
+                'SAV': '❌ Sans effet - Escalade SAV',
+                'OK': '🔧 Contrôle OK'
+            };
+            return resultats[resultat] || resultat || 'Non spécifié';
+        }
+        
+        // Initialiser la signature
+        function initializeSignature() {
+            canvas = document.getElementById('signatureCanvas');
+            ctx = canvas.getContext('2d');
+            
+            // Définir la taille du canvas
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            // Configuration du style
+            ctx.strokeStyle = '#000033';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            // Événements souris
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseout', stopDrawing);
+            
+            // Événements tactiles
+            canvas.addEventListener('touchstart', handleTouch);
+            canvas.addEventListener('touchmove', handleTouch);
+            canvas.addEventListener('touchend', stopDrawing);
+            
+            // Bouton effacer
+            document.getElementById('clearBtn').addEventListener('click', clearSignature);
+            
+            // Bouton valider
+            document.getElementById('validateBtn').addEventListener('click', validateSignature);
+        }
+        
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            
+            // Reconfigurer le style après redimensionnement
+            ctx.strokeStyle = '#000033';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+        }
+        
+        function startDrawing(e) {
+            isDrawing = true;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+        
+        function draw(e) {
+            if (!isDrawing) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            
+            hasDrawn = true;
+            document.getElementById('validateBtn').disabled = false;
+        }
+        
+        function stopDrawing() {
+            isDrawing = false;
+        }
+        
+        function handleTouch(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent(e.type === 'touchstart' ? 'mousedown' : 
+                                            e.type === 'touchmove' ? 'mousemove' : 'mouseup', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            canvas.dispatchEvent(mouseEvent);
+        }
+        
+        function clearSignature() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            hasDrawn = false;
+            document.getElementById('validateBtn').disabled = true;
+        }
+        
+        function validateSignature() {
+            if (!hasDrawn) {
+                alert('Veuillez signer avant de valider');
+                return;
+            }
+            
+            try {
+                // Sauvegarder la signature du client
+                const signatureData = canvas.toDataURL();
+                localStorage.setItem('sav_client_signature', signatureData);
+                
+                // Rediriger vers la signature intervenant
+                window.location.href = 'signature-intervenant.html';
+                
+            } catch (error) {
+                console.error('Erreur lors de la sauvegarde:', error);
+                alert('Erreur lors de la sauvegarde de la signature');
+            }
+        }
+    </script>
+</body>
+</html>

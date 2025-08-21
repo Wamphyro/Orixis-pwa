@@ -1,0 +1,233 @@
+/* ========================================
+   SIGNATURE-MODAL.CSS - Styles du modal de signature
+   Chemin: src/components/ui/signature-modal/signature-modal.css
+   
+   DESCRIPTION:
+   Styles pour le modal de signature électronique
+   Totalement autonome, préfixé .signature-modal-*
+   ======================================== */
+
+/* Container du modal */
+.signature-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10000;
+}
+
+.signature-modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Overlay */
+.signature-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+/* Content */
+.signature-modal-content {
+    position: relative;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Header */
+.signature-modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #e5e7eb;
+    position: relative;
+}
+
+.signature-modal-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.signature-modal-subtitle {
+    margin: 8px 0 0 0;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.signature-modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: none;
+    font-size: 24px;
+    color: #6b7280;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.signature-modal-close:hover {
+    background: #f3f4f6;
+    color: #1f2937;
+}
+
+/* Body */
+.signature-modal-body {
+    padding: 20px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* Canvas wrapper */
+.signature-canvas-wrapper {
+    position: relative;
+    background: #f9fafb;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.signature-canvas {
+    display: block;
+    width: 100%;
+    height: 300px;
+    cursor: crosshair;
+    touch-action: none;
+    background: white;
+}
+
+.signature-placeholder {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #d1d5db;
+    font-size: 24px;
+    font-style: italic;
+    pointer-events: none;
+    user-select: none;
+}
+
+/* Info */
+.signature-info {
+    margin-top: 12px;
+    text-align: center;
+}
+
+.signature-timestamp {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+/* Footer */
+.signature-modal-footer {
+    padding: 20px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.signature-actions-left,
+.signature-actions-right {
+    display: flex;
+    gap: 10px;
+}
+
+/* Buttons - Structure uniquement, pas de style visuel */
+.signature-btn {
+    /* Retirer tous les styles visuels */
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    /* L'orchestrateur appliquera padding, border, colors, etc. */
+}
+
+.signature-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Classes pour identification uniquement */
+.signature-btn-clear {}
+.signature-btn-cancel {}
+.signature-btn-confirm {}
+
+/* Animations */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.signature-canvas.shake {
+    animation: shake 0.6s;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .signature-modal-content {
+        width: 100%;
+        height: 100%;
+        max-height: 100%;
+        border-radius: 0;
+    }
+    
+    .signature-canvas {
+        height: 250px;
+    }
+    
+    .signature-modal-footer {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .signature-actions-left,
+    .signature-actions-right {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .signature-modal-content {
+        background: #1f2937;
+        color: #e5e7eb;
+    }
+    
+    .signature-modal-header,
+    .signature-modal-footer {
+        border-color: #374151;
+    }
+    
+    .signature-modal-title {
+        color: #f3f4f6;
+    }
+    
+    .signature-canvas-wrapper {
+        background: #111827;
+        border-color: #374151;
+    }
+    
+    .signature-canvas {
+        background: #1f2937;
+    }
+}

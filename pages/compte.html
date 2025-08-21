@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Compte - SAV Audio</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SAV Audio">
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- CSS CORRIGÉ -->
+<link rel="stylesheet" href="../src/css/main.css">
+<link rel="stylesheet" href="../src/css/shared/ui/button.css">
+<link rel="stylesheet" href="../src/css/shared/ui/form.css">
+<link rel="stylesheet" href="../src/css/shared/ui/badge.css">
+<link rel="stylesheet" href="../src/css/compte.css">
+</head>
+<body>
+    <!-- Header uniforme -->
+    <div class="app-header">
+        <div class="app-header-content">
+            <div class="app-header-left">
+                <a href="home.html" class="header-back-button">
+                    ← Retour
+                </a>
+            </div>
+            <div class="app-header-center">
+                <h1>🔧 Mon Compte</h1>
+                <p>Gestion des informations personnelles</p>
+            </div>
+            <div class="app-header-right"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Section informations personnelles -->
+        <section id="infosPersonnellesSection" class="compte-section">
+            <!-- Le composant sera inséré ici -->
+        </section>
+
+        <!-- Section magasins -->
+        <section id="magasinsAutorisesSection" class="compte-section">
+            <!-- Le composant sera inséré ici -->
+        </section>
+
+        <!-- Section admin uniquement -->
+        <section id="adminSection" class="compte-section" style="display: none;">
+            <!-- Le composant sera inséré ici -->
+        </section>
+
+        <!-- Message de chargement -->
+        <div id="loadingMessage" class="loading-message">
+            <div class="spinner"></div>
+            <p>Chargement des informations...</p>
+        </div>
+    </div>
+
+    <!-- Modal changement de code PIN -->
+    <div id="pinModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🔐 Changer le code PIN</h2>
+                <button class="modal-close" onclick="closePinModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <form id="pinChangeForm" onsubmit="handlePinChange(event)">
+                    <input type="hidden" id="targetUserId">
+                    
+                    <div class="form-group" id="oldPinGroup">
+                        <label>Code actuel (4 chiffres)</label>
+                        <input type="password" id="oldPin" pattern="[0-9]{4}" maxlength="4" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Nouveau code (4 chiffres)</label>
+                        <input type="password" id="newPin" pattern="[0-9]{4}" maxlength="4" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Confirmer le nouveau code</label>
+                        <input type="password" id="confirmPin" pattern="[0-9]{4}" maxlength="4" required>
+                    </div>
+                    
+                    <div class="error-message" id="pinError"></div>
+                    <div class="success-message" id="pinSuccess"></div>
+                    
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary" onclick="closePinModal()">Annuler</button>
+                        <button type="submit" class="btn-primary">Valider</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initFirebase, chargerTousLesUtilisateurs, getUtilisateurDetails } from '../src/js/services/firebase-auth.js';
+        import { CompteService } from '../src/js/services/compte.service.js';
+        import { InfosPersonnellesComponent } from '../src/js/components/infos-personnelles.component.js';
+        import { MagasinsAutorisesComponent } from '../src/js/components/magasins-autorises.component.js';
+        import { GestionUtilisateursComponent } from '../src/js/components/gestion-utilisateurs.component.js';
+        
+        let currentUser = null;
+        let isAdmin = false;
+        let currentAuth = null;
+        
+        // Vérification auth
+        function checkAuth() {
+            const auth = localStorage.getItem('sav_auth');
+            if (!auth) return false;
+            
+            const authData = JSON.parse(auth);
+            const now = Date.now();
+            
+            if (now - authData.timestamp > authData.expiry) {
+                localStorage.removeItem('sav_auth');
+                return false;
+            }
+            
+            currentAuth = authData;
+            return authData.authenticated;
+        }
+        
+        // Initialisation
+        window.addEventListener('load', async () => {
+            if (!checkAuth()) {
+                window.location.href = '../index.html';
+                return;
+            }
+            
+            try {
+                await initFirebase();
+                await loadUserData();
+            } catch (error) {
+                console.error('Erreur initialisation:', error);
+                showError('Erreur de chargement des données');
+            }
+        });
+        
+        // Charger les données utilisateur
+        async function loadUserData() {
+            const permissions = JSON.parse(localStorage.getItem('sav_user_permissions') || '{}');
+            
+            // Déterminer l'utilisateur actuel
+            if (currentAuth.collaborateur && currentAuth.collaborateur.id) {
+                currentUser = await getUtilisateurDetails(currentAuth.collaborateur.id);
+            }
+            
+            // Si pas de currentUser, utiliser les données de l'auth
+            if (!currentUser && currentAuth.collaborateur) {
+                currentUser = {
+                    id: currentAuth.collaborateur.id,
+                    nom: currentAuth.collaborateur.nom,
+                    prenom: currentAuth.collaborateur.prenom,
+                    role: currentAuth.collaborateur.role || 'technicien',
+                    autorisations: permissions.autorisations || {}
+                };
+            }
+            
+            // Vérifier si admin
+            isAdmin = currentUser?.role === 'admin' || 
+                     currentUser?.role === 'Administrateur' ||
+                     permissions.role === 'admin' ||
+                     permissions.role === 'Administrateur';
+            
+            // Afficher les composants
+            await displayComponents();
+            
+            document.getElementById('loadingMessage').style.display = 'none';
+        }
+        
+        // Afficher tous les composants
+        async function displayComponents() {
+            // Composant Informations personnelles
+            document.getElementById('infosPersonnellesSection').innerHTML = 
+                InfosPersonnellesComponent.render(currentUser, currentAuth);
+            
+            // Composant Magasins autorisés
+            document.getElementById('magasinsAutorisesSection').innerHTML = 
+                MagasinsAutorisesComponent.render(currentUser, currentAuth);
+            
+            // Composant Gestion des utilisateurs (admin uniquement)
+            if (isAdmin) {
+                const adminSection = document.getElementById('adminSection');
+                adminSection.style.display = 'block';
+                
+                // IMPORTANT: Attendre le render asynchrone
+                const gestionHtml = await GestionUtilisateursComponent.render();
+                
+                adminSection.innerHTML = `
+                    <div class="compte-section-container">
+                        <div class="compte-section-header">
+                            <h2>👥 Gestion des utilisateurs</h2>
+                        </div>
+                        <div class="compte-section-content">
+                            ${gestionHtml}
+                        </div>
+                    </div>
+                `;
+                
+                // Initialiser APRÈS avoir inséré le HTML
+                await GestionUtilisateursComponent.init();
+            }
+        }
+        
+        // Fonctions globales pour les événements
+        window.changePin = function(userId) {
+            document.getElementById('targetUserId').value = userId;
+            
+            // Si c'est l'utilisateur lui-même ou pas admin, demander l'ancien code
+            if (!isAdmin || userId === currentUser?.id) {
+                document.getElementById('oldPinGroup').style.display = 'block';
+                document.getElementById('oldPin').setAttribute('required', '');
+            } else {
+                document.getElementById('oldPinGroup').style.display = 'none';
+                document.getElementById('oldPin').removeAttribute('required');
+            }
+            
+            document.getElementById('pinModal').classList.add('active');
+        }
+        
+        window.closePinModal = function() {
+            document.getElementById('pinModal').classList.remove('active');
+            document.getElementById('pinChangeForm').reset();
+            document.getElementById('pinError').textContent = '';
+            document.getElementById('pinSuccess').textContent = '';
+        }
+        
+        window.handlePinChange = async function(event) {
+            event.preventDefault();
+            
+            const userId = document.getElementById('targetUserId').value;
+            const oldPin = document.getElementById('oldPin').value;
+            const newPin = document.getElementById('newPin').value;
+            const confirmPin = document.getElementById('confirmPin').value;
+            
+            // Vérifications
+            if (newPin !== confirmPin) {
+                showPinError('Les codes ne correspondent pas');
+                return;
+            }
+            
+            if (!/^\d{4}$/.test(newPin)) {
+                showPinError('Le code doit contenir exactement 4 chiffres');
+                return;
+            }
+            
+            try {
+                // Vérifier l'ancien code si nécessaire
+                if (document.getElementById('oldPinGroup').style.display !== 'none') {
+                    const validOld = await CompteService.verifyPin(userId, oldPin);
+                    if (!validOld) {
+                        showPinError('Code actuel incorrect');
+                        return;
+                    }
+                }
+                
+                // Mettre à jour le code
+                await CompteService.updatePin(userId, newPin);
+                
+                showPinSuccess('Code PIN modifié avec succès');
+                setTimeout(() => closePinModal(), 2000);
+                
+            } catch (error) {
+                showPinError('Erreur lors de la modification du code');
+            }
+        }
+        
+        window.switchMagasin = async function(magasin) {
+            if (confirm(`Voulez-vous basculer vers le magasin ${magasin} ?`)) {
+                // Mettre à jour l'auth
+                currentAuth.magasin = magasin;
+                localStorage.setItem('sav_auth', JSON.stringify(currentAuth));
+                
+                // Recharger la page
+                window.location.reload();
+            }
+        }
+        
+        window.deleteUser = async function(userId) {
+            // Chercher l'utilisateur pour afficher son nom
+            const userCard = document.getElementById(`card-${userId}`);
+            const userName = userCard ? userCard.querySelector('h3').textContent.trim() : userId;
+            
+            if (confirm(`Êtes-vous sûr de vouloir supprimer l'utilisateur ${userName} ?\n\nCette action est irréversible !`)) {
+                try {
+                    await CompteService.deleteUser(userId);
+                    
+                    // Recharger la liste des utilisateurs
+                    if (typeof GestionUtilisateursComponent !== 'undefined') {
+                        await GestionUtilisateursComponent.loadUsers();
+                    }
+                    
+                    alert('Utilisateur supprimé avec succès');
+                } catch (error) {
+                    console.error('Erreur suppression:', error);
+                    alert('Erreur lors de la suppression de l\'utilisateur');
+                }
+            }
+        }
+        
+        window.editUser = function(userId) {
+            console.log('Édition utilisateur:', userId);
+            const card = document.getElementById(`card-${userId}`);
+            if (!card) {
+                console.error('Carte non trouvée');
+                return;
+            }
+            
+            // Sauvegarder les valeurs originales pour pouvoir annuler
+            const originalData = {
+                prenom: card.querySelector('[data-field="prenom"]').textContent.trim(),
+                nom: card.querySelector('[data-field="nom"]').textContent.trim(),
+                role: card.querySelector('.role-select').value,
+                magasins: card.querySelector('.editable-magasins').textContent.trim()
+            };
+            card.dataset.originalData = JSON.stringify(originalData);
+            
+            // Activer l'édition des champs texte
+            const editableFields = card.querySelectorAll('.editable');
+            console.log('Champs éditables trouvés:', editableFields.length);
+            
+            editableFields.forEach(el => {
+                console.log('Activation édition pour:', el.dataset.field);
+                el.contentEditable = 'true';
+                el.classList.add('editing');
+                // Forcer le style pour être sûr
+                el.style.backgroundColor = '#f0f3ff';
+                el.style.border = '2px solid #667eea';
+                el.style.borderRadius = '6px';
+                el.style.padding = '4px 8px';
+                el.style.outline = 'none';
+                el.style.cursor = 'text';
+            });
+            
+            // Remplacer le badge de rôle par un sélecteur
+            const roleBadge = card.querySelector('.role-badge');
+            const roleSelector = card.querySelector('.role-selector');
+            if (roleBadge && roleSelector) {
+                roleBadge.style.display = 'none';
+                roleSelector.style.display = 'block';
+            }
+            
+            // Activer l'édition des magasins
+            const magasinsSpan = card.querySelector('.editable-magasins');
+            if (magasinsSpan) {
+                const currentMagasins = magasinsSpan.textContent;
+                const has9DIJ = currentMagasins.includes('9DIJ');
+                const has9AVA = currentMagasins.includes('9AVA');
+                
+                magasinsSpan.innerHTML = `
+                    <div class="edit-magasins">
+                        <label><input type="checkbox" value="9DIJ" ${has9DIJ ? 'checked' : ''}> 9DIJ</label>
+                        <label><input type="checkbox" value="9AVA" ${has9AVA ? 'checked' : ''}> 9AVA</label>
+                    </div>
+                `;
+            }
+            
+            // Afficher/Masquer les boutons
+            const btnEdit = card.querySelector('.btn-edit');
+            const btnCancel = card.querySelector('.btn-cancel');
+            const btnSave = card.querySelector('.btn-save');
+            const btnDelete = card.querySelector('.btn-delete');
+            
+            if (btnEdit) btnEdit.style.display = 'none';
+            if (btnCancel) btnCancel.style.display = 'block';
+            if (btnSave) btnSave.style.display = 'block';
+            if (btnDelete) btnDelete.style.display = 'none';
+        }
+        
+        window.cancelEdit = async function(userId) {
+            const card = document.getElementById(`card-${userId}`);
+            if (!card) return;
+            
+            // Restaurer les valeurs originales
+            const originalData = JSON.parse(card.dataset.originalData || '{}');
+            
+            // Restaurer les champs texte
+            card.querySelector('[data-field="prenom"]').textContent = originalData.prenom;
+            card.querySelector('[data-field="nom"]').textContent = originalData.nom;
+            
+            // Désactiver l'édition
+            card.querySelectorAll('.editable').forEach(el => {
+                el.contentEditable = false;
+                el.classList.remove('editing');
+            });
+            
+            // Restaurer le badge de rôle
+            const roleBadge = card.querySelector('.role-badge');
+            const roleSelector = card.querySelector('.role-selector');
+            if (roleBadge && roleSelector) {
+                roleSelector.querySelector('.role-select').value = originalData.role;
+                roleBadge.style.display = 'inline-flex';
+                roleSelector.style.display = 'none';
+            }
+            
+            // Restaurer l'affichage des magasins
+            const magasinsSpan = card.querySelector('.editable-magasins');
+            if (magasinsSpan) {
+                magasinsSpan.innerHTML = originalData.magasins;
+            }
+            
+            // Restaurer les boutons
+            card.querySelector('.btn-edit').style.display = 'block';
+            card.querySelector('.btn-cancel').style.display = 'none';
+            card.querySelector('.btn-save').style.display = 'none';
+            if (card.querySelector('.btn-delete')) {
+                card.querySelector('.btn-delete').style.display = 'block';
+            }
+            
+            // Nettoyer les données temporaires
+            delete card.dataset.originalData;
+        }
+        
+        window.saveUser = async function(userId) {
+            const card = document.getElementById(`card-${userId}`);
+            if (!card) return;
+            
+            try {
+                // Récupérer les nouvelles valeurs
+                const newData = {
+                    prenom: card.querySelector('[data-field="prenom"]').textContent.trim(),
+                    nom: card.querySelector('[data-field="nom"]').textContent.trim(),
+                    role: card.querySelector('.role-select').value
+                };
+                
+                // Récupérer les magasins sélectionnés
+                const selectedMagasins = Array.from(card.querySelectorAll('.edit-magasins input:checked'))
+                    .map(cb => cb.value);
+                
+                if (selectedMagasins.length === 0) {
+                    alert('Sélectionnez au moins un magasin');
+                    return;
+                }
+                
+                // Créer l'objet autorisations
+                const autorisations = {};
+                selectedMagasins.forEach(mag => {
+                    autorisations[mag] = { acces: true };
+                });
+                newData.autorisations = autorisations;
+                
+                // Mettre à jour dans Firebase
+                await CompteService.updateUser(userId, newData);
+                
+                // Recharger l'affichage
+                await loadUserData();
+                
+                alert('Utilisateur mis à jour avec succès');
+                
+            } catch (error) {
+                console.error('Erreur mise à jour:', error);
+                alert('Erreur lors de la mise à jour');
+            }
+        }
+        
+        function showError(message) {
+            // TODO: Implémenter notification d'erreur
+            alert(message);
+        }
+        
+        function showPinError(message) {
+            document.getElementById('pinError').textContent = message;
+            document.getElementById('pinSuccess').textContent = '';
+        }
+        
+        function showPinSuccess(message) {
+            document.getElementById('pinSuccess').textContent = message;
+            document.getElementById('pinError').textContent = '';
+        }
+    </script>
+</body>
+</html>

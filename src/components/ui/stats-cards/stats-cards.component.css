@@ -1,0 +1,509 @@
+/* ========================================
+   STATS-CARDS.CSS - Styles pour le composant de cartes statistiques
+   Chemin: src/css/shared/ui/stats-cards.css
+   
+   STRUCTURE:
+   - Anti-FOUC et chargement
+   - Container et layout
+   - Carte de base
+   - Éléments internes (nombre, label, icône)
+   - Variantes de couleurs
+   - États et interactions
+   - Animations
+   - Thèmes
+   - Responsive
+   ======================================== */
+
+/* ========================================
+   ANTI-FOUC ET CHARGEMENT
+   ======================================== */
+
+.stats-cards-wrapper {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    /* 🆕 Anti-FOUC : Masquer initialement */
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* 🆕 Afficher une fois chargé */
+.stats-cards-wrapper.loaded {
+    opacity: 1;
+}
+
+/* 🆕 État de chargement optionnel (skeleton) */
+.stats-cards-wrapper.loading .stat-card {
+    background: linear-gradient(90deg, #f9fafb 25%, #f3f4f6 50%, #f9fafb 75%);
+    background-size: 200% 100%;
+    animation: loading-shimmer 1.5s infinite;
+}
+
+.stats-cards-wrapper.loading .stat-number,
+.stats-cards-wrapper.loading .stat-label,
+.stats-cards-wrapper.loading .stat-icon {
+    background: #e5e7eb;
+    color: transparent;
+    border-radius: 4px;
+}
+
+@keyframes loading-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ========================================
+   CARTE DE BASE
+   ======================================== */
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 10px 20px; /* Réduit de moitié */
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    min-width: 120px; /* Légèrement réduit */
+    flex: 1;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Effet de brillance au survol */
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.stat-card.hoverable:hover::before {
+    left: 100%;
+}
+
+/* États interactifs */
+.stat-card.hoverable:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.stat-card.clickable {
+    cursor: pointer;
+}
+
+.stat-card.clicked {
+    animation: cardClick 0.3s ease;
+}
+
+/* État désactivé */
+.stat-card.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.stat-card.disabled:hover {
+    transform: none;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* État actif/sélectionné */
+.stat-card.active {
+    background: #f0f4ff;
+    border: 2px solid #667eea;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+}
+
+.stat-card.active:hover {
+    transform: translateY(-3px); /* Reste en position haute */
+}
+
+.stat-card.active .stat-number {
+    opacity: 1;
+}
+
+.stat-card.active .stat-icon {
+    transform: scale(1.1);
+}
+
+/* Indicateur de sélection */
+.stat-card.active::after {
+    content: '✓';
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    background: #667eea;
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* ========================================
+   ÉLÉMENTS INTERNES
+   ======================================== */
+
+/* Icône */
+.stat-icon {
+    font-size: 20px; /* Réduit de 32px à 20px */
+    margin-bottom: 5px; /* Réduit de 10px à 5px */
+    opacity: 0.8;
+}
+
+/* Nombre */
+.stat-number {
+    font-size: 24px; /* Réduit de 32px à 24px */
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 2px; /* Réduit de 5px à 2px */
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.1; /* Légèrement réduit */
+    transition: all 0.3s ease;
+}
+
+/* Label principal */
+.stat-label {
+    font-size: 12px; /* Réduit de 14px à 12px */
+    color: #6c757d;
+    font-weight: 500;
+}
+
+/* Sous-label optionnel */
+.stat-sublabel {
+    font-size: 12px;
+    color: #adb5bd;
+    margin-top: 4px;
+}
+
+/* ========================================
+   TENDANCE (TREND)
+   ======================================== */
+
+.stat-trend {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-size: 13px;
+}
+
+.trend-icon {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.trend-value {
+    font-weight: 600;
+}
+
+.trend-label {
+    opacity: 0.8;
+}
+
+/* Couleurs de tendance */
+.trend-success {
+    color: #28a745;
+}
+
+.trend-danger {
+    color: #dc3545;
+}
+
+.trend-neutral {
+    color: #6c757d;
+}
+
+/* ========================================
+   VARIANTES DE COULEURS
+   ======================================== */
+
+/* Primary (défaut) */
+.stat-card-primary .stat-number {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Success */
+.stat-card-success .stat-number {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-card-success .stat-icon {
+    color: #28a745;
+}
+
+/* Warning */
+.stat-card-warning .stat-number {
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-card-warning .stat-icon {
+    color: #ffc107;
+}
+
+/* Danger */
+.stat-card-danger .stat-number {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-card-danger .stat-icon {
+    color: #dc3545;
+}
+
+/* Info */
+.stat-card-info .stat-number {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-card-info .stat-icon {
+    color: #17a2b8;
+}
+
+/* Secondary */
+.stat-card-secondary .stat-number {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-card-secondary .stat-icon {
+    color: #6c757d;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+@keyframes cardClick {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+}
+
+/* 🆕 Animation d'apparition - SEULEMENT quand .loaded */
+.stats-cards-wrapper.loaded .stat-card {
+    animation: fadeInUp 0.5s ease forwards;
+    opacity: 0;
+}
+
+.stats-cards-wrapper.loaded .stat-card:nth-child(1) { animation-delay: 0.1s; }
+.stats-cards-wrapper.loaded .stat-card:nth-child(2) { animation-delay: 0.2s; }
+.stats-cards-wrapper.loaded .stat-card:nth-child(3) { animation-delay: 0.3s; }
+.stats-cards-wrapper.loaded .stat-card:nth-child(4) { animation-delay: 0.4s; }
+.stats-cards-wrapper.loaded .stat-card:nth-child(5) { animation-delay: 0.5s; }
+.stats-cards-wrapper.loaded .stat-card:nth-child(6) { animation-delay: 0.6s; }
+.stats-cards-wrapper.loaded .stat-card:nth-child(7) { animation-delay: 0.7s; }
+.stats-cards-wrapper.loaded .stat-card:nth-child(8) { animation-delay: 0.8s; }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========================================
+   THÈMES
+   ======================================== */
+
+/* Thème sombre */
+.theme-dark .stat-card {
+    background: #2c3e50;
+    color: white;
+}
+
+.theme-dark .stat-number {
+    background: linear-gradient(135deg, #74b9ff 0%, #a29bfe 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.theme-dark .stat-label {
+    color: #bdc3c7;
+}
+
+/* Thème compact */
+.theme-compact .stat-card {
+    padding: 15px 20px;
+    min-width: 120px;
+}
+
+.theme-compact .stat-number {
+    font-size: 24px;
+}
+
+.theme-compact .stat-label {
+    font-size: 13px;
+}
+
+/* Thème minimal */
+.theme-minimal .stat-card {
+    background: transparent;
+    box-shadow: none;
+    border: 2px solid #e9ecef;
+}
+
+.theme-minimal .stat-card:hover {
+    border-color: #667eea;
+    box-shadow: none;
+    transform: none;
+}
+
+/* ========================================
+   LAYOUTS SPÉCIAUX
+   ======================================== */
+
+/* Layout vertical */
+.stats-cards-wrapper.layout-vertical {
+    flex-direction: column;
+}
+
+.stats-cards-wrapper.layout-vertical .stat-card {
+    display: flex;
+    align-items: center;
+    text-align: left;
+    gap: 20px;
+}
+
+.stats-cards-wrapper.layout-vertical .stat-icon {
+    margin-bottom: 0;
+    font-size: 40px;
+}
+
+/* Layout grille */
+.stats-cards-wrapper.layout-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+    .stats-cards-wrapper {
+        gap: 10px; /* Réduit */
+    }
+    
+    .stat-card {
+        min-width: calc(33.333% - 7px); /* 3 par ligne au lieu de 2 */
+        padding: 8px 15px; /* Réduit */
+    }
+    
+    .stat-number {
+        font-size: 20px; /* Réduit */
+    }
+    
+    .stat-label {
+        font-size: 11px; /* Réduit */
+    }
+    
+    .stat-icon {
+        font-size: 18px; /* Réduit */
+    }
+}
+
+@media (max-width: 480px) {
+    .stat-card {
+        min-width: 100%;
+    }
+    
+    .stats-cards-wrapper.layout-vertical .stat-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+}
+
+/* ========================================
+   UTILITAIRES
+   ======================================== */
+
+/* Masquer sur mobile */
+@media (max-width: 768px) {
+    .stat-sublabel,
+    .trend-label {
+        display: none;
+    }
+}
+
+/* 🆕 Désactiver les animations si souhaité */
+.stats-cards-wrapper.no-animation .stat-card {
+    animation: none !important;
+    opacity: 1 !important;
+}
+
+/* Impression */
+@media print {
+    .stat-card {
+        box-shadow: none;
+        border: 1px solid #dee2e6;
+        page-break-inside: avoid;
+    }
+    
+    .stat-card::before {
+        display: none;
+    }
+    
+    .stats-cards-wrapper {
+        opacity: 1 !important;
+    }
+    
+    .stats-cards-wrapper .stat-card {
+        opacity: 1 !important;
+        animation: none !important;
+    }
+}
+
+/* ========================================
+   HISTORIQUE DES DIFFICULTÉS
+   
+   [29/01/2025] - Création initiale
+   - Styles extraits de commandes.css
+   - Ajout de variantes de couleurs
+   - Support des thèmes
+   - Animations optionnelles
+   
+   [30/01/2025] - Correction FOUC
+   - Ajout anti-FOUC avec opacity: 0 initial
+   - Classe .loaded pour déclencher l'affichage
+   - Animations ne se déclenchent qu'avec .loaded
+   - État de chargement skeleton optionnel
+   - Utilitaire .no-animation pour désactiver
+   - Gestion de l'impression améliorée
+   
+   NOTES POUR REPRISES FUTURES:
+   - Les animations peuvent être désactivées avec .no-animation
+   - Les couleurs suivent les variables CSS globales
+   - Le gradient sur le texte nécessite -webkit-background-clip
+   - L'anti-FOUC nécessite la classe .loaded du JS
+   - Le skeleton loading est optionnel (.loading)
+   ======================================== */

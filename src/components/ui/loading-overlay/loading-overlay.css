@@ -1,0 +1,304 @@
+/* ========================================
+   LOADING-OVERLAY.CSS - Styles du composant
+   Chemin: src/components/ui/loading-overlay/loading-overlay.css
+   ======================================== */
+
+/* Overlay de base */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.loading-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.loading-overlay.hidden {
+    display: none;
+}
+
+/* Container centré */
+.loading-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+}
+
+/* Contenu avec glassmorphism */
+.loading-content {
+    text-align: center;
+    padding: 60px 80px;
+    border-radius: 24px;
+    position: relative;
+    overflow: hidden;
+    /* Taille fixe pour éviter les changements */
+    min-width: 400px;
+    min-height: 260px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* Animation d'opacité seulement */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.loading-overlay.visible .loading-content {
+    opacity: 1;
+}
+
+/* Icône animée */
+.loading-icon {
+    font-size: 80px;
+    display: block;
+    margin: 0 auto 24px;
+    animation: loading-spin 2s linear infinite;
+    filter: drop-shadow(0 0 20px currentColor);
+    line-height: 1;
+}
+
+/* Message */
+.loading-message {
+    font-size: 18px;
+    font-weight: 500;
+    margin: 0;
+    opacity: 0.9;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ========================================
+   THÈMES
+   ======================================== */
+
+/* Thème gradient (défaut) */
+.loading-overlay.theme-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.loading-overlay.theme-gradient .loading-content {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+/* Thème sombre */
+.loading-overlay.theme-dark {
+    background: rgba(17, 17, 17, 0.95);
+    backdrop-filter: blur(10px);
+}
+
+.loading-overlay.theme-dark .loading-content {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.8),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+/* Thème clair */
+.loading-overlay.theme-light {
+    background: rgba(255, 255, 255, 0.97);
+    backdrop-filter: blur(10px);
+}
+
+.loading-overlay.theme-light .loading-content {
+    background: rgba(0, 0, 0, 0.02);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    color: #1a1a1a;
+}
+
+.loading-overlay.theme-light .loading-icon {
+    color: #667eea;
+}
+
+/* Thème minimal */
+.loading-overlay.theme-minimal {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.loading-overlay.theme-minimal .loading-content {
+    background: none;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    padding: 40px;
+}
+
+.loading-overlay.theme-minimal .loading-icon {
+    font-size: 64px;
+    color: white;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+}
+
+.loading-overlay.theme-minimal .loading-message {
+    color: white;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+@keyframes loading-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Animation alternative : pulse */
+.loading-icon.pulse {
+    animation: loading-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes loading-pulse {
+    0%, 100% { 
+        transform: scale(1); 
+        opacity: 1; 
+    }
+    50% { 
+        transform: scale(1.1); 
+        opacity: 0.7; 
+    }
+}
+
+/* Animation dots avec largeur fixe */
+.loading-message {
+    font-size: 18px;
+    font-weight: 500;
+    margin: 0;
+    opacity: 0.9;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* Réserver l'espace pour les dots */
+    display: inline-flex;
+    align-items: baseline;
+}
+
+.loading-message::after {
+    content: '...';
+    display: inline-block;
+    width: 24px; /* Largeur fixe */
+    text-align: left;
+    animation: loading-dots 1.5s steps(4, end) infinite;
+}
+
+@keyframes loading-dots {
+    0% { content: '\00a0\00a0\00a0'; } /* 3 espaces non-sécables */
+    25% { content: '.\00a0\00a0'; }
+    50% { content: '..\00a0'; }
+    75% { content: '...'; }
+}
+
+/* ========================================
+   VARIANTES
+   ======================================== */
+
+/* Compact */
+.loading-overlay.compact .loading-content {
+    padding: 40px 56px;
+}
+
+.loading-overlay.compact .loading-icon {
+    font-size: 56px;
+    margin-bottom: 16px;
+}
+
+.loading-overlay.compact .loading-message {
+    font-size: 16px;
+}
+
+/* Large */
+.loading-overlay.large .loading-content {
+    padding: 80px 100px;
+}
+
+.loading-overlay.large .loading-icon {
+    font-size: 96px;
+    margin-bottom: 32px;
+}
+
+.loading-overlay.large .loading-message {
+    font-size: 21px;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 480px) {
+    .loading-content {
+        padding: 48px 40px;
+        min-width: 320px;
+        min-height: 220px;
+    }
+    
+    .loading-icon {
+        font-size: 64px;
+    }
+    
+    .loading-message {
+        font-size: 16px;
+    }
+    
+    .loading-message::after {
+        width: 20px;
+    }
+    
+    .loading-overlay.compact .loading-content {
+        padding: 32px;
+        min-width: 280px;
+        min-height: 180px;
+    }
+    
+    .loading-overlay.compact .loading-icon {
+        font-size: 48px;
+    }
+}
+
+/* ========================================
+   PRÉFÉRENCE SYSTÈME
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    .loading-icon {
+        animation: none;
+    }
+    
+    .loading-message::after {
+        animation: none;
+        content: '...';
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    .loading-overlay.theme-light {
+        background: rgba(17, 17, 17, 0.95);
+    }
+    
+    .loading-overlay.theme-light .loading-content {
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+    }
+}
