@@ -149,131 +149,133 @@ class DecompteOrchestrator {
         // DataGrid
         this.createDataGrid();
         
-        // Ajouter les boutons d'action
-        this.addActionButtons();
-        
         console.log('✅ Widgets créés');
     }
     
-/**
- * Créer le header
- */
-createHeader() {
-    const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
-    
-    this.header = new HeaderWidget({
-        // FOND DÉGRADÉ
-        pageBackground: 'colorful',
-        theme: 'gradient',
+    /**
+     * Créer le header
+     */
+    createHeader() {
+        const auth = JSON.parse(localStorage.getItem('sav_auth') || '{}');
         
-        // PERSONNALISATION DES BOUTONS
-        buttonStyles: {
-            back: {
-                height: '48px',
-                padding: '12px 24px',
-                minWidth: '120px'
-            },
-            action: {
-                height: '48px',
-                width: '44px'
-            },
-            notification: {
-                height: '48px',
-                width: '44px'
-            },
-            userMenu: {
-                height: '48px',
-                padding: '6px 16px 6px 6px',
-                maxWidth: '220px'
-            },
-            indicator: {
-                height: '48px',
-                padding: '10px 16px',
-                minWidth: 'auto'
-            }
-        },
-        
-        // TEXTES
-        title: 'Décomptes Mutuelles',
-        subtitle: '',
-        centerTitle: true,  // Activer le titre centré
-        
-        // LOGO
-        showLogo: true,
-        logoIcon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
-        
-        // NAVIGATION
-        showBack: true,
-        backText: 'Retour',
-        onBack: () => {
-            window.location.href = '/modules/home/home.html';
-        },
-        
-        // RECHERCHE
-        showSearch: true,
-        searchPlaceholder: 'Rechercher décompte, client, NSS...',
-        searchMaxWidth: '1500px',
-        searchHeight: '48px',
-        onSearch: (query) => {
-            this.currentFilters.search = query;
-            this.applyFilters();
-        },
-        
-        // BOUTONS RAPIDES
-        showQuickActions: true,
-        quickActions: [
-            {
-                id: 'new',
-                title: 'Nouveaux décomptes',
-                icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>',
-                onClick: () => this.openCreateModal()
-            },
-            {
-                id: 'export',
-                title: 'Export Excel',
-                icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line></svg>',
-                onClick: () => this.grid?.export('excel')
-            },
-            {
-                id: 'refresh',
-                title: 'Actualiser',
-                icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>',
-                onClick: () => {
-                    // Force le rechargement complet depuis le serveur (équivalent Cmd+Maj+R)
-                    window.location.reload(true);
+        this.header = new HeaderWidget({
+            // FOND DÉGRADÉ
+            pageBackground: 'colorful',
+            theme: 'gradient',
+            
+            // PERSONNALISATION DES BOUTONS
+            buttonStyles: {
+                back: {
+                    height: '48px',
+                    padding: '12px 24px',
+                    minWidth: '120px'
+                },
+                action: {
+                    height: '48px',
+                    width: '44px'
+                },
+                notification: {
+                    height: '48px',
+                    width: '44px'
+                },
+                userMenu: {
+                    height: '48px',
+                    padding: '6px 16px 6px 6px',
+                    maxWidth: '220px'
+                },
+                indicator: {
+                    height: '48px',
+                    padding: '10px 16px',
+                    minWidth: 'auto'
                 }
-            }
-        ],
-        
-        // INDICATEURS
-        showIndicators: true,
-        indicators: [
-            {
-                id: 'status',
-                text: 'Connecté',
-                type: 'success',  // IMPORTANT: doit être 'success' pour le vert
-                animated: true
-            }
-        ],
-        
-        // NOTIFICATIONS
-        showNotifications: true,
-        
-        // BREADCRUMBS
-        showBreadcrumbs: true,
-        breadcrumbs: [
-            { text: 'Accueil', url: '/modules/home/home.html' },
-            { text: 'Gestion', url: '#' },
-            { text: 'Décomptes Mutuelles' }
-        ],
-        
-        // UTILISATEUR
-        showUser: true,
-        showUserDropdown: true,
-        showMagasin: true,
-        showLogout: true
-    });
-}
+            },
+            
+            // TEXTES
+            title: 'Décomptes Mutuelles',
+            subtitle: '',
+            centerTitle: true,
+            
+            // LOGO
+            showLogo: true,
+            logoIcon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
+            
+            // NAVIGATION
+            showBack: true,
+            backText: 'Retour',
+            onBack: () => {
+                window.location.href = '/modules/home/home.html';
+            },
+            
+            // RECHERCHE
+            showSearch: true,
+            searchPlaceholder: 'Rechercher décompte, client, NSS...',
+            searchMaxWidth: '1500px',
+            searchHeight: '48px',
+            onSearch: (query) => {
+                this.currentFilters.search = query;
+                this.applyFilters();
+            },
+            
+            // BOUTONS RAPIDES - AJOUT DU BOUTON RÉINITIALISER
+            showQuickActions: true,
+            quickActions: [
+                {
+                    id: 'new',
+                    title: 'Nouveaux décomptes',
+                    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>',
+                    onClick: () => this.openCreateModal()
+                },
+                {
+                    id: 'export',
+                    title: 'Export Excel',
+                    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line></svg>',
+                    onClick: () => this.grid?.export('excel')
+                },
+                {
+                    id: 'reset',
+                    title: 'Réinitialiser',
+                    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>',
+                    onClick: () => this.resetAllFilters()
+                },
+                {
+                    id: 'refresh',
+                    title: 'Actualiser',
+                    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>',
+                    onClick: () => {
+                        window.location.reload(true);
+                    }
+                }
+            ],
+            
+            // INDICATEURS
+            showIndicators: true,
+            indicators: [
+                {
+                    id: 'status',
+                    text: 'Connecté',
+                    type: 'success',
+                    animated: true
+                }
+            ],
+            
+            // NOTIFICATIONS
+            showNotifications: true,
+            
+            // BREADCRUMBS
+            showBreadcrumbs: true,
+            breadcrumbs: [
+                { text: 'Accueil', url: '/modules/home/home.html' },
+                { text: 'Gestion', url: '#' },
+                { text: 'Décomptes Mutuelles' }
+            ],
+            
+            // UTILISATEUR
+            showUser: true,
+            showUserDropdown: true,
+            showMagasin: true,
+            showLogout: true
+        });
+    }
     
     /**
      * Créer les cartes de statistiques
@@ -313,14 +315,9 @@ createHeader() {
             showWrapper: true,
             wrapperStyle: 'card',
             wrapperTitle: 'Filtres',
-            resetButton: true,
-            resetButtonClass: 'btn btn-glass-orange',
+            resetButton: false,  // PAS DE BOUTON RESET
             filters: [
-                { 
-                    type: 'search', 
-                    key: 'search', 
-                    placeholder: 'Rechercher (client, NSS, n° décompte)...' 
-                },
+                // PAS DE RECHERCHE - SUPPRIMÉ
                 { 
                     type: 'select', 
                     key: 'mutuelle', 
@@ -355,31 +352,14 @@ createHeader() {
                 console.log('Filtres appliqués:', values);
                 
                 this.currentFilters = { 
-                    ...this.currentFilters, 
-                    search: values.search || '',
+                    ...this.currentFilters,
+                    // search est géré par le header
                     mutuelle: values.mutuelle || '',
                     magasin: values.magasin || '',
                     periode: values.periode || 'all',
                     statuts: this.currentFilters.statuts  // Préserver les statuts des cartes
                 };
                 
-                this.applyFilters();
-            },
-            onReset: () => {
-                console.log('Réinitialisation de tous les filtres');
-                // Réinitialiser tout
-                this.currentFilters = {
-                    search: '',
-                    statuts: [],
-                    mutuelle: '',
-                    magasin: '',
-                    periode: 'all'
-                };
-                // Désélectionner toutes les cartes
-                if (this.stats) {
-                    this.stats.deselectAll();
-                }
-                // Réappliquer les filtres (afficher tout)
                 this.applyFilters();
             }
         });
@@ -506,42 +486,7 @@ createHeader() {
             }
         });
     }
-    
-    /**
-     * Ajouter les boutons d'action
-     */
-    addActionButtons() {
-        setTimeout(() => {
-            const actionsZone = document.querySelector('.data-grid-export-buttons');
-            if (actionsZone) {
-                const buttons = [
-                    { 
-                        text: '➕ Nouveaux décomptes', 
-                        class: 'btn btn-glass-blue btn-lg', 
-                        action: () => this.openCreateModal()
-                    },
-                    { 
-                        text: '📄 Export CSV', 
-                        class: 'btn btn-glass-blue btn-lg', 
-                        action: () => this.grid.export('csv')
-                    },
-                    { 
-                        text: '📊 Export Excel', 
-                        class: 'btn btn-glass-blue btn-lg', 
-                        action: () => this.grid.export('excel')
-                    }
-                ];
-                
-                buttons.forEach(btn => {
-                    const button = document.createElement('button');
-                    button.className = btn.class;
-                    button.innerHTML = btn.text;
-                    button.onclick = btn.action;
-                    actionsZone.appendChild(button);
-                });
-            }
-        }, 100);
-    }
+
     
     // ========================================
     // CHARGEMENT DES DONNÉES
@@ -1282,6 +1227,42 @@ createHeader() {
             console.log('✅ Dropdown magasin mis à jour avec', magasins.length, 'options');
         }
     }
+
+    /**
+     * Réinitialiser tous les filtres
+     */
+    resetAllFilters() {
+        console.log('🔄 Réinitialisation de tous les filtres');
+        
+        // Réinitialiser les filtres
+        this.currentFilters = {
+            search: '',
+            statuts: [],
+            mutuelle: '',
+            magasin: '',
+            periode: 'all'
+        };
+        
+        // Désélectionner toutes les cartes stats
+        if (this.stats) {
+            this.stats.deselectAll();
+        }
+        
+        // Réinitialiser les valeurs dans le widget de filtres
+        if (this.filters) {
+            this.filters.reset();
+        }
+        
+        // Réinitialiser la barre de recherche du header
+        if (this.header && this.header.clearSearch) {
+            this.header.clearSearch();
+        }
+        
+        // Appliquer les filtres réinitialisés
+        this.applyFilters();
+        
+        this.showInfo('Filtres réinitialisés');
+    }
     
     // ========================================
     // FORMATTERS
@@ -1389,6 +1370,12 @@ export default orchestrator;
 
 /* ========================================
    HISTORIQUE
+   
+   [09/02/2025] - v2.2.0 OPTIMISATION INTERFACE
+   ✅ Suppression barre recherche dans filtres (doublon)
+   ✅ Déplacement bouton Réinitialiser dans header
+   ✅ Suppression boutons tableau (doublons header)
+   ✅ Interface plus épurée et cohérente
    
    [08/02/2025] - v2.1.0 CORRECTIONS
    ✅ Utilisation de analyserAvecFichier() au lieu d'URL
