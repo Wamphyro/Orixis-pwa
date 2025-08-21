@@ -19,7 +19,7 @@
    10. DESTRUCTION
    
    UTILISATION:
-   import { DataGridWidget } from '/widgets/data-grid/data-grid.widget.js';
+   import { DataGridWidget } from '/Orixis-pwa/widgets/data-grid/data-grid.widget.js';
    const grid = new DataGridWidget({
        container: '.table',
        showWrapper: true,
@@ -190,7 +190,7 @@ export class DataGridWidget {
      */
     loadCSS() {
             // Charger les styles communs (buttons, badges, modal)
-            import('/src/utils/widget-styles-loader.js').then(module => {
+            import('/Orixis-pwa/src/utils/widget-styles-loader.js').then(module => {
                 module.loadWidgetStyles();
             });
             
@@ -202,7 +202,7 @@ export class DataGridWidget {
             const link = document.createElement('link');
             link.id = cssId;
             link.rel = 'stylesheet';
-            link.href = `/widgets/data-grid/data-grid.widget.css?v=${Date.now()}`;
+            link.href = '/Orixis-pwa/widgets/data-grid/data-grid.widget.css?v=${Date.now()}`;
             document.head.appendChild(link);
             
             console.log('✅ CSS DataGridWidget chargé');

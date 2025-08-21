@@ -24,7 +24,7 @@
    13. EXPORT
    
    UTILISATION:
-   import { $, $$, createElement, setHTML } from '/src/utils/ui/dom.utils.js';
+   import { $, $$, createElement, setHTML } from '/Orixis-pwa/src/utils/ui/dom.utils.js';
    
    const element = $('.ma-classe');  // Ne crash pas si absent
    const button = createElement('button', { 

@@ -15,7 +15,7 @@
    VERSION: 2.0.0
    ======================================== */
 
-import { loadWidgetStyles } from '/src/utils/widget-styles-loader.js';
+import { loadWidgetStyles } from '/Orixis-pwa/src/utils/widget-styles-loader.js';
 
 // ========================================
 // REGISTRY DES SERVICES (Injection de dépendances)
@@ -904,7 +904,7 @@ export class FormModalWidget {
             const link = document.createElement('link');
             link.id = cssId;
             link.rel = 'stylesheet';
-            link.href = `/widgets/form-modal/form-modal.widget.css?v=${Date.now()}`;
+            link.href = '/Orixis-pwa/widgets/form-modal/form-modal.widget.css?v=${Date.now()}`;
             document.head.appendChild(link);
         }
     }

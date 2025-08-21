@@ -71,7 +71,7 @@ export class PrintWidget {
             const link = document.createElement('link');
             link.id = cssId;
             link.rel = 'stylesheet';
-            link.href = `/widgets/print/print.widget.css?v=${Date.now()}`;
+            link.href = '/Orixis-pwa/widgets/print/print.widget.css?v=${Date.now()}`;
             document.head.appendChild(link);
         }
     }

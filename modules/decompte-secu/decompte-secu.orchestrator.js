@@ -221,7 +221,7 @@ class DecompteSecuOrchestrator {
             showBack: true,
             backText: 'Retour',
             onBack: () => {
-                window.location.href = '/modules/home/home.html';
+                window.location.href = '/Orixis-pwa/modules/home/home.html';
             },
             
             // RECHERCHE
@@ -289,7 +289,7 @@ class DecompteSecuOrchestrator {
             // BREADCRUMBS
             showBreadcrumbs: true,
             breadcrumbs: [
-                { text: 'Accueil', url: '/modules/home/home.html' },
+                { text: 'Accueil', url: '/Orixis-pwa/modules/home/home.html' },
                 { text: 'Gestion', url: '#' },
                 { text: 'Décomptes Sécu' }
             ],

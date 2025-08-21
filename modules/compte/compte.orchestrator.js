@@ -435,7 +435,7 @@ class CompteOrchestrator {
             // Navigation
             showBack: true,
             backText: 'Retour',
-            onBack: () => window.location.href = '/modules/home/home.html',
+            onBack: () => window.location.href = '/Orixis-pwa/modules/home/home.html',
             
             // Le reste ne change pas...
             showSearch: false,
@@ -480,7 +480,7 @@ class CompteOrchestrator {
             // Breadcrumbs
             showBreadcrumbs: true,
             breadcrumbs: [
-                { text: 'Accueil', url: '/modules/home/home.html' },
+                { text: 'Accueil', url: '/Orixis-pwa/modules/home/home.html' },
                 { text: 'Mon Compte' }
             ]
         });

@@ -17,7 +17,7 @@
    7. DESTRUCTION
    
    UTILISATION:
-   import { PdfUploaderWidget } from '/widgets/pdf-uploader/pdf-uploader.widget.js';
+   import { PdfUploaderWidget } from '/Orixis-pwa/widgets/pdf-uploader/pdf-uploader.widget.js';
    const widget = new PdfUploaderWidget({
        title: 'Nouveau document',
        mode: 'simple',
@@ -45,7 +45,7 @@
    VERSION: 1.0.0
    ======================================== */
 
-import { loadWidgetStyles } from '/src/utils/widget-styles-loader.js';
+import { loadWidgetStyles } from '/Orixis-pwa/src/utils/widget-styles-loader.js';
 
 export class PdfUploaderWidget {    constructor(config = {}) {
         // 1. Charger CSS TOUJOURS en premier
@@ -138,7 +138,7 @@ export class PdfUploaderWidget {    constructor(config = {}) {
         const link = document.createElement('link');
         link.id = cssId;
         link.rel = 'stylesheet';
-        link.href = `/widgets/pdf-uploader/pdf-uploader.widget.css?v=${Date.now()}`;
+        link.href = '/Orixis-pwa/widgets/pdf-uploader/pdf-uploader.widget.css?v=${Date.now()}`;
         document.head.appendChild(link);
     }
     

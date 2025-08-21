@@ -17,7 +17,7 @@
    7. DESTRUCTION
    
    UTILISATION:
-   import { AnalysisProgressWidget } from '/widgets/analysis-progress/analysis-progress.widget.js';
+   import { AnalysisProgressWidget } from '/Orixis-pwa/widgets/analysis-progress/analysis-progress.widget.js';
    const progress = new AnalysisProgressWidget({
        title: 'Analyse en cours',
        steps: ['Upload', 'Analyse IA', 'Sauvegarde']
@@ -129,7 +129,7 @@ export class AnalysisProgressWidget {
             const link = document.createElement('link');
             link.id = cssId;
             link.rel = 'stylesheet';
-            link.href = `/widgets/analysis-progress/analysis-progress.widget.css?v=${Date.now()}`;
+            link.href = '/Orixis-pwa/widgets/analysis-progress/analysis-progress.widget.css?v=${Date.now()}`;
             document.head.appendChild(link);
         }
     }

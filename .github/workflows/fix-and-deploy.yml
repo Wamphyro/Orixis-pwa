@@ -18,21 +18,51 @@ jobs:
       run: |
         echo "🔧 Fixing paths for GitHub Pages..."
         
-        find . -type f \( -name "*.js" -o -name "*.html" -o -name "*.css" \) \
+        # Fix les imports JavaScript
+        find . -type f -name "*.js" \
           -not -path "./.git/*" \
           -not -path "./node_modules/*" \
           -not -path "./functions/*" \
           -exec sed -i \
-            -e 's|"/widgets/|"/Orixis-pwa/widgets/|g' \
-            -e 's|"/src/|"/Orixis-pwa/src/|g' \
-            -e 's|"/modules/|"/Orixis-pwa/modules/|g' \
-            -e 's|"/pages/|"/Orixis-pwa/pages/|g' \
+            -e "s|from '/widgets/|from '/Orixis-pwa/widgets/|g" \
+            -e "s|from '/src/|from '/Orixis-pwa/src/|g" \
+            -e "s|from '/modules/|from '/Orixis-pwa/modules/|g" \
+            -e "s|from \"/widgets/|from \"/Orixis-pwa/widgets/|g" \
+            -e "s|from \"/src/|from \"/Orixis-pwa/src/|g" \
+            -e "s|from \"/modules/|from \"/Orixis-pwa/modules/|g" \
+            -e "s|href = '/|href = '/Orixis-pwa/|g" \
+            -e "s|href = \"/|href = \"/Orixis-pwa/|g" \
             -e "s|'/widgets/|'/Orixis-pwa/widgets/|g" \
             -e "s|'/src/|'/Orixis-pwa/src/|g" \
             -e "s|'/modules/|'/Orixis-pwa/modules/|g" \
-            -e "s|'/pages/|'/Orixis-pwa/pages/|g" {} +
-            
-        echo "✅ Paths fixed!"
+            -e "s|\"/widgets/|\"/Orixis-pwa/widgets/|g" \
+            -e "s|\"/src/|\"/Orixis-pwa/src/|g" \
+            -e "s|\"/modules/|\"/Orixis-pwa/modules/|g" \
+            -e "s|\`/widgets/|\`/Orixis-pwa/widgets/|g" \
+            -e "s|\`/src/|\`/Orixis-pwa/src/|g" \
+            -e "s|\`/modules/|\`/Orixis-pwa/modules/|g" {} +
+        
+        # Fix les fichiers HTML
+        find . -type f -name "*.html" \
+          -not -path "./.git/*" \
+          -not -path "./node_modules/*" \
+          -not -path "./functions/*" \
+          -exec sed -i \
+            -e 's|href="/|href="/Orixis-pwa/|g' \
+            -e 's|src="/|src="/Orixis-pwa/|g' \
+            -e 's|href="./|href="./|g' \
+            -e 's|src="./|src="./|g' {} +
+        
+        # Fix les fichiers CSS
+        find . -type f -name "*.css" \
+          -not -path "./.git/*" \
+          -not -path "./node_modules/*" \
+          -not -path "./functions/*" \
+          -exec sed -i \
+            -e "s|url('/|url('/Orixis-pwa/|g" \
+            -e 's|url("/|url("/Orixis-pwa/|g' {} +
+        
+        echo "✅ All paths fixed!"
     
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3

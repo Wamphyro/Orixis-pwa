@@ -30,8 +30,8 @@
    SECTION 0 : IMPORTS
    ======================================== */
 
-@import url('/src/css/components/modal-base.css');
-@import url('/src/css/components/buttons.css');
+@import url('/Orixis-pwa/src/css/components/modal-base.css');
+@import url('/Orixis-pwa/src/css/components/buttons.css');
 
 /* ========================================
    SECTION 1 : VARIABLES ET THÈMES

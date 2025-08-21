@@ -7,7 +7,7 @@
 // (buttons, badges, modal-base, etc.)
 //
 // UTILISATION:
-// import { loadWidgetStyles } from '/src/utils/widget-styles-loader.js';
+// import { loadWidgetStyles } from '/Orixis-pwa/src/utils/widget-styles-loader.js';
 // loadWidgetStyles(); // Dans le loadCSS() du widget
 // ========================================
 
@@ -18,17 +18,17 @@ export function loadWidgetStyles() {
     const styles = [
         { 
             id: 'buttons-css', 
-            href: '/src/css/components/buttons.css',
+            href: '/Orixis-pwa/src/css/components/buttons.css',
             description: 'Styles des boutons'
         },
         { 
             id: 'badges-css', 
-            href: '/src/css/components/badges.css',
+            href: '/Orixis-pwa/src/css/components/badges.css',
             description: 'Styles des badges'
         },
         { 
             id: 'modal-base-css', 
-            href: '/src/css/components/modal-base.css',
+            href: '/Orixis-pwa/src/css/components/modal-base.css',
             description: 'Styles de base des modals'
         }
     ];

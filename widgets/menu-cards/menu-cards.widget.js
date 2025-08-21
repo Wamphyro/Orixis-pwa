@@ -368,7 +368,7 @@ export class MenuCardsWidget {
         const link = document.createElement('link');
         link.id = 'menu-cards-widget-styles';
         link.rel = 'stylesheet';
-        link.href = '/widgets/menu-cards/menu-cards.widget.css';
+        link.href = '/Orixis-pwa/widgets/menu-cards/menu-cards.widget.css';
         document.head.appendChild(link);
     }
     
