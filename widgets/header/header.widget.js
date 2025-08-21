@@ -56,7 +56,7 @@
    VERSION: 2.0.0
    ======================================== */
 
-import { loadWidgetStyles } from '/src/utils/widget-styles-loader.js';
+import { loadWidgetStyles } from '../../src/utils/widget-styles-loader.js';
 
 // ========================================
 // CLASSE PRINCIPALE
