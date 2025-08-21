@@ -56,7 +56,7 @@
    VERSION: 2.0.0
    ======================================== */
 
-import { loadWidgetStyles } from '../../src/utils/widget-styles-loader.js';
+import { loadWidgetStyles } from '/src/utils/widget-styles-loader.js';
 
 // ========================================
 // CLASSE PRINCIPALE
@@ -244,7 +244,7 @@ export class HeaderWidget {
         const link = document.createElement('link');
         link.id = cssId;
         link.rel = 'stylesheet';
-        link.href = './header.widget.css?v=' + Date.now();
+        link.href = `/widgets/header/header.widget.css?v=${Date.now()}`;
         document.head.appendChild(link);
     }
     

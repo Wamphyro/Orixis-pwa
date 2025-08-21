@@ -18,17 +18,17 @@ export function loadWidgetStyles() {
     const styles = [
         { 
             id: 'buttons-css', 
-            href: '../css/components/buttons.css',  // ✅ Chemin relatif !
+            href: '/src/css/components/buttons.css',
             description: 'Styles des boutons'
         },
         { 
             id: 'badges-css', 
-            href: '../css/components/badges.css',   // ✅ Chemin relatif !
+            href: '/src/css/components/badges.css',
             description: 'Styles des badges'
         },
         { 
             id: 'modal-base-css', 
-            href: '../css/components/modal-base.css', // ✅ Chemin relatif !
+            href: '/src/css/components/modal-base.css',
             description: 'Styles de base des modals'
         }
     ];
