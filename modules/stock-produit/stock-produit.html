@@ -8,6 +8,27 @@
     
     <style>
         /* ─────────────────────────────────── */
+        /*      OVERRIDE HEADER NON-FIXE        */
+        /* ─────────────────────────────────── */
+        
+        /* Forcer le header à être non-fixe */
+        .header-widget {
+            position: relative !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        /* Désactiver le padding du body ajouté par le header */
+        body.has-header {
+            padding-top: 0 !important;
+        }
+        
+        body.has-header.with-breadcrumbs {
+            padding-top: 0 !important;
+        }
+        
+        /* ─────────────────────────────────── */
         /*           LOADER DE PAGE             */
         /* ─────────────────────────────────── */
         
@@ -59,7 +80,7 @@
         /* ─────────────────────────────────── */
         
         .stats-container { 
-            margin: 100px 20px 20px 20px; 
+            margin: 20px;  /* Retour aux marges normales */
         }
         
         .filters-container { 
@@ -98,10 +119,6 @@
             .filters-container,
             .table-container {
                 margin: 10px;
-            }
-            
-            .stats-container {
-                margin-top: 90px;
             }
         }
     </style>

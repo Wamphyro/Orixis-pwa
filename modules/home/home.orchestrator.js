@@ -207,176 +207,176 @@ class HomeOrchestrator {
         }
     }
     
-/**
- * Crée et configure le widget Header
- */
-createHeader() {
-    console.log('🎨 Création du header...');
-    
-    this.header = new HeaderWidget({
-        // ========================================
-        // CONTAINER ET POSITION - TRÈS IMPORTANT
-        // ========================================
-        container: 'body',        // Injecter dans body (par défaut)
-        position: 'prepend',      // ✅ CORRIGÉ : 'prepend' au lieu de 'relative'
-        sticky: true,             // Header fixe en haut
+    /**
+     * Crée et configure le widget Header
+     */
+    createHeader() {
+        console.log('🎨 Création du header...');
         
-        // ========================================
-        // APPARENCE
-        // ========================================
-        pageBackground: 'colorful',
-        theme: 'gradient',
-        
-        // ========================================
-        // TITRE
-        // ========================================
-        title: 'Dashboard',
-        subtitle: 'Système de Gestion ORIXIS',
-        centerTitle: true,
-        
-        // ========================================
-        // LOGO
-        // ========================================
-        showLogo: true,
-        logoIcon: `
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                <rect x="3" y="3" width="7" height="7"></rect>
-                <rect x="14" y="3" width="7" height="7"></rect>
-                <rect x="14" y="14" width="7" height="7"></rect>
-                <rect x="3" y="14" width="7" height="7"></rect>
-            </svg>
-        `,
-        
-        // ========================================
-        // NAVIGATION
-        // ========================================
-        showBack: false,
-        
-        // ========================================
-        // RECHERCHE
-        // ========================================
-        showSearch: true,
-        searchPlaceholder: 'Rechercher un module, une fonctionnalité...',
-        searchMaxWidth: '600px',
-        searchHeight: '48px',
-        onSearch: (query) => this.handleSearch(query),
-        
-        // ========================================
-        // PERSONNALISATION DES BOUTONS
-        // ========================================
-        buttonStyles: {
-            back: {
-                height: '48px',
-                padding: '12px 24px',
-                minWidth: '120px'
+        this.header = new HeaderWidget({
+            // ========================================
+            // CONTAINER ET POSITION - TRÈS IMPORTANT
+            // ========================================
+            container: 'body',        // Injecter dans body (par défaut)
+            position: 'prepend',      // ✅ CORRIGÉ : 'prepend' au lieu de 'relative'
+            sticky: true,             // Header fixe en haut
+            
+            // ========================================
+            // APPARENCE
+            // ========================================
+            pageBackground: 'colorful',
+            theme: 'gradient',
+            
+            // ========================================
+            // TITRE
+            // ========================================
+            title: 'Dashboard',
+            subtitle: 'Système de Gestion ORIXIS',
+            centerTitle: true,
+            
+            // ========================================
+            // LOGO
+            // ========================================
+            showLogo: true,
+            logoIcon: `
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+            `,
+            
+            // ========================================
+            // NAVIGATION
+            // ========================================
+            showBack: false,
+            
+            // ========================================
+            // RECHERCHE
+            // ========================================
+            showSearch: true,
+            searchPlaceholder: 'Rechercher un module, une fonctionnalité...',
+            searchMaxWidth: '600px',
+            searchHeight: '48px',
+            onSearch: (query) => this.handleSearch(query),
+            
+            // ========================================
+            // PERSONNALISATION DES BOUTONS
+            // ========================================
+            buttonStyles: {
+                back: {
+                    height: '48px',
+                    padding: '12px 24px',
+                    minWidth: '120px'
+                },
+                action: {
+                    height: '48px',
+                    width: '44px'
+                },
+                notification: {
+                    height: '48px',
+                    width: '44px'
+                },
+                userMenu: {
+                    height: '48px',
+                    padding: '6px 16px 6px 6px',
+                    maxWidth: '240px'
+                },
+                indicator: {
+                    height: '48px',
+                    padding: '10px 16px',
+                    minWidth: 'auto'
+                }
             },
-            action: {
-                height: '48px',
-                width: '44px'
-            },
-            notification: {
-                height: '48px',
-                width: '44px'
-            },
-            userMenu: {
-                height: '48px',
-                padding: '6px 16px 6px 6px',
-                maxWidth: '240px'
-            },
-            indicator: {
-                height: '48px',
-                padding: '10px 16px',
-                minWidth: 'auto'
-            }
-        },
+            
+            // ========================================
+            // BOUTONS D'ACTIONS RAPIDES
+            // ========================================
+            showQuickActions: true,
+            quickActions: [
+                {
+                    id: 'notifications',
+                    title: 'Notifications',
+                    icon: `
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                    `,
+                    badge: this.getNotificationCount(),
+                    onClick: () => this.showNotifications()
+                },
+                {
+                    id: 'shortcuts',
+                    title: 'Raccourcis',
+                    icon: `
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                    `,
+                    onClick: () => this.showShortcuts()
+                },
+                {
+                    id: 'stats',
+                    title: 'Statistiques',
+                    icon: `
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <line x1="18" y1="20" x2="18" y2="10"></line>
+                            <line x1="12" y1="20" x2="12" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="14"></line>
+                        </svg>
+                    `,
+                    onClick: () => this.showStats()
+                },
+                {
+                    id: 'refresh',
+                    title: 'Actualiser',
+                    icon: `
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <polyline points="1 20 1 14 7 14"></polyline>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                    `,
+                    onClick: () => this.refresh()
+                }
+            ],
+            
+            // ========================================
+            // INDICATEURS D'ÉTAT
+            // ========================================
+            showIndicators: true,
+            indicators: this.getIndicators(),
+            
+            // ========================================
+            // NOTIFICATIONS
+            // ========================================
+            showNotifications: true,
+            notificationCount: this.getNotificationCount(),
+            
+            // ========================================
+            // UTILISATEUR - MENU PAR DÉFAUT DU WIDGET
+            // ========================================
+            showUser: true,
+            showUserDropdown: true,
+            // PAS de userMenuItems - le widget utilisera son menu par défaut
+            
+            // ========================================
+            // MAGASIN
+            // ========================================
+            showMagasin: true,
+            
+            // ========================================
+            // DÉCONNEXION
+            // ========================================
+            showLogout: true,
+            onLogout: () => this.handleLogout()
+        });
         
-        // ========================================
-        // BOUTONS D'ACTIONS RAPIDES
-        // ========================================
-        showQuickActions: true,
-        quickActions: [
-            {
-                id: 'notifications',
-                title: 'Notifications',
-                icon: `
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                    </svg>
-                `,
-                badge: this.getNotificationCount(),
-                onClick: () => this.showNotifications()
-            },
-            {
-                id: 'shortcuts',
-                title: 'Raccourcis',
-                icon: `
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                `,
-                onClick: () => this.showShortcuts()
-            },
-            {
-                id: 'stats',
-                title: 'Statistiques',
-                icon: `
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                        <line x1="18" y1="20" x2="18" y2="10"></line>
-                        <line x1="12" y1="20" x2="12" y2="4"></line>
-                        <line x1="6" y1="20" x2="6" y2="14"></line>
-                    </svg>
-                `,
-                onClick: () => this.showStats()
-            },
-            {
-                id: 'refresh',
-                title: 'Actualiser',
-                icon: `
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                        <polyline points="23 4 23 10 17 10"></polyline>
-                        <polyline points="1 20 1 14 7 14"></polyline>
-                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-                    </svg>
-                `,
-                onClick: () => this.refresh()
-            }
-        ],
-        
-        // ========================================
-        // INDICATEURS D'ÉTAT
-        // ========================================
-        showIndicators: true,
-        indicators: this.getIndicators(),
-        
-        // ========================================
-        // NOTIFICATIONS
-        // ========================================
-        showNotifications: true,
-        notificationCount: this.getNotificationCount(),
-        
-        // ========================================
-        // UTILISATEUR - MENU PAR DÉFAUT DU WIDGET
-        // ========================================
-        showUser: true,
-        showUserDropdown: true,
-        // PAS de userMenuItems - le widget utilisera son menu par défaut
-        
-        // ========================================
-        // MAGASIN
-        // ========================================
-        showMagasin: true,
-        
-        // ========================================
-        // DÉCONNEXION
-        // ========================================
-        showLogout: true,
-        onLogout: () => this.handleLogout()
-    });
-    
-    console.log('✅ Header créé avec succès');
-}
+        console.log('✅ Header créé avec succès');
+    }
     
     /**
      * Crée et configure le widget MenuCards
@@ -522,6 +522,18 @@ createHeader() {
                 order: 4
             },
             {
+                id: 'reglement',  // ← SINGULIER
+                icon: '💰',
+                title: 'Règlements',  // Le titre peut rester au pluriel pour l'affichage
+                description: 'Gérer les encaissements et règlements clients',
+                href: '../reglement/reglement.html',  // ← TOUT AU SINGULIER
+                permissions: ['reglement.view'],  // ← SINGULIER
+                category: 'finance',
+                badge: { text: 'Nouveau', type: 'success' },
+                stats: this.getReglementsStats(),
+                order: 5
+            },
+            {
                 id: 'operations-bancaires',
                 icon: '🏦',
                 title: 'Opérations Bancaires',
@@ -530,7 +542,7 @@ createHeader() {
                 permissions: ['banque.view'],
                 category: 'finance',
                 badge: { text: 'Nouveau', type: 'success' },
-                order: 5
+                order: 6
             },
             {
                 id: 'stock-produit',
@@ -546,7 +558,7 @@ createHeader() {
                     label: 'Articles',
                     trend: 'stable'
                 },
-                order: 6
+                order: 7
             },
             {
                 id: 'factures-fournisseurs',
@@ -557,7 +569,7 @@ createHeader() {
                 permissions: ['factures.view'],
                 category: 'finance',
                 stats: this.getFacturesStats(),
-                order: 6
+                order: 8
             },
             {
                 id: 'subventions',
@@ -567,7 +579,7 @@ createHeader() {
                 href: '../subventions/ui/subventions.html',
                 permissions: ['subventions.view'],
                 category: 'operations',
-                order: 7
+                order: 9
             },
             {
                 id: 'test-widgets',
@@ -578,7 +590,7 @@ createHeader() {
                 permissions: ['clients.view'],
                 category: 'dev',
                 badge: { text: 'Dev', type: 'warning' },
-                order: 8,
+                order: 10,
                 disabled: !this.isDevMode()
             },
             {
@@ -589,7 +601,7 @@ createHeader() {
                 href: '../gmail/gmail.html',
                 permissions: ['gmail.view'],
                 category: 'communication',
-                order: 9,
+                order: 11,
                 comingSoon: true
             },
             {
@@ -599,7 +611,7 @@ createHeader() {
                 description: 'Consulter les procédures et protocoles',
                 href: '../guide/guide.html',
                 category: 'support',
-                order: 10
+                order: 12
             },
             {
                 id: 'contacts',
@@ -608,7 +620,7 @@ createHeader() {
                 description: 'Numéros et contacts importants',
                 href: '/module/contacts/contacts.html',
                 category: 'support',
-                order: 11
+                order: 13
             },
             {
                 id: 'compte',
@@ -617,7 +629,7 @@ createHeader() {
                 description: 'Gérer mon profil, mes groupes et permissions',
                 href: '../compte/compte.html',
                 category: 'administration',
-                order: 12
+                order: 14
             },
             {
                 id: 'admin',
@@ -629,7 +641,7 @@ createHeader() {
                 requiresAdmin: true,
                 category: 'administration',
                 badge: { text: 'Admin', type: 'danger' },
-                order: 13
+                order: 15
             }
         ];
     }
@@ -683,7 +695,6 @@ createHeader() {
         
         return indicators;
     }
-
 
     // ========================================
     // GESTIONNAIRES D'ÉVÉNEMENTS
@@ -979,6 +990,18 @@ createHeader() {
     }
     
     /**
+     * Obtient les stats des règlements
+     * @returns {Object} Statistiques
+     */
+    getReglementsStats() {
+        return {
+            value: '0',
+            label: 'Aujourd\'hui',
+            trend: 'stable'
+        };
+    }
+    
+    /**
      * Obtient le nombre de notifications
      * @returns {number} Nombre de notifications
      */
@@ -1133,6 +1156,11 @@ export default orchestrator;
 
 /* ========================================
    HISTORIQUE DES MODIFICATIONS
+   
+   [10/02/2025] - Version 2.1
+   - Ajout du module Règlements
+   - Ajout de la méthode getReglementsStats()
+   - Intégration dans la catégorie Finance
    
    [10/02/2025] - Version 2.0
    - Refactorisation complète du code

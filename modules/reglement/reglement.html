@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Règlements - ORIXIS</title>
+    <link rel="stylesheet" href="../../src/css/main.css">
+    
+    <style>
+        /* ─────────────────────────────────── */
+        /*      OVERRIDE HEADER NON-FIXE        */
+        /* ─────────────────────────────────── */
+        
+        /* Forcer le header à être non-fixe */
+        .header-widget {
+            position: relative !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        /* Désactiver le padding du body ajouté par le header */
+        body.has-header {
+            padding-top: 0 !important;
+        }
+        
+        body.has-header.with-breadcrumbs {
+            padding-top: 0 !important;
+        }
+        
+        /* ─────────────────────────────────── */
+        /*           LOADER DE PAGE             */
+        /* ─────────────────────────────────── */
+        
+        .page-loading {
+            position: fixed;
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .page-loading.hidden { 
+            display: none; 
+        }
+        
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px; 
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* ─────────────────────────────────── */
+        /*           CONTAINERS                 */
+        /* ─────────────────────────────────── */
+        
+        .stats-container { 
+            margin: 20px;  /* Retour aux marges normales */
+        }
+        
+        .filters-container { 
+            margin: 20px; 
+        }
+        
+        .table-container { 
+            margin: 20px; 
+        }
+        
+        /* ─────────────────────────────────── */
+        /*        STYLES IMPORT MODAL           */
+        /* ─────────────────────────────────── */
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal.show {
+            display: block;
+        }
+        
+        .modal-dialog {
+            position: relative;
+            width: auto;
+            margin: 50px auto;
+            max-width: 800px;
+        }
+        
+        .modal-content {
+            position: relative;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e5e5e5;
+            border-radius: 12px 12px 0 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .modal-title {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .btn-close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+        
+        .modal-body {
+            padding: 30px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #e5e5e5;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            border-radius: 0 0 12px 12px;
+        }
+        
+        /* ─────────────────────────────────── */
+        /*        BOUTONS                       */
+        /* ─────────────────────────────────── */
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        /* ─────────────────────────────────── */
+        /*           RESPONSIVE                 */
+        /* ─────────────────────────────────── */
+        
+        @media (max-width: 768px) {
+            .stats-container,
+            .filters-container,
+            .table-container {
+                margin: 10px;
+            }
+            
+            .modal-dialog {
+                margin: 20px;
+                max-width: calc(100% - 40px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ──────── LOADER ──────── -->
+    <div class="page-loading" id="pageLoader">
+        <div class="loader"></div>
+    </div>
+    
+    <!-- ──────── MESSAGES TOAST ──────── -->
+    <div id="messagesContainer" 
+         style="position: fixed; 
+                top: 10px; 
+                right: 10px; 
+                z-index: 10000; 
+                max-width: 400px;">
+    </div>
+    
+    <!-- ──────── WIDGETS CONTAINERS ──────── -->
+    <div class="stats-container"></div>
+    <div class="filters-container"></div>
+    <div class="table-container"></div>
+    
+    <!-- ──────── MODAL IMPORT CSV ──────── -->
+    <div id="modalImportCSV" class="modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">💰 Import de règlements CSV</h5>
+                    <button type="button" class="btn-close" onclick="window.modalManager.close('modalImportCSV')">×</button>
+                </div>
+                <div class="modal-body">
+                    <!-- Le contenu sera injecté dynamiquement -->
+                </div>
+                <div class="modal-footer">
+                    <!-- Les boutons seront injectés dynamiquement -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ──────── SCRIPTS ──────── -->
+    <script type="module">
+        // Import orchestrateur principal
+        import orchestrator from './reglement.orchestrator.js';
+        
+        // Gestion basique des modales si modalManager n'existe pas
+        if (!window.modalManager) {
+            window.modalManager = {
+                open: (id) => {
+                    const modal = document.getElementById(id);
+                    if (modal) {
+                        modal.style.display = 'block';
+                        modal.classList.add('show');
+                        document.body.classList.add('modal-open');
+                    }
+                },
+                close: (id) => {
+                    const modal = document.getElementById(id);
+                    if (modal) {
+                        modal.style.display = 'none';
+                        modal.classList.remove('show');
+                        document.body.classList.remove('modal-open');
+                    }
+                }
+            };
+        }
+        
+        // Initialisation après chargement DOM
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('💰 Initialisation Module Règlements ORIXIS...');
+            
+            try {
+                await orchestrator.init();
+                console.log('✅ Module Règlements chargé avec succès');
+                
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement:', error);
+                
+                // Masquer le loader
+                const loader = document.getElementById('pageLoader');
+                if (loader) {
+                    loader.classList.add('hidden');
+                }
+                
+                // Message d'erreur utilisateur
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'alert alert-danger';
+                errorDiv.style.cssText = 'margin: 20px; padding: 20px;';
+                errorDiv.innerHTML = `
+                    <h4>⚠️ Erreur de chargement</h4>
+                    <p>Impossible de charger le module Règlements.</p>
+                    <p><strong>Erreur :</strong> ${error.message}</p>
+                    <p style="margin-top: 15px;">
+                        <button onclick="location.reload()" class="btn btn-primary">🔄 Rafraîchir</button>
+                        <button onclick="window.location.href='../home/home.html'" class="btn btn-secondary" style="margin-left: 10px;">🏠 Retour au Dashboard</button>
+                    </p>
+                `;
+                document.body.appendChild(errorDiv);
+            }
+        });
+        
+        // Export global pour debug
+        window.reglementOrchestrator = orchestrator;
+        console.log('🔧 Mode développement : orchestrator disponible dans window.reglementOrchestrator');
+    </script>
+</body>
+</html>

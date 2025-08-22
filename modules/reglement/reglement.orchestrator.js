@@ -1,9 +1,9 @@
 // ╔════════════════════════════════════════════════════════════════════════════╗
-// ║                      STOCK-PRODUIT.ORCHESTRATOR.JS                         ║
+// ║                        REGLEMENT.ORCHESTRATOR.JS                           ║
 // ║                    Orchestrateur Principal + Utilitaires                   ║
 // ╠════════════════════════════════════════════════════════════════════════════╣
-// ║ Module: Gestion Stock Audioprothèse                                        ║
-// ║ Version: 1.0.0                                                             ║
+// ║ Module: Gestion Règlements                                                 ║
+// ║ Version: 2.0.0                                                             ║
 // ║ Date: 03/02/2025                                                           ║
 // ╚════════════════════════════════════════════════════════════════════════════╝
 
@@ -21,37 +21,50 @@ import { DetailViewerWidget } from '../../widgets/detail-viewer/detail-viewer.wi
 import toast from '../../widgets/toast/toast.widget.js';
 
 // ─── SERVICES ───
-import uploadService from './stock-produit.upload.service.js';
-import firestoreService from './stock-produit.firestore.service.js';
+import uploadService from './reglement.upload.service.js';
+import firestoreService from './reglement.firestore.service.js';
 import { initFirebase } from '../../src/services/firebase.service.js';
 
 // ─── MODULES ───
-import { initImportStock, ouvrirModalImport } from './stock-produit.create.js';
+import { initImportReglement, ouvrirModalImport } from './reglement.create.js';
 
 // ╔════════════════════════════════════════╗
 // ║     SECTION 2: CONFIGURATION           ║
 // ╚════════════════════════════════════════╝
 
 const CONFIG = {
-    // ─── STATUTS WORKFLOW (13 statuts) ───
-    STATUTS: {
-        STO: { label: 'En stock', icon: '📦', color: 'success' },
-        PVT: { label: 'Pré-Vente', icon: '🏷️', color: 'info' },
-        VTE: { label: 'Vendu', icon: '✅', color: 'primary' },
-        RSV: { label: 'Réservé', icon: '🔒', color: 'warning' },
-        PRT: { label: 'En prêt', icon: '📤', color: 'purple' },
-        RETA: { label: 'Retour pour avoir', icon: '↩️', color: 'orange' },
-        EXT: { label: 'Externe', icon: '🌐', color: 'secondary' },
-        RETE: { label: 'Retour pour échange', icon: '🔄', color: 'pink' },
-        AVR: { label: 'Avoir reçu', icon: '✔️', color: 'teal' },
-        ECHR: { label: 'Échange reçu', icon: '🔁', color: 'cyan' },
-        SDEP: { label: 'Sortie dépôt', icon: '📦', color: 'brown' },
-        CMD: { label: 'Commande', icon: '🛒', color: 'deep-purple' },
-        RETF: { label: 'Retour fournisseur', icon: '❌', color: 'danger' }
-    },
-    
-    // ─── MARQUES AUDIOPROTHÈSE ───
-    MARQUES: ['PHONAK', 'UNITRON', 'OTICON', 'SIGNIA', 'STARKEY', 'WIDEX', 'RESOUND']
+    // ─── TYPES DE RÈGLEMENT (CODES TRANSFORMÉS) ───
+    TYPES_REGLEMENT: {
+        // Paiements classiques
+        CB: { label: 'CB', icon: '💳', color: 'success' },
+        CHEQUE: { label: 'Chèque', icon: '📝', color: 'primary' },
+        ESPECES: { label: 'Espèces', icon: '💵', color: 'warning' },
+        VIREMENT: { label: 'Virement', icon: '🏦', color: 'info' },
+        
+        // Bons et avoirs
+        BON_ACHAT: { label: 'Bon d\'achat', icon: '🎁', color: 'purple' },
+        
+        // Tiers payeurs SÉPARÉS
+        TP_SECU: { label: 'TP Sécu', icon: '🏥', color: 'danger' },
+        TP_MUTUELLE: { label: 'TP Mutuelle', icon: '🏥', color: 'secondary' },
+        
+        // Financements
+        COFIDIS: { label: 'Cofidis', icon: '💰', color: 'info' },
+        FRANFINANCE: { label: 'Franfinance', icon: '💰', color: 'info' },
+        EUROSSUR: { label: 'Eurossur', icon: '💰', color: 'info' },
+        SOFEMO: { label: 'Sofemo', icon: '💰', color: 'info' },
+        PAIEMENT_NFOIS: { label: 'Paiement N fois', icon: '🔄', color: 'secondary' },
+        
+        // Organismes
+        MDPH: { label: 'MDPH', icon: '♿', color: 'primary' },
+        AGEFIPH: { label: 'AGEFIPH', icon: '♿', color: 'primary' },
+        FIPHFP: { label: 'FIPHFP', icon: '♿', color: 'primary' },
+        
+        // Autres
+        WEB_STORE: { label: 'Web Store', icon: '🛒', color: 'success' },
+        OD: { label: 'Opération Diverse', icon: '📋', color: 'secondary' },
+        AUTRE: { label: 'Autre', icon: '❓', color: 'secondary' }
+    }
 };
 
 // ─── FACTORY BOUTONS (pour create.js) ───
@@ -121,13 +134,13 @@ const config = {
     }
 };
 
-window.stockProduitConfig = config;
+window.reglementConfig = config;
 
 // ╔════════════════════════════════════════╗
 // ║   SECTION 3: CLASSE ORCHESTRATEUR      ║
 // ╚════════════════════════════════════════╝
 
-class StockProduitOrchestrator {
+class ReglementOrchestrator {
     constructor() {
         // ─── WIDGETS ───
         this.header = null;
@@ -136,27 +149,24 @@ class StockProduitOrchestrator {
         this.grid = null;
         
         // ─── DONNÉES ───
-        this.articlesData = [];
+        this.reglementsData = [];
         this.statsData = {};
         this.filteredData = [];
         
-        // ─── FILTRES ACTIFS ───
+        // ─── FILTRES ACTIFS (CORRIGÉ - TOUT EN ARRAYS) ───
         this.currentFilters = {
             search: '',
-            categorie: '',
-            fournisseur: '',
-            magasin: '',
-            statut: '',
-            statutsActifs: []
+            clients: [],        // Array pour sélection multiple
+            magasins: [],       // Array pour sélection multiple
+            typesReglement: []  // Array pour filtrage par type
         };
         
         // ─── SÉLECTION ───
         this.selection = new Set();
         
         // ─── LISTES DYNAMIQUES ───
+        this.clientsDynamiques = new Set();
         this.magasinsDynamiques = new Set();
-        this.categoriesDynamiques = new Set();
-        this.fournisseursDynamiques = new Set();
         
         // ─── ÉTAT APPLICATION ───
         this.isLoading = false;
@@ -169,7 +179,7 @@ class StockProduitOrchestrator {
     async init() {
         try {
             this.showLoader();
-            console.log('🚀 Initialisation orchestrateur stock audioprothèse...');
+            console.log('🚀 Initialisation orchestrateur règlements...');
             
             // ─── Vérification authentification ───
             if (!this.checkAuth()) {
@@ -186,10 +196,10 @@ class StockProduitOrchestrator {
             console.log('✅ Firebase initialisé');
             
             // ─── Initialisation module import ───
-            initImportStock();
+            initImportReglement();
             
             // ─── Exposition fonctions globales ───
-            window.ouvrirModalImportStock = ouvrirModalImport;
+            window.ouvrirModalImportReglement = ouvrirModalImport;
             window.afficherSucces = this.showSuccess.bind(this);
             window.afficherErreur = this.showError.bind(this);
             window.afficherAvertissement = this.showWarning.bind(this);
@@ -271,7 +281,7 @@ class StockProduitOrchestrator {
                 indicator: { height: '48px', padding: '10px 16px', minWidth: 'auto' }
             },
             
-            title: 'Stock Produit',
+            title: 'Règlements',
             subtitle: '',
             centerTitle: true,
             
@@ -281,11 +291,11 @@ class StockProduitOrchestrator {
             showBack: true,
             backText: 'Retour',
             onBack: () => {
-                window.location.href = '../home/home.html';
+                window.location.href = '/modules/home/home.html';
             },
             
             showSearch: true,
-            searchPlaceholder: 'Rechercher numéro série, libellé, marque...',
+            searchPlaceholder: 'Rechercher client, montant, type...',
             searchMaxWidth: '1500px',
             searchHeight: '48px',
             onSearch: (query) => {
@@ -343,9 +353,9 @@ class StockProduitOrchestrator {
             
             showBreadcrumbs: true,
             breadcrumbs: [
-                { text: 'Accueil', url: '/Orixis-pwa/modules/home/home.html' },
-                { text: 'Stock', url: '#' },
-                { text: 'Audioprothèse' }
+                { text: 'Accueil', url: '/modules/home/home.html' },
+                { text: 'Finance', url: '#' },
+                { text: 'Règlements' }
             ],
             
             showUser: true,
@@ -356,88 +366,178 @@ class StockProduitOrchestrator {
         
         // ─── Mise à jour indicateurs après chargement ───
         this.updateHeaderIndicators = () => {
-            if (this.header && this.articlesData) {
-                this.header.updateIndicator('count', `${this.articlesData.length} articles`);
+            if (this.header && this.reglementsData) {
+                this.header.updateIndicator('count', `${this.filteredData.length} règlements`);
                 
-                const valeurStock = this.articlesData.reduce((sum, art) => {
-                    return sum + ((art.quantite || 0) * (art.prixVente || 0));
+                const totalEncaisse = this.filteredData.reduce((sum, reg) => {
+                    return sum + (reg.montant || 0);
                 }, 0);
                 
-                const valeurFormat = new Intl.NumberFormat('fr-FR', {
+                const montantFormat = new Intl.NumberFormat('fr-FR', {
                     style: 'currency',
                     currency: 'EUR'
-                }).format(valeurStock);
+                }).format(totalEncaisse);
                 
-                this.header.updateIndicator('stock', `Stock: ${valeurFormat}`, 'info');
+                this.header.updateIndicator('total', `Total: ${montantFormat}`, 'info');
             }
         };
     }
     
-    // ─── WIDGET: STATS CARDS (13 statuts) ───
-    createStatsCards() {
-        this.stats = new StatsCardsWidget({
-            container: '.stats-container',
-            showWrapper: true,
-            wrapperStyle: 'minimal',
-            size: 'sm',
-            autoFit: true,
-            selectionMode: 'multiple',
-            animated: false,
-            cards: Object.entries(CONFIG.STATUTS).map(([key, config]) => ({
-                id: key,
-                label: key,
-                icon: config.icon,
+// ─── WIDGET: STATS CARDS ───
+createStatsCards() {
+    this.stats = new StatsCardsWidget({
+        container: '.stats-container',
+        showWrapper: true,
+        wrapperStyle: 'minimal',
+        size: 'sm',
+        autoFit: true,
+        selectionMode: 'multiple',  // ✅ AJOUT MODE MULTIPLE
+        animated: false,
+        clickable: true,
+        
+        cards: [
+            {
+                id: 'type_cb',
+                label: 'Carte Bancaire',
+                icon: '💳',
                 value: 0,
-                color: config.color
-            })),
-            onSelect: (selectedIds) => {
-                console.log('Filtres par statuts:', selectedIds);
-                this.currentFilters.statutsActifs = selectedIds;
-                this.applyFilters();
+                color: 'success'
+            },
+            {
+                id: 'type_cheque',
+                label: 'Chèques',
+                icon: '📝',
+                value: 0,
+                color: 'primary'
+            },
+            {
+                id: 'type_especes',
+                label: 'Espèces',
+                icon: '💵',
+                value: 0,
+                color: 'warning'
+            },
+            {
+                id: 'type_virement',
+                label: 'Virements',
+                icon: '🏦',
+                value: 0,
+                color: 'info'
+            },
+            {
+                id: 'type_tp_secu',
+                label: 'TP Sécu',
+                icon: '🏥',
+                value: 0,
+                color: 'danger'
+            },
+            {
+                id: 'type_tp_mutuelle',
+                label: 'TP Mutuelle',
+                icon: '🏥',
+                value: 0,
+                color: 'secondary'
+            },
+            {
+                id: 'type_financement',
+                label: 'Financements',
+                icon: '💰',
+                value: 0,
+                color: 'purple'
+            },
+            {
+                id: 'type_autres',
+                label: 'Autres',
+                icon: '❓',
+                value: 0,
+                color: 'secondary'
             }
-        });
-    }
-    
-    // ─── WIDGET: FILTRES ───
-    createFilters() {
-        this.filters = new SearchFiltersWidget({
-            container: '.filters-container',
-            showWrapper: true,
-            wrapperStyle: 'card',
-            wrapperTitle: 'Filtres',
-            resetButton: false,
-            filters: [
-                { 
-                    type: 'select', 
-                    key: 'fournisseur', 
-                    label: 'Client',
-                    options: [
-                        { value: '', label: 'Tous les clients' }
-                    ],
-                    searchable: true
-                },
-                { 
-                    type: 'select', 
-                    key: 'magasin',
-                    label: 'Magasin',
-                    options: [
-                        { value: '', label: 'Tous les magasins' }
-                    ]
+        ],
+        
+        // ✅ NOUVEAU CALLBACK POUR MULTI-SÉLECTION
+        onSelect: (selectedIds) => {
+            console.log('📊 Cards sélectionnées:', selectedIds);
+            
+            // Mapping des cards vers les types de règlement
+            const typeMap = {
+                'type_cb': ['CB'],
+                'type_cheque': ['CHEQUE'],
+                'type_especes': ['ESPECES'],
+                'type_virement': ['VIREMENT'],
+                'type_tp_secu': ['TP_SECU'],
+                'type_tp_mutuelle': ['TP_MUTUELLE'],
+                'type_financement': ['COFIDIS', 'FRANFINANCE', 'EUROSSUR', 'SOFEMO', 'PAIEMENT_NFOIS'],
+                'type_autres': ['BON_ACHAT', 'OD', 'MDPH', 'AGEFIPH', 'FIPHFP', 'WEB_STORE', 'AUTRE']
+            };
+            
+            // Construire la liste des types sélectionnés
+            const typesSelectionnes = [];
+            selectedIds.forEach(cardId => {
+                if (typeMap[cardId]) {
+                    typesSelectionnes.push(...typeMap[cardId]);
                 }
-            ],
-            onFilter: (values) => {
-                console.log('Filtres appliqués:', values);
-                
-                this.currentFilters = { 
-                    ...this.currentFilters, 
-                    fournisseur: values.fournisseur || '',
-                    magasin: values.magasin || ''
-                };
-                
-                this.applyFilters();
+            });
+            
+            this.currentFilters.typesReglement = typesSelectionnes;
+            this.applyFilters();
+        }
+    });
+}
+    
+// ─── WIDGET: FILTRES ───
+createFilters() {
+    this.filters = new SearchFiltersWidget({
+        container: '.filters-container',
+        showWrapper: true,
+        wrapperStyle: 'card',
+        wrapperTitle: 'Filtres',
+        resetButton: false,
+        
+        filters: [
+            { 
+                type: 'select',
+                key: 'clients',  // ✅ PLURIEL
+                label: 'Clients',
+                placeholder: 'Sélectionner des clients',
+                options: [],
+                searchable: true,
+                multiple: true  // ✅ AJOUT MULTIPLE
+            },
+            { 
+                type: 'select',
+                key: 'magasins',  // ✅ PLURIEL
+                label: 'Magasins',
+                placeholder: 'Sélectionner des magasins',
+                options: [],
+                multiple: true  // ✅ AJOUT MULTIPLE
+            },
+            {
+                type: 'date',
+                key: 'dateDebut',
+                label: 'Date début'
+            },
+            {
+                type: 'date',
+                key: 'dateFin',
+                label: 'Date fin'
             }
-        });
-    }
+        ],
+        
+        onFilter: (values) => {
+            console.log('🔍 Valeurs reçues des filtres:', values);
+            
+            // ✅ GESTION CORRECTE DES ARRAYS
+            this.currentFilters.clients = values.clients || [];
+            this.currentFilters.magasins = values.magasins || [];
+            this.currentFilters.dateDebut = values.dateDebut || '';
+            this.currentFilters.dateFin = values.dateFin || '';
+            
+            console.log('📋 Filtres actuels:', this.currentFilters);
+            
+            this.applyFilters();
+        }
+    });
+}
     
     // ─── WIDGET: DATA GRID ───
     createDataGrid() {
@@ -447,117 +547,76 @@ class StockProduitOrchestrator {
             wrapperStyle: 'card',
             wrapperTitle: '',
             columns: [
-                // CASES À COCHER EN PREMIÈRE POSITION (GAUCHE)
                 {
                     key: 'selection',
                     label: '<input type="checkbox" id="selectAll">',
                     width: 40,
                     formatter: (_, row) => {
                         const checked = this.selection.has(row.id);
-                        return `<input type="checkbox" class="article-checkbox" data-id="${row.id}" ${checked ? 'checked' : ''}>`;
+                        return `<input type="checkbox" class="reglement-checkbox" data-id="${row.id}" ${checked ? 'checked' : ''}>`;
                     }
                 },
-                // DATE EN DEUXIÈME POSITION
                 {
                     key: 'date',
                     label: 'Date',
                     sortable: true,
                     width: 100,
                     formatter: (v) => {
-                        if (!v || v === '-') return '-';
-                        
-                        // Si la date est au format YYYY-MM-DD
-                        if (v.includes('-') && v.length === 10) {
-                            const [year, month, day] = v.split('-');
-                            return `${day}/${month}/${year}`;
-                        }
-                        
-                        // Si déjà au bon format ou autre
-                        return v;
+                        if (!v) return '-';
+                        const d = new Date(v);
+                        return d.toLocaleDateString('fr-FR');
                     }
                 },
-                { 
-                    key: 'marque', 
-                    label: 'Marque',
+                {
+                    key: 'client',
+                    label: 'Client',
                     sortable: true,
-                    width: 120,
+                    width: 250,
                     formatter: (v) => v || '-'
                 },
-                { 
-                    key: 'libelle', 
-                    label: 'Libellé',
-                    sortable: true,
-                    width: 300,
-                    formatter: (v) => v || '-'
-                },
-                { 
-                    key: 'numeroSerie', 
-                    label: 'N° Série',
-                    sortable: true,
-                    width: 150,
-                    formatter: (v) => v || '-'
-                },
-                { 
+                {
                     key: 'magasin',
                     label: 'Magasin',
                     sortable: true,
                     width: 100,
                     formatter: (v) => v || '-'
                 },
-                { 
-                    key: 'client',
-                    label: 'Client',
+                {
+                    key: 'typeReglement',
+                    label: 'Type règlement',
                     sortable: true,
-                    width: 230,
-                    formatter: (v) => v || '-'
-                },
-                { 
-                    key: 'quantite', 
-                    label: 'Stock',
-                    sortable: true,
-                    width: 70,
+                    width: 150,
                     html: true,
-                    formatter: (qte) => {
-                        let classe = 'stock-ok';
-                        if (qte <= 0) classe = 'stock-rupture';
-                        return `<span class="${classe}">${qte || 0}</span>`;
-                    }
-                },
-                { 
-                    key: 'statut',
-                    label: 'Statut',
-                    sortable: true,
-                    width: 90,
-                    html: true,
-                    formatter: (statut) => {
-                        const statutConfig = {
-                            'STO': '#28a745',
-                            'PVT': '#17a2b8',
-                            'VTE': '#007bff',
-                            'RSV': '#ffc107',
-                            'PRT': '#6f42c1',
-                            'RETA': '#fd7e14',
-                            'EXT': '#6c757d',
-                            'RETE': '#e83e8c',
-                            'AVR': '#20c997',
-                            'ECHR': '#87ceeb',
-                            'SDEP': '#795548',
-                            'CMD': '#9c27b0',
-                            'RETF': '#dc3545'
-                        };
-                        
-                        const code = statut || 'STO';
-                        const color = statutConfig[code] || '#6c757d';
+                    formatter: (type) => {
+                        // ✅ Utilise CONFIG avec les codes transformés
+                        const typeConfig = CONFIG.TYPES_REGLEMENT[type] || 
+                                        { label: type || 'AUTRE', icon: '❓', color: 'secondary' };
                         
                         return `<span style="
-                            background: ${color}; 
+                            background: var(--bs-${typeConfig.color}); 
                             color: white; 
                             padding: 2px 8px; 
                             border-radius: 4px; 
                             font-size: 11px;
                             font-weight: 600;
-                            font-family: monospace;
-                        ">${code}</span>`;
+                            white-space: nowrap;
+                        ">${typeConfig.icon} ${typeConfig.label}</span>`;
+                    }
+                },
+                {
+                    key: 'montant',
+                    label: 'Montant',
+                    sortable: true,
+                    width: 120,
+                    html: true,
+                    formatter: (montant) => {
+                        const formatted = new Intl.NumberFormat('fr-FR', {
+                            style: 'currency',
+                            currency: 'EUR'
+                        }).format(montant || 0);
+                        
+                        const color = montant > 0 ? '#28a745' : '#dc3545';
+                        return `<span style="color: ${color}; font-weight: 600;">${formatted}</span>`;
                     }
                 },
                 { 
@@ -594,7 +653,7 @@ class StockProduitOrchestrator {
             if (selectAll) {
                 selectAll.addEventListener('change', (e) => {
                     if (e.target.checked) {
-                        this.filteredData.forEach(art => this.selection.add(art.id));
+                        this.filteredData.forEach(reg => this.selection.add(reg.id));
                     } else {
                         this.selection.clear();
                     }
@@ -604,7 +663,7 @@ class StockProduitOrchestrator {
             }
             
             document.addEventListener('click', (e) => {
-                if (e.target.classList.contains('article-checkbox')) {
+                if (e.target.classList.contains('reglement-checkbox')) {
                     const id = e.target.dataset.id;
                     if (e.target.checked) {
                         this.selection.add(id);
@@ -626,11 +685,11 @@ class StockProduitOrchestrator {
             this.showLoader();
             console.log('📊 Chargement des données...');
             
-            // ─── Chargement articles ───
-            const articles = await firestoreService.getArticles({ limite: 5000 });
+            // ─── Chargement règlements ───
+            const reglements = await firestoreService.getReglements({ limite: 5000 });
             
-            this.articlesData = articles;
-            console.log(`✅ ${this.articlesData.length} articles chargés`);
+            this.reglementsData = reglements;
+            console.log(`✅ ${this.reglementsData.length} règlements chargés`);
             
             // ─── Chargement statistiques ───
             this.statsData = await firestoreService.getStatistiques();
@@ -643,13 +702,8 @@ class StockProduitOrchestrator {
             this.updateFilterOptions();
             
             // ─── Mise à jour affichage ───
-            this.updateStats();
             this.applyFilters();
-            
-            // ─── Mise à jour indicateurs header ───
-            if (this.updateHeaderIndicators) {
-                this.updateHeaderIndicators();
-            }
+            this.updateCardSelection();
             
             this.hideLoader();
             
@@ -661,54 +715,60 @@ class StockProduitOrchestrator {
     }
     
     updateDynamicLists() {
+        this.clientsDynamiques.clear();
         this.magasinsDynamiques.clear();
-        this.fournisseursDynamiques.clear();
         
-        this.articlesData.forEach(art => {
-            if (art.magasin) this.magasinsDynamiques.add(art.magasin);
-            if (art.client) this.fournisseursDynamiques.add(art.client);
+        this.reglementsData.forEach(reg => {
+            if (reg.client) this.clientsDynamiques.add(reg.client);
+            if (reg.magasin) this.magasinsDynamiques.add(reg.magasin);
         });
         
+        console.log('📊 Clients détectés:', Array.from(this.clientsDynamiques));
         console.log('📊 Magasins détectés:', Array.from(this.magasinsDynamiques));
-        console.log('📊 Clients détectés:', Array.from(this.fournisseursDynamiques));
     }
     
-    updateFilterOptions() {
-        // ─── Options clients ───
-        const fournisseurOptions = [{ value: '', label: 'Tous les clients' }];
-        this.fournisseursDynamiques.forEach(client => {
-            fournisseurOptions.push({
+updateFilterOptions() {
+    // Options clients
+    const clientOptions = [];
+    Array.from(this.clientsDynamiques)
+        .sort()
+        .forEach(client => {
+            clientOptions.push({
                 value: client,
                 label: client
             });
         });
-        
-        // ─── Options magasins ───
-        const magasinOptions = [{ value: '', label: 'Tous les magasins' }];
-        this.magasinsDynamiques.forEach(magasin => {
+    
+    // Options magasins  
+    const magasinOptions = [];
+    Array.from(this.magasinsDynamiques)
+        .sort()
+        .forEach(magasin => {
             magasinOptions.push({
                 value: magasin,
                 label: magasin === '-' ? 'Non défini' : magasin
             });
         });
+    
+    // ✅ CORRECTION - Utiliser les dropdowns directement
+    if (this.filters && this.filters.state && this.filters.state.dropdowns) {
+        // Pour clients
+        const clientDropdown = this.filters.state.dropdowns.clients;
+        if (clientDropdown) {
+            clientDropdown.config.options = clientOptions;
+            clientDropdown.filteredOptions = [...clientOptions];
+            this.filters.renderDropdownOptions(clientDropdown);
+        }
         
-        // ─── Mise à jour dropdowns ───
-        if (this.filters && this.filters.state && this.filters.state.dropdowns) {
-            if (this.filters.state.dropdowns.fournisseur) {
-                const fournisseurDropdown = this.filters.state.dropdowns.fournisseur;
-                fournisseurDropdown.config.options = fournisseurOptions;
-                fournisseurDropdown.filteredOptions = [...fournisseurOptions];
-                this.filters.renderDropdownOptions(fournisseurDropdown);
-            }
-            
-            if (this.filters.state.dropdowns.magasin) {
-                const magasinDropdown = this.filters.state.dropdowns.magasin;
-                magasinDropdown.config.options = magasinOptions;
-                magasinDropdown.filteredOptions = [...magasinOptions];
-                this.filters.renderDropdownOptions(magasinDropdown);
-            }
+        // Pour magasins
+        const magasinDropdown = this.filters.state.dropdowns.magasins;
+        if (magasinDropdown) {
+            magasinDropdown.config.options = magasinOptions;
+            magasinDropdown.filteredOptions = [...magasinOptions];
+            this.filters.renderDropdownOptions(magasinDropdown);
         }
     }
+}
     
     // ┌────────────────────────────────────────┐
     // │         IMPORT CSV                     │
@@ -716,17 +776,17 @@ class StockProduitOrchestrator {
     
     openImportModal() {
         const uploader = new PdfUploaderWidget({
-            title: 'Import de fichiers stock audioprothèse',
+            title: 'Import de fichiers règlements',
             theme: 'blue',
             mode: 'simple',
             maxFiles: 10,
             acceptedTypes: ['text/csv', 'text/plain', 'application/vnd.ms-excel'],
             description: {
-                icon: '📊',
-                title: 'Import multi-colonnes intelligent',
-                text: 'Déposez jusqu\'à 10 fichiers CSV. Détection automatique des colonnes : Marque, Libellé, N° Série, Centre, État, Client, etc.'
+                icon: '💰',
+                title: 'Import CSV règlements',
+                text: 'Déposez jusqu\'à 10 fichiers CSV. Format détecté automatiquement.'
             },
-            saveButtonText: '📦 Importer les articles',
+            saveButtonText: '💰 Importer les règlements',
             onSave: async (data) => this.handleImport(data),
             onClose: () => {
                 console.log('Modal import fermée');
@@ -756,11 +816,10 @@ class StockProduitOrchestrator {
                     const resultatAnalyse = await uploadService.analyserCSV(file);
                     
                     console.log('✅ Fichier analysé:', resultatAnalyse.stats);
-                    console.log('🔍 Colonnes détectées:', resultatAnalyse.mapping.foundColumns);
                     
-                    this.showMessage(`Import des articles ${i + 1}/${data.files.length}...`);
-                    const resultatImport = await firestoreService.importerArticles(
-                        resultatAnalyse.articles,
+                    this.showMessage(`Import des règlements ${i + 1}/${data.files.length}...`);
+                    const resultatImport = await firestoreService.importerReglements(
+                        resultatAnalyse.reglements,
                         file.name
                     );
                     
@@ -790,24 +849,15 @@ class StockProduitOrchestrator {
             }
             
             // ─── Affichage résumé ───
-            console.log('📊 Résumé de l\'import:', resultats);
-            
             const totalImportees = resultats.importees.reduce((sum, r) => sum + r.nombre, 0);
             const totalDoublons = resultats.doublons.reduce((sum, r) => sum + r.nombre, 0);
             
             if (totalImportees > 0) {
-                this.showSuccess(`✅ ${totalImportees} article(s) importé(s)`);
+                this.showSuccess(`✅ ${totalImportees} règlement(s) importé(s)`);
             }
             
             if (totalDoublons > 0) {
                 this.showWarning(`⚠️ ${totalDoublons} doublon(s) ignoré(s)`);
-            }
-            
-            if (resultats.erreurs.length > 0) {
-                const uniqueErrors = [...new Set(resultats.erreurs.map(e => e.erreur || e))];
-                uniqueErrors.forEach(err => {
-                    this.showError(`❌ ${err}`);
-                });
             }
             
             // ─── Rafraîchissement données ───
@@ -831,14 +881,14 @@ class StockProduitOrchestrator {
     
     async deleteSelected() {
         if (this.selection.size === 0) {
-            this.showWarning('Veuillez sélectionner au moins un article à supprimer');
+            this.showWarning('Veuillez sélectionner au moins un règlement à supprimer');
             return;
         }
         
         const count = this.selection.size;
         const message = count === 1 
-            ? 'Voulez-vous vraiment supprimer cet article ?' 
-            : `Voulez-vous vraiment supprimer ces ${count} articles ?`;
+            ? 'Voulez-vous vraiment supprimer ce règlement ?' 
+            : `Voulez-vous vraiment supprimer ces ${count} règlements ?`;
         
         if (!confirm(message)) {
             return;
@@ -846,11 +896,11 @@ class StockProduitOrchestrator {
         
         try {
             this.showLoader();
-            this.showInfo(`Suppression de ${count} article(s)...`);
+            this.showInfo(`Suppression de ${count} règlement(s)...`);
             
             const promises = [];
             for (const id of this.selection) {
-                promises.push(firestoreService.supprimerArticle(id));
+                promises.push(firestoreService.supprimerReglement(id));
             }
             
             await Promise.all(promises);
@@ -860,7 +910,7 @@ class StockProduitOrchestrator {
             await this.loadData();
             
             this.hideLoader();
-            this.showSuccess(`✅ ${count} article(s) supprimé(s)`);
+            this.showSuccess(`✅ ${count} règlement(s) supprimé(s)`);
             
         } catch (error) {
             this.hideLoader();
@@ -870,7 +920,7 @@ class StockProduitOrchestrator {
     }
     
     updateSelectionInfo() {
-        console.log(`📝 ${this.selection.size} article(s) sélectionné(s)`);
+        console.log(`📝 ${this.selection.size} règlement(s) sélectionné(s)`);
     }
     
     // ┌────────────────────────────────────────┐
@@ -878,68 +928,57 @@ class StockProduitOrchestrator {
     // └────────────────────────────────────────┘
     
     openDetailModal(row) {
-        console.log('📋 Ouverture détails article:', row);
+        console.log('📋 Ouverture détails règlement:', row);
         
         const sections = [];
         
         sections.push({
             id: 'informations',
-            title: '🦻 Détails Article',
+            title: '💰 Détails Règlement',
             fields: [
-                // DATE EN PREMIER
                 { 
                     label: 'Date', 
-                    value: row.date && row.date !== '-' ? 
-                        (row.date.includes('-') && row.date.length === 10 ? 
-                            row.date.split('-').reverse().join('/') : 
-                            row.date) : '-',
-                    bold: true 
-                },
-                { 
-                    label: 'Numéro de série', 
-                    value: row.numeroSerie || '-',
-                    bold: true 
-                },
-                { 
-                    label: 'Libellé', 
-                    value: row.libelle || '-',
-                    bold: true 
-                },
-                { 
-                    label: 'Marque', 
-                    value: row.marque || '-' 
+                    value: row.date ? new Date(row.date).toLocaleDateString('fr-FR') : '-'
                 },
                 { 
                     label: 'Client', 
-                    value: row.client || '-'
+                    value: row.client || '-',
+                    bold: true 
                 },
                 { 
                     label: 'Magasin', 
                     value: row.magasin || '-'
                 },
                 { 
-                    label: 'Quantité en stock', 
-                    value: row.quantite || 0,
-                    bold: true
+                    label: 'Type de règlement', 
+                    value: CONFIG.TYPES_REGLEMENT[row.typeReglement]?.label || row.typeReglement || '-'
                 },
-                {
-                    label: 'Statut',
-                    value: CONFIG.STATUTS[row.statut]?.label || row.statut || 'STO'
+                { 
+                    label: 'Montant', 
+                    value: this.formaterMontant(row.montant || 0),
+                    bold: true
                 }
             ]
         });
         
-        if (row.dateEntree) {
-            const d = new Date(row.dateEntree);
-            sections[0].fields.push({
-                label: 'Date d\'entrée',
-                value: d.toLocaleDateString('fr-FR')
+        // Si données complémentaires
+        if (row.numeroClient || row.numeroSecu || row.numeroCheque || row.tiersPayeur) {
+            const fields = [];
+            if (row.numeroClient) fields.push({ label: 'N° Client', value: row.numeroClient });
+            if (row.numeroSecu) fields.push({ label: 'N° Sécu', value: row.numeroSecu });
+            if (row.numeroCheque) fields.push({ label: 'N° Chèque', value: row.numeroCheque });
+            if (row.tiersPayeur) fields.push({ label: 'Tiers Payeur', value: row.tiersPayeur });
+            
+            sections.push({
+                id: 'complementaire',
+                title: '📄 Informations complémentaires',
+                fields: fields
             });
         }
         
         const viewer = new DetailViewerWidget({
-            title: row.libelle || 'Article',
-            subtitle: `N° série: ${row.numeroSerie || '-'}`,
+            title: `Règlement ${row.reference || ''}`,
+            subtitle: `${row.client || '-'} - ${this.formaterMontant(row.montant || 0)}`,
             data: row,
             sections: sections,
             actions: [
@@ -962,16 +1001,12 @@ class StockProduitOrchestrator {
         
         this.currentFilters = {
             search: '',
-            categorie: '',
-            fournisseur: '',
-            magasin: '',
-            statut: '',
-            statutsActifs: []
+            clients: [],
+            magasins: [],
+            typesReglement: [],
+            dateDebut: '',
+            dateFin: ''
         };
-        
-        if (this.stats) {
-            this.stats.deselectAll();
-        }
         
         if (this.filters) {
             this.filters.reset();
@@ -986,52 +1021,67 @@ class StockProduitOrchestrator {
     // │      FILTRAGE ET MISE À JOUR           │
     // └────────────────────────────────────────┘
     
-    applyFilters() {
-        console.log('🔍 Application des filtres:', this.currentFilters);
-        
-        this.filteredData = this.articlesData.filter(article => {
-            // ─── Filtre recherche ───
-            if (this.currentFilters.search) {
-                const search = this.currentFilters.search.toLowerCase();
-                
-                const searchIn = [
-                    (article.numeroSerie || '').toLowerCase(),
-                    (article.libelle || '').toLowerCase(),
-                    (article.marque || '').toLowerCase(),
-                    (article.magasin || '').toLowerCase(),
-                    (article.client || '').toLowerCase(),
-                    (article.fournisseur || '').toLowerCase()
-                ].join(' ');
-                
-                if (!searchIn.includes(search)) {
-                    return false;
-                }
-            }
+applyFilters() {
+    console.log('🔍 Application des filtres:', this.currentFilters);
+    
+    this.filteredData = this.reglementsData.filter(reglement => {
+        // Filtre recherche
+        if (this.currentFilters.search) {
+            const search = this.currentFilters.search.toLowerCase();
+            const searchIn = [
+                (reglement.client || '').toLowerCase(),
+                (reglement.magasin || '').toLowerCase(),
+                (reglement.typeReglement || '').toLowerCase(),
+                (reglement.montant || '').toString()
+            ].join(' ');
             
-            // ─── Filtre client ───
-            if (this.currentFilters.fournisseur && article.client !== this.currentFilters.fournisseur) {
+            if (!searchIn.includes(search)) {
                 return false;
             }
-            
-            // ─── Filtre magasin ───
-            if (this.currentFilters.magasin && article.magasin !== this.currentFilters.magasin) {
+        }
+        
+        // ✅ FILTRE CLIENTS MULTIPLE
+        if (this.currentFilters.clients && this.currentFilters.clients.length > 0) {
+            if (!this.currentFilters.clients.includes(reglement.client)) {
                 return false;
             }
-            
-            // ─── Filtre statuts ───
-            if (this.currentFilters.statutsActifs && this.currentFilters.statutsActifs.length > 0) {
-                const statut = article.statut || 'STO';
-                if (!this.currentFilters.statutsActifs.includes(statut)) {
-                    return false;
-                }
-            }
-            
-            return true;
-        });
+        }
         
-        this.updateGrid();
-        console.log(`✅ ${this.filteredData.length} articles affichés`);
+        // ✅ FILTRE MAGASINS MULTIPLE
+        if (this.currentFilters.magasins && this.currentFilters.magasins.length > 0) {
+            if (!this.currentFilters.magasins.includes(reglement.magasin)) {
+                return false;
+            }
+        }
+        
+        // ✅ FILTRE TYPES (depuis les cards)
+        if (this.currentFilters.typesReglement && this.currentFilters.typesReglement.length > 0) {
+            if (!this.currentFilters.typesReglement.includes(reglement.typeReglement)) {
+                return false;
+            }
+        }
+        
+        // Filtres dates
+        if (this.currentFilters.dateDebut && reglement.date < this.currentFilters.dateDebut) {
+            return false;
+        }
+        
+        if (this.currentFilters.dateFin && reglement.date > this.currentFilters.dateFin) {
+            return false;
+        }
+        
+        return true;
+    });
+    
+    this.updateGrid();
+    this.updateStats();
+    
+    if (this.updateHeaderIndicators) {
+        this.updateHeaderIndicators();
     }
+    
+    console.log(`✅ ${this.filteredData.length} règlements affichés`);
+}
     
     updateGrid() {
         if (this.grid) {
@@ -1039,29 +1089,105 @@ class StockProduitOrchestrator {
         }
     }
     
-    updateStats() {
-        if (!this.stats) return;
+updateStats() {
+    if (!this.stats) return;
+    
+    const statsParType = {
+        cb: { montant: 0, nombre: 0 },
+        cheque: { montant: 0, nombre: 0 },
+        especes: { montant: 0, nombre: 0 },
+        virement: { montant: 0, nombre: 0 },
+        tp_secu: { montant: 0, nombre: 0 },
+        tp_mutuelle: { montant: 0, nombre: 0 },
+        financement: { montant: 0, nombre: 0 },
+        autres: { montant: 0, nombre: 0 }
+    };
+    
+    // ✅ COMPTER AVEC LES CODES TRANSFORMÉS
+    this.filteredData.forEach(reglement => {
+        const type = reglement.typeReglement || '';
         
-        // ─── Comptage par statut ───
-        const compteurStatuts = {};
-        Object.keys(CONFIG.STATUTS).forEach(statut => {
-            compteurStatuts[statut] = 0;
-        });
+        if (type === 'CB') {
+            statsParType.cb.nombre++;
+        }
+        else if (type === 'CHEQUE') {  // ✅ Code transformé
+            statsParType.cheque.nombre++;
+        }
+        else if (type === 'ESPECES') {  // ✅ Code transformé
+            statsParType.especes.nombre++;
+        }
+        else if (type === 'VIREMENT') {  // ✅ Code transformé
+            statsParType.virement.nombre++;
+        }
+        else if (type === 'TP_SECU') {  // ✅ Code transformé
+            statsParType.tp_secu.nombre++;
+        }
+        else if (type === 'TP_MUTUELLE') {  // ✅ Code transformé
+            statsParType.tp_mutuelle.nombre++;
+        }
+        else if (type === 'COFIDIS' || type === 'FRANFINANCE' || 
+                 type === 'EUROSSUR' || type === 'SOFEMO' || 
+                 type === 'PAIEMENT_NFOIS') {
+            statsParType.financement.nombre++;
+        }
+        else if (type === 'BON_ACHAT' || type === 'OD' || 
+                 type === 'MDPH' || type === 'AGEFIPH' || 
+                 type === 'FIPHFP' || type === 'WEB_STORE' || 
+                 type === 'AUTRE') {
+            statsParType.autres.nombre++;
+        }
+        else {
+            console.log('⚠️ Type non comptabilisé:', type);
+            statsParType.autres.nombre++;
+        }
+    });
+    
+    // Mise à jour des cards
+    this.stats.updateCard('type_cb', statsParType.cb.nombre);
+    this.stats.updateCard('type_cheque', statsParType.cheque.nombre);
+    this.stats.updateCard('type_especes', statsParType.especes.nombre);
+    this.stats.updateCard('type_virement', statsParType.virement.nombre);
+    this.stats.updateCard('type_tp_secu', statsParType.tp_secu.nombre);
+    this.stats.updateCard('type_tp_mutuelle', statsParType.tp_mutuelle.nombre);
+    this.stats.updateCard('type_financement', statsParType.financement.nombre);
+    this.stats.updateCard('type_autres', statsParType.autres.nombre);
+    
+    console.log('📊 Stats calculées:', statsParType);
+}
+    
+    // ─── MISE À JOUR VISUELLE DES CARDS SÉLECTIONNÉES ───
+updateCardSelection() {
+    if (!this.stats) return;
+    
+    // ✅ MAPPING AVEC LES CODES TRANSFORMÉS
+    const typeMap = {
+        'type_cb': ['CB'],
+        'type_cheque': ['CHEQUE'],
+        'type_especes': ['ESPECES'],
+        'type_virement': ['VIREMENT'],
+        'type_tp_secu': ['TP_SECU'],
+        'type_tp_mutuelle': ['TP_MUTUELLE'],
+        'type_financement': ['COFIDIS', 'FRANFINANCE', 'EUROSSUR', 'SOFEMO', 'PAIEMENT_NFOIS'],
+        'type_autres': ['BON_ACHAT', 'OD', 'MDPH', 'AGEFIPH', 'FIPHFP', 'WEB_STORE', 'AUTRE']
+    };
+    
+    // Pour chaque card, vérifier si elle est sélectionnée
+    Object.keys(typeMap).forEach(cardId => {
+        const types = typeMap[cardId];
+        const isSelected = this.currentFilters.typesReglement && 
+                          this.currentFilters.typesReglement.some(t => types.includes(t));
         
-        this.articlesData.forEach(article => {
-            const statut = article.statut || 'STO';
-            if (compteurStatuts.hasOwnProperty(statut)) {
-                compteurStatuts[statut]++;
+        // Ajouter/retirer classe active
+        const cardElement = document.querySelector(`[data-card-id="${cardId}"]`);
+        if (cardElement) {
+            if (isSelected) {
+                cardElement.classList.add('active', 'selected');
+            } else {
+                cardElement.classList.remove('active', 'selected');
             }
-        });
-        
-        const cardsData = {};
-        Object.keys(compteurStatuts).forEach(statut => {
-            cardsData[statut] = compteurStatuts[statut];
-        });
-        
-        this.stats.updateAll(cardsData);
-    }
+        }
+    });
+}
     
     // ┌────────────────────────────────────────┐
     // │      UTILITAIRES MESSAGES              │
@@ -1126,5 +1252,5 @@ class StockProduitOrchestrator {
 // ║    SECTION 4: EXPORT SINGLETON         ║
 // ╚════════════════════════════════════════╝
 
-const orchestrator = new StockProduitOrchestrator();
+const orchestrator = new ReglementOrchestrator();
 export default orchestrator;

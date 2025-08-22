@@ -22,6 +22,9 @@ const PVT_TEMPLATE = {
     libelle: null,
     codeBarres: null,
     
+    // ─── Date du CSV ───
+    date: '-',  // AJOUT - Date extraite du CSV
+    
     // ─── Stock ───
     quantite: 0,
     quantiteMin: 0,
@@ -141,6 +144,7 @@ class StockProduitFirestoreService {
             // ─── Données article ───
             article.libelle = data.libelle;
             article.codeBarres = data.codeBarres || null;
+            article.date = data.date || '-';  // AJOUT
             article.quantite = parseFloat(data.quantite) || 0;
             article.quantiteMin = parseFloat(data.quantiteMin) || 0;
             article.quantiteMax = parseFloat(data.quantiteMax) || 999;
@@ -522,162 +526,121 @@ class StockProduitFirestoreService {
         }
     }
     
-    async importerArticles(articles, nomFichier = null) {
-        try {
-            const { collection, addDoc, query, where, limit, getDocs, serverTimestamp, updateDoc, doc } = await import(
-                'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js'
-            );
-            
-            // ─── Recherche code magasin ───
-            let codeMagasinACM = '-';
-            if (nomFichier) {
-                codeMagasinACM = await this.trouverCodeParACM(nomFichier);
-                console.log(`🏪 Code magasin ACM trouvé: ${codeMagasinACM} pour fichier: ${nomFichier}`);
-            }
-            
-            const resultats = {
-                reussies: 0,
-                doublons: 0,
-                miseAJour: 0,
-                erreurs: []
-            };
-            
-            for (const article of articles) {
-                try {
-                    // ─── Normalisation données ───
-                    const articleNormalise = {
-                        numeroSerie: article.numeroSerie || null,
-                        libelle: article.libelle || null,
-                        codeBarres: article.codeBarres || null,
-                        
-                        quantite: parseFloat(article.quantite) || 0,
-                        quantiteMin: 0,
-                        quantiteMax: 999,
-                        magasin: article.magasin || '-',
-                        
-                        prixAchat: parseFloat(article.prixAchat) || 0,
-                        prixVente: parseFloat(article.prixVente) || 0,
-                        tauxMarge: 0,
-                        montantMarge: 0,
-                        
-                        categorie: this.detecterCategorie(article.libelle),
-                        famille: null,
-                        fournisseur: article.fournisseur || '-',
-                        marque: article.marque || '-',
-                        
-                        client: article.client || '-',
-                        
-                        statut: article.statut || 'STO',
-                        
-                        dateEntree: new Date().toISOString().split('T')[0],
-                        dateDernierMouvement: new Date().toISOString().split('T')[0],
-                        datePeremption: null,
-                        
-                        actif: true,
-                        enRupture: false,
-                        aCommander: false
-                    };
-                    
-                    // ─── Vérification états ───
-                    articleNormalise.enRupture = articleNormalise.quantite <= 0;
-                    articleNormalise.aCommander = articleNormalise.quantite <= articleNormalise.quantiteMin;
-                    
-                    // ─── Vérification doublon ───
-                    if (articleNormalise.numeroSerie) {
-                        const doublonQuery = query(
-                            collection(db, COLLECTION_NAME),
-                            where('numeroSerie', '==', articleNormalise.numeroSerie),
-                            where('magasin', '==', articleNormalise.magasin),
-                            limit(1)
-                        );
-                        const existant = await getDocs(doublonQuery);
-                        
-                        if (!existant.empty) {
-                            const docExistant = existant.docs[0];
-                            const dataExistant = docExistant.data();
-                            
-                            // ─── Mise à jour si statut ou client changé ───
-                            if (dataExistant.statut !== articleNormalise.statut || 
-                                dataExistant.client !== articleNormalise.client) {
-                                console.log(`🔄 Mise à jour: ${articleNormalise.numeroSerie}`);
-                                
-                                await updateDoc(doc(db, COLLECTION_NAME, docExistant.id), {
-                                    statut: articleNormalise.statut,
-                                    client: articleNormalise.client,
-                                    dateDernierMouvement: new Date().toISOString().split('T')[0],
-                                    'dates.modification': serverTimestamp()
-                                });
-                                
-                                resultats.miseAJour++;
-                            } else {
-                                console.log('⚠️ Doublon ignoré:', articleNormalise.numeroSerie);
-                                resultats.doublons++;
-                            }
-                            continue;
-                        }
-                    }
-                    
-                    // ─── Génération hash ───
-                    const hash = this.genererHashArticle(articleNormalise);
-                    
-                    // ─── Article final ───
-                    const articleFinal = {
-                        ...articleNormalise,
-                        hash: hash,
-                        
-                        codeMagasin: codeMagasinACM,
-                        importSource: nomFichier,
-                        dateImport: serverTimestamp(),
-                        
-                        dates: {
-                            creation: serverTimestamp(),
-                            modification: null
-                        },
-                        
-                        intervenants: {
-                            creePar: {
-                                id: 'import',
-                                nom: 'Import CSV',
-                                prenom: ''
-                            },
-                            modifiePar: null
-                        },
-                        
-                        historique: [{
-                            date: new Date().toISOString(),
-                            action: 'import',
-                            details: `Importé depuis ${nomFichier || 'CSV'}`
-                        }]
-                    };
-                    
-                    // ─── Calcul marges ───
-                    if (articleFinal.prixAchat > 0 && articleFinal.prixVente > 0) {
-                        articleFinal.montantMarge = articleFinal.prixVente - articleFinal.prixAchat;
-                        articleFinal.tauxMarge = ((articleFinal.montantMarge / articleFinal.prixAchat) * 100).toFixed(2);
-                    }
-                    
-                    // ─── Sauvegarde ───
-                    await addDoc(collection(db, COLLECTION_NAME), articleFinal);
-                    resultats.reussies++;
-                    console.log(`✅ Importé: ${articleNormalise.numeroSerie || articleNormalise.libelle}`);
-                    
-                } catch (error) {
-                    console.error('❌ Erreur import article:', error);
-                    resultats.erreurs.push({
-                        article: article.libelle || article.numeroSerie || 'Inconnu',
-                        erreur: error.message
-                    });
-                }
-            }
-            
-            console.log('✅ Import terminé:', resultats);
-            return resultats;
-            
-        } catch (error) {
-            console.error('❌ Erreur import articles:', error);
-            throw error;
+async importerArticles(articles, nomFichier = null) {
+    try {
+        const { collection, addDoc, serverTimestamp } = await import(
+            'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js'
+        );
+        
+        // ─── Recherche code magasin ───
+        let codeMagasinACM = '-';
+        if (nomFichier) {
+            codeMagasinACM = await this.trouverCodeParACM(nomFichier);
+            console.log(`🏪 Code magasin: ${codeMagasinACM}`);
         }
+        
+        const resultats = {
+            reussies: 0,
+            erreurs: []
+        };
+        
+        console.log(`📦 Import de ${articles.length} articles...`);
+        
+        for (const article of articles) {
+            try {
+                // ─── Article final AVEC LA DATE DU CSV ───
+                const articleFinal = {
+                    // Identification
+                    numeroSerie: article.numeroSerie || `AUTO-${Date.now()}-${Math.random()}`,
+                    libelle: article.libelle || '-',
+                    codeBarres: null,
+                    
+                    // DATE DU CSV - TRÈS IMPORTANT
+                    date: article.date || '-',
+                    
+                    // Stock
+                    quantite: parseFloat(article.quantite) || 0,
+                    quantiteMin: 0,
+                    quantiteMax: 999,
+                    magasin: article.magasin || '-',
+                    
+                    // Prix
+                    prixAchat: 0,
+                    prixVente: 0,
+                    tauxMarge: 0,
+                    montantMarge: 0,
+                    
+                    // Classification
+                    categorie: this.detecterCategorie(article.libelle),
+                    famille: null,
+                    fournisseur: article.fournisseur || '-',
+                    marque: article.marque || '-',
+                    client: article.client || '-',
+                    
+                    // Statut
+                    statut: article.statut || 'STO',
+                    
+                    // Dates système
+                    dateEntree: new Date().toISOString().split('T')[0],
+                    dateDernierMouvement: new Date().toISOString().split('T')[0],
+                    datePeremption: null,
+                    
+                    // États
+                    actif: true,
+                    enRupture: article.quantite <= 0,
+                    aCommander: false,
+                    
+                    // Import
+                    codeMagasin: codeMagasinACM,
+                    importSource: nomFichier,
+                    dateImport: serverTimestamp(),
+                    hash: null,
+                    
+                    // Métadonnées
+                    dates: {
+                        creation: serverTimestamp(),
+                        modification: null
+                    },
+                    
+                    intervenants: {
+                        creePar: {
+                            id: 'import',
+                            nom: 'Import CSV',
+                            prenom: ''
+                        },
+                        modifiePar: null
+                    },
+                    
+                    historique: [{
+                        date: new Date().toISOString(),
+                        action: 'import',
+                        details: `Importé depuis ${nomFichier || 'CSV'}`
+                    }]
+                };
+                
+                console.log(`📝 Import article: ${articleFinal.numeroSerie} - Date: ${articleFinal.date}`);
+                
+                // ─── PAS DE VÉRIFICATION DE DOUBLON - IMPORT DIRECT ───
+                await addDoc(collection(db, COLLECTION_NAME), articleFinal);
+                resultats.reussies++;
+                
+            } catch (error) {
+                console.error('❌ Erreur import article:', error);
+                resultats.erreurs.push({
+                    article: article.libelle || article.numeroSerie || 'Inconnu',
+                    erreur: error.message
+                });
+            }
+        }
+        
+        console.log(`✅ Import terminé: ${resultats.reussies} articles importés`);
+        return resultats;
+        
+    } catch (error) {
+        console.error('❌ Erreur import:', error);
+        throw error;
     }
+}
     
     genererHashArticle(article) {
         const numeroSerie = article.numeroSerie || '';

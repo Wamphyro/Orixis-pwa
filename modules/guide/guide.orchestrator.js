@@ -390,7 +390,7 @@ class GuideOrchestrator {
             if (!this.checkAuth()) {
                 this.showError('Vous devez être connecté pour accéder au guide');
                 setTimeout(() => {
-                    window.location.href = '../index.html';
+                    window.location.href = '../../index.html';  // Remonter de 2 niveaux pour l'index
                 }, 2000);
                 return;
             }
@@ -475,7 +475,7 @@ class GuideOrchestrator {
             showBack: true,
             backText: 'Retour',
             onBack: () => {
-                window.location.href = 'home.html';
+                window.location.href = '../home/home.html';
             },
             
             // Recherche
