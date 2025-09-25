@@ -58,7 +58,7 @@
                     // Vérifier si l'authentification est valide
                     if (authData.authenticated && (now - authData.timestamp <= authData.expiry)) {
                         // Utilisateur connecté - aller vers home
-                        window.location.replace('modules/home/home.html');
+                        window.location.replace('./modules/home/home.html');
                         return;
                     }
                 } catch (e) {
@@ -67,7 +67,7 @@
             }
             
             // Pas connecté ou session expirée - aller vers login
-            window.location.replace('modules/login/login.html');
+            window.location.replace('./modules/home/home.html');
         })();
     </script>
 </body>

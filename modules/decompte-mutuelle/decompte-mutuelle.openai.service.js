@@ -359,13 +359,63 @@ FORMAT JSON OBLIGATOIRE :
 
 EXTRACTION DU FINESS ET RECHERCHE SOCIÉTÉ :
 1. Chercher "Votre numéro AM :", "N° AM", "Numéro AMC" ou "FINESS"
-2. Extraire le nombre qui suit (exactement 9 chiffres)
-3. Supprimer tous les zéros initiaux
-4. Rechercher ce FINESS dans le tableau fourni
-5. Si trouvé : centre = "CODE MAGASIN", societe = "SOCIETE"
-6. Si non trouvé, chercher l'ADRESSE du destinataire et chercher une correspondance
-7. Si trouvé par adresse : centre = "CODE MAGASIN", societe = "SOCIETE"
-8. Sinon : centre = "INCONNU", societe = ""
+2. Si trouvé, extraire le nombre (exactement 9 chiffres)
+3. Supprimer tous les zéros initiaux de ce nombre
+4. Rechercher ce FINESS dans la colonne "FINESS" du tableau fourni
+5. Si trouvé par FINESS : centre = "CODE MAGASIN", societe = "SOCIETE"
+
+SI AUCUN FINESS TROUVÉ, RECHERCHE ALTERNATIVE :
+Étape A - Recherche par VILLE :
+- Identifier l'adresse complète du destinataire dans le document
+- Extraire la VILLE (généralement après le code postal)
+- Rechercher cette ville EXACTE dans la colonne "VILLE" du tableau
+- Si correspondance : centre = "CODE MAGASIN", societe = "SOCIETE"
+
+Étape B - Recherche par NOM de société :
+- Extraire le nom complet du destinataire/professionnel de santé
+- Rechercher une correspondance partielle dans la colonne "SOCIETE" du tableau
+- Accepter les correspondances même partielles (au moins 2 mots en commun)
+- Si correspondance : centre = "CODE MAGASIN", societe = "SOCIETE"
+
+Étape C - Recherche par CODE POSTAL :
+- Extraire le code postal du destinataire (5 chiffres)
+- Rechercher dans la colonne "ADRESSE" du tableau
+- Si correspondance unique : centre = "CODE MAGASIN", societe = "SOCIETE"
+
+RÉSULTAT FINAL :
+- Si trouvé par une méthode : utiliser les valeurs trouvées
+- Si aucune correspondance : centre = "INCONNU", societe = nom extrait du document
+
+RÈGLES DE RECHERCHE :
+- La recherche est insensible à la casse (majuscules/minuscules)
+- Ignorer les accents lors de la comparaison
+- Pour les villes composées, essayer avec et sans tirets
+- Le destinataire est toujours le professionnel de santé, PAS la mutuelle
+
+EXTRACTION DES MONTANTS - INSTRUCTIONS CRITIQUES :
+- Lire TRÈS ATTENTIVEMENT chaque montant caractère par caractère
+- Les montants sont généralement dans des colonnes "Montant dû", "Montant", "Montant remboursé"
+- Format français : utilise la virgule comme séparateur décimal (1100,00 €)
+- TOUJOURS vérifier deux fois chaque montant extrait
+- Si le document contient un tableau, lire ligne par ligne avec précision
+- NE PAS confondre les montants avec :
+  * Les références de facture
+  * Les numéros de sécurité sociale
+  * Les dates
+  * Les numéros de compte
+
+VALIDATION OBLIGATOIRE :
+1. Extraire d'abord le montant total du virement
+2. Extraire ensuite chaque montant individuel
+3. Vérifier que la somme des montants individuels = montant total
+4. Si incohérence, relire CHAQUE ligne du tableau plus attentivement
+5. En cas de doute sur un caractère, zoomer/analyser plus précisément
+
+LECTURE DES TABLEAUX :
+- Identifier clairement les colonnes et leurs en-têtes
+- Lire horizontalement, ligne par ligne
+- Ne pas sauter de lignes
+- Faire attention aux alignements de colonnes
 
 EXTRACTION DE LA MUTUELLE :
 - Chercher "AMC :", "Mutuelle :", "Assurance :", "Organisme complémentaire"
@@ -459,6 +509,32 @@ RAPPELS CRITIQUES :
             const result = await response.json();
             console.log('✅ Réponse Cloud Function reçue');
             
+            console.log('🔍 DEBUG - Réponse IA complète:', JSON.stringify(result.data, null, 2));
+
+            if (result.data && result.data.virements) {
+                result.data.virements.forEach((v, i) => {
+                    console.log(`💰 Virement ${i+1}:`, {
+                        montantTotal: v.MontantVirementGlobal,
+                        nbClients: v.clients?.length,
+                        clients: v.clients?.map(c => ({
+                            nom: c.ClientNom,
+                            prenom: c.ClientPrenom,
+                            montant: c.Montant
+                        }))
+                    });
+                    
+                    // Vérifier la somme
+                    if (v.clients && v.clients.length > 0) {
+                        const sommeClients = v.clients.reduce((sum, c) => sum + (c.Montant || 0), 0);
+                        console.log(`📊 Somme des montants clients: ${sommeClients}€`);
+                        console.log(`📊 Montant virement déclaré: ${v.MontantVirementGlobal}€`);
+                        if (Math.abs(sommeClients - v.MontantVirementGlobal) > 0.01) {
+                            console.error(`❌ INCOHÉRENCE: Somme (${sommeClients}) ≠ Total (${v.MontantVirementGlobal})`);
+                        }
+                    }
+                });
+            }
+
             return result.data || {};
             
         } catch (error) {

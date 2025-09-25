@@ -1029,43 +1029,72 @@ class DecompteOrchestrator {
                     label: '🗑️ Supprimer',
                     class: 'btn btn-glass-red btn-lg',
                     onClick: async (data) => {
-                        // Confirmation simple
-                        const confirmation = confirm(
-                            `⚠️ Voulez-vous vraiment supprimer le décompte ${data.numeroDecompte} ?\n\n` +
-                            `Cette action est irréversible.`
+                        // Double confirmation pour suppression définitive
+                        const confirmation1 = confirm(
+                            `⚠️ SUPPRESSION DÉFINITIVE\n\n` +
+                            `Voulez-vous vraiment supprimer le décompte ${data.numeroDecompte} ?\n\n` +
+                            `Cette action va :\n` +
+                            `• Supprimer définitivement le décompte de la base de données\n` +
+                            `• Supprimer tous les fichiers associés\n` +
+                            `• Cette action est IRRÉVERSIBLE\n\n` +
+                            `Continuer ?`
                         );
                         
-                        if (!confirmation) {
-                            return false; // Ne pas fermer
+                        if (!confirmation1) {
+                            return false;
+                        }
+                        
+                        // Deuxième confirmation avec saisie
+                        const confirmation2 = prompt(
+                            `⚠️ DERNIÈRE CONFIRMATION\n\n` +
+                            `Pour confirmer la suppression définitive, tapez :\n` +
+                            `SUPPRIMER\n\n` +
+                            `(en majuscules)`
+                        );
+                        
+                        if (confirmation2 !== 'SUPPRIMER') {
+                            self.showWarning('Suppression annulée');
+                            return false;
                         }
                         
                         try {
                             self.showLoader();
                             
-                            // Supprimer
+                            // Récupérer les infos utilisateur pour l'audit
+                            const userInfo = JSON.parse(localStorage.getItem('sav_auth') || '{}');
+                            
+                            // Supprimer définitivement
                             await firestoreService.supprimerDecompte(data.id, {
-                                motif: 'Suppression manuelle'
+                                motif: 'Suppression manuelle définitive',
+                                par: {
+                                    id: userInfo.collaborateur?.id || 'unknown',
+                                    nom: userInfo.collaborateur?.nom || 'Inconnu',
+                                    prenom: userInfo.collaborateur?.prenom || '',
+                                    role: userInfo.collaborateur?.role || 'technicien'
+                                }
                             });
                             
-                            self.showSuccess('✅ Décompte supprimé');
+                            self.showSuccess('✅ Décompte supprimé définitivement');
                             
                             // Rafraîchir les données
                             await self.loadData();
                             
                             self.hideLoader();
                             
-                            // Fermer le modal manuellement
+                            // Fermer le modal
                             viewer.close();
                             
                             return true;
                             
                         } catch (error) {
                             self.hideLoader();
-                            self.showError('❌ Erreur : ' + error.message);
+                            self.showError('❌ Erreur suppression : ' + error.message);
+                            console.error('Erreur complète:', error);
                             return false;
                         }
                     },
-                    closeOnClick: false  // On gère manuellement
+                    closeOnClick: false,
+                    show: (data) => true  // Toujours montrer le bouton supprimer
                 }
             ],
             size: 'large',

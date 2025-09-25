@@ -421,18 +421,75 @@ export class DecompteFirestoreService {
     }
     
     /**
-     * Supprimer un décompte (soft delete)
+     * Supprimer DÉFINITIVEMENT un décompte
      * @param {string} decompteId - ID du décompte
      * @param {Object} infos - Informations de suppression
      * @returns {Promise<void>}
      */
     static async supprimerDecompte(decompteId, infos = {}) {
         try {
-            await this.changerStatut(decompteId, CONFIG.STATUTS.SUPPRIME, {
-                motif: infos.motif || 'Suppression manuelle'
-            });
+            const { doc, deleteDoc, getDoc } = await import(
+                'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js'
+            );
             
-            console.log('✅ Décompte supprimé (soft delete):', decompteId);
+            // Récupérer le décompte pour avoir les chemins des fichiers
+            const docRef = doc(db, CONFIG.COLLECTION_NAME, decompteId);
+            const docSnap = await getDoc(docRef);
+            
+            if (!docSnap.exists()) {
+                throw new Error('Décompte introuvable');
+            }
+            
+            const decompteData = docSnap.data();
+            console.log('🗑️ Suppression définitive du décompte:', decompteData.numeroDecompte);
+            
+            // Récupérer les chemins des documents
+            const documents = decompteData.documents || [];
+            const erreursSuppression = [];
+            
+            // Supprimer chaque fichier dans Storage
+            if (documents.length > 0) {
+                console.log(`🗑️ Suppression de ${documents.length} fichier(s) dans Storage...`);
+                
+                for (const document of documents) {
+                    try {
+                        if (document.chemin) {
+                            // Importer les fonctions Storage
+                            const { ref, deleteObject } = await import(
+                                'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js'
+                            );
+                            const { storage } = await import('../../src/services/firebase.service.js');
+                            
+                            const storageRef = ref(storage, document.chemin);
+                            await deleteObject(storageRef);
+                            console.log(`✅ Fichier supprimé: ${document.nom}`);
+                        }
+                    } catch (error) {
+                        console.error(`❌ Erreur suppression fichier ${document.nom}:`, error);
+                        erreursSuppression.push(document.nom);
+                    }
+                }
+            }
+            
+            // Avertir si des fichiers n'ont pas pu être supprimés
+            if (erreursSuppression.length > 0) {
+                console.warn(`⚠️ ${erreursSuppression.length} fichier(s) non supprimé(s)`);
+            }
+            
+            // Supprimer définitivement le document Firestore
+            await deleteDoc(docRef);
+            console.log('✅ Document Firestore supprimé définitivement');
+            
+            // Log pour audit (optionnel)
+            console.log('🔍 Audit suppression:', {
+                decompteId: decompteId,
+                numeroDecompte: decompteData.numeroDecompte,
+                suppressionPar: infos.par || 'unknown',
+                date: new Date().toISOString(),
+                motif: infos.motif || 'Suppression manuelle',
+                fichiersSupprimés: documents.length - erreursSuppression.length,
+                fichiersEnErreur: erreursSuppression.length
+            });
             
         } catch (error) {
             console.error('❌ Erreur suppression décompte:', error);
